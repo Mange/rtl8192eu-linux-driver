@@ -763,7 +763,7 @@ int rtw_android_priv_cmd(struct net_device *net, struct ifreq *ifr, int cmd)
 		{
 #ifdef CONFIG_LPS
 			u8 dtim;
-			u8 *ptr = priv_cmd.buf;
+			u8 *ptr = (u8 *) &priv_cmd.buf;
 			
 			ptr += 9;//string command length of  "SET_DTIM";
 
