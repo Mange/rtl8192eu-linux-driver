@@ -1,6 +1,7 @@
 # rtl8192eu linux drivers
 
 The official drivers for D-Link DWA-131 Rev E, with patches to keep it working on newer kernels.
+Also works on Rosewill RNX-N180UBE v2 N300 Wireless Adapter.
 
 ## Source for the official drivers
 
