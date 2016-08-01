@@ -3,6 +3,8 @@
 The official drivers for D-Link DWA-131 Rev E, with patches to keep it working on newer kernels.
 Also works on Rosewill RNX-N180UBE v2 N300 Wireless Adapter.
 
+**NOTE:** This is just a "mirror". I have no knowledge about this code or how it works. Expect no support from me or any contributors here. I just think GitHub is a nicer way of keeping track of this than random form posts and precompiled binaries being sent by email. I don't want someone else to have to spend 5 days of googling and compiling with random patches until it works.
+
 ## Source for the official drivers
 
 Official drivers were downloaded from D-Link Australia. D-Link USA and the european countries I checked only lists revision A and B. Australia lists all three.
@@ -17,7 +19,7 @@ In addition, you can find the contents of this version in the initial commit of 
 
 ## Patches
 
-You can see the applied patches, their sources and/or motivation by looking at the commits. The `master` branch will be kept clean with a single commit per patch. You can review patch by patch and then record the SHA for that commit in order to get a safe reference to use. As long as the SHA stays the same you know that what you get has been reviewed by you.
+You can see the applied patches, their sources and/or motivation by looking at the commits. The `master` branch will mostly be kept clean with a single commit per patch, except for Pull Requests. You can review commit by commit and then record the SHA in order to get a safe reference to use. As long as the SHA stays the same you know that what you get has been reviewed by you.
 
 Note that updates to this README will show up as separate commits. I will not mix changes to this file with changes to the code in case you want to mirror this without the README.
 
