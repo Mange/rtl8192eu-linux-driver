@@ -192,6 +192,8 @@ static struct usb_device_id rtw_usb_id_tbl[] ={
 	{USB_DEVICE(0x2357, 0x0107),.driver_info = RTL8192E}, /* TP-Link - Cameo */
 	{USB_DEVICE(0x2357, 0x0108),.driver_info = RTL8192E}, /* TP-Link - Cameo */
 	{USB_DEVICE(0x2357, 0x0109),.driver_info = RTL8192E}, /* TP-Link - Cameo */
+	/*=== PLANEX ===========*/
+	{USB_DEVICE(0x2019, 0xab33),.driver_info = RTL8192E}, /* PLANEX - GW-300S Katana */
 #endif
 
 #ifdef CONFIG_RTL8723B
