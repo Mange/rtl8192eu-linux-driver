@@ -725,9 +725,15 @@ static const struct net_device_ops rtw_netdev_ops = {
 };
 #endif
 
+static const struct device_type wlan_type = {
+	.name = "wlan",
+};
+
 int rtw_init_netdev_name(struct net_device *pnetdev, const char *ifname)
 {
-	_adapter *padapter = rtw_netdev_priv(pnetdev);
+	_adapter *padapter;
+	pnetdev->dev.type = &wlan_type;
+	padapter = rtw_netdev_priv(pnetdev);
 
 #ifdef CONFIG_EASY_REPLACEMENT
 	struct net_device	*TargetNetdev = NULL;
