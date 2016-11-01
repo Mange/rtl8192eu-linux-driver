@@ -30,6 +30,16 @@
 #define STATION_INFO_TX_PACKETS		BIT(NL80211_STA_INFO_TX_PACKETS)
 #define STATION_INFO_ASSOC_REQ_IES	0
 #endif /* Linux kernel >= 4.0.0 */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 7, 0))
+enum ieee80211_band {
+        IEEE80211_BAND_2GHZ = NL80211_BAND_2GHZ,
+        IEEE80211_BAND_5GHZ = NL80211_BAND_5GHZ,
+        IEEE80211_BAND_60GHZ = NL80211_BAND_60GHZ,
+
+        /* keep last */
+        IEEE80211_NUM_BANDS
+};
+#endif /* Linux kernel >= 4.7.0 */
 
 #include <rtw_wifi_regd.h>
 
@@ -2051,7 +2061,14 @@ void rtw_cfg80211_indicate_scan_done(_adapter *adapter, bool aborted)
 		}
 		else
 		{
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,8,0)
+			struct cfg80211_scan_info info = {
+				.aborted = aborted
+			};
+			cfg80211_scan_done(pwdev_priv->scan_request, &info);
+#else
 			cfg80211_scan_done(pwdev_priv->scan_request, aborted);
+#endif
 		}
 
 		pwdev_priv->scan_request = NULL;

@@ -10,6 +10,12 @@
 
 #include <rtw_wifi_regd.h>
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 7, 0))
+#define IEEE80211_BAND_2GHZ    NL80211_BAND_2GHZ
+#define IEEE80211_BAND_5GHZ    NL80211_BAND_5GHZ
+#define IEEE80211_NUM_BANDS    NUM_NL80211_BANDS
+#endif /* Linux kernel >= 4.7.0 */
+
 static struct country_code_to_enum_rd allCountries[] = {
 	{COUNTRY_CODE_USER, "RD"},
 };
