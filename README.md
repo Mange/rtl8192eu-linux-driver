@@ -23,6 +23,36 @@ You can see the applied patches, their sources and/or motivation by looking at t
 
 Note that updates to this README will show up as separate commits. I will not mix changes to this file with changes to the code in case you want to mirror this without the README.
 
+## Building and installing using DKMS
+
+This tree supports Dynamic Kernel Module Support (DKMS), a system for
+generating kernel modules from out-of-tree kernel sources. It can be used to
+install/uninstall kernel modules, and the module will be automatically rebuilt
+from source when the kernel is upgraded (for example using your package manager).
+
+1. Install DKMS and other required tools
+
+    ```shell
+    $ apt-get install git linux-headers-generic build-essential dkms
+    ```
+
+2. Add the driver to DKMS. This will copy the source to a system directory so
+that it can used to rebuild the module on kernel upgrades.
+
+    ```shell
+    $ dkms add .
+    ```
+
+3. Build and install the driver.
+
+    ```shell
+    $ dkms install rtl8192eu/1.0
+    ```
+
+If you wish to uninstall the driver at a later point, use
+_dkms uninstall rtl8192eu/1.0_. To completely remove the driver from DKMS use
+_dkms remove rtl8192eu/1.0_.
+
 ## Submitting patches
 
 1. Fork repo
