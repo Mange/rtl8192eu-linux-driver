@@ -592,7 +592,11 @@ int rtw_android_priv_cmd(struct net_device *net, struct ifreq *ifr, int cmd)
 			goto exit;
 	}
 #ifdef CONFIG_COMPAT
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,6,0)
+	if (in_compat_syscall()) {
+#else
 	if (is_compat_task()) {
+#endif
 		/* User space is 32-bit, use compat ioctl */
 		compat_android_wifi_priv_cmd compat_priv_cmd;
 
