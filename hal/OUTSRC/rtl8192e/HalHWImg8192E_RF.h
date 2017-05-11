@@ -22,7 +22,6 @@
 #ifndef __INC_MP_RF_HW_IMG_8192E_H
 #define __INC_MP_RF_HW_IMG_8192E_H
 
-//static BOOLEAN CheckCondition(const u4Byte Condition, const u4Byte Hex);
 
 /******************************************************************************
 *                           RadioA.TXT
@@ -32,6 +31,7 @@ void
 ODM_ReadAndConfig_MP_8192E_RadioA( // TC: Test Chip, MP: MP Chip
 	IN   PDM_ODM_T  pDM_Odm
 );
+u4Byte ODM_GetVersion_MP_8192E_RadioA(void);
 
 /******************************************************************************
 *                           RadioB.TXT
@@ -41,6 +41,7 @@ void
 ODM_ReadAndConfig_MP_8192E_RadioB( // TC: Test Chip, MP: MP Chip
 	IN   PDM_ODM_T  pDM_Odm
 );
+u4Byte ODM_GetVersion_MP_8192E_RadioB(void);
 
 /******************************************************************************
 *                           TxPowerTrack_AP.TXT
@@ -50,6 +51,7 @@ void
 ODM_ReadAndConfig_MP_8192E_TxPowerTrack_AP( // TC: Test Chip, MP: MP Chip
 	IN   PDM_ODM_T  pDM_Odm
 );
+u4Byte ODM_GetVersion_MP_8192E_TxPowerTrack_AP(void);
 
 /******************************************************************************
 *                           TxPowerTrack_PCIE.TXT
@@ -59,6 +61,7 @@ void
 ODM_ReadAndConfig_MP_8192E_TxPowerTrack_PCIE( // TC: Test Chip, MP: MP Chip
 	IN   PDM_ODM_T  pDM_Odm
 );
+u4Byte ODM_GetVersion_MP_8192E_TxPowerTrack_PCIE(void);
 
 /******************************************************************************
 *                           TxPowerTrack_USB.TXT
@@ -68,6 +71,7 @@ void
 ODM_ReadAndConfig_MP_8192E_TxPowerTrack_USB( // TC: Test Chip, MP: MP Chip
 	IN   PDM_ODM_T  pDM_Odm
 );
+u4Byte ODM_GetVersion_MP_8192E_TxPowerTrack_USB(void);
 
 /******************************************************************************
 *                           TXPWR_LMT.TXT
@@ -77,6 +81,7 @@ void
 ODM_ReadAndConfig_MP_8192E_TXPWR_LMT( // TC: Test Chip, MP: MP Chip
 	IN   PDM_ODM_T  pDM_Odm
 );
+u4Byte ODM_GetVersion_MP_8192E_TXPWR_LMT(void);
 
 #endif
 #endif // end of HWIMG_SUPPORT

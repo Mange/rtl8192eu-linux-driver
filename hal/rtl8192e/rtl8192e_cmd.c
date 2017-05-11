@@ -65,7 +65,7 @@ static u8 _is_fw_read_cmd_down(_adapter* padapter, u8 msgbox_num)
 *|31 - 0	  |
 *|ext_msg|
 ******************************************/
-static s32 FillH2CCmd_8192E(PADAPTER padapter, u8 ElementID, u32 CmdLen, u8 *pCmdBuffer)
+s32 FillH2CCmd_8192E(PADAPTER padapter, u8 ElementID, u32 CmdLen, u8 *pCmdBuffer)
 {
 	u8 h2c_box_num = 0;
 	u32	msgbox_addr = 0;
@@ -222,13 +222,30 @@ _func_enter_;
 		H2CCommand[0] = macid;
 		H2CCommand[1] = (raid & 0x1F) | (shortGIrate?0x80:0x00) ;
 		H2CCommand[2] = (psta->bw_mode & 0x3); // LDPC_CAP,DISPT,DISRA
+#ifdef CONFIG_INTEL_PROXIM
+		if(padapter->proximity.proxim_on ==_TRUE)
+			pHalData->bDisableTXPowerTraining = _FALSE;
+#endif
+		//DisableTXPowerTraining
+		if(pHalData->bDisableTXPowerTraining){
+			H2CCommand[2] |= BIT6;
+			DBG_871X("%s,Disable PWT by driver\n",__FUNCTION__);
+		}
+		else{
+			PDM_ODM_T	pDM_OutSrc = &pHalData->odmpriv;
+	
+			if(pDM_OutSrc->bDisablePowerTraining){
+				H2CCommand[2] |= BIT6;
+				DBG_871X("%s,Disable PWT by DM\n",__FUNCTION__);	
+			}
+		}	
 
 		H2CCommand[3] = (u8)(bitmap & 0x000000ff);
 		H2CCommand[4] = (u8)((bitmap & 0x0000ff00) >>8);
 		H2CCommand[5] = (u8)((bitmap & 0x00ff0000) >> 16);
 		H2CCommand[6] = (u8)((bitmap & 0xff000000) >> 24);
 
-		DBG_871X("rtl8192e_set_raid_cmd, bitmap=0x%x, mac_id=0x%x, raid=0x%x, shortGIrate=%x\n", bitmap, macid, raid, shortGIrate);
+		DBG_871X("%s, bitmap=0x%x, mac_id=0x%x, raid=0x%x, shortGIrate=%x\n",__FUNCTION__, bitmap, macid, raid, shortGIrate);
 
 		FillH2CCmd_8192E(padapter, H2C_8192E_RA_MASK, 7, H2CCommand);
 	}
@@ -256,9 +273,11 @@ void rtl8192e_Add_RateATid(PADAPTER pAdapter, u32 bitmap, u8* arg, u8 rssi_level
 
 void rtl8192e_set_FwPwrMode_cmd(PADAPTER padapter, u8 PSMode)
 {
-	u8	u1H2CSetPwrMode[6]={0};
+	u8	u1H2CSetPwrMode[H2C_PWRMODE_LEN]={0};
 	struct pwrctrl_priv *pwrpriv = adapter_to_pwrctl(padapter);
 	u8	Mode = 0, RLBM = 0, PowerState = 0, LPSAwakeIntvl = 2;
+        u8   pwrModeByte5=0;
+        HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(padapter);
 
 _func_enter_;
 
@@ -290,12 +309,25 @@ _func_enter_;
 	}
 
 	if (Mode > PS_MODE_ACTIVE) {
-		PowerState = 0x00;// AllON(0x0C), RFON(0x04), RFOFF(0x00)
+#ifdef CONFIG_BT_COEXIST
+		if (rtw_btcoex_IsBtControlLps(padapter) == _TRUE && (pHalData->EEPROMBluetoothCoexist == 1))
+		{
+			PowerState = rtw_btcoex_RpwmVal(padapter);
+			pwrModeByte5 = rtw_btcoex_LpsVal(padapter);
+
+		}
+		else
+#endif // CONFIG_BT_COEXIST
+                {
+		        PowerState = 0x00;// AllON(0x0C), RFON(0x04), RFOFF(0x00)
+                        pwrModeByte5 = 0x40;
+                }
 #ifdef CONFIG_EXT_CLK
 		Mode |= BIT(7);//supporting 26M XTAL CLK_Request feature.
 #endif //CONFIG_EXT_CLK
 	} else {
 		PowerState = 0x0C;// AllON(0x0C), RFON(0x04), RFOFF(0x00)
+		pwrModeByte5 = 0x40;
 	}
 /*
 	if(BT_1AntPowerSaveMode(Adapter) && (FW_PS_ACTIVE_MODE != Mode))
@@ -317,7 +349,7 @@ _func_enter_;
 	SET_8192E_H2CCMD_PWRMODE_PARM_BCN_PASS_TIME(u1H2CSetPwrMode, LPSAwakeIntvl);
 
 	// (WMM only)bAllQueueUAPSD
-	SET_8192E_H2CCMD_PWRMODE_PARM_ALL_QUEUE_UAPSD(u1H2CSetPwrMode, padapter->registrypriv.uapsd_enable);
+	SET_8192E_H2CCMD_PWRMODE_PARM_ALL_QUEUE_UAPSD(u1H2CSetPwrMode, padapter->registrypriv.uapsd_enable);    
 /*
 	if(PSMode == FW_PS_ACTIVE_MODE)
 	{
@@ -339,6 +371,7 @@ _func_enter_;
 	// AllON(0x0C), RFON(0x04), RFOFF(0x00)
 	SET_8192E_H2CCMD_PWRMODE_PARM_PWR_STATE(u1H2CSetPwrMode, PowerState);
 
+        SET_8192E_H2CCMD_PWRMODE_PARM_BYTE5(u1H2CSetPwrMode, pwrModeByte5);
 
 /*
 	if(BT_1Ant(Adapter) && BT_IsBtCoexManualControl(Adapter))
@@ -346,6 +379,11 @@ _func_enter_;
 	
 	BT_RecordPwrMode(Adapter, &u1H2CSetPwrMode[0], 6);
 */
+#ifdef CONFIG_BT_COEXIST
+    if (pHalData->EEPROMBluetoothCoexist == 1)
+	rtw_btcoex_RecordPwrMode(padapter, u1H2CSetPwrMode, H2C_PWRMODE_LEN);
+#endif // CONFIG_BT_COEXIST
+
 	FillH2CCmd_8192E(padapter, H2C_8192E_SETPWRMODE, sizeof(u1H2CSetPwrMode), (u8 *)&u1H2CSetPwrMode);
 	//BT_DecExecPwrCmdCnt(Adapter);	
 	
@@ -763,7 +801,9 @@ CheckFwRsvdPageContent(
 //			      TRUE: At the second time, we should send the first packet (default:beacon)
 //						to Hw again and set the lengh in descriptor to the real beacon lengh.
 // 2009.10.15 by tynli.
-#define RSVD_PKT_LEN_92E	3072 //12*256
+
+#define PAGE_SIZE_92E		256
+#define RSVD_PKT_LEN_92E	(TOTAL_RSVD_PAGE_NUMBER_8192E *PAGE_SIZE_92E)
 
 static void SetFwRsvdPagePkt(PADAPTER padapter, BOOLEAN bDLFinished)
 {
@@ -809,13 +849,15 @@ static void SetFwRsvdPagePkt(PADAPTER padapter, BOOLEAN bDLFinished)
 	// To reserved 4 pages for beacon buffer. 2010.06.24.
 	if (PageNeed == 1)
 		PageNeed += 1;
+#ifdef CONFIG_2BCN_EN
 	PageNeed += 2;
+#endif
 	PageNum += PageNeed;	
 	
 	pHalData->FwRsvdPageStartOffset = PageNum;
 	//printk("%s => BCN#1 PageNeed(%d) FwRsvdPageStartOffset(%d) \n",__FUNCTION__, PageNeed,pHalData->FwRsvdPageStartOffset);
 	
-	BufIndex += PageNeed*256;
+	BufIndex += PageNeed*PAGE_SIZE_92E;
 
 	//3 (2) ps-poll *1 page
 	RsvdPageLoc.LocPsPoll = PageNum;
@@ -825,7 +867,7 @@ static void SetFwRsvdPagePkt(PADAPTER padapter, BOOLEAN bDLFinished)
 	PageNeed = (u8)PageNum_256(TxDescLen + PSPollLength);
 	PageNum += PageNeed;
 	//printk("%s => PS-POLL- PageNeed(%d)\n",__FUNCTION__, PageNeed);
-	BufIndex += PageNeed*256;
+	BufIndex += PageNeed*PAGE_SIZE_92E;
 
 	//3 (3) null data * 1 page
 	RsvdPageLoc.LocNullData = PageNum;
@@ -840,7 +882,7 @@ static void SetFwRsvdPagePkt(PADAPTER padapter, BOOLEAN bDLFinished)
 	PageNeed = (u8)PageNum_256(TxDescLen + NullDataLength);
 	PageNum += PageNeed;
 	//printk("%s => NULL data - PageNeed(%d)\n",__FUNCTION__, PageNeed);
-	BufIndex += PageNeed*256;
+	BufIndex += PageNeed*PAGE_SIZE_92E;
 
 	//3 (4) probe response * 1page
 	RsvdPageLoc.LocProbeRsp = PageNum;
@@ -855,7 +897,7 @@ static void SetFwRsvdPagePkt(PADAPTER padapter, BOOLEAN bDLFinished)
 	PageNeed = (u8)PageNum_256(TxDescLen + ProbeRspLength);
 	PageNum += PageNeed;
 	//printk("%s => PROB-RSP - PageNeed(%d)\n",__FUNCTION__, PageNeed);
-	BufIndex += PageNeed*256;
+	BufIndex += PageNeed*PAGE_SIZE_92E;
 
 	//3 (5) Qos null data
 	RsvdPageLoc.LocQosNull = PageNum;
@@ -900,10 +942,14 @@ static void SetFwRsvdPagePkt(PADAPTER padapter, BOOLEAN bDLFinished)
 	// update attribute
 	pattrib = &pcmdframe->attrib;
 	update_mgntframe_attrib(padapter, pattrib);
-	pattrib->qsel = 0x10;
+	pattrib->qsel = QSLT_BEACON;
 	pattrib->pktlen = pattrib->last_txcmdsz = TotalPacketLen - TXDESC_OFFSET;
 
+#ifdef CONFIG_PCI_HCI
+	dump_mgntframe(padapter, pcmdframe);
+#else
 	dump_mgntframe_and_wait(padapter, pcmdframe, 100);
+#endif
 
 	DBG_871X("%s: Set RSVD page location to Fw ,TotalPacketLen(%d), PageNum(%d)\n", __FUNCTION__,TotalPacketLen,PageNum);
 
@@ -980,7 +1026,7 @@ static void rtl8192e_set_AP_FwRsvdPagePkt(PADAPTER padapter,
 	u8	TxDescLen = TXDESC_SIZE, TxDescOffset = TXDESC_OFFSET;
 	u8	TotalPageNum=0, CurtPktPageNum=0, RsvdPageNum=0;
 	u8	currentip[4];
-	u16	BufIndex, PageSize = 256;
+	u16	BufIndex, PageSize = PAGE_SIZE_92E;
 	u32	TotalPacketLen = 0, MaxRsvdPageBufSize=0;
 	RSVDPAGE_LOC	RsvdPageLoc;
 #ifdef DBG_CONFIG_ERROR_DETECT
@@ -998,7 +1044,7 @@ static void rtl8192e_set_AP_FwRsvdPagePkt(PADAPTER padapter,
 	pmlmeext = &padapter->mlmeextpriv;
 	pmlmeinfo = &pmlmeext->mlmext_info;
 	pwrctl = adapter_to_pwrctl(padapter);
-	RsvdPageNum = 21;
+	RsvdPageNum = TOTAL_RSVD_PAGE_NUMBER_8192E;
 	MaxRsvdPageBufSize = RsvdPageNum*PageSize;
 
 	pcmdframe = rtw_alloc_cmdxmitframe(pxmitpriv);
@@ -1061,7 +1107,7 @@ static void rtl8192e_set_AP_FwRsvdPagePkt(PADAPTER padapter,
 		// update attribute
 		pattrib = &pcmdframe->attrib;
 		update_mgntframe_attrib(padapter, pattrib);
-		pattrib->qsel = 0x10;
+		pattrib->qsel = QSLT_BEACON;
 		pattrib->pktlen = TotalPacketLen - TxDescOffset;
 		pattrib->last_txcmdsz = TotalPacketLen - TxDescOffset;
 #ifdef CONFIG_PCI_HCI
@@ -1665,6 +1711,120 @@ static void ConstructARPResponse(
 		*pLength += 8;
 	}
 }
+#ifdef CONFIG_GTK_OL
+static void ConstructGTKResponse(
+	PADAPTER padapter,
+	u8			*pframe,
+	u32			*pLength
+	)
+{
+	struct rtw_ieee80211_hdr	*pwlanhdr;
+	u16						*fctrl;
+	u32						pktlen;
+	struct mlme_priv		*pmlmepriv = &padapter->mlmepriv;
+	struct wlan_network		*cur_network = &pmlmepriv->cur_network;
+	struct mlme_ext_priv	*pmlmeext = &(padapter->mlmeextpriv);
+	struct mlme_ext_info	*pmlmeinfo = &(pmlmeext->mlmext_info);
+	struct security_priv *psecuritypriv = &padapter->securitypriv;
+	static u8			LLCHeader[8] = {0xAA, 0xAA, 0x03, 0x00, 0x00, 0x00, 0x88, 0x8E};
+	static u8			GTKbody_a[11] ={0x01, 0x03, 0x00, 0x5F, 0x02, 0x03, 0x12, 0x00, 0x10, 0x42, 0x0B};
+	u8				*pGTKRspPkt = pframe;
+	u8			EncryptionHeadOverhead = 0;
+	//DBG_871X("%s:%d\n", __FUNCTION__, bForcePowerSave);
+
+	pwlanhdr = (struct rtw_ieee80211_hdr*)pframe;
+
+	fctrl = &pwlanhdr->frame_ctl;
+	*(fctrl) = 0;
+
+	//-------------------------------------------------------------------------
+	// MAC Header.
+	//-------------------------------------------------------------------------
+	SetFrameType(fctrl, WIFI_DATA);
+	//SetFrameSubType(fctrl, 0);
+	SetToDs(fctrl);
+	_rtw_memcpy(pwlanhdr->addr1, get_my_bssid(&(pmlmeinfo->network)), ETH_ALEN);
+	_rtw_memcpy(pwlanhdr->addr2, myid(&(padapter->eeprompriv)), ETH_ALEN);
+	_rtw_memcpy(pwlanhdr->addr3, get_my_bssid(&(pmlmeinfo->network)), ETH_ALEN);
+
+	SetSeqNum(pwlanhdr, 0);
+	SetDuration(pwlanhdr, 0);
+
+#ifdef CONFIG_WAPI_SUPPORT
+ 	*pLength = sMacHdrLng;
+#else
+	*pLength = 24;
+#endif //CONFIG_WAPI_SUPPORT
+
+//YJ,del,120503
+#if 0
+	//-------------------------------------------------------------------------
+	// Qos Header: leave space for it if necessary.
+	//-------------------------------------------------------------------------
+	if(pStaQos->CurrentQosMode > QOS_DISABLE)
+	{
+		SET_80211_HDR_QOS_EN(pGTKRspPkt, 1);
+		PlatformZeroMemory(&(Buffer[*pLength]), sQoSCtlLng);
+		*pLength += sQoSCtlLng;
+	}
+#endif //0
+	//-------------------------------------------------------------------------
+	// Security Header: leave space for it if necessary.
+	//-------------------------------------------------------------------------
+
+#if 1
+	switch (psecuritypriv->dot11PrivacyAlgrthm)
+	{
+		case _WEP40_:
+		case _WEP104_:
+			EncryptionHeadOverhead = 4;
+			break;
+		case _TKIP_:
+			EncryptionHeadOverhead = 8;	
+			break;			
+		case _AES_:
+			EncryptionHeadOverhead = 8;
+			break;
+#ifdef CONFIG_WAPI_SUPPORT
+		case _SMS4_:
+			EncryptionHeadOverhead = 18;
+			break;
+#endif //CONFIG_WAPI_SUPPORT
+		default:
+			EncryptionHeadOverhead = 0;
+	}
+	
+	if(EncryptionHeadOverhead > 0)
+	{
+		_rtw_memset(&(pframe[*pLength]), 0,EncryptionHeadOverhead);
+	       	*pLength += EncryptionHeadOverhead;
+		//SET_80211_HDR_WEP(pGTKRspPkt, 1);  //Suggested by CCW.
+		//GTK's privacy bit is done by FW
+		//SetPrivacy(fctrl);
+	}	
+#endif //1
+	//-------------------------------------------------------------------------
+	// Frame Body.
+	//-------------------------------------------------------------------------
+	pGTKRspPkt =  (u8*)(pframe+ *pLength); 
+	// LLC header
+	_rtw_memcpy(pGTKRspPkt, LLCHeader, 8);	
+	*pLength += 8;
+
+	// GTK element
+	pGTKRspPkt += 8;
+	
+	//GTK frame body after LLC, part 1
+	_rtw_memcpy(pGTKRspPkt, GTKbody_a, 11);	
+	*pLength += 11;
+	pGTKRspPkt += 11;
+	//GTK frame body after LLC, part 2
+	_rtw_memset(&(pframe[*pLength]), 0, 88);
+	*pLength += 88;
+	pGTKRspPkt += 88;
+
+}
+#endif //CONFIG_GTK_OL
 
 static void rtl8192e_set_FwRsvdPagePkt(PADAPTER padapter, BOOLEAN bDLFinished)
 {
@@ -1682,7 +1842,7 @@ static void rtl8192e_set_FwRsvdPagePkt(PADAPTER padapter, BOOLEAN bDLFinished)
 	u8	*ReservedPagePacket;
 	u8	TxDescLen = TXDESC_SIZE, TxDescOffset = TXDESC_OFFSET;
 	u8	TotalPageNum=0, CurtPktPageNum=0, RsvdPageNum=0;
-	u16	BufIndex, PageSize = 256;
+	u16	BufIndex, PageSize = PAGE_SIZE_92E;
 	u32	TotalPacketLen, MaxRsvdPageBufSize=0;
 	RSVDPAGE_LOC	RsvdPageLoc;
 #ifdef CONFIG_WOWLAN	
@@ -1714,7 +1874,7 @@ static void rtl8192e_set_FwRsvdPagePkt(PADAPTER padapter, BOOLEAN bDLFinished)
 	pwrctl = adapter_to_pwrctl(padapter);
 
 	//RsvdPageNum = BCNQ_PAGE_NUM_8723B + WOWLAN_PAGE_NUM_8723B;
-	RsvdPageNum = 21;
+	RsvdPageNum = TOTAL_RSVD_PAGE_NUMBER_8192E;
 	MaxRsvdPageBufSize = RsvdPageNum*PageSize;
 
 	pcmdframe = rtw_alloc_cmdxmitframe(pxmitpriv);
@@ -2078,7 +2238,7 @@ static void rtl8192e_set_FwRsvdPagePkt(PADAPTER padapter, BOOLEAN bDLFinished)
 		// update attribute
 		pattrib = &pcmdframe->attrib;
 		update_mgntframe_attrib(padapter, pattrib);
-		pattrib->qsel = 0x10;
+		pattrib->qsel = QSLT_BEACON;
 		pattrib->pktlen = pattrib->last_txcmdsz = TotalPacketLen - TxDescOffset;
 #ifdef CONFIG_PCI_HCI
 		dump_mgntframe(padapter, pcmdframe);
@@ -2290,7 +2450,7 @@ static void rtl8192e_set_FwWoWlanCtrl_Cmd(PADAPTER padapter, u8 bFuncEn)
 	struct security_priv *psecpriv = &padapter->securitypriv;
 	struct pwrctrl_priv *ppwrpriv = adapter_to_pwrctl(padapter);
 	u8 u1H2CWoWlanCtrlParm[H2C_WOWLAN_LEN]={0};
-	u8 discont_wake = 1, gpionum = 0, gpio_dur = 0, hw_unicast = 1, gpio_pulse_cnt=100;
+	u8 discont_wake = 1, gpionum = 0, gpio_dur = 0, hw_unicast = 0, gpio_pulse_cnt=100;
 	u8 sdio_wakeup_enable = 0;
 	u8 gpio_high_active = 0; //0: low active, 1: high active
 	u8 magic_pkt = 1;
@@ -2317,12 +2477,15 @@ static void rtl8192e_set_FwWoWlanCtrl_Cmd(PADAPTER padapter, u8 bFuncEn)
 	SET_H2CCMD_WOWLAN_UNICAST_PKT_ENABLE(u1H2CWoWlanCtrlParm, hw_unicast);
 	SET_H2CCMD_WOWLAN_ALL_PKT_DROP(u1H2CWoWlanCtrlParm, 0);
 	SET_H2CCMD_WOWLAN_GPIO_ACTIVE(u1H2CWoWlanCtrlParm, gpio_high_active);
+#ifndef CONFIG_GTK_OL
+	SET_H2CCMD_WOWLAN_REKEY_WAKE_UP(u1H2CWoWlanCtrlParm, 1); 
+#endif //!CONFIG_GTK_OL
 	SET_H2CCMD_WOWLAN_DISCONNECT_WAKE_UP(u1H2CWoWlanCtrlParm, discont_wake); 
 	SET_H2CCMD_WOWLAN_GPIONUM(u1H2CWoWlanCtrlParm, gpionum);
 	SET_H2CCMD_WOWLAN_DATAPIN_WAKE_UP(u1H2CWoWlanCtrlParm, sdio_wakeup_enable);
 	SET_H2CCMD_WOWLAN_GPIO_DURATION(u1H2CWoWlanCtrlParm, gpio_dur);
-	//SET_H2CCMD_WOWLAN_GPIO_PULSE_EN(u1H2CWoWlanCtrlParm, 1);
-	//SET_H2CCMD_WOWLAN_GPIO_PULSE_COUNT(u1H2CWoWlanCtrlParm, 0x09);
+	SET_H2CCMD_WOWLAN_GPIO_PULSE_EN(u1H2CWoWlanCtrlParm, 1);
+	SET_H2CCMD_WOWLAN_GPIO_PULSE_COUNT(u1H2CWoWlanCtrlParm, 0x09);
 	
 	RT_PRINT_DATA(_module_hal_init_c_, _drv_always_, "u1H2CWoWlanCtrlParm:", u1H2CWoWlanCtrlParm, H2C_WOWLAN_LEN);
 	DBG_871X("u1H2CWoWlanCtrlParm:%08x", (u32) u1H2CWoWlanCtrlParm[0]);
@@ -2795,11 +2958,13 @@ C2HContentParsing8192E(
 		//DBG_871X("[C2H], C2H_8192E_TX_REPORT!!\n");
 		C2HTxFeedbackHandler_8192E(Adapter, tmpBuf, c2hCmdLen);
 		break;
-
+#ifdef CONFIG_BT_COEXIST
 	case C2H_8192E_BT_INFO:
 		//DBG_871X("[C2H], C2H_8192E_BT_INFO!!\n");
 		//BT_BtInfoNotify(Adapter, tmpBuf, c2hCmdLen);
+		rtw_btcoex_BtInfoNotify(Adapter, c2hCmdLen, tmpBuf);
 		break;
+#endif
 
 	case C2H_8192E_BT_MP:
 		//DBG_871X("[C2H], C2H_8192E_BT_MP!!\n");
@@ -2820,6 +2985,27 @@ C2HContentParsing8192E(
 
 }
 
+
+static inline void dump_c2h_packet(u8 *ptr , u8 length)
+{
+       int i;
+       u8 tmpBuf[8];
+
+	for(i=0; i<length;i++)
+	{
+	        if(i%8==0)
+	        {
+	               DBG_871X("############################# \n");
+                       DBG_871X("");
+	        }
+               printk("%02X:",*(ptr+i));
+               
+       }
+       printk("\n");
+       DBG_871X("############################# \n");
+
+}
+
 VOID
 C2HPacketHandler_8192E(
 	IN	PADAPTER		Adapter,
@@ -2827,6 +3013,7 @@ C2HPacketHandler_8192E(
 	IN	u1Byte			Length
 	)
 {
+        struct  c2h_evt_hdr_88xx *c2h_evt = (struct c2h_evt_hdr_88xx *)Buffer;
 	u8	c2hCmdId=0, c2hCmdSeq=0, c2hCmdLen=0;
 	u8* 	tmpBuf=NULL;
 	u8	u1tmp=0, index=0;
@@ -2839,9 +3026,330 @@ C2HPacketHandler_8192E(
 	
 	//DBG_871X("[C2H packet], c2hCmdId=0x%x, c2hCmdSeq=0x%x, c2hCmdLen=%d\n", 
 	//	c2hCmdId, c2hCmdSeq, c2hCmdLen);
+
+        //dump_c2h_packet(tmpBuf,c2hCmdLen);
+       
+#ifdef CONFIG_BT_COEXIST
+	if (Length>16) {
+		DBG_871X("[C2H packet], c2hCmdId=0x%x, c2hCmdSeq=0x%x, c2hCmdLen=%d\n", c2hCmdId, c2hCmdSeq, c2hCmdLen);
+		rtw_warn_on(1);
+	}
 	
-	C2HContentParsing8192E(Adapter, c2hCmdId, c2hCmdLen, tmpBuf);
-	//PlatformEFIOWrite1Byte(Adapter, REG_C2HEVT_CLEAR_8812, C2H_EVT_HOST_CLOSE);
+	if (c2hCmdId == C2H_8192E_BT_INFO) {
+		/* enqueue */
+		if ((c2h_evt = (struct c2h_evt_hdr_88xx *)rtw_zmalloc(16)) != NULL) {
+			_rtw_memcpy(c2h_evt, Buffer, Length);
+			c2h_evt->plen = Length - 2;
+			//DBG_871X("-[C2H packet], id=0x%x, seq=0x%x, plen=%d\n", c2h_evt->id, c2h_evt->seq, c2h_evt->plen);
+			rtw_c2h_wk_cmd(Adapter, (u8 *)c2h_evt);
+		}
+	}
+	else
+#endif /* CONFIG_BT_COEXIST */
+	{	
+	        C2HContentParsing8192E(Adapter, c2hCmdId, c2hCmdLen, tmpBuf);
+	        //PlatformEFIOWrite1Byte(Adapter, REG_C2HEVT_CLEAR_8812, C2H_EVT_HOST_CLOSE);
+        }
 }
 
 
+s32 c2h_handler_8192e(PADAPTER padapter, u8 *buf)
+{
+	struct c2h_evt_hdr_88xx *c2h_evt = (struct c2h_evt_hdr_88xx *)buf;
+	s32 ret = _SUCCESS;
+
+	if (c2h_evt == NULL) {
+		DBG_8192C("%s c2h_evt is NULL\n",__FUNCTION__);
+		ret = _FAIL;
+		goto exit;
+	}
+
+	C2HContentParsing8192E(padapter, c2h_evt->id, c2h_evt->plen, c2h_evt->payload);
+
+exit:
+	return ret;
+}
+
+#ifdef CONFIG_BT_COEXIST
+
+void ConstructBtNullFunctionData(
+	PADAPTER padapter,
+	u8		*pframe,
+	u32		*pLength,
+	u8		*StaAddr,
+	u8		bQoS,
+	u8		AC,
+	u8		bEosp,
+	u8		bForcePowerSave)
+{
+	struct rtw_ieee80211_hdr	*pwlanhdr;
+	u16						*fctrl;
+	u32						pktlen;
+	struct mlme_ext_priv	*pmlmeext = &(padapter->mlmeextpriv);
+	struct mlme_ext_info	*pmlmeinfo = &(pmlmeext->mlmext_info);
+	u8 bssid[ETH_ALEN];
+
+	//DBG_871X("%s:%d\n", __FUNCTION__, bForcePowerSave);
+
+	pwlanhdr = (struct rtw_ieee80211_hdr*)pframe;
+
+	if (NULL == StaAddr)
+	{
+		_rtw_memcpy(bssid, myid(&padapter->eeprompriv), ETH_ALEN);
+		StaAddr = bssid;
+	}
+	
+	fctrl = &pwlanhdr->frame_ctl;
+	*(fctrl) = 0;
+	if (bForcePowerSave)
+	{
+		SetPwrMgt(fctrl);
+	}
+	
+	SetFrDs(fctrl);
+	_rtw_memcpy(pwlanhdr->addr1, StaAddr, ETH_ALEN);
+	_rtw_memcpy(pwlanhdr->addr2, myid(&padapter->eeprompriv), ETH_ALEN);
+	_rtw_memcpy(pwlanhdr->addr3, myid(&padapter->eeprompriv), ETH_ALEN);
+
+	SetDuration(pwlanhdr, 0);
+	SetSeqNum(pwlanhdr, 0);
+
+	if (bQoS == _TRUE) {
+		struct rtw_ieee80211_hdr_3addr_qos *pwlanqoshdr;
+
+		SetFrameSubType(pframe, WIFI_QOS_DATA_NULL);
+
+		pwlanqoshdr = (struct rtw_ieee80211_hdr_3addr_qos*)pframe;
+		SetPriority(&pwlanqoshdr->qc, AC);
+		SetEOSP(&pwlanqoshdr->qc, bEosp);
+
+		pktlen = sizeof(struct rtw_ieee80211_hdr_3addr_qos);
+	} else {
+		SetFrameSubType(pframe, WIFI_DATA_NULL);
+
+		pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
+	}
+
+	*pLength = pktlen;
+}
+
+static void SetFwRsvdPagePkt_BTCoex(PADAPTER padapter)
+{
+
+	PHAL_DATA_TYPE pHalData;
+	struct xmit_frame	*pcmdframe;	
+	struct pkt_attrib	*pattrib;
+	struct xmit_priv	*pxmitpriv;
+	struct mlme_ext_priv	*pmlmeext;
+	struct mlme_ext_info	*pmlmeinfo;
+	struct mlme_priv *pmlmepriv = &padapter->mlmepriv;
+	u32	BeaconLength=0;
+	u32	BTQosNullLength=0;
+	u8	*ReservedPagePacket;
+	u8	TxDescLen = TXDESC_SIZE, TxDescOffset = TXDESC_OFFSET;
+	u8	TotalPageNum=0, CurtPktPageNum=0, RsvdPageNum=0;
+	u16	BufIndex, PageSize = 256;
+	u32	TotalPacketLen, MaxRsvdPageBufSize=0;
+	RSVDPAGE_LOC	RsvdPageLoc;
+
+	pHalData = GET_HAL_DATA(padapter);
+	pxmitpriv = &padapter->xmitpriv;
+	pmlmeext = &padapter->mlmeextpriv;
+	pmlmeinfo = &pmlmeext->mlmext_info;
+
+	//RsvdPageNum = BCNQ_PAGE_NUM_8723B + WOWLAN_PAGE_NUM_8723B;
+	RsvdPageNum = RSVD_PAGE_NUM_8192E;
+	MaxRsvdPageBufSize = RsvdPageNum*PageSize;
+
+	pcmdframe = rtw_alloc_cmdxmitframe(pxmitpriv);
+	if (pcmdframe == NULL) {
+		DBG_871X("%s: alloc ReservedPagePacket fail!\n", __FUNCTION__);
+		return;
+	}
+
+	ReservedPagePacket = pcmdframe->buf_addr;
+	_rtw_memset(&RsvdPageLoc, 0, sizeof(RSVDPAGE_LOC));
+
+	//3 (1) beacon
+	BufIndex = TxDescOffset;
+	ConstructBeacon(padapter, &ReservedPagePacket[BufIndex], &BeaconLength);
+
+	// When we count the first page size, we need to reserve description size for the RSVD
+	// packet, it will be filled in front of the packet in TXPKTBUF.
+	CurtPktPageNum = (u8)PageNum_256(TxDescLen + BeaconLength);
+	//If we don't add 1 more page, the WOWLAN function has a problem. Baron thinks it's a bug of firmware
+	if (CurtPktPageNum == 1)
+	{
+		CurtPktPageNum += 1;
+	}
+	TotalPageNum += CurtPktPageNum;
+
+	BufIndex += (CurtPktPageNum*PageSize);
+	
+	// Jump to lastest page
+	if (BufIndex < (MaxRsvdPageBufSize - PageSize))
+	{
+		BufIndex = TxDescOffset + (MaxRsvdPageBufSize - PageSize);
+		TotalPageNum = RSVD_PAGE_NUM_8192E-1;
+	}
+	
+	//3 (6) BT Qos null data
+	RsvdPageLoc.LocBTQosNull = TotalPageNum;
+	ConstructBtNullFunctionData(
+		padapter,
+		&ReservedPagePacket[BufIndex],
+		&BTQosNullLength,
+		NULL,
+		_TRUE, 0, 0, _FALSE);
+	rtl8192e_fill_fake_txdesc(padapter, &ReservedPagePacket[BufIndex-TxDescLen], BTQosNullLength, _FALSE, _TRUE);
+
+	//DBG_871X("%s(): HW_VAR_SET_TX_CMD: BT QOS NULL DATA %p %d\n", 
+	//	__FUNCTION__, &ReservedPagePacket[BufIndex-TxDescLen], (BTQosNullLength+TxDescLen));
+
+	CurtPktPageNum = (u8)PageNum_256(TxDescLen + BTQosNullLength);
+
+	TotalPageNum += CurtPktPageNum;
+
+
+	TotalPacketLen = BufIndex + BTQosNullLength;
+	if(TotalPacketLen > MaxRsvdPageBufSize)
+	{
+		DBG_871X("%s(): ERROR: The rsvd page size is not enough!!TotalPacketLen %d, MaxRsvdPageBufSize %d\n",__FUNCTION__,
+			TotalPacketLen,MaxRsvdPageBufSize);
+		goto error;
+	}
+
+	// update attribute
+	pattrib = &pcmdframe->attrib;
+	update_mgntframe_attrib(padapter, pattrib);
+	pattrib->qsel = QSLT_BEACON;
+	pattrib->pktlen = pattrib->last_txcmdsz = TotalPacketLen - TxDescOffset;
+#ifdef CONFIG_PCI_HCI
+	dump_mgntframe(padapter, pcmdframe);
+#else
+	dump_mgntframe_and_wait(padapter, pcmdframe, 100);
+#endif
+	
+
+	//DBG_871X("%s: Set RSVD page location to Fw ,TotalPacketLen(%d), TotalPageNum(%d)\n", __FUNCTION__,TotalPacketLen,TotalPageNum);
+
+	rtl8192e_set_FwRsvdPage_cmd(padapter, &RsvdPageLoc);
+	rtl8192e_set_FwAoacRsvdPage_cmd(padapter, &RsvdPageLoc);
+
+	return;
+
+error:
+	rtw_free_xmitframe(pxmitpriv, pcmdframe);
+}
+
+void rtl8192e_download_BTCoex_AP_mode_rsvd_page(PADAPTER padapter)
+{
+	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(padapter);
+	struct mlme_ext_priv	*pmlmeext = &(padapter->mlmeextpriv);
+	struct mlme_ext_info	*pmlmeinfo = &(pmlmeext->mlmext_info);
+	BOOLEAN bRecover = _FALSE;
+	BOOLEAN	bcn_valid = _FALSE;
+	u8	DLBcnCount=0;
+	u32 poll = 0;
+	u8 val8;
+
+
+	DBG_8192C("+" FUNC_ADPT_FMT ": iface_type=%d fw_state=0x%08X\n",
+		FUNC_ADPT_ARG(padapter), get_iface_type(padapter), get_fwstate(&padapter->mlmepriv));
+
+#ifdef CONFIG_DEBUG
+	if (check_fwstate(&padapter->mlmepriv, WIFI_AP_STATE) == _FALSE)
+	{
+		DBG_8192C(FUNC_ADPT_FMT ": [WARNING] not in AP mode!!\n",
+			FUNC_ADPT_ARG(padapter));
+	}
+#endif // CONFIG_DEBUG
+
+	// We should set AID, correct TSF, HW seq enable before set JoinBssReport to Fw in 88/92C.
+	// Suggested by filen. Added by tynli.
+	rtw_write16(padapter, REG_BCN_PSR_RPT, (0xC000|pmlmeinfo->aid));
+
+	// set REG_CR bit 8
+	val8 = rtw_read8(padapter, REG_CR+1);
+	val8 |= BIT(0); // ENSWBCN
+	rtw_write8(padapter,  REG_CR+1, val8);
+
+	// Disable Hw protection for a time which revserd for Hw sending beacon.
+	// Fix download reserved page packet fail that access collision with the protection time.
+	// 2010.05.11. Added by tynli.
+	val8 = rtw_read8(padapter, REG_BCN_CTRL);
+	val8 &= ~BIT(3);
+	val8 |= BIT(4);
+	rtw_write8(padapter, REG_BCN_CTRL, val8);
+
+	// Set FWHW_TXQ_CTRL 0x422[6]=0 to tell Hw the packet is not a real beacon frame.
+	if (pHalData->RegFwHwTxQCtrl & BIT(6))
+		bRecover = _TRUE;
+
+	// To tell Hw the packet is not a real beacon frame.
+	pHalData->RegFwHwTxQCtrl &= ~BIT(6);
+	rtw_write8(padapter, REG_FWHW_TXQ_CTRL+2, pHalData->RegFwHwTxQCtrl);
+	
+
+	// Clear beacon valid check bit.
+	rtw_hal_set_hwreg(padapter, HW_VAR_BCN_VALID, NULL);
+	rtw_hal_set_hwreg(padapter, HW_VAR_DL_BCN_SEL, NULL);
+
+	DLBcnCount = 0;
+	poll = 0;
+	do
+	{
+		SetFwRsvdPagePkt_BTCoex(padapter);
+		DLBcnCount++;
+		do
+		{
+			rtw_yield_os();
+			//rtw_mdelay_os(10);
+			// check rsvd page download OK.
+			rtw_hal_get_hwreg(padapter, HW_VAR_BCN_VALID, (u8*)(&bcn_valid));
+			poll++;
+		} while(!bcn_valid && (poll%10)!=0 && !padapter->bSurpriseRemoved && !padapter->bDriverStopped);
+		
+	}while(!bcn_valid && DLBcnCount<=100 && !padapter->bSurpriseRemoved && !padapter->bDriverStopped);
+
+	if(_TRUE == bcn_valid)
+	{
+		struct pwrctrl_priv *pwrctl = adapter_to_pwrctl(padapter);
+		pwrctl->fw_psmode_iface_id = padapter->iface_id;
+		DBG_871X(ADPT_FMT": DL RSVD page success! DLBcnCount:%u, poll:%u\n",
+			ADPT_ARG(padapter), DLBcnCount, poll);
+	}
+	else
+	{
+		DBG_871X(ADPT_FMT": DL RSVD page fail! DLBcnCount:%d, poll:%d\n",
+			ADPT_ARG(padapter), DLBcnCount, poll);
+		DBG_871X(ADPT_FMT": DL RSVD page fail! bSurpriseRemoved=%d\n",
+			ADPT_ARG(padapter), padapter->bSurpriseRemoved);
+		DBG_871X(ADPT_FMT": DL RSVD page fail! bDriverStopped=%d\n",
+			ADPT_ARG(padapter), padapter->bDriverStopped);
+	}
+	
+	// 2010.05.11. Added by tynli.
+	val8 = rtw_read8(padapter, REG_BCN_CTRL);
+	val8 |= BIT(3);
+	val8 &= ~BIT(4);
+	rtw_write8(padapter, REG_BCN_CTRL, val8);
+
+	// To make sure that if there exists an adapter which would like to send beacon.
+	// If exists, the origianl value of 0x422[6] will be 1, we should check this to
+	// prevent from setting 0x422[6] to 0 after download reserved page, or it will cause
+	// the beacon cannot be sent by HW.
+	// 2010.06.23. Added by tynli.
+	if(bRecover)
+	{
+		pHalData->RegFwHwTxQCtrl |= BIT(6);
+		rtw_write8(padapter, REG_FWHW_TXQ_CTRL+2, pHalData->RegFwHwTxQCtrl);
+	}
+
+	// Clear CR[8] or beacon packet will not be send to TxBuf anymore.
+	val8 = rtw_read8(padapter, REG_CR+1);
+	val8 &= ~BIT(0); // ~ENSWBCN
+	rtw_write8(padapter, REG_CR+1, val8);
+}
+
+#endif // CONFIG_BT_COEXIST

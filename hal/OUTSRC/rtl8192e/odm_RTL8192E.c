@@ -22,7 +22,7 @@
 // include files
 //============================================================
 
-
+#include "Mp_Precomp.h"
 #include "../odm_precomp.h"
 
 #if (RTL8192E_SUPPORT == 1)
@@ -70,6 +70,9 @@ odm_DynamicPrimaryCCA_Check(
 	)
 {
 	if(pDM_Odm->SupportICType != ODM_RTL8192E) 
+		return;
+
+	if(!(pDM_Odm->SupportAbility & ODM_BB_PRIMARY_CCA))
 		return;
 
 	switch	(pDM_Odm->SupportPlatform)

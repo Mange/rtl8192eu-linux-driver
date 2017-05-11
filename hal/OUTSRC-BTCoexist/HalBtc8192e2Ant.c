@@ -1697,7 +1697,8 @@ halbtc8192e2ant_SetSwitchSsType(
 		pBtCoexist->fBtcWrite1Byte(pBtCoexist, 0xd04, 0x1);
 		pBtCoexist->fBtcWrite4Byte(pBtCoexist, 0x90c, 0x81111111);
 		// switch cck patch
-		pBtCoexist->fBtcWrite1ByteBitMask(pBtCoexist, 0xe77, 0x4, 0x1);
+		//Jenyu suggest to remove 0xe77 this line for tx issue
+		//pBtCoexist->fBtcWrite1ByteBitMask(pBtCoexist, 0xe77, 0x4, 0x1);
 		//pBtCoexist->fBtcWrite1Byte(pBtCoexist, 0xa07, 0x81);
 		mimoPs=BTC_MIMO_PS_STATIC;
 	}
@@ -1707,7 +1708,8 @@ halbtc8192e2ant_SetSwitchSsType(
 		pBtCoexist->fBtcWrite1Byte(pBtCoexist, 0xc04, 0x33);
 		pBtCoexist->fBtcWrite1Byte(pBtCoexist, 0xd04, 0x3);
 		pBtCoexist->fBtcWrite4Byte(pBtCoexist, 0x90c, 0x81121313);
-		pBtCoexist->fBtcWrite1ByteBitMask(pBtCoexist, 0xe77, 0x4, 0x0);
+                //Jenyu suggest to remove 0xe77 this line for tx issue
+		//pBtCoexist->fBtcWrite1ByteBitMask(pBtCoexist, 0xe77, 0x4, 0x0);
 		//pBtCoexist->fBtcWrite1Byte(pBtCoexist, 0xa07, 0x41);
 		mimoPs=BTC_MIMO_PS_DYNAMIC;
 	}
@@ -3791,6 +3793,13 @@ halbtc8192e2ant_InitHwConfig(
 // extern function start with EXhalbtc8192e2ant_
 //============================================================
 VOID
+EXhalbtc8192e2ant_PowerOnSetting(
+	IN	PBTC_COEXIST		pBtCoexist
+	)
+{
+}
+
+VOID
 EXhalbtc8192e2ant_InitHwConfig(
 	IN	PBTC_COEXIST		pBtCoexist,
 	IN	BOOLEAN				bWifiOnly
@@ -3836,13 +3845,6 @@ EXhalbtc8192e2ant_DisplayCoexInfo(
 		CL_PRINTF(cliBuf);
 		CL_SPRINTF(cliBuf, BT_TMP_BUF_SIZE, "\r\n ==========================================");
 		CL_PRINTF(cliBuf);
-	}
-
-	if(!pBoardInfo->bBtExist)
-	{
-		CL_SPRINTF(cliBuf, BT_TMP_BUF_SIZE, "\r\n BT not exists !!!");
-		CL_PRINTF(cliBuf);
-		return;
 	}
 
 	CL_SPRINTF(cliBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %d/ %d ", "Ant PG number/ Ant mechanism:", \

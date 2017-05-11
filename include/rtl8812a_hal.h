@@ -271,17 +271,6 @@ typedef enum _TX_PWR_PERCENTAGE{
 
 //#define RT_IS_FUNC_DISABLED(__pAdapter, __FuncBits) ( (__pAdapter)->DisabledFunctions & (__FuncBits) )
 
-#define GetRegTxBBSwing_2G(_Adapter)	(_Adapter->registrypriv.TxBBSwing_2G)
-#define GetRegTxBBSwing_5G(_Adapter)	(_Adapter->registrypriv.TxBBSwing_5G)
-
-#define GetRegAmplifierType2G(_Adapter)	(_Adapter->registrypriv.AmplifierType_2G)
-#define GetRegAmplifierType5G(_Adapter)	(_Adapter->registrypriv.AmplifierType_5G)
-
-#define GetRegbENRFEType(_Adapter)	(_Adapter->registrypriv.bEn_RFE)
-#define GetRegRFEType(_Adapter)	(_Adapter->registrypriv.RFE_Type)
-
-#define GetDefaultAdapter(padapter)	padapter
-
 // rtl8812_hal_init.c
 void	_8051Reset8812(PADAPTER padapter);
 s32	FirmwareDownload8812(PADAPTER Adapter, BOOLEAN bUsedWoWLANFw);

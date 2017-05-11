@@ -196,7 +196,8 @@ phy_RFSerialWrite(
 	//}
 
 	// <20121026, Kordan> If 0x818 == 1, the second value written on the previous address.
-	PHY_SetBBReg(Adapter, ODM_AFE_SETTING, 0x20000, 0x0);
+	if (IS_HARDWARE_TYPE_8192EU(Adapter))
+		PHY_SetBBReg(Adapter, ODM_AFE_SETTING, 0x20000, 0x0);
     
 	Offset &= 0xff;
 
@@ -1176,7 +1177,28 @@ phy_SpurCalibration_8192E(
 	PHY_SetRFReg(Adapter, ODM_RF_PATH_A, RF_CHNLBW, bRFRegOffsetMask, reg0x18); //restore chnl
 
 }
-
+#ifdef CONFIG_SPUR_CAL_NBI
+// to eliminate the 2480MHz spur for 92E suggest by James
+void 
+phy_SpurCalibration_8192E_NBI(PADAPTER Adapter)
+{
+	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(Adapter);
+	
+	//DbgPrint("===> %s  CurrentChannelBW = %d, CurrentChannel = %d\n", __FUNCTION__,pHalData->CurrentChannelBW, pHalData->CurrentChannel);
+	if(pHalData->CurrentChannelBW == CHANNEL_WIDTH_20 &&( pHalData->CurrentChannel == 13 || pHalData->CurrentChannel == 14)){
+		PHY_SetBBReg(Adapter, rOFDM0_RxDSP, BIT(9), 0x1);                     	//enable notch filter
+		PHY_SetBBReg(Adapter, rOFDM1_IntfDet, BIT(8)|BIT(7)|BIT(6), 0x5);	//intf_TH
+	}
+	else if(pHalData->CurrentChannelBW == CHANNEL_WIDTH_40 && pHalData->CurrentChannel == 11){
+		PHY_SetBBReg(Adapter, rOFDM0_RxDSP, BIT(9), 0x1);                     	//enable notch filter
+		PHY_SetBBReg(Adapter, rOFDM1_IntfDet, BIT(8)|BIT(7)|BIT(6), 0x5);	//intf_TH
+	}
+	else{
+		if(Adapter->registrypriv.notch_filter == 0)
+			PHY_SetBBReg(Adapter, rOFDM0_RxDSP, BIT(9), 0x0);	//disable notch filter
+	}
+}
+#endif
 VOID
 phy_SwChnl8192E(	
 	IN	PADAPTER	pAdapter
@@ -1190,22 +1212,9 @@ phy_SwChnl8192E(
 		//RT_TRACE(COMP_MLME,DBG_LOUD,("phy_SwChnl8192E: return for PSEUDO \n"));
 		return;
 	}
-	pHalData->RfRegChnlVal[0] = ((pHalData->RfRegChnlVal[0] & 0xfffff00) | channelToSW  );
-	PHY_SetRFReg(pAdapter, RF_PATH_A, RF_CHNLBW, 0x3FF, pHalData->RfRegChnlVal[0] );
-	PHY_SetRFReg(pAdapter, RF_PATH_B, RF_CHNLBW, 0x3FF, pHalData->RfRegChnlVal[0] );
-
-
-#if 0 //to do	
-	// <20130422, VincentLan> A workaround to eliminate the 2480MHz spur for 92E
-	if (channelToSW == 13)
-	{
-		if (pMgntInfo->RegSpurCalMethod == 1)//if AFE == 40MHz,MAC REG_0X78
-			phy_SpurCalibration_8192E(pAdapter, AFE_PHASE_SEL); 
-		else
-			phy_SpurCalibration_8192E(pAdapter, PLL_RESET);
-
-	}
-#endif
+	//pHalData->RfRegChnlVal[0] = ((pHalData->RfRegChnlVal[0] & 0xfffff00) | channelToSW  );
+	PHY_SetRFReg(pAdapter, RF_PATH_A, RF_CHNLBW, 0x3FF,channelToSW );
+	PHY_SetRFReg(pAdapter, RF_PATH_B, RF_CHNLBW, 0x3FF, channelToSW );
 	
 }
 
@@ -1225,6 +1234,7 @@ phy_SwChnlAndSetBwMode8192E(
 			pHalData->CurrentChannel,
 			pHalData->bSetChnlBW,
 			pHalData->CurrentChannelBW);
+
 	}
 
 	if((Adapter->bDriverStopped) || (Adapter->bSurpriseRemoved))
@@ -1242,10 +1252,14 @@ phy_SwChnlAndSetBwMode8192E(
 	{
 		phy_PostSetBwMode8192E(Adapter);
 		pHalData->bSetChnlBW = _FALSE;
-	}	
+	}
+	
+#ifdef CONFIG_SPUR_CAL_NBI
+	phy_SpurCalibration_8192E_NBI(Adapter);
+#endif
+
 
 	PHY_SetTxPowerLevel8192E(Adapter, pHalData->CurrentChannel);
-
 }
 
 VOID
@@ -1275,7 +1289,7 @@ PHY_HandleSwChnlAndSetBW8192E(
 	//check is swchnl or setbw
 	if(!bSwitchChannel && !bSetBandWidth)
 	{
-		DBG_871X("PHY_HandleSwChnlAndSetBW8812:  not switch channel and not set bandwidth \n");
+		DBG_871X("PHY_HandleSwChnlAndSetBW8192e:  not switch channel and not set bandwidth \n");
 		return;
 	}
 

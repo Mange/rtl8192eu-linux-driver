@@ -142,6 +142,13 @@ phy_SpurCalibration_8192E(
 	IN	PADAPTER			Adapter,
 	IN	SPUR_CAL_METHOD	Method
 );
+
+#ifdef CONFIG_SPUR_CAL_NBI
+void 
+phy_SpurCalibration_8192E_NBI(
+	IN	PADAPTER			Adapter
+);
+#endif
 //
 // BB/MAC/RF other monitor API
 //

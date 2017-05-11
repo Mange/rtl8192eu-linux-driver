@@ -22,7 +22,7 @@
 #define __HAL_PHY_RF_8192E_H__
 
 /*--------------------------Define Parameters-------------------------------*/
-#define	IQK_DELAY_TIME_92E		10		//ms
+#define	IQK_DELAY_TIME_92E		15		//ms
 #define	index_mapping_NUM_92E	15
 #define AVG_THERMAL_NUM_92E	4
 

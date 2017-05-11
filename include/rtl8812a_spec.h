@@ -244,9 +244,16 @@
 #define	AcmHw_ViqStatus_8812			BIT(6)
 #define	AcmHw_BeqStatus_8812			BIT(7)
 
-#endif //__RTL8188E_SPEC_H__
+//========================================================
+// General definitions
+//========================================================
+
+#define MACID_NUM_8812A 128
+#define CAM_ENTRY_NUM_8812A 64
+
+#endif /* __RTL8812A_SPEC_H__ */
 
 #ifdef CONFIG_RTL8821A
 #include "rtl8821a_spec.h"
-#endif // CONFIG_RTL8821A
+#endif /* CONFIG_RTL8821A */
 

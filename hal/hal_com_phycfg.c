@@ -404,7 +404,7 @@ PHY_GetRateSectionIndexOfTxPowerByRate(
 			case rTxAGC_A_Rate54_24:	 index = 1;		break;
 			case rTxAGC_A_CCK1_Mcs32:	 index = 6;		break;
 			case rTxAGC_B_CCK11_A_CCK2_11:
-				if ( BitMask == 0xffffff00 )
+				if ( BitMask == bMaskH3Bytes )
 					index = 7;
 				else if ( BitMask == 0x000000ff )
 					index = 15;
@@ -2341,7 +2341,7 @@ PHY_GetTxPowerIndex(
 	u8	txPower = 0x3E;
 
 	if (IS_HARDWARE_TYPE_8813A(pAdapter)) {
-//#if (RTL8813A_SUPPORT==1)
+//#if (RTL8814A_SUPPORT==1)
 //		txPower = PHY_GetTxPowerIndex_8813A( pAdapter, PowerIndex, RFPath, Rate );
 //#endif
 	}
@@ -2378,7 +2378,7 @@ PHY_SetTxPowerIndex(
 	)
 {
 	if (IS_HARDWARE_TYPE_8813A(pAdapter)) {
-//#if (RTL8813A_SUPPORT==1)
+//#if (RTL8814A_SUPPORT==1)
 //		PHY_SetTxPowerIndex_8813A( pAdapter, PowerIndex, RFPath, Rate );
 //#endif
 	}
@@ -2410,7 +2410,9 @@ Hal_ChannelPlanToRegulation(
 	IN	u16				ChannelPlan
 	)
 {
-	HAL_DATA_TYPE		*pHalData = GET_HAL_DATA(Adapter);
+	HAL_DATA_TYPE *pHalData = GET_HAL_DATA(Adapter);
+	DM_ODM_T *odm = &pHalData->odmpriv;
+
 	pHalData->Regulation2_4G = TXPWR_LMT_WW;
 	pHalData->Regulation5G = TXPWR_LMT_WW;
 
@@ -2570,15 +2572,13 @@ Hal_ChannelPlanToRegulation(
 		default:
 			break;
 	}
+
+	DBG_871X("%s ChannelPlan:0x%02x,Regulation(2_4G/5G):0x%02x,0x%02x\n",
+		__FUNCTION__,ChannelPlan,pHalData->Regulation2_4G,pHalData->Regulation5G);
+
 }
 
 #ifdef CONFIG_LOAD_PHY_PARA_FROM_FILE
-
-extern char *rtw_phy_file_path;
-char	file_path[PATH_LENGTH_MAX];
-
-#define GetLineFromBuffer(buffer)	 strsep(&buffer, "\n")
-
 int
 phy_ConfigMACWithParaFile(
 	IN	PADAPTER	Adapter,
@@ -4037,6 +4037,7 @@ PHY_ConfigRFWithPowerLimitTableParaFile(
 
 	return rtStatus;
 }
+
 void phy_free_filebuf(_adapter *padapter)
 {
 	HAL_DATA_TYPE		*pHalData = GET_HAL_DATA(padapter);
@@ -4062,7 +4063,4 @@ void phy_free_filebuf(_adapter *padapter)
 	
 }
 
-
 #endif
-
-

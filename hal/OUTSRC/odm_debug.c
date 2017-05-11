@@ -22,6 +22,7 @@
 // include files
 //============================================================
 
+#include "Mp_Precomp.h"
 #include "odm_precomp.h"
 
 
@@ -30,7 +31,7 @@ ODM_InitDebugSetting(
 	IN		PDM_ODM_T		pDM_Odm
 	)
 {
-pDM_Odm->DebugLevel				= 	ODM_DBG_LOUD;
+pDM_Odm->DebugLevel				= 	ODM_DBG_TRACE;
 
 pDM_Odm->DebugComponents			= 
 \
@@ -50,7 +51,9 @@ pDM_Odm->DebugComponents			=
 //									ODM_COMP_DYNAMIC_PRICCA		|
 //									ODM_COMP_RXHP					|
 //									ODM_COMP_MP 					|
-//									ODM_COMP_DYNAMIC_ATC		|
+//									ODM_COMP_CFO_TRACKING		|
+//									ODM_COMP_ACS					|
+//									PHYDM_COMP_ADAPTIVITY			|
 
 //MAC Functions
 //									ODM_COMP_EDCA_TURBO			|
@@ -67,563 +70,669 @@ pDM_Odm->DebugComponents			=
 									0;
 }
 
-#if 0
-/*------------------Declare variable-----------------------
-// Define debug flag array for common debug print macro. */
-u4Byte ODM_DBGP_Type[ODM_DBGP_TYPE_MAX];
+#if(DM_ODM_SUPPORT_TYPE & ODM_WIN)
 
-/* Define debug print header for every service module. */
-ODM_DBGP_HEAD_T	ODM_DBGP_Head;
-
-
-/*-----------------------------------------------------------------------------
- * Function:    DBGP_Flag_Init
- *
- * Overview:    Refresh all debug print control flag content to zero.
- *
- * Input:       NONE
- *
- * Output:      NONE
- *
- * Return:      NONE
- *
- * Revised History:
- *  When		Who		Remark
- *  10/20/2006	MHC		Create Version 0.
- *
- *---------------------------------------------------------------------------*/
-extern	void	ODM_DBGP_Flag_Init(void)
-{    
-    u1Byte i;
-    
-	for (i = 0; i < ODM_DBGP_TYPE_MAX; i++)
-	{
- 		ODM_DBGP_Type[i] = 0;
-	}
-    
-#ifndef ADSL_AP_BUILD_WORKAROUND
-#if DBG		
-	// 2010/06/02 MH Free build driver can not out any debug message!!!
-	// Init Debug flag enable condition
-
-	ODM_DBGP_Type[FINIT]			=	\
-//								INIT_EEPROM						|
-//								INIT_TxPower						|
-//								INIT_IQK							|
-//								INIT_RF							|
-								0;
-
-	ODM_DBGP_Type[FDM]			=	\
-//								WA_IOT							|
-//								DM_PWDB						|
-//								DM_Monitor						|
-//								DM_DIG				|
-//								DM_EDCA_Turbo		|
-//								DM_BT30				|
-								0;
-
-	ODM_DBGP_Type[FIOCTL]		= 	\
-//								IOCTL_IRP						|
-//								IOCTL_IRP_DETAIL					|
-//								IOCTL_IRP_STATISTICS				|
-//								IOCTL_IRP_HANDLE				|
-//								IOCTL_BT_HCICMD					|
-//								IOCTL_BT_HCICMD_DETAIL			|
-//								IOCTL_BT_HCICMD_EXT				|
-//								IOCTL_BT_EVENT					|
-//								IOCTL_BT_EVENT_DETAIL			|
-//								IOCTL_BT_EVENT_PERIODICAL		|
-//								IOCTL_BT_TX_ACLDATA			|
-//								IOCTL_BT_TX_ACLDATA_DETAIL		|
-//								IOCTL_BT_RX_ACLDATA				|
-//								IOCTL_BT_RX_ACLDATA_DETAIL		|
-//								IOCTL_BT_TP						|
-//								IOCTL_STATE						|
-//								IOCTL_BT_LOGO					|
-//								IOCTL_CALLBACK_FUN				|
-//								IOCTL_PARSE_BT_PKT				|
-								0;
-
-	ODM_DBGP_Type[FBT]			= 	\
-//								BT_TRACE						|
-								0;
-
-	ODM_DBGP_Type[FEEPROM]		=	\
-//								EEPROM_W						|
-//								EFUSE_PG						|
-//								EFUSE_READ_ALL					|
-//								EFUSE_ANALYSIS					|
-//								EFUSE_PG_DETAIL					|
-								0;
-
-	ODM_DBGP_Type[FDBG_CTRL]	= 	\
-//								DBG_CTRL_TRACE					|
-//								DBG_CTRL_INBAND_NOISE			|
-								0;
-	
-	// 2011/07/20 MH Add for short cut 
-	ODM_DBGP_Type[FSHORT_CUT] = 	\
-//								SHCUT_TX 						| 
-//								SHCUT_RX						|
-								0;
-	
-#endif	
-#endif
-	/* Define debug header of every service module. */
-	//ODM_DBGP_Head.pMANS	= "\n\r[MANS] ";
-	//ODM_DBGP_Head.pRTOS	= "\n\r[RTOS] ";
-	//ODM_DBGP_Head.pALM	= "\n\r[ALM]  ";
-	//ODM_DBGP_Head.pPEM	= "\n\r[PEM]  ";
-	//ODM_DBGP_Head.pCMPK	= "\n\r[CMPK] ";
-	//ODM_DBGP_Head.pRAPD	= "\n\r[RAPD] ";
-	//ODM_DBGP_Head.pTXPB	= "\n\r[TXPB] ";
-	//ODM_DBGP_Head.pQUMG	= "\n\r[QUMG] ";
-    	
-}	/* DBGP_Flag_Init */
-
-#endif
-
-
-#if 0
-u4Byte GlobalDebugLevel			= 	DBG_LOUD;
-//
-// 2009/06/22 MH Allow Fre build to print none debug info at init time.
-//
-#if DBG
-u8Byte GlobalDebugComponents	= 	\
-//									COMP_TRACE				|
-//									COMP_DBG				|
-//									COMP_INIT				|
-//									COMP_OID_QUERY			|
-//									COMP_OID_SET			|
-//									COMP_RECV				|
-//									COMP_SEND				|
-//									COMP_IO					|
-//									COMP_POWER				|
-//									COMP_MLME				|
-//									COMP_SCAN				|
-//									COMP_SYSTEM			|
-//									COMP_SEC				|
-//									COMP_AP				|
-//									COMP_TURBO				|
-//									COMP_QOS				|
-//									COMP_AUTHENTICATOR	|
-//									COMP_BEACON			|
-//									COMP_ANTENNA			|
-//									COMP_RATE				|
-//									COMP_EVENTS			|
-//									COMP_FPGA				|
-//									COMP_RM				|
-//									COMP_MP				|
-//									COMP_RXDESC			|
-//									COMP_CKIP				|
-//									COMP_DIG				|
-//									COMP_TXAGC				|
-//									COMP_HIPWR				|
-//									COMP_HALDM				|
-//									COMP_RSNA				|
-//									COMP_INDIC				|
-//									COMP_LED				|
-//									COMP_RF					|
-//									COMP_DUALMACSWITCH	|
-//									COMP_EASY_CONCURRENT	|
-
-//1!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//1//1Attention Please!!!<11n or 8190 specific code should be put below this line>
-//1!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-//									COMP_HT				|
-//									COMP_POWER_TRACKING 	|
-//									COMP_RX_REORDER		|
-//									COMP_AMSDU 			|
-//									COMP_WPS				|
-//									COMP_RATR				|
-//									COMP_RESET 				|
-//									COMP_CMD				|
-//									COMP_EFUSE				|
-//									COMP_MESH_INTERWORKING |
-//									COMP_CCX				|	
-//									COMP_IOCTL				|
-//									COMP_GP 				|
-//									COMP_TXAGG				|
-//									COMP_BB_POWERSAVING	|
-//									COMP_SWAS				|
-//									COMP_P2P				|
-//									COMP_MUX				|
-//									COMP_FUNC				|
-//									COMP_TDLS				|
-//									COMP_OMNIPEEK			|
-//									COMP_PSD				|
-									0;
-
-
-#else
-u8Byte GlobalDebugComponents	= 0;
-#endif
-
-#if (RT_PLATFORM==PLATFORM_LINUX) 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0))
-EXPORT_SYMBOL(GlobalDebugComponents);
-EXPORT_SYMBOL(GlobalDebugLevel);
-#endif
-#endif
-
-/*------------------Declare variable-----------------------
-// Define debug flag array for common debug print macro. */
-u4Byte			DBGP_Type[DBGP_TYPE_MAX];
-
-/* Define debug print header for every service module. */
-DBGP_HEAD_T		DBGP_Head;
-
-
-/*-----------------------------------------------------------------------------
- * Function:    DBGP_Flag_Init
- *
- * Overview:    Refresh all debug print control flag content to zero.
- *
- * Input:       NONE
- *
- * Output:      NONE
- *
- * Return:      NONE
- *
- * Revised History:
- *  When		Who		Remark
- *  10/20/2006	MHC		Create Version 0.
- *
- *---------------------------------------------------------------------------*/
-extern	void	DBGP_Flag_Init(void)
-{    
-    u1Byte	i;
-    
-	for (i = 0; i < DBGP_TYPE_MAX; i++)
-	{
- 		DBGP_Type[i] = 0;
-	}
-    
-#if DBG		
-	// 2010/06/02 MH Free build driver can not out any debug message!!!
-	// Init Debug flag enable condition
-
-	DBGP_Type[FINIT]			=	\
-//								INIT_EEPROM						|
-//								INIT_TxPower						|
-//								INIT_IQK							|
-//								INIT_RF							|
-								0;
-
-	DBGP_Type[FDM]			=	\
-//								WA_IOT							|
-//								DM_PWDB						|
-//								DM_Monitor						|
-//								DM_DIG				|
-//								DM_EDCA_Turbo		|
-//								DM_BT30				|
-								0;
-
-	DBGP_Type[FIOCTL]		= 	\
-//								IOCTL_IRP						|
-//								IOCTL_IRP_DETAIL					|
-//								IOCTL_IRP_STATISTICS				|
-//								IOCTL_IRP_HANDLE				|
-//								IOCTL_BT_HCICMD					|
-//								IOCTL_BT_HCICMD_DETAIL			|
-//								IOCTL_BT_HCICMD_EXT				|
-//								IOCTL_BT_EVENT					|
-//								IOCTL_BT_EVENT_DETAIL			|
-//								IOCTL_BT_EVENT_PERIODICAL		|
-//								IOCTL_BT_TX_ACLDATA			|
-//								IOCTL_BT_TX_ACLDATA_DETAIL		|
-//								IOCTL_BT_RX_ACLDATA				|
-//								IOCTL_BT_RX_ACLDATA_DETAIL		|
-//								IOCTL_BT_TP						|
-//								IOCTL_STATE						|
-//								IOCTL_BT_LOGO					|
-//								IOCTL_CALLBACK_FUN				|
-//								IOCTL_PARSE_BT_PKT				|
-								0;
-
-	DBGP_Type[FBT]			= 	\
-//								BT_TRACE						|
-								0;
-
-	DBGP_Type[FEEPROM]		=	\
-//								EEPROM_W						|
-//								EFUSE_PG						|
-//								EFUSE_READ_ALL					|
-//								EFUSE_ANALYSIS					|
-//								EFUSE_PG_DETAIL					|
-								0;
-
-	DBGP_Type[FDBG_CTRL]	= 	\
-//								DBG_CTRL_TRACE					|
-//								DBG_CTRL_INBAND_NOISE			|
-								0;
-	
-	// 2011/07/20 MH Add for short cut 
-	DBGP_Type[FSHORT_CUT] = 	\
-//								SHCUT_TX 						| 
-//								SHCUT_RX						|
-								0;
-	
-#endif	
-	/* Define debug header of every service module. */
-	DBGP_Head.pMANS	= "\n\r[MANS] ";
-	DBGP_Head.pRTOS	= "\n\r[RTOS] ";
-	DBGP_Head.pALM	= "\n\r[ALM]  ";
-	DBGP_Head.pPEM	= "\n\r[PEM]  ";
-	DBGP_Head.pCMPK	= "\n\r[CMPK] ";
-	DBGP_Head.pRAPD	= "\n\r[RAPD] ";
-	DBGP_Head.pTXPB	= "\n\r[TXPB] ";
-	DBGP_Head.pQUMG	= "\n\r[QUMG] ";
-    	
-}	/* DBGP_Flag_Init */
-
-
-/*-----------------------------------------------------------------------------
- * Function:    DBG_PrintAllFlag
- *
- * Overview:    Print All debug flag
- *
- * Input:       NONE
- *
- * Output:      NONE
- *
- * Return:      NONE
- *
- * Revised History:
- *  When		Who		Remark
- *  12/10/2008	MHC		Create Version 0.
- *
- *---------------------------------------------------------------------------*/
-extern	void	DBG_PrintAllFlag(void)
+static u1Byte	BbDbgBuf[BB_TMP_BUF_SIZE];
+VOID
+odm_BB_Debug_Info(IN PDM_ODM_T pDM_Odm)
 {
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("DBGFLAG 0    FQoS\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("DBGFLAG 1    FTX\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("DBGFLAG 2    FRX\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("DBGFLAG 3    FSEC\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("DBGFLAG 4    FMGNT\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("DBGFLAG 5    FMLME\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("DBGFLAG 6    FRESOURCE\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("DBGFLAG 7    FBEACON\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("DBGFLAG 8    FISR\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("DBGFLAG 9    FPHY\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("DBGFLAG 11   FMP\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("DBGFLAG 12   FPWR\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("DBGFLAG 13   FDM\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("DBGFLAG 14   FDBG_CTRL\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("DBGFLAG 15   FC2H\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("DBGFLAG 16   FBT\n"));			
-}	// DBG_PrintAllFlag
+
+	u1Byte	RX_HT_BW, RX_VHT_BW, RXSC, RX_HT, RX_BW;
+	static u1Byte vRX_BW ;
+	u4Byte	value32, value32_1, value32_2, value32_3;
+	s4Byte	SFO_A, SFO_B, SFO_C, SFO_D;
+	s4Byte	LFO_A, LFO_B, LFO_C, LFO_D;
+	static u1Byte	MCSS,Tail,Parity,rsv,vrsv,idx,smooth,htsound,agg,stbc,vstbc,fec,fecext,sgi,sgiext,htltf,vgid,vNsts,vtxops,vrsv2,vbrsv,bf,vbcrc;
+	static u2Byte	HLength,htcrc8,Length;
+	static u2Byte vpaid;
+	static u2Byte	vLength,vhtcrc8,vMCSS,vTail,vbTail;
+	static u1Byte	HMCSS,HRX_BW;
 
 
-extern	void	DBG_PrintAllComp(void)
-{
-	u1Byte	i;
+	u1Byte    pwDB;
+	s1Byte    RXEVM_0, RXEVM_1, RXEVM_2 ;
+	u1Byte    RF_gain_pathA, RF_gain_pathB, RF_gain_pathC, RF_gain_pathD;
+	u1Byte    RX_SNR_pathA, RX_SNR_pathB, RX_SNR_pathC, RX_SNR_pathD;
+       s4Byte    sig_power;
+       const char *RXHT_table[] = {"legacy", "HT", "VHT"};
+	const char *BW_table[] = {"20M", "40M", "80M"};
+	const char *RXSC_table[] = {"duplicate/full bw", "usc20-1", "lsc20-1", "usc20-2", "lsc20-2",  "usc40", "lsc40"};
+
+	const char *L_rate[]={"6M","9M","12M","18M","24M","36M","48M","54M"}; 
+
 	
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("GlobalDebugComponents Definition\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT0    COMP_TRACE\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT1    COMP_DBG\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT2    COMP_INIT\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT3    COMP_OID_QUERY\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT4    COMP_OID_SET\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT5    COMP_RECV\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT6    COMP_SEND\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT7    COMP_IO\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT8    COMP_POWER\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT9   COMP_MLME\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT10   COMP_SCAN\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT11   COMP_SYSTEM\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT12   COMP_SEC\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT13   COMP_AP\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT14   COMP_TURBO\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT15   COMP_QOS\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT16   COMP_AUTHENTICATOR\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT17   COMP_BEACON\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT18   COMP_BEACON\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT19   COMP_RATE\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT20   COMP_EVENTS\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT21   COMP_FPGA\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT22   COMP_RM\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT23   COMP_MP\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT24   COMP_RXDESC\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT25   COMP_CKIP\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT26   COMP_DIG\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT27   COMP_TXAGC\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT28   COMP_HIPWR\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT29   COMP_HALDM\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT30   COMP_RSNA\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT31   COMP_INDIC\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT32   COMP_LED\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT33   COMP_RF\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT34   COMP_HT\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT35   COMP_POWER_TRACKING\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT36   COMP_POWER_TRACKING\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT37   COMP_AMSDU\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT38   COMP_WPS\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT39   COMP_RATR\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT40   COMP_RESET\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT41   COMP_CMD\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT42   COMP_EFUSE\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT43   COMP_MESH_INTERWORKING\n"));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT43   COMP_CCX\n"));		
+	/*
+	const double evm_comp_20M = 0.579919469776867; //10*log10(64.0/56.0)
+	const double evm_comp_40M = 0.503051183113957; //10*log10(128.0/114.0)
+	const double evm_comp_80M = 0.244245993314183; //10*log10(256.0/242.0)
+	const double evm_comp_160M = 0.244245993314183; //10*log10(512.0/484.0)
+       */
+
+	if(pDM_Odm->SupportICType & ODM_IC_11N_SERIES)
+		return;
+
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s \n", "BB Report Info");
+	DCMD_Printf(BbDbgBuf);
+
+       //BW & Mode Detection
+	///////////////////////////////////////////////////////			
+	value32 = ODM_GetBBReg(pDM_Odm, 0xf80 ,bMaskDWord);
+	value32_2 =value32; 
+	RX_HT_BW = (u1Byte)(value32&0x1)	;
+	RX_VHT_BW = (u1Byte)((value32>>1)&0x3);
+	RXSC = (u1Byte)(value32&0x78);
+	value32_1= (value32&0x180)>>7;
+	RX_HT = (u1Byte)(value32_1);
+	/*		
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %d", "F80", value32_2);
+	DCMD_Printf(BbDbgBuf);
+
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %d", "RX_HT_BW", RX_HT_BW);
+	DCMD_Printf(BbDbgBuf);
+
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %d", "RX_VHT_BW", RX_VHT_BW);
+	DCMD_Printf(BbDbgBuf);
+
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %d", "RX_SC", RXSC);
+	DCMD_Printf(BbDbgBuf);
+
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %d", "RX_HT", RX_HT);
+	DCMD_Printf(BbDbgBuf);
+	*/
 	
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("GlobalDebugComponents = %"i64fmt"x\n", GlobalDebugComponents));
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("Enable DBG COMP ="));
-	for (i = 0; i < 64; i++)
+	//rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n  RX_HT:%s ", RXHT_table[RX_HT]);
+	//DCMD_Printf(BbDbgBuf);
+	RX_BW = 0;
+
+	if(RX_HT == 2)
 	{
-		if (GlobalDebugComponents & ((u8Byte)0x1 << i) )
+		rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n  Mode: VHT Mode");
+		DCMD_Printf(BbDbgBuf);
+		if(RX_VHT_BW==0)
 		{
-			ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT%02d |\n", i));
+			rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "     BW=20M");
+			DCMD_Printf(BbDbgBuf);
+		}	
+		else if(RX_VHT_BW==1)
+		{
+			rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "     BW=40M");
+			DCMD_Printf(BbDbgBuf);
 		}
+		else
+{    
+			rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "     BW=80M");
+			DCMD_Printf(BbDbgBuf);
+		}
+		RX_BW = RX_VHT_BW;
 	}
-	ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("\n"));
+	else if(RX_HT == 1)
+	{
+		rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n  Mode: HT Mode");
+		DCMD_Printf(BbDbgBuf);
+		if(RX_HT_BW==0)
+		{
+			rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "     BW=20M");
+			DCMD_Printf(BbDbgBuf);
+		}	
+		else if(RX_HT_BW==1)
+		{
+			rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "     BW=40M");
+			DCMD_Printf(BbDbgBuf);
+		}
+		RX_BW = RX_HT_BW;
+	}
+	else
+	{
+		rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n  Mode: Legeacy Mode");
+		DCMD_Printf(BbDbgBuf);
+	}
+    
+	if(RX_HT !=0)
+	{
+		if(RXSC==0)
+			rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n  duplicate/full bw");
+		else if(RXSC==1)
+			rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n  usc20-1");
+		else if(RXSC==2)
+			rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n  lsc20-1");
+		else if(RXSC==3)
+			rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n  usc20-2");
+		else if(RXSC==4)
+			rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n  lsc20-2");
+		else if(RXSC==9)
+			rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n  usc40");
+		else if(RXSC==10)
+			rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n  lsc40");
+		DCMD_Printf(BbDbgBuf);
+	}
+	/*
+	if(RX_HT == 2){
+		rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "  BW:%s", BW_table[RX_VHT_BW]);
+		RX_BW = RX_VHT_BW;
+	}
+	else if(RX_HT == 1){		
+		rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "  BW:%s", BW_table[RX_HT_BW]);
+		RX_BW = RX_HT_BW;
+		}
+	else
+		rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE,  "");
+    
+	DCMD_Printf(BbDbgBuf);	
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "  RXSC:%s", RXSC_table[RXSC]);		
+	DCMD_Printf(BbDbgBuf);
+	*/
+	///////////////////////////////////////////////////////	
+
+//	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %d", "dB Conversion: 10log(65)", ODM_PWdB_Conversion(65,10,0));
+//	DCMD_Printf(BbDbgBuf);
+
+        // RX signal power and AGC related info
+        ///////////////////////////////////////////////////////
+       value32 = ODM_GetBBReg(pDM_Odm, 0xF90 ,bMaskDWord);
+	pwDB = (u1Byte) ((value32 & bMaskByte1) >> 8);
+	pwDB=pwDB>>1;
+	sig_power = -110+pwDB;
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %d", "OFDM RX Signal Power(dB)", sig_power);
+	DCMD_Printf(BbDbgBuf);
+
+
+	value32 = ODM_GetBBReg(pDM_Odm, 0xd14 ,bMaskDWord);
+	RX_SNR_pathA = (u1Byte)(value32&0xFF)>>1;
+	RF_gain_pathA = (s1Byte) ((value32 & bMaskByte1) >> 8);
+	RF_gain_pathA *=2;
+	value32 = ODM_GetBBReg(pDM_Odm, 0xd54 ,bMaskDWord);
+	RX_SNR_pathB = (u1Byte)(value32&0xFF)>>1;
+	RF_gain_pathB = (s1Byte) ((value32 & bMaskByte1) >> 8);
+	RF_gain_pathB *=2;
+	value32 = ODM_GetBBReg(pDM_Odm, 0xd94 ,bMaskDWord);
+	RX_SNR_pathC = (u1Byte)(value32&0xFF)>>1;
+	RF_gain_pathC = (s1Byte) ((value32 & bMaskByte1) >> 8);
+	RF_gain_pathC *=2;
+	value32 = ODM_GetBBReg(pDM_Odm, 0xdd4 ,bMaskDWord);
+	RX_SNR_pathD = (u1Byte)(value32&0xFF)>>1;
+	RF_gain_pathD = (s1Byte) ((value32 & bMaskByte1) >> 8);
+	RF_gain_pathD *=2;
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %d / %d / %d / %d", "OFDM RX RF Gain(A/B/C/D)", RF_gain_pathA, RF_gain_pathA, RF_gain_pathC, RF_gain_pathD);
+	DCMD_Printf(BbDbgBuf);	
+        ///////////////////////////////////////////////////////
+
+	// RX Counter related info
+        ///////////////////////////////////////////////////////	
+	value32 = ODM_GetBBReg(pDM_Odm, 0xF08 ,bMaskDWord);
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %d", "OFDM CCA Counter", ((value32&0xFFFF0000)>>16));
+	DCMD_Printf(BbDbgBuf);
+
+	value32 = ODM_GetBBReg(pDM_Odm, 0xFD0 ,bMaskDWord);
+       rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %d", "OFDM SBD Fail Counter", value32&0xFFFF);
+	DCMD_Printf(BbDbgBuf);
 	
-}	// DBG_PrintAllComp
+	value32 = ODM_GetBBReg(pDM_Odm, 0xFC4 ,bMaskDWord);
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %d / %d", "VHT SIGA/SIGB CRC8 Fail Counter", value32&0xFFFF, ((value32&0xFFFF0000)>>16));
+	DCMD_Printf(BbDbgBuf);
+	
+	value32 = ODM_GetBBReg(pDM_Odm, 0xFCC ,bMaskDWord);
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %d", "CCK CCA Counter", value32&0xFFFF);
+	DCMD_Printf(BbDbgBuf);
+    	
+	value32 = ODM_GetBBReg(pDM_Odm, 0xFBC ,bMaskDWord);
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %d / %d", "LSIG (\"Parity Fail\"/\"Rate Illegal\") Counter", value32&0xFFFF, ((value32&0xFFFF0000)>>16));
+	DCMD_Printf(BbDbgBuf);
 
+	value32_1 = ODM_GetBBReg(pDM_Odm, 0xFC8 ,bMaskDWord);
+	value32_2 = ODM_GetBBReg(pDM_Odm, 0xFC0 ,bMaskDWord);
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %d / %d", "HT/VHT MCS NOT SUPPORT counter", ((value32_2&0xFFFF0000)>>16), value32_1&0xFFFF);
+	DCMD_Printf(BbDbgBuf);
+	///////////////////////////////////////////////////////
 
-/*-----------------------------------------------------------------------------
- * Function:    DBG_PrintFlagEvent
- *
- * Overview:    Print dedicated debug flag event
- *
- * Input:       NONE
- *
- * Output:      NONE
- *
- * Return:      NONE
- *
- * Revised History:
- *  When		Who		Remark
- *  12/10/2008	MHC		Create Version 0.
- *
- *---------------------------------------------------------------------------*/
-extern	void	DBG_PrintFlagEvent(u1Byte	DbgFlag)
-{
-	switch(DbgFlag)
+	// PostFFT related info
+	///////////////////////////////////////////////////////
+
+	value32 = ODM_GetBBReg(pDM_Odm, 0xF8c ,bMaskDWord);
+	RXEVM_0 = (s1Byte) ((value32 & bMaskByte2) >> 16);
+	RXEVM_0 /=2;
+	if(RXEVM_0 < -63)
+		RXEVM_0=0;
+
+	DCMD_Printf(BbDbgBuf);
+	RXEVM_1 = (s1Byte) ((value32 & bMaskByte3) >> 24);
+	RXEVM_1 /=2;
+	value32 = ODM_GetBBReg(pDM_Odm, 0xF88 ,bMaskDWord);
+	RXEVM_2 = (s1Byte) ((value32 & bMaskByte2) >> 16);
+	RXEVM_2 /=2;
+
+	if(RXEVM_1 < -63)
+		RXEVM_1=0;
+	if(RXEVM_2 < -63)
+		RXEVM_2=0;
+
+	/*
+	if(RX_BW == 0){
+		RXEVM_0 -= evm_comp_20M;
+		RXEVM_1 -= evm_comp_20M;
+		RXEVM_2 -= evm_comp_20M;		
+		}
+	else if(RX_BW == 1){
+		RXEVM_0 -= evm_comp_40M;
+		RXEVM_1 -= evm_comp_40M;
+		RXEVM_2 -= evm_comp_40M;		
+		}
+	else if (RX_BW == 2){
+		RXEVM_0 -= evm_comp_80M;
+		RXEVM_1 -= evm_comp_80M;
+		RXEVM_2 -= evm_comp_80M;		
+		}
+		*/
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %d / %d / %d", "RXEVM (1ss/2ss/3ss)", RXEVM_0, RXEVM_1, RXEVM_2);
+	DCMD_Printf(BbDbgBuf);
+
+//	value32 = ODM_GetBBReg(pDM_Odm, 0xD14 ,bMaskDWord);
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %d / %d / %d / %d", "RXSNR(A/B/C/D, dB)", RX_SNR_pathA, RX_SNR_pathB, RX_SNR_pathC, RX_SNR_pathD);
+	DCMD_Printf(BbDbgBuf);
+//	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %d", "B_RXSNR", (value32&0xFF00)>>9);
+//	DCMD_Printf(BbDbgBuf);
+
+	value32 = ODM_GetBBReg(pDM_Odm, 0xF8C ,bMaskDWord);
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %d / %d", "CSI_1st /CSI_2nd", value32&0xFFFF, ((value32&0xFFFF0000)>>16));
+	DCMD_Printf(BbDbgBuf);
+	///////////////////////////////////////////////////////			
+
+	//BW & Mode Detection
+
+	//Reset Page F Counter
+	ODM_SetBBReg(pDM_Odm, 0xB58 ,BIT0, 1);
+	ODM_SetBBReg(pDM_Odm, 0xB58 ,BIT0, 0);
+
+	//CFO Report Info
+	//Short CFO
+	value32 = ODM_GetBBReg(pDM_Odm, 0xd0c ,bMaskDWord);
+	value32_1 = ODM_GetBBReg(pDM_Odm, 0xd4c ,bMaskDWord);
+	value32_2 = ODM_GetBBReg(pDM_Odm, 0xd8c ,bMaskDWord);
+	value32_3 = ODM_GetBBReg(pDM_Odm, 0xdcc ,bMaskDWord);
+
+	SFO_A=(s4Byte)(value32&bMask12Bits);
+	SFO_B=(s4Byte)(value32_1&bMask12Bits);
+	SFO_C=(s4Byte)(value32_2&bMask12Bits);
+	SFO_D=(s4Byte)(value32_3&bMask12Bits);
+
+	LFO_A=(s4Byte)(value32>>16);
+	LFO_B=(s4Byte)(value32_1>>16);
+	LFO_C=(s4Byte)(value32_2>>16);
+	LFO_D=(s4Byte)(value32_3>>16);
+
+	//SFO 2's to dec
+	if(SFO_A >2047)
+{    
+		SFO_A=SFO_A-4096;
+	}
+	SFO_A=(SFO_A*312500)/2048;
+    
+	if(SFO_B >2047)
 	{
-		case	FQoS:
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 0    QoS_INIT\n"));
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 1    QoS_VISTA\n"));
-		break;
+		SFO_B=SFO_B-4096;
+	}
+	SFO_B=(SFO_B*312500)/2048;
+	if(SFO_C >2047)
+	{
+		SFO_C=SFO_C-4096;
+	}
+	SFO_C=(SFO_C*312500)/2048;
+	if(SFO_D >2047)
+	{
+		SFO_D=SFO_D-4096;
+	}
+	SFO_D=(SFO_D*312500)/2048;
+    
+	//LFO 2's to dec
 
-		case	FTX:
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 0    TX_DESC\n"));
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 1    TX_DESC_TID\n"));
-		break;
+	if(LFO_A >4095)
+	{
+		LFO_A=LFO_A-8192;
+	}
 
-		case	FRX:
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 0    RX_DATA\n"));
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 1    RX_PHY_STS\n"));
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 2    RX_PHY_SS\n"));
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 3    RX_PHY_SQ\n"));
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 4    RX_PHY_ASTS\n"));
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 5    RX_ERR_LEN\n"));
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 6    RX_DEFRAG\n"));
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 7    RX_ERR_RATE\n"));
-		break;
+	if(LFO_B >4095)
+	{
+		LFO_B=LFO_B-8192;
+	}
 
-		case	FSEC:
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("NA\n"));
-		break;
+	if(LFO_C>4095)
+	{
+		LFO_C=LFO_C-8192;
+	}
 
-		case	FMGNT:
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("NA\n"));
-		break;
+	if(LFO_D >4095)
+	{
+		LFO_D=LFO_D-8192;
+	}
+	LFO_A=LFO_A*312500/4096;
+	LFO_B=LFO_B*312500/4096;
+	LFO_C=LFO_C*312500/4096;
+	LFO_D=LFO_D*312500/4096;
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s", "CFO Report Info");
+	DCMD_Printf(BbDbgBuf);
 
-		case	FMLME:
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 0    MEDIA_STS\n"));
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 1    LINK_STS\n"));		
-		break;
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %d / %d/ %d/ %d", "  Short CFO(Hz) <A/B/C/D>", SFO_A,SFO_B,SFO_C,SFO_D);
+	DCMD_Printf(BbDbgBuf);
 
-		case	FRESOURCE:
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 0    OS_CHK\n"));
-		break;
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %d / %d/ %d/ %d", "  Long CFO(Hz) <A/B/C/D>", LFO_A,LFO_B,LFO_C,LFO_D);
+	DCMD_Printf(BbDbgBuf);
+	
+	//SCFO
+	value32 = ODM_GetBBReg(pDM_Odm, 0xd10 ,bMaskDWord);
+	value32_1 = ODM_GetBBReg(pDM_Odm, 0xd50 ,bMaskDWord);
+	value32_2 = ODM_GetBBReg(pDM_Odm, 0xd90 ,bMaskDWord);
+	value32_3 = ODM_GetBBReg(pDM_Odm, 0xdd0 ,bMaskDWord);
+	
+	SFO_A=(s4Byte)(value32&0x7ff);
+	SFO_B=(s4Byte)(value32_1&0x7ff);
+	SFO_C=(s4Byte)(value32_2&0x7ff);
+	SFO_D=(s4Byte)(value32_3&0x7ff);
+    	
+	if(SFO_A >1023)
+	{
+		SFO_A=SFO_A-2048;
+	}
 
-		case	FBEACON:
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 0    BCN_SHOW\n"));
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 1    BCN_PEER\n"));		
-		break;
+	if(SFO_B >2047)
+	{
+		SFO_B=SFO_B-4096;
+}
 
-		case	FISR:
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 0    ISR_CHK\n"));
-		break;
+	if(SFO_C >2047)
+	{
+		SFO_C=SFO_C-4096;
+	}
 
-		case	FPHY:
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 0    PHY_BBR\n"));
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 1    PHY_BBW\n"));
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 2    PHY_RFR\n"));
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 3    PHY_RFW\n"));
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 4    PHY_MACR\n"));
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 5    PHY_MACW\n"));
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 6    PHY_ALLR\n"));
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 7    PHY_ALLW\n"));
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 8    PHY_TXPWR\n"));
-		break;
+	if(SFO_D >2047)
+{
+		SFO_D=SFO_D-4096;
+	}
+	
+	SFO_A=SFO_A*312500/1024;
+	SFO_B=SFO_B*312500/1024;
+	SFO_C=SFO_C*312500/1024;
+	SFO_D=SFO_D*312500/1024;
 
-		case	FMP:
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 0    MP_RX\n"));
-		break;
-		
-		case	FEEPROM:
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 0    EEPROM_W\n"));
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 1    EFUSE_PG\n"));		
-		break;
-		
-		case	FPWR:
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 0    LPS\n"));
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 1    IPS\n"));		
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 2    PWRSW\n"));
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 3    PWRHW\n"));
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 4    PWRHAL\n"));
-		break;
+	LFO_A=(s4Byte)(value32>>16);
+	LFO_B=(s4Byte)(value32_1>>16);
+	LFO_C=(s4Byte)(value32_2>>16);
+	LFO_D=(s4Byte)(value32_3>>16);
 
-		case	FDM:
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 0    WA_IOT\n"));
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 1    DM_PWDB\n"));		
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 2    DM_Monitor\n"));		
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 3    DM_DIG\n"));		
-		break;
+	if(LFO_A >4095)
+{
+		LFO_A=LFO_A-8192;
+	}
+	
+	if(LFO_B >4095)
+	{
+		LFO_B=LFO_B-8192;
+	}
+	
+	if(LFO_C>4095)
+	{
+		LFO_C=LFO_C-8192;
+	}
 
-		case	FDBG_CTRL:
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 0    DBG_CTRL_TRACE\n"));
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 1    DBG_CTRL_INBAND_NOISE\n"));		
+	if(LFO_D >4095)
+		{
+		LFO_D=LFO_D-8192;
+		}
+	LFO_A=LFO_A*312500/4096;
+	LFO_B=LFO_B*312500/4096;
+	LFO_C=LFO_C*312500/4096;
+	LFO_D=LFO_D*312500/4096;
+	
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %d / %d/ %d/ %d", "  Value SCFO(Hz) <A/B/C/D>", SFO_A,SFO_B,SFO_C,SFO_D);
+	DCMD_Printf(BbDbgBuf);
+
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %d / %d/ %d/ %d", "  ACQ CFO(Hz) <A/B/C/D>", LFO_A,LFO_B,LFO_C,LFO_D);
+	DCMD_Printf(BbDbgBuf);
+
+	value32 = ODM_GetBBReg(pDM_Odm, 0xd14 ,bMaskDWord);
+	value32_1 = ODM_GetBBReg(pDM_Odm, 0xd54 ,bMaskDWord);
+	value32_2 = ODM_GetBBReg(pDM_Odm, 0xd94 ,bMaskDWord);
+	value32_3 = ODM_GetBBReg(pDM_Odm, 0xdd4 ,bMaskDWord);
+
+	LFO_A=(s4Byte)(value32>>16);
+	LFO_B=(s4Byte)(value32_1>>16);
+	LFO_C=(s4Byte)(value32_2>>16);
+	LFO_D=(s4Byte)(value32_3>>16);
+
+	if(LFO_A >4095)
+	{
+		LFO_A=LFO_A-8192;
+	}
+	
+	if(LFO_B >4095)
+	{
+		LFO_B=LFO_B-8192;
+	}
+
+	if(LFO_C>4095)
+	{
+		LFO_C=LFO_C-8192;
+	}
+
+	if(LFO_D >4095)
+{
+		LFO_D=LFO_D-8192;
+	}
+	LFO_A=LFO_A*312500/4096;
+	LFO_B=LFO_B*312500/4096;
+	LFO_C=LFO_C*312500/4096;
+	LFO_D=LFO_D*312500/4096;
+	
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %d / %d/ %d/ %d", "  End CFO(Hz) <A/B/C/D>", LFO_A,LFO_B,LFO_C,LFO_D);
+	DCMD_Printf(BbDbgBuf);
+
+	value32 = ODM_GetBBReg(pDM_Odm, 0xf20 ,bMaskDWord);   //L SIG
+	
+	Tail=(u1Byte)((value32&0xfc0000)>>16);
+	Parity = (u1Byte)((value32&0x20000)>>16);
+	Length =(u2Byte)((value32&0x1ffe00)>>8);
+	rsv = (u1Byte)(value32&0x10);
+	MCSS=(u1Byte)(value32&0x0f);
+
+	switch(MCSS)
+	{
+		case 0x0b:
+			idx=0;
 		break;
-		
-		case	FC2H:
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 0    C2H_Summary\n"));
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 1    C2H_PacketData\n"));		
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 2    C2H_ContentData\n"));		
+		case 0x0f:
+			idx=1;
 		break;
-		
-		case	FBT:
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 0    BT_TRACE\n"));
-		ODM_RT_TRACE(pDM_Odm,COMP_CMD, DBG_LOUD, 	("BIT 1    BT_RFPoll\n"));		
-		break;		
-		
+		case 0x0a:
+			idx=2;
+		break;
+		case 0x0e:
+			idx=3;
+		break;
+		case 0x09:
+			idx=4;
+		break;
+		case 0x08:
+			idx=5;
+		break;
+		case 0x0c:
+			idx=6;
+		break;
 		default:
-			break;
+			idx=6;
+		break;
+
 	}
 
-}	// DBG_PrintFlagEvent
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s", "L-SIG");
+	DCMD_Printf(BbDbgBuf);
 
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n   Rate:%s", L_rate[idx]);		
+	DCMD_Printf(BbDbgBuf);	
+		
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %x/ %x /%x", "  Rsv/Length/Parity",rsv,RX_BW,Length);
+	DCMD_Printf(BbDbgBuf);
+		
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s", "HT-SIG1");
+	DCMD_Printf(BbDbgBuf);
 
-extern	void	DBG_DumpMem(const u1Byte DbgComp, 
-							const u1Byte DbgLevel, 
-							pu1Byte pMem, 
-							u2Byte Len)
-{
-	u2Byte i;
-
-	for (i=0;i<((Len>>3) + 1);i++)
+	value32 = ODM_GetBBReg(pDM_Odm, 0xf2c ,bMaskDWord);   //HT SIG
+	if(RX_HT == 1)
 	{
-		ODM_RT_TRACE(pDM_Odm,DbgComp, DbgLevel, ("%02X %02X %02X %02X %02X %02X %02X %02X\n",
-					*(pMem+(i*8)), *(pMem+(i*8+1)), *(pMem+(i*8+2)), *(pMem+(i*8+3)),
-					*(pMem+(i*8+4)), *(pMem+(i*8+5)), *(pMem+(i*8+6)), *(pMem+(i*8+7))));
+
+		HMCSS=(u1Byte)(value32&0x7F);
+		HRX_BW = (u1Byte)(value32&0x80);
+		HLength =(u2Byte)((value32>>8)&0xffff);
+	}
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %x / %x/ %x", "  MCS/BW/Length",HMCSS,HRX_BW,HLength);
+	DCMD_Printf(BbDbgBuf);
+		
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s", "HT-SIG2");
+	DCMD_Printf(BbDbgBuf);
+		
+	value32 = ODM_GetBBReg(pDM_Odm, 0xf30 ,bMaskDWord);   //HT SIG
+		
+	if(RX_HT == 1)
+	{
+		smooth = (u1Byte)(value32&0x01);
+		htsound =  (u1Byte)(value32&0x02);
+		rsv=(u1Byte)(value32&0x04);
+		agg =(u1Byte)(value32&0x08);
+		stbc =(u1Byte)(value32&0x30);
+		fec=(u1Byte)(value32&0x40);
+		sgi=(u1Byte)(value32&0x80);
+		htltf=(u1Byte)((value32&0x300)>>8);
+		htcrc8=(u2Byte)((value32&0x3fc00)>>8);
+		Tail=(u1Byte)((value32&0xfc0000)>>16);
+
+	
+	}
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %x / %x/ %x/ %x/ %x/ %x", "  Smooth/NoSound/Rsv/Aggregate/STBC/LDPC",smooth,htsound,rsv,agg,stbc,fec);
+	DCMD_Printf(BbDbgBuf);
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %x / %x/ %x/ %x", "  SGI/E-HT-LTFs/CRC/Tail",sgi,htltf,htcrc8,Tail);
+	DCMD_Printf(BbDbgBuf);
+
+	
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s", "VHT-SIG-A1");
+	DCMD_Printf(BbDbgBuf);
+	value32 = ODM_GetBBReg(pDM_Odm, 0xf2c ,bMaskDWord);   //VHT SIG A1
+	if(RX_HT == 2)
+	{
+		//value32 = ODM_GetBBReg(pDM_Odm, 0xf2c ,bMaskDWord);   //VHT SIG A1
+		vRX_BW=(u1Byte)(value32&0x03);
+		vrsv=(u1Byte)(value32&0x04);
+		vstbc =(u1Byte)(value32&0x08);
+		vgid = (u1Byte)((value32&0x3f0)>>4);
+		vNsts = (u1Byte)(((value32&0x1c00)>>8)+1);
+		vpaid = (u2Byte)(value32&0x3fe);
+		vtxops =(u1Byte)((value32&0x400000)>>20);
+		vrsv2 = (u1Byte)((value32&0x800000)>>20);
+	}
+
+	//rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %x", "F2C", value32);
+	//DCMD_Printf(BbDbgBuf);
+
+	
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %x / %x/ %x/ %x/ %x/ %x /%x /%x", "  BW/Rsv1/STBC/GID/Nsts/PAID/TXOPPS/Rsv2",vRX_BW,vrsv,vstbc,vgid,vNsts,vpaid,vtxops,vrsv2);
+	DCMD_Printf(BbDbgBuf);
+	
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s", "VHT-SIG-A2");
+	DCMD_Printf(BbDbgBuf);
+	value32 = ODM_GetBBReg(pDM_Odm, 0xf30 ,bMaskDWord);   //VHT SIG
+
+
+	if(RX_HT == 2)
+{
+		//value32 = ODM_GetBBReg(pDM_Odm, 0xf30 ,bMaskDWord);   //VHT SIG
+
+		//sgi=(u1Byte)(value32&0x01);
+		sgiext =(u1Byte)(value32&0x03);
+		//fec = (u1Byte)(value32&0x04);
+		fecext = (u1Byte)(value32&0x0C);
+
+		vMCSS =(u1Byte)(value32&0xf0); 
+		bf = (u1Byte)((value32&0x100)>>8); 
+		vrsv =(u1Byte)((value32&0x200)>>8);  
+		vhtcrc8=(u2Byte)((value32&0x3fc00)>>8);
+		vTail=(u1Byte)((value32&0xfc0000)>>16);
+	}
+	//rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %x", "F30", value32);
+	//DCMD_Printf(BbDbgBuf);
+	
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %x / %x/ %x/ %x/ %x/ %x/ %x", "  SGI/FEC/MCS/BF/Rsv/CRC/Tail",sgiext,fecext,vMCSS,bf,vrsv,vhtcrc8,vTail);
+	DCMD_Printf(BbDbgBuf);
+
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s", "VHT-SIG-B");
+	DCMD_Printf(BbDbgBuf);
+	value32 = ODM_GetBBReg(pDM_Odm, 0xf34 ,bMaskDWord);   //VHT SIG
+	{
+		vLength=(u2Byte)(value32&0x1fffff);
+		vbrsv = (u1Byte)((value32&0x600000)>>20);
+		vbTail =(u2Byte)((value32&0x1f800000)>>20);
+		vbcrc = (u1Byte)((value32&0x80000000)>>28);
 		
 	}
+	//rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %x", "F34", value32);
+	//DCMD_Printf(BbDbgBuf);
+	rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s = %x / %x/ %x/ %x/", "  Length/Rsv/Tail/CRC",vLength,vbrsv,vbTail,vbcrc);
+	DCMD_Printf(BbDbgBuf);
+	
+		
 }
 
 
-#endif
+VOID odm_BasicProfile(
+	IN		PVOID			pDM_VOID
+	)
+{
+        PDM_ODM_T		pDM_Odm = (PDM_ODM_T)pDM_VOID;
+        PADAPTER		       Adapter = pDM_Odm->Adapter;
+        char* Cut = NULL;
 
+        rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n %-35s \n", "Basic Profile");
+	DCMD_Printf(BbDbgBuf);
+        rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n  %-35s: %s", "IsMPChip", pDM_Odm->bIsMPChip?"Yes":"No");		
+	DCMD_Printf(BbDbgBuf);
+
+        if(pDM_Odm->CutVersion==ODM_CUT_A)
+            Cut = "A";
+        else if(pDM_Odm->CutVersion==ODM_CUT_B)
+            Cut = "B";
+        else if(pDM_Odm->CutVersion==ODM_CUT_C)
+            Cut = "C";
+        else if(pDM_Odm->CutVersion==ODM_CUT_D)
+            Cut = "D";
+        else if(pDM_Odm->CutVersion==ODM_CUT_E)
+            Cut = "E";
+        else if(pDM_Odm->CutVersion==ODM_CUT_F)
+            Cut = "F";
+        else if(pDM_Odm->CutVersion==ODM_CUT_I)
+            Cut = "I";
+
+        rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n  %-35s: %s","Cut Version", Cut);		
+	DCMD_Printf(BbDbgBuf);
+        rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n  %-35s: %d","PHY REG Version", ODM_GetHWImgVersion(pDM_Odm));		
+	DCMD_Printf(BbDbgBuf);
+        rsprintf(BbDbgBuf, BT_TMP_BUF_SIZE, "\r\n  %-35s: %d (Subversion: %d)","FW Version", Adapter->MgntInfo.FirmwareVersion, Adapter->MgntInfo.FirmwareSubVersion);		
+	DCMD_Printf(BbDbgBuf);
+
+}
+#endif
+VOID
+odm_BasicDbgMessage
+(
+	IN		PVOID			pDM_VOID
+	)
+{
+#if( DM_ODM_SUPPORT_TYPE & (ODM_WIN|ODM_CE))
+        PDM_ODM_T		pDM_Odm = (PDM_ODM_T)pDM_VOID;
+	PFALSE_ALARM_STATISTICS FalseAlmCnt = &(pDM_Odm->FalseAlmCnt);
+	pDIG_T	pDM_DigTable = &pDM_Odm->DM_DigTable;
+	
+	ODM_RT_TRACE(pDM_Odm,ODM_COMP_COMMON, ODM_DBG_LOUD, ("odm_BasicDbgMsg==>\n"));
+	ODM_RT_TRACE(pDM_Odm,ODM_COMP_COMMON, ODM_DBG_LOUD, ("bLinked = %d, RSSI_Min = %d, CurrentIGI = 0x%x \n",
+		pDM_Odm->bLinked, pDM_Odm->RSSI_Min, pDM_DigTable->CurIGValue) );
+	ODM_RT_TRACE(pDM_Odm,ODM_COMP_COMMON, ODM_DBG_LOUD, ("Cnt_Cck_fail = %d, Cnt_Ofdm_fail = %d, Total False Alarm = %d\n",	
+		FalseAlmCnt->Cnt_Cck_fail, FalseAlmCnt->Cnt_Ofdm_fail, FalseAlmCnt->Cnt_all));
+	ODM_RT_TRACE(pDM_Odm,ODM_COMP_COMMON, ODM_DBG_LOUD, ("RxRate = 0x%x, RSSI_A = %d, RSSI_B = %d\n", 
+		pDM_Odm->RxRate, pDM_Odm->RSSI_A, pDM_Odm->RSSI_B));
+	ODM_RT_TRACE(pDM_Odm,ODM_COMP_COMMON, ODM_DBG_LOUD, ("RSSI_C = %d, RSSI_D = %d\n", pDM_Odm->RSSI_C, pDM_Odm->RSSI_D));
+#endif
+}

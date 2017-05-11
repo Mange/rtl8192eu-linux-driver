@@ -269,6 +269,7 @@ static u32 _InitPowerOn_8192EU(_adapter *padapter)
 {
 	u16 value16;
 	u32 value32;
+	HAL_DATA_TYPE	*pHalData	= GET_HAL_DATA(padapter);
 	// HW Power on sequence
 	u8 bMacPwrCtrlOn=_FALSE;
 
@@ -282,6 +283,10 @@ static u32 _InitPowerOn_8192EU(_adapter *padapter)
 	if(value32 & BIT_SPSLDO_SEL){
 		//LDO
 		rtw_write8(padapter, REG_LDO_SWR_CTRL, 0xC3); 
+		if( IS_B_CUT(pHalData->VersionID)){
+			u32 voltage = (rtw_read32(padapter,0x14)& 0xFF0FFFFF )|(0x05<<20);
+			rtw_write32(padapter,0x14,voltage);
+		}
 	}
 	else	{
 		//SPS
@@ -314,7 +319,7 @@ static u32 _InitPowerOn_8192EU(_adapter *padapter)
 
 	bMacPwrCtrlOn = _TRUE;
 	rtw_hal_set_hwreg(padapter, HW_VAR_APFM_ON_MAC, &bMacPwrCtrlOn);
-	 
+     
 	return _SUCCESS;
 }
 
@@ -945,6 +950,8 @@ HalDetectSelectiveSuspendMode(
 	}
 #endif
 }	// HalDetectSelectiveSuspendMode
+
+#if 0
 /*-----------------------------------------------------------------------------
  * Function:	HwSuspendModeEnable92Cu()
  *
@@ -1002,6 +1009,8 @@ HwSuspendModeEnable_8192EU(
 	}
 	
 }	// HwSuspendModeEnable92Cu
+#endif
+
 rt_rf_power_state RfOnOffDetect(IN	PADAPTER pAdapter )
 {
 	struct pwrctrl_priv *pwrctl = adapter_to_pwrctl(pAdapter);
@@ -1063,9 +1072,7 @@ u32 rtl8192eu_hal_init(PADAPTER Adapter)
 	struct registry_priv	*pregistrypriv = &Adapter->registrypriv;
 	
 	rt_rf_power_state		eRfPowerStateToSet;
-#ifdef CONFIG_BT_COEXIST
-	struct btcoexist_priv	*pbtpriv = &(pHalData->bt_coexist);
-#endif
+
 
 	u32 init_start_time = rtw_get_current_time();
 
@@ -1418,11 +1425,12 @@ HAL_INIT_PROFILE_TAG(HAL_INIT_STAGES_MISC11);
 	//
 	rtw_write32(Adapter, REG_BAR_MODE_CTRL, 0x0201ffff);
 
-	if(pregistrypriv->wifi_spec)
+	if(pregistrypriv->wifi_spec){
 		rtw_write16(Adapter,REG_FAST_EDCA_CTRL ,0);
 
-	//Nav limit , suggest by scott
-	rtw_write8(Adapter, 0x652, 0x0);
+		//Nav limit , suggest by SD1-Pisa,disable NAV_UPPER function when wifi_spec=1 for Test item: 5.2.3
+		rtw_write8(Adapter, REG_NAV_UPPER, 0x0);
+	}
 
 HAL_INIT_PROFILE_TAG(HAL_INIT_STAGES_INIT_HAL_DM);
 	rtl8192e_InitHalDm(Adapter);
@@ -1447,95 +1455,6 @@ HAL_INIT_PROFILE_TAG(HAL_INIT_STAGES_INIT_HAL_DM);
 	// Added by tynli. 2010.03.30.
 	pwrctrlpriv->rf_pwrstate = rf_on;
 
-#if 0  //to do
-	RT_CLEAR_PS_LEVEL(pwrctrlpriv, RT_RF_OFF_LEVL_HALT_NIC);
-#if 1 //Todo
-	// 20100326 Joseph: Copy from GPIOChangeRFWorkItemCallBack() function to check HW radio on/off.
-	// 20100329 Joseph: Revise and integrate the HW/SW radio off code in initialization.
-
-	eRfPowerStateToSet = (rt_rf_power_state) RfOnOffDetect(Adapter);
-	pwrctrlpriv->rfoff_reason |= eRfPowerStateToSet==rf_on ? RF_CHANGE_BY_INIT : RF_CHANGE_BY_HW;
-	pwrctrlpriv->rfoff_reason |= (pwrctrlpriv->reg_rfoff) ? RF_CHANGE_BY_SW : 0;
-
-	if(pwrctrlpriv->rfoff_reason&RF_CHANGE_BY_HW)
-		pwrctrlpriv->b_hw_radio_off = _TRUE;
-
-	DBG_8192C("eRfPowerStateToSet=%d\n", eRfPowerStateToSet);
-	
-	if(pwrctrlpriv->reg_rfoff == _TRUE)
-	{	// User disable RF via registry.
-		DBG_8192C("InitializeAdapter8192CU(): Turn off RF for RegRfOff.\n");
-		//MgntActSet_RF_State(Adapter, rf_off, RF_CHANGE_BY_SW, _TRUE);
-		
-		// Those action will be discard in MgntActSet_RF_State because off the same state
-		//for(eRFPath = 0; eRFPath <pHalData->NumTotalRFPath; eRFPath++)
-			//PHY_SetRFReg(Adapter, eRFPath, 0x4, 0xC00, 0x0);
-	}
-	else if(pwrctrlpriv->rfoff_reason > RF_CHANGE_BY_PS)
-	{	// H/W or S/W RF OFF before sleep.
-		DBG_8192C(" Turn off RF for RfOffReason(%x) ----------\n", pwrctrlpriv->rfoff_reason);
-		//pwrctrlpriv->rfoff_reason = RF_CHANGE_BY_INIT;
-		pwrctrlpriv->rf_pwrstate = rf_on;
-		//MgntActSet_RF_State(Adapter, rf_off, pwrctrlpriv->rfoff_reason, _TRUE);
-	}
-	else
-	{
-		// Perform GPIO polling to find out current RF state. added by Roger, 2010.04.09.
-		if(pHalData->BoardType == BOARD_MINICARD /*&& (Adapter->MgntInfo.PowerSaveControl.bGpioRfSw)*/)
-		{
-			DBG_8192C("InitializeAdapter8192CU(): RF=%d \n", eRfPowerStateToSet);
-			if (eRfPowerStateToSet == rf_off)
-			{				
-				//MgntActSet_RF_State(Adapter, rf_off, RF_CHANGE_BY_HW, _TRUE);
-				pwrctrlpriv->b_hw_radio_off = _TRUE;	
-			}
-			else
-			{
-				pwrctrlpriv->rf_pwrstate = rf_off;
-				pwrctrlpriv->rfoff_reason = RF_CHANGE_BY_INIT; 
-				pwrctrlpriv->b_hw_radio_off = _FALSE;					
-				//MgntActSet_RF_State(Adapter, rf_on, pwrctrlpriv->rfoff_reason, _TRUE);
-			}
-		}	
-		else
-		{
-			pwrctrlpriv->rf_pwrstate = rf_off;
-			pwrctrlpriv->rfoff_reason = RF_CHANGE_BY_INIT; 			
-			//MgntActSet_RF_State(Adapter, rf_on, pwrctrlpriv->rfoff_reason, _TRUE);
-		}
-	
-		pwrctrlpriv->rfoff_reason = 0; 
-		pwrctrlpriv->b_hw_radio_off = _FALSE;
-		pwrctrlpriv->rf_pwrstate = rf_on;
-		rtw_led_control(Adapter, LED_CTL_POWER_ON);
-
-	}
-
-	// 2010/-8/09 MH For power down module, we need to enable register block contrl reg at 0x1c.
-	// Then enable power down control bit of register 0x04 BIT4 and BIT15 as 1.
-	if(pHalData->pwrdown && eRfPowerStateToSet == rf_off)
-	{
-		// Enable register area 0x0-0xc.
-		rtw_write8(Adapter, REG_RSV_CTRL, 0x0);
-
-		//
-		// <Roger_Notes> We should configure HW PDn source for WiFi ONLY, and then
-		// our HW will be set in power-down mode if PDn source from all  functions are configured.
-		// 2010.10.06.
-		//
-		//if(IS_HARDWARE_TYPE_8723AU(Adapter))
-		//{			
-		//	u1bTmp = rtw_read8(Adapter, REG_MULTI_FUNC_CTRL);
-		//	rtw_write8(Adapter, REG_MULTI_FUNC_CTRL, (u1bTmp|WL_HWPDN_EN));
-		//}
-		//else
-		//{
-			rtw_write16(Adapter, REG_APS_FSMCO, 0x8812);
-		//}
-	}
-	//DrvIFIndicateCurrentPhyStatus(Adapter); // 2010/08/17 MH Disable to prevent BSOD.
-#endif
-#endif
 
 	//0x4c6[3] 1: RTS BW = Data BW
 	//0: RTS BW depends on CCA / secondary CCA result.
@@ -1576,7 +1495,7 @@ HAL_INIT_PROFILE_TAG(HAL_INIT_STAGES_PW_TRACK);
 HAL_INIT_PROFILE_TAG(HAL_INIT_STAGES_LCK);
 		//PHY_LCCalibrate_8192E((GET_HAL_DATA(Adapter)->odmpriv));		
 	}
-
+}
 #ifdef CONFIG_HIGH_CHAN_SUPER_CALIBRATION
 	rtw_hal_set_chnl_bw(Adapter, 13, 
 		CHANNEL_WIDTH_20, HAL_PRIME_CHNL_OFFSET_DONT_CARE, HAL_PRIME_CHNL_OFFSET_DONT_CARE); 
@@ -1592,7 +1511,7 @@ HAL_INIT_PROFILE_TAG(HAL_INIT_STAGES_LCK);
 	rtw_hal_set_chnl_bw(Adapter, Adapter->registrypriv.channel, 
 		CHANNEL_WIDTH_20, HAL_PRIME_CHNL_OFFSET_DONT_CARE, HAL_PRIME_CHNL_OFFSET_DONT_CARE);
 #endif
-}
+
 
 HAL_INIT_PROFILE_TAG(HAL_INIT_STAGES_MISC21);
 
@@ -1601,8 +1520,21 @@ HAL_INIT_PROFILE_TAG(HAL_INIT_STAGES_MISC21);
 //	_InitPABias(Adapter);
 
 #ifdef CONFIG_BT_COEXIST
-HAL_INIT_PROFILE_TAG(HAL_INIT_STAGES_BT_COEXIST);
-	//_InitBTCoexist(Adapter);
+        HAL_INIT_PROFILE_TAG(HAL_INIT_STAGES_BT_COEXIST);
+
+        if ( pHalData->EEPROMBluetoothCoexist == 1)
+        {
+                // YiWei 20140624 , Fix 8192eu mailbox BT info no response issue reduce I2C clock rate to 156KHz (default 1.25Mhz)
+                rtw_write8(Adapter, rPMAC_TxPacketNum, rtw_read8(Adapter, rPMAC_TxPacketNum)|0x7);
+
+                // Init BT hw config.
+                rtw_btcoex_HAL_Initialize(Adapter, _FALSE);      
+        }
+        else
+        {
+                // In combo card run wifi only , must setting some hardware reg.
+                rtl8192e_combo_card_WifiOnlyHwInit(Adapter);
+        }
 #endif
 
 	// 2010/08/23 MH According to Alfred's suggestion, we need to to prevent HW enter
@@ -1733,21 +1665,9 @@ u32 rtl8192eu_hal_deinit(PADAPTER Adapter)
 	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(Adapter);
    	DBG_8192C("==> %s \n",__FUNCTION__);
 
-#ifdef CONFIG_BT_COEXIST
-	if (BT_IsBtExist(Adapter))
-	{
-		DBG_871X("BT module enable SIC\n");
-		// Only under WIN7 we can support selective suspend and enter D3 state when system call halt adapter.
-
-		//rtw_write16(Adapter, REG_GPIO_MUXCFG, rtw_read16(Adapter, REG_GPIO_MUXCFG)|BIT12);
-		// 2010/10/13 MH If we enable SIC in the position and then call _ResetDigitalProcedure1. in XP,
-		// the system will hang due to 8051 reset fail.
-	}
-	else
-#endif
-	{
-		rtw_write16(Adapter, REG_GPIO_MUXCFG, rtw_read16(Adapter, REG_GPIO_MUXCFG)&(~BIT12));
-	}
+	
+	rtw_write16(Adapter, REG_GPIO_MUXCFG, rtw_read16(Adapter, REG_GPIO_MUXCFG)&(~BIT12));
+	
 
 	if(pHalData->bSupportUSB3 == _TRUE)
 	{
@@ -2269,16 +2189,36 @@ _func_enter_;
 		case HW_VAR_RXDMA_AGG_PG_TH:
 			#ifdef CONFIG_USB_RX_AGGREGATION
 			{
+				//threshold == 1 , Disable Rx-agg when AP is B/G mode or wifi_spec=1 to prevent bad TP.
+				
 				u8	threshold = *((u8 *)val);
-				if( threshold == 0)
-				{
+				if( threshold == 0){
 					threshold = (pHalData->RegAcUsbDmaSize & 0x0F);
 				}
-				
 				rtw_write8(Adapter, REG_RXDMA_AGG_PG_TH, threshold);
-				//threshold == 1 ,disable RX AGG
-				if( (pHalData->UsbRxAggMode == USB_RX_AGG_USB) && (threshold == 1))
-					rtw_write8(Adapter, REG_RXDMA_AGG_PG_TH+1, 0);
+
+				#ifdef CONFIG_80211N_HT
+				{	
+					// 2014-07-24 Fix WIFI Logo -5.2.4/5.2.9 - DT3 low TP issue
+					// Adjust RxAggrTimeout to close to zero disable RxAggr for RxAgg-USB mode, suggested by designer
+					// Timeout value is calculated by 34 / (2^n)
+
+					struct mlme_priv	*pmlmepriv = &Adapter->mlmepriv;
+					struct ht_priv		*phtpriv = &pmlmepriv->htpriv;		
+					
+					if(pHalData->UsbRxAggMode == USB_RX_AGG_USB){
+						#if 1
+						//BG mode || (wifi_spec=1 && BG mode Testbed)	
+						if((threshold == 1) && (_FALSE == phtpriv->ht_option) )						
+						#else
+						//(wifi_spec=1 && BG mode Testbed)
+						if((Adapter->registrypriv.wifi_spec==1) && (_FALSE == phtpriv->ht_option) )
+						#endif												
+							rtw_write8(Adapter, REG_RXDMA_AGG_PG_TH+1, 0);					
+					}
+				}
+				#endif//#ifdef CONFIG_80211N_HT
+				
 			}
 			#endif
 			break;
@@ -2358,6 +2298,7 @@ _func_enter_;
 					pwrctl->wowlan_wake_reason = rtw_read8(Adapter, REG_WOWLAN_WAKE_REASON);
 					DBG_871X_LEVEL(_drv_always_, "wowlan_wake_reason: 0x%02x\n",
 										pwrctl->wowlan_wake_reason);
+
 					if (Adapter->intf_stop)
 						Adapter->intf_stop(Adapter);
 
@@ -2443,8 +2384,6 @@ _func_enter_;
 				do {
 					if ((rtw_read32(Adapter, REG_RXPKT_NUM)&RXDMA_IDLE)) {
 						DBG_871X_LEVEL(_drv_always_, "RX_DMA_IDLE is true\n");
-						if (Adapter->intf_stop)
-							Adapter->intf_stop(Adapter);
 						break;
 					} else {
 						// If RX_DMA is not idle, receive one pkt from DMA
@@ -2464,6 +2403,9 @@ _func_enter_;
 				rtl8192e_set_ap_ps_wowlan_cmd(Adapter, 1);
 
 				rtw_write8(Adapter, REG_WOWLAN_WAKE_REASON, 0);
+
+				if (Adapter->intf_stop)
+					Adapter->intf_stop(Adapter);
 
 				// Invoid SE0 reset signal during suspending
 				rtw_write8(Adapter, REG_RSV_CTRL, 0x20);
@@ -2642,19 +2584,6 @@ void rtl8192eu_set_hal_ops(_adapter * padapter)
 	struct hal_ops	*pHalFunc = &padapter->HalFunc;
 
 _func_enter_;
-
-#ifdef CONFIG_CONCURRENT_MODE
-	if(padapter->isprimary)
-#endif //CONFIG_CONCURRENT_MODE
-	{
-		padapter->HalData = rtw_zvmalloc(sizeof(HAL_DATA_TYPE));
-		if(padapter->HalData == NULL){
-			DBG_8192C("cant not alloc memory for HAL DATA \n");
-		}
-	}
-
-	//_rtw_memset(padapter->HalData, 0, sizeof(HAL_DATA_TYPE));
-	padapter->hal_data_sz = sizeof(HAL_DATA_TYPE);
 
 	pHalFunc->hal_power_on = _InitPowerOn_8192EU;
 	pHalFunc->hal_power_off = hal_poweroff_8192eu;

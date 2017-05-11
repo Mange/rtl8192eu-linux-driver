@@ -486,11 +486,6 @@ _func_enter_;
 		case BK_QUEUE_INX:
 			pxmitpriv->bkq_cnt--;			
 			break;
-		case HIGH_QUEUE_INX:
-#ifdef CONFIG_AP_MODE			
-			rtw_chk_hi_queue_cmd(padapter);
-#endif
-			break;
 		default:			
 			break;
 	}
@@ -598,7 +593,7 @@ _func_enter_;
 check_completion:
 	_enter_critical(&pxmitpriv->lock_sctx, &irqL);
 	rtw_sctx_done_err(&pxmitbuf->sctx,
-		purb->status ? RTW_SCTX_DONE_WRITE_PORT_ERR : RTW_SCTX_DONE_SUCCESS);
+	purb->status ? RTW_SCTX_DONE_WRITE_PORT_ERR : RTW_SCTX_DONE_SUCCESS);
 	_exit_critical(&pxmitpriv->lock_sctx, &irqL);
 
 	rtw_free_xmitbuf(pxmitpriv, pxmitbuf);
@@ -776,7 +771,7 @@ void usb_write_port_cancel(struct intf_hdl *pintfhdl)
 	}
 	
 	pxmitbuf = (struct xmit_buf*)padapter->xmitpriv.pxmit_extbuf;
-	for (i = 0; i < NR_XMIT_EXTBUFF; i++) {	
+	for (i = 0; i < NR_XMIT_EXTBUFF ; i++) {	
 		for (j=0; j<8; j++) {
 			if(pxmitbuf->pxmit_urb[j]) {
 				usb_kill_urb(pxmitbuf->pxmit_urb[j]);

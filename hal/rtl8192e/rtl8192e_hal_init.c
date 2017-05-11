@@ -578,14 +578,14 @@ static s32 _LLTWrite(PADAPTER padapter, u32 address, u32 data)
 
 	if (count <=0 ) {
 		DBG_871X("Failed to polling write LLT done at address %d!\n", address);
-			status = _FAIL;
+		status = _FAIL;
 	}
 	return status;
 }
 
 u8 _LLTRead(PADAPTER padapter, u32 address)
 {
-	s32	count = 0;
+	s32	count = POLLING_LLT_THRESHOLD;
 	u32	value = _LLT_INIT_ADDR(address) | _LLT_OP(_LLT_READ_ACCESS);
 	u16	LLTReg = REG_LLT_INIT;
 
@@ -598,12 +598,12 @@ u8 _LLTRead(PADAPTER padapter, u32 address)
 		if (_LLT_NO_ACTIVE == _LLT_OP_VALUE(value)) {
 			return (u8)value;
 		}
-
-		if (count > POLLING_LLT_THRESHOLD) {
-			RT_TRACE(_module_hal_init_c_, _drv_err_, ("Failed to polling read LLT done at address %d!\n", address));
-			break;
-		}
-	} while (count++);
+	} while (--count);
+	
+	if (count <=0 ) {
+		RT_TRACE(_module_hal_init_c_, _drv_err_, ("Failed to polling read LLT done at address %d!\n", address));		
+	}
+	
 
 	return 0xFF;
 }
@@ -992,7 +992,6 @@ void _8051Reset8192E(PADAPTER padapter)
 	DBG_871X("=====> _8051Reset8192E(): 8051 reset success .\n");
 }
 
-extern u8 g_fwdl_chksum_fail;
 static s32 polling_fwdl_chksum(_adapter *adapter, u32 min_cnt, u32 timeout_ms)
 {
 	s32 ret = _FAIL;
@@ -1013,11 +1012,8 @@ static s32 polling_fwdl_chksum(_adapter *adapter, u32 min_cnt, u32 timeout_ms)
 		goto exit;
 	}
 
-	if (g_fwdl_chksum_fail) {
-		DBG_871X("%s: fwdl test case: fwdl_chksum_fail\n", __FUNCTION__);
-		g_fwdl_chksum_fail--;
+	if (rtw_fwdl_test_trigger_chksum_fail())
 		goto exit;
-	}
 
 	ret = _SUCCESS;
 
@@ -1028,7 +1024,6 @@ exit:
 	return ret;
 }
 
-extern u8 g_fwdl_wintint_rdy_fail;
 static s32 _FWFreeToGo8192E(_adapter *adapter, u32 min_cnt, u32 timeout_ms)
 {
 	s32 ret = _FAIL;
@@ -1056,11 +1051,8 @@ static s32 _FWFreeToGo8192E(_adapter *adapter, u32 min_cnt, u32 timeout_ms)
 		goto exit;
 	}
 
-	if (g_fwdl_wintint_rdy_fail) {
-		DBG_871X("%s: fwdl test case: wintint_rdy_fail\n", __FUNCTION__);
-		g_fwdl_wintint_rdy_fail--;
+	if (rtw_fwdl_test_trigger_wintint_rdy_fail())
 		goto exit;
-	}
 
 	ret = _SUCCESS;
 
@@ -1264,13 +1256,10 @@ SetFwRelatedForWoWLAN8192E(
 static void rtl8192e_free_hal_data(PADAPTER padapter)
 {
 _func_enter_;
-	if (padapter->HalData) {
-		phy_free_filebuf(padapter);
-		rtw_vmfree(padapter->HalData, sizeof(HAL_DATA_TYPE));
-		padapter->HalData = NULL;
-	}
+
 _func_exit_;
 }
+
 
 //===========================================================
 //				Efuse related code
@@ -1282,16 +1271,48 @@ Hal_EfuseParseBTCoexistInfo8192E(
 	IN BOOLEAN			AutoLoadFail
 	)
 {
-#ifdef CONFIG_BT_COEXIST
-	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(Adapter);
 
-	pHalData->EEPROMBluetoothCoexist = 0;
-	pHalData->EEPROMBluetoothType = BT_CSR_BC8;
-	pHalData->EEPROMBluetoothAntNum = Ant_x2;
-	pHalData->EEPROMBluetoothAntIsolation = 1;
-	pHalData->EEPROMBluetoothRadioShared = BT_Radio_Shared;
-	BT_InitHalVars(Adapter);
+	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(Adapter);
+	u1Byte			tempval;
+	if(!AutoLoadFail)
+	{
+		tempval = hwinfo[EEPROM_RF_BOARD_OPTION_8192E];
+		if( ((tempval & 0xe0)>>5) == 0x1)// [7:5]
+			pHalData->EEPROMBluetoothCoexist = 1;
+		else
+			pHalData->EEPROMBluetoothCoexist = 0;
+		pHalData->EEPROMBluetoothType = BT_RTL8192E;
+
+		tempval = hwinfo[EEPROM_RF_BT_SETTING_8192E];
+		//pHalData->EEPROMBluetoothAntNum = (tempval&0x1);	// bit [0]
+		pHalData->EEPROMBluetoothAntNum = Ant_x2;
+	}
+	else
+	{
+		pHalData->EEPROMBluetoothCoexist = 1;
+		pHalData->EEPROMBluetoothType = BT_RTL8192E;
+		pHalData->EEPROMBluetoothAntNum = Ant_x2;
+	}
+
+#ifdef CONFIG_BT_COEXIST
+#ifdef CONFIG_LOAD_PHY_PARA_FROM_FILE
+        if (! hal_btcoex_AntIsolationConfig_ParaFile (Adapter , RTL8192E_WIFI_ANT_ISOLATION) )
 #endif
+        {
+                //DBG_871X("%s : %s file read fail \n", __FUNCTION__,WIFI_ANT_ISOLATION_CONFIG_FILE);
+                pHalData->EEPROMBluetoothCoexist = 1;
+                hal_btcoex_SetAntIsolationType(Adapter, 1);
+        }
+
+	rtw_btcoex_SetBTCoexist(Adapter, pHalData->EEPROMBluetoothCoexist);
+	rtw_btcoex_SetChipType(Adapter, pHalData->EEPROMBluetoothType);
+	rtw_btcoex_SetPGAntNum(Adapter, pHalData->EEPROMBluetoothAntNum==Ant_x2?2:1);
+
+	DBG_871X("%s: %s BT-coex, wifi ant_num=%d\n",
+		__FUNCTION__,
+		pHalData->EEPROMBluetoothCoexist==_TRUE?"Enable":"Disable",
+		pHalData->EEPROMBluetoothAntNum==Ant_x2?2:1);
+#endif // CONFIG_BT_COEXIST 
 }
 
 void
@@ -1762,8 +1783,6 @@ Hal_ReadChannelPlan8192E(
 		, AutoLoadFail
 	);
 
-	Hal_ChannelPlanToRegulation(padapter, padapter->mlmepriv.ChannelPlan);
-
 	DBG_871X("mlmepriv.ChannelPlan = 0x%02x\n", padapter->mlmepriv.ChannelPlan);
 }
 
@@ -1804,9 +1823,6 @@ Hal_ReadAntennaDiversity8192E(
 	DBG_871X("SWAS: bHwAntDiv = %x, TRxAntDivType = %x\n", pHalData->AntDivCfg, pHalData->TRxAntDivType);
 }
 
-#define GetRegAmplifierType2G(_Adapter)	(_Adapter->registrypriv.AmplifierType_2G)
-#define GetRegAmplifierType5G(_Adapter)	(_Adapter->registrypriv.AmplifierType_5G)
-
 VOID
 Hal_ReadPAType_8192E(
 	IN	PADAPTER	Adapter,
@@ -1818,21 +1834,26 @@ Hal_ReadPAType_8192E(
 
 	if( ! AutoloadFail )
 	{
-		// PA Type
-		pHalData->PAType_2G = EF1Byte( *(u8*)&PROMContent[EEPROM_PA_TYPE_8192EU] );
-		pHalData->PAType_5G = EF1Byte( *(u8*)&PROMContent[EEPROM_PA_TYPE_8192EU] );		
-		pHalData->LNAType_2G = EF1Byte( *(u8*)&PROMContent[EEPROM_LNA_TYPE_2G_8192EU] );		
-		pHalData->LNAType_5G = EF1Byte( *(u8*)&PROMContent[EEPROM_LNA_TYPE_5G_8192EU] );				
-		
 		if (GetRegAmplifierType2G(Adapter) == 0) // AUTO
 		{
+			// PA Type
+			pHalData->PAType_2G = EF1Byte( *(u8*)&PROMContent[EEPROM_PA_TYPE_8192EU] );
+			//pHalData->PAType_5G = EF1Byte( *(u8*)&PROMContent[EEPROM_PA_TYPE_8192EU] );		
+			pHalData->LNAType_2G = EF1Byte( *(u8*)&PROMContent[EEPROM_LNA_TYPE_2G_8192EU] );		
+			//pHalData->LNAType_5G = EF1Byte( *(u8*)&PROMContent[EEPROM_LNA_TYPE_5G_8192EU] );	
+		
+			if(pHalData->PAType_2G == 0xFF )
+				pHalData->PAType_2G = 0;
+			if(pHalData->LNAType_2G == 0xFF) 
+				pHalData->LNAType_2G = 0;
+			
 			pHalData->ExternalPA_2G = ((pHalData->PAType_2G & BIT5) && (pHalData->PAType_2G & BIT4)) ? 1 : 0;		
 			pHalData->ExternalLNA_2G = ((pHalData->LNAType_2G & BIT7) && (pHalData->LNAType_2G & BIT3)) ? 1 : 0;	// 5G only now.
 		}
 		else
 		{
-			pHalData->ExternalPA_2G  =0; //(GetRegAmplifierType2G(Adapter)&ODM_BOARD_EXT_PA)  ? 1 : 0; 
-			pHalData->ExternalLNA_2G = 0;//(GetRegAmplifierType2G(Adapter)&ODM_BOARD_EXT_LNA) ? 1 : 0;  
+			pHalData->ExternalPA_2G  =(GetRegAmplifierType2G(Adapter)&ODM_BOARD_EXT_PA)  ? 1 : 0; 
+			pHalData->ExternalLNA_2G = (GetRegAmplifierType2G(Adapter)&ODM_BOARD_EXT_LNA) ? 1 : 0;  
 		}
 /*
 		if (GetRegAmplifierType5G(Adapter) == 0) // AUTO
@@ -1850,14 +1871,14 @@ Hal_ReadPAType_8192E(
 	else
 	{
 		pHalData->ExternalPA_2G  = EEPROM_Default_PAType; 
-		pHalData->ExternalPA_5G  = 0xFF; 
+		pHalData->ExternalPA_5G  = EEPROM_Default_PAType; 
 		pHalData->ExternalLNA_2G = EEPROM_Default_LNAType;  
-		pHalData->ExternalLNA_5G = 0xFF; 
+		pHalData->ExternalLNA_5G = EEPROM_Default_LNAType; 
 		
 		if (GetRegAmplifierType2G(Adapter) == 0) // AUTO
 		{		
-			pHalData->ExternalPA_2G  = 0; 
-			pHalData->ExternalLNA_2G = 0;  
+			pHalData->ExternalPA_2G  = EEPROM_Default_PAType; 
+			pHalData->ExternalLNA_2G = EEPROM_Default_LNAType;  
 		}
 		else
 		{
@@ -1895,46 +1916,44 @@ Hal_EfusePowerSwitch8192E(
 {
 	u8	tempval;
 	u16	tmpV16;
-	#define REG_EFUSE_ACCESS_JAGUAR 0xCF
-	#define EFUSE_ACCESS_ON_JAGUAR 0x69
-	#define EFUSE_ACCESS_OFF_JAGUAR 0x00
+	u8 	EFUSE_ACCESS_ON_8192E = 0x69;
+	u8	EFUSE_ACCESS_OFF_8192E = 0x00;
+	
 	if (PwrState == _TRUE)
 	{
-		rtw_write8(pAdapter, REG_EFUSE_ACCESS_JAGUAR, EFUSE_ACCESS_ON_JAGUAR);
-
-		// 1.2V Power: From VDDON with Power Cut(0x0000h[15]), defualt valid
-		tmpV16 = rtw_read16(pAdapter,REG_SYS_ISO_CTRL);
-		if( ! (tmpV16 & PWC_EV12V ) ){
-			tmpV16 |= PWC_EV12V ;
-			//rtw_write16(pAdapter,REG_SYS_ISO_CTRL,tmpV16);
-		}
+		rtw_write8(pAdapter, REG_EFUSE_ACCESS, EFUSE_ACCESS_ON_8192E);	
+		
 		// Reset: 0x0000h[28], default valid
 		tmpV16 =  rtw_read16(pAdapter,REG_SYS_FUNC_EN);
 		if( !(tmpV16 & FEN_ELDR) ){
 			tmpV16 |= FEN_ELDR ;
 			rtw_write16(pAdapter,REG_SYS_FUNC_EN,tmpV16);
 		}
-
+		
 		// Clock: Gated(0x0008h[5]) 8M(0x0008h[1]) clock from ANA, default valid
 		tmpV16 = rtw_read16(pAdapter,REG_SYS_CLKR);
-		if( (!(tmpV16 & LOADER_CLK_EN) )  ||(!(tmpV16 & ANA8M) ) ){
+		if( (!(tmpV16 & LOADER_CLK_EN) )  ||(!(tmpV16 & ANA8M) ) )
+		{
 			tmpV16 |= (LOADER_CLK_EN |ANA8M ) ;
 			rtw_write16(pAdapter,REG_SYS_CLKR,tmpV16);
 		}
+	
 
-		if(bWrite == TRUE)
+		if(bWrite == _TRUE)
 		{
 			// Enable LDO 2.5V before read/write action
-			tempval = PlatformEFIORead1Byte(pAdapter, EFUSE_TEST+3);
-			tempval &= 0x0F;
-			tempval |= (VOLTAGE_V25 << 4);
-			PlatformEFIOWrite1Byte(pAdapter, EFUSE_TEST+3, (tempval | 0x80));
+			tempval = rtw_read8(pAdapter, EFUSE_TEST+3);
+			tempval &= 0x07; //0x34[30:27] = 4¡¦1110 => LDOE25 voltage select to 2.25V Suggested by SD1 Jackie & DD -Tm_lin
+			//tempval |= (VOLTAGE_V25 << 4);
+			tempval |= 0x70; 
+			rtw_write8(pAdapter, EFUSE_TEST+3, (tempval | 0x80));
 		}
+
 	}
 	else
-	{
-		rtw_write8(pAdapter, REG_EFUSE_ACCESS_JAGUAR, EFUSE_ACCESS_OFF_JAGUAR);
-
+	{	
+		rtw_write8(pAdapter, REG_EFUSE_ACCESS, EFUSE_ACCESS_OFF_8192E);
+		
 		if(bWrite == _TRUE){
 			// Disable LDO 2.5V after read/write action
 			tempval = rtw_read8(pAdapter, EFUSE_TEST+3);
@@ -2139,6 +2158,22 @@ Hal_EfuseReadEFuse8192E(
 				
 				wren >>= 1;
 				
+			}
+		}
+		else{//deal with error offset,skip error data		
+			DBG_871X_LEVEL(_drv_always_, "invalid offset:0x%02x \n",offset);
+			for(i=0; i<EFUSE_MAX_WORD_UNIT; i++){
+				// Check word enable condition in the section				
+				if(!(wren & 0x01))	{
+					eFuse_Addr++;
+					efuse_utilized++;
+					if(eFuse_Addr >= EFUSE_REAL_CONTENT_LEN_8192E) 
+						break;
+					eFuse_Addr++;
+					efuse_utilized++;
+					if(eFuse_Addr >= EFUSE_REAL_CONTENT_LEN_8192E) 
+						break;
+				}
 			}
 		}
 
@@ -3517,7 +3552,7 @@ static void hw_var_set_macaddr(PADAPTER Adapter, u8 variable, u8* val)
 
 	for(idx = 0 ; idx < 6; idx++)
 	{
-		rtw_write8(Adapter, (reg_macid+idx), val[idx]);
+		rtw_write8(GET_PRIMARY_ADAPTER(Adapter), (reg_macid+idx), val[idx]);
 	}
 	
 }
@@ -3566,7 +3601,21 @@ static void hw_var_set_bcn_func(PADAPTER Adapter, u8 variable, u8* val)
 	}
 	else
 	{
-		rtw_write8(Adapter, bcn_ctrl_reg, rtw_read8(Adapter, bcn_ctrl_reg)&(~(EN_BCN_FUNCTION | EN_TXBCN_RPT)));
+		//rtw_write8(Adapter, bcn_ctrl_reg, rtw_read8(Adapter, bcn_ctrl_reg)&(~(EN_BCN_FUNCTION | EN_TXBCN_RPT)));
+		u8 val8;
+		val8 = rtw_read8(Adapter, bcn_ctrl_reg);
+		val8 &= ~(EN_BCN_FUNCTION | EN_TXBCN_RPT);
+
+#ifdef CONFIG_BT_COEXIST
+        if (GET_HAL_DATA(Adapter)->EEPROMBluetoothCoexist == 1)
+        {
+                // Always enable port0 beacon function for PSTDMA
+                if (REG_BCN_CTRL == bcn_ctrl_reg)
+                    val8 |= EN_BCN_FUNCTION;
+        }
+#endif
+
+		rtw_write8(Adapter, bcn_ctrl_reg, val8);
 	}
 	
 
@@ -4091,8 +4140,20 @@ _BeaconFunctionEnable(
 VOID _InitBeaconParameters_8192E(IN  PADAPTER Adapter)
 {
 	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(Adapter);
+	u16 val16;
+	u8  val8;   
 
-	rtw_write16(Adapter, REG_BCN_CTRL, 0x1010);
+	val8 = DIS_TSF_UDT;
+	val16 = val8 | (val8 << 8); // port0 and port1
+#ifdef CONFIG_BT_COEXIST
+    if (pHalData->EEPROMBluetoothCoexist == 1)
+    {
+        // Enable prot0 beacon function for PSTDMA
+        val16 |= EN_BCN_FUNCTION;
+    }
+#endif
+	rtw_write16(Adapter, REG_BCN_CTRL, val16);
+       //rtw_write16(Adapter, REG_BCN_CTRL, 0x1010);
 
 	// TODO: Remove these magic number
 	rtw_write16(Adapter, REG_TBTT_PROHIBIT,0x6404);// ms
@@ -4283,32 +4344,36 @@ _func_enter_;
 			hw_var_set_bssid(Adapter, variable, val);
 			break;
 		case HW_VAR_BASIC_RATE:
-			{
-				u16			BrateCfg = 0;
-				u8			RateIndex = 0;
+		{
+			struct mlme_ext_info *mlmext_info = &Adapter->mlmeextpriv.mlmext_info;
+			u16 input_b = 0, masked = 0, ioted = 0, BrateCfg = 0;
+			u16 rrsr_2g_force_mask = (RRSR_11M|RRSR_5_5M|RRSR_1M);
+			u16 rrsr_2g_allow_mask = (RRSR_24M|RRSR_12M|RRSR_6M|RRSR_CCK_RATES);
 
-				// 2007.01.16, by Emily
-				// Select RRSR (in Legacy-OFDM and CCK)
-				// For 8190, we select only 24M, 12M, 6M, 11M, 5.5M, 2M, and 1M from the Basic rate.
-				// We do not use other rates.
-				HalSetBrateCfg( Adapter, val, &BrateCfg );
-				
-				//2011.03.30 add by Luke Lee
-				//CCK 2M ACK should be disabled for some BCM and Atheros AP IOT
-				//because CCK 2M has poor TXEVM
-				//CCK 5.5M & 11M ACK should be enabled for better performance
+			HalSetBrateCfg(Adapter, val, &BrateCfg);
+			input_b = BrateCfg;
 
-				pHalData->BasicRateSet = BrateCfg = (BrateCfg |0xd) & 0x15d;
-				BrateCfg |= 0x01; // default enable 1M ACK rate
-				
-				DBG_8192C(FUNC_ADPT_FMT" HW_VAR_BASIC_RATE: BrateCfg(%#x)\n", FUNC_ADPT_ARG(Adapter),BrateCfg);
-				
-				// Set RRSR rate table.
-				rtw_write8(Adapter, REG_RRSR, BrateCfg&0xff);
-				rtw_write8(Adapter, REG_RRSR+1, (BrateCfg>>8)&0xff);
-				rtw_write8(Adapter, REG_RRSR+2, rtw_read8(Adapter, REG_RRSR+2)&0xf0);
-				
+			/* apply force and allow mask */
+			BrateCfg |= rrsr_2g_force_mask;
+			BrateCfg &= rrsr_2g_allow_mask;
+			masked = BrateCfg;
+
+			/* IOT consideration */
+			if (mlmext_info->assoc_AP_vendor == HT_IOT_PEER_CISCO) {
+				/* if peer is cisco and didn't use ofdm rate, we enable 6M ack */
+				if((BrateCfg & (RRSR_24M|RRSR_12M|RRSR_6M)) == 0)
+					BrateCfg |= RRSR_6M;
 			}
+			ioted = BrateCfg;
+
+			pHalData->BasicRateSet = BrateCfg;
+
+			DBG_8192C("HW_VAR_BASIC_RATE: %#x -> %#x -> %#x\n", input_b, masked, ioted);
+
+			// Set RRSR rate table.
+			rtw_write16(Adapter, REG_RRSR, BrateCfg);
+			rtw_write8(Adapter, REG_RRSR+2, rtw_read8(Adapter, REG_RRSR+2)&0xf0);
+		}
 			break;
 		case HW_VAR_TXPAUSE:
 			rtw_write8(Adapter, REG_TXPAUSE, *((u8 *)val));	
@@ -4390,6 +4455,10 @@ _func_enter_;
 			break;
 		case HW_VAR_MLME_SITESURVEY:
 			hw_var_set_mlme_sitesurvey(Adapter, variable,  val);
+#ifdef CONFIG_BT_COEXIST
+        if (pHalData->EEPROMBluetoothCoexist == 1)
+                rtw_btcoex_ScanNotify(Adapter, *val?_TRUE:_FALSE);
+#endif // CONFIG_BT_COEXIST
 			break;
 		case HW_VAR_MLME_JOIN:
 #ifdef CONFIG_CONCURRENT_MODE
@@ -4445,6 +4514,26 @@ _func_enter_;
 				rtw_write16(Adapter, REG_RL, RetryLimit << RETRY_LIMIT_SHORT_SHIFT | RetryLimit << RETRY_LIMIT_LONG_SHIFT);
 			}
 #endif
+#ifdef CONFIG_BT_COEXIST
+        if (pHalData->EEPROMBluetoothCoexist == 1)
+        {
+			switch (*val)
+			{
+				case 0:
+					// prepare to join
+					rtw_btcoex_ConnectNotify(Adapter, _TRUE);
+					break;
+				case 1:
+					// joinbss_event callback when join res < 0
+					rtw_btcoex_ConnectNotify(Adapter, _FALSE);
+					break;
+				case 2:
+					// sta add event callback
+//					rtw_btcoex_MediaStatusNotify(padapter, RT_MEDIA_CONNECT);
+					break;
+			}
+        }
+#endif // CONFIG_BT_COEXIST
 			break;
 
 		case HW_VAR_ON_RCR_AM:
@@ -4531,13 +4620,6 @@ _func_enter_;
 					regTmp &= (~BIT1);
 				rtw_write8(Adapter, REG_TRXPTCL_CTL_8192E+2, regTmp);
 			}
-			break;
-		case HW_VAR_SEC_CFG:
-#ifdef CONFIG_CONCURRENT_MODE
-			rtw_write8(Adapter, REG_SECCFG, 0x0c|BIT(5));// enable tx enc and rx dec engine, and no key search for MC/BC				
-#else
-			rtw_write8(Adapter, REG_SECCFG, *((u8 *)val));
-#endif
 			break;
 		case HW_VAR_CAM_EMPTY_ENTRY:
 			{
@@ -4627,42 +4709,7 @@ _func_enter_;
 				rtw_write8(Adapter, REG_ACMHWCTRL, AcmCtrl );
 			}
 			break;
-		case HW_VAR_AMPDU_MIN_SPACE:
-			{
-				u8	MinSpacingToSet;
-				u8	SecMinSpace;
-
-				MinSpacingToSet = *((u8 *)val);
-				pHalData->AMPDUDensity = MinSpacingToSet;
-				if(MinSpacingToSet <= 7)
-				{
-					switch(Adapter->securitypriv.dot11PrivacyAlgrthm)
-					{
-						case _NO_PRIVACY_:
-						case _AES_:
-							SecMinSpace = 0;
-							break;
-
-						case _WEP40_:
-						case _WEP104_:
-						case _TKIP_:
-						case _TKIP_WTMIC_:
-							SecMinSpace = 6;
-							break;
-						default:
-							SecMinSpace = 7;
-							break;
-					}
-
-					if(MinSpacingToSet < SecMinSpace){
-						MinSpacingToSet = SecMinSpace;
-					}
-
-					//RT_TRACE(COMP_MLME, DBG_LOUD, ("Set HW_VAR_AMPDU_MIN_SPACE: %#x\n", Adapter->MgntInfo.MinSpaceCfg));
-					//rtw_write8(Adapter, REG_AMPDU_MIN_SPACE, (rtw_read8(Adapter, REG_AMPDU_MIN_SPACE) & 0xf8) | MinSpacingToSet);
-				}
-			}
-			break;
+		
 		case HW_VAR_AMPDU_FACTOR:
 			{
 				u32	AMPDULen =  (*(u8 *)val);
@@ -4726,37 +4773,10 @@ _func_enter_;
 			rtw_write32(Adapter, REG_RCR, rtw_read32(Adapter, REG_RCR)|(RCR_CBSSID_DATA));
 			break;
 #endif //CONFIG_TDLS
-		case HW_VAR_INITIAL_GAIN:
-			{				
-				DIG_T	*pDigTable = &podmpriv->DM_DigTable;					
-				u32 		rx_gain = ((u32 *)(val))[0];
-		
-				if(rx_gain == 0xff){//restore rx gain					
-					ODM_Write_DIG(podmpriv,pDigTable->BackupIGValue);
-				}
-				else{
-					pDigTable->BackupIGValue = pDigTable->CurIGValue;
-					ODM_Write_DIG(podmpriv,rx_gain);
-				}
-			}
-			break;
 		case HW_VAR_TRIGGER_GPIO_0:
 			//rtl8192cu_trigger_gpio_0(Adapter);
 			break;
-#ifdef CONFIG_BT_COEXIST
-		case HW_VAR_BT_SET_COEXIST:
-			{
-				u8	bStart = (*(u8 *)val);
-				rtl8812_set_dm_bt_coexist(Adapter, bStart);
-			}
-			break;
-		case HW_VAR_BT_ISSUE_DELBA:
-			{
-				u8	dir = (*(u8 *)val);
-				rtl8812_issue_delete_ba(Adapter, dir);
-			}
-			break;
-#endif
+
 #ifdef CONFIG_SW_ANTENNA_DIVERSITY
 
 		case HW_VAR_ANTENNA_DIVERSITY_LINK:
@@ -4879,11 +4899,94 @@ _func_enter_;
 			pHalData->bNeedIQK = _TRUE;
 			break;
 			
+		case HW_VAR_DL_RSVD_PAGE:
+#ifdef CONFIG_BT_COEXIST
+        if (pHalData->EEPROMBluetoothCoexist == 1)
+        {
+			if (check_fwstate(&Adapter->mlmepriv, WIFI_AP_STATE) == _TRUE)
+			{
+				rtl8192e_download_BTCoex_AP_mode_rsvd_page(Adapter);
+			}
+        }
+#endif // CONFIG_BT_COEXIST
+                        break;
 		case HW_VAR_APFM_ON_MAC:
 			pHalData->bMacPwrCtrlOn = *val;
 			DBG_8192C("%s: bMacPwrCtrlOn=%d\n", __FUNCTION__, pHalData->bMacPwrCtrlOn);
 			break;
-			
+
+		case HW_VAR_MACID_SLEEP:
+		{
+			u32 reg_macid_sleep;
+			u8 bit_shift;
+			u8 id = *(u8*)val;
+			u32 val32;
+
+			if (id < 32) {
+				reg_macid_sleep = REG_MACID_SLEEP;
+				bit_shift = id;
+			} else if (id < 64) {
+				reg_macid_sleep = REG_MACID_SLEEP_1;
+				bit_shift = id-32;
+			} else if (id < 96) {
+				reg_macid_sleep = REG_MACID_SLEEP_2;
+				bit_shift = id-64;
+			} else if (id < 128) {
+				reg_macid_sleep = REG_MACID_SLEEP_3;
+				bit_shift = id-96;
+			} else {
+				rtw_warn_on(1);
+				break;
+			}
+
+			val32 = rtw_read32(Adapter, reg_macid_sleep);
+			DBG_8192C(FUNC_ADPT_FMT ": [HW_VAR_MACID_SLEEP] macid=%d, org reg_0x%03x=0x%08X\n",
+				FUNC_ADPT_ARG(Adapter), id, reg_macid_sleep, val32);
+
+			if (val32 & BIT(bit_shift))
+				break;
+
+			val32 |= BIT(bit_shift);
+			rtw_write32(Adapter, reg_macid_sleep, val32);
+		}
+			break;
+
+		case HW_VAR_MACID_WAKEUP:
+		{
+			u32 reg_macid_sleep;
+			u8 bit_shift;
+			u8 id = *(u8*)val;
+			u32 val32;
+
+			if (id < 32) {
+				reg_macid_sleep = REG_MACID_SLEEP;
+				bit_shift = id;
+			} else if (id < 64) {
+				reg_macid_sleep = REG_MACID_SLEEP_1;
+				bit_shift = id-32;
+			} else if (id < 96) {
+				reg_macid_sleep = REG_MACID_SLEEP_2;
+				bit_shift = id-64;
+			} else if (id < 128) {
+				reg_macid_sleep = REG_MACID_SLEEP_3;
+				bit_shift = id-96;
+			} else {
+				rtw_warn_on(1);
+				break;
+			}
+
+			val32 = rtw_read32(Adapter, reg_macid_sleep);
+			//DBG_8192C(FUNC_ADPT_FMT ": [HW_VAR_MACID_WAKEUP] macid=%d, org reg_0x%03x=0x%08X\n",
+			//	FUNC_ADPT_ARG(Adapter), id, reg_macid_sleep, val32);
+
+			if (!(val32 & BIT(bit_shift)))
+				break;
+
+			val32 &= ~BIT(bit_shift);
+			rtw_write32(Adapter, reg_macid_sleep, val32);
+		}
+			break;
+
 		default:
 			SetHwReg(Adapter, variable, val);
 			break;
@@ -4892,6 +4995,73 @@ _func_enter_;
 _func_exit_;
 }
 
+struct qinfo_92e {
+	u32 head:8;
+	u32 pkt_num:7;
+	u32 tail:8;
+	u32 ac:2;
+	u32 macid:7;
+};
+
+struct bcn_qinfo_92e {
+	u16 head:8;
+	u16 pkt_num:8;
+};
+
+void dump_qinfo_92e(void *sel, struct qinfo_92e *info, const char *tag)
+{
+	//if (info->pkt_num)
+	DBG_871X_SEL_NL(sel, "%shead:0x%02x, tail:0x%02x, pkt_num:%u, macid:%u, ac:%u\n"
+		, tag ? tag : "", info->head, info->tail, info->pkt_num, info->macid, info->ac
+	);
+}
+
+void dump_bcn_qinfo_92e(void *sel, struct bcn_qinfo_92e *info, const char *tag)
+{
+	//if (info->pkt_num)
+	DBG_871X_SEL_NL(sel, "%shead:0x%02x, pkt_num:%u\n"
+		, tag ? tag : "", info->head, info->pkt_num
+	);
+}
+
+void dump_mac_qinfo_92e(void *sel, _adapter *adapter)
+{
+	u32 q0_info;
+	u32 q1_info;
+	u32 q2_info;
+	u32 q3_info;
+	u32 q4_info;
+	u32 q5_info;
+	u32 q6_info;
+	u32 q7_info;
+	u32 mg_q_info;
+	u32 hi_q_info;
+	u16 bcn_q_info;
+
+	q0_info = rtw_read32(adapter, REG_Q0_INFO);
+	q1_info = rtw_read32(adapter, REG_Q1_INFO);
+	q2_info = rtw_read32(adapter, REG_Q2_INFO);
+	q3_info = rtw_read32(adapter, REG_Q3_INFO);
+	q4_info = rtw_read32(adapter, REG_Q4_INFO);
+	q5_info = rtw_read32(adapter, REG_Q5_INFO);
+	q6_info = rtw_read32(adapter, REG_Q6_INFO);
+	q7_info = rtw_read32(adapter, REG_Q7_INFO);
+	mg_q_info = rtw_read32(adapter, REG_MGQ_INFO);
+	hi_q_info = rtw_read32(adapter, REG_HGQ_INFO);
+	bcn_q_info = rtw_read16(adapter, REG_BCNQ_INFO);
+
+	dump_qinfo_92e(sel, (struct qinfo_92e *)&q0_info, "Q0 ");
+	dump_qinfo_92e(sel, (struct qinfo_92e *)&q1_info, "Q1 ");
+	dump_qinfo_92e(sel, (struct qinfo_92e *)&q2_info, "Q2 ");
+	dump_qinfo_92e(sel, (struct qinfo_92e *)&q3_info, "Q3 ");
+	dump_qinfo_92e(sel, (struct qinfo_92e *)&q4_info, "Q4 ");
+	dump_qinfo_92e(sel, (struct qinfo_92e *)&q5_info, "Q5 ");
+	dump_qinfo_92e(sel, (struct qinfo_92e *)&q6_info, "Q6 ");
+	dump_qinfo_92e(sel, (struct qinfo_92e *)&q7_info, "Q7 ");
+	dump_qinfo_92e(sel, (struct qinfo_92e *)&mg_q_info, "MG ");
+	dump_qinfo_92e(sel, (struct qinfo_92e *)&hi_q_info, "HI ");
+	dump_bcn_qinfo_92e(sel, (struct bcn_qinfo_92e *)&bcn_q_info, "BCN ");
+}
 
 void GetHwReg8192E(PADAPTER Adapter, u8 variable, u8* val)
 {
@@ -4949,7 +5119,7 @@ _func_enter_;
 			*((u16 *)(val)) = pHalData->EfuseUsedBytes;	
 			break;
 		case HW_VAR_CHK_HI_QUEUE_EMPTY:
-			//*val = ((rtw_read32(Adapter, REG_HGQ_INFORMATION)&0x00007f00)==0) ? _TRUE:_FALSE;
+			//*val = ((rtw_read32(Adapter, REG_HGQ_INFO)&0x00007f00)==0) ? _TRUE:_FALSE;
 			*val = (rtw_read16(Adapter, REG_TXPKT_EMPTY)&BIT(10)) ? _TRUE:_FALSE;
 			break;
 		case HW_VAR_APFM_ON_MAC:
@@ -4957,6 +5127,9 @@ _func_enter_;
 			break;
 		case HW_VAR_SYS_CLKR:
 			*val = rtw_read8(Adapter, REG_SYS_CLKR);
+			break;
+		case HW_VAR_DUMP_MAC_QUEUE_INFO:
+			dump_mac_qinfo_92e(val, Adapter);
 			break;
 		default:
 			GetHwReg(Adapter, variable, val);
@@ -5105,6 +5278,10 @@ GetHalDefVar8192E(
 			}
 			break;
 
+		case HAL_DEF_MACID_SLEEP:
+			*(u8*)pValue = _TRUE; // support macid sleep
+			break;
+
 		default:
 			bResult = GetHalDefVar(Adapter, eVariable, pValue);
 			break;
@@ -5119,14 +5296,13 @@ void rtl8192E_GetHalODMVar(
 	PADAPTER				Adapter,
 	HAL_ODM_VARIABLE		eVariable,
 	PVOID					pValue1,
-	BOOLEAN					bSet)
+	PVOID					pValue2)
 {
 	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(Adapter);
 	PDM_ODM_T podmpriv = &pHalData->odmpriv;
-	switch(eVariable){
-		case HAL_ODM_STA_INFO:
-			break;
+	switch(eVariable){		
 		default:
+			GetHalODMVar(Adapter,eVariable,pValue1,pValue2);
 			break;
 	}
 }
@@ -5140,30 +5316,9 @@ void rtl8192E_SetHalODMVar(
 	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(Adapter);
 	PDM_ODM_T podmpriv = &pHalData->odmpriv;
 	//_irqL irqL;
-	switch(eVariable){
-		case HAL_ODM_STA_INFO:
-			{	
-				struct sta_info *psta = (struct sta_info *)pValue1;				
-				if(bSet){
-					DBG_8192C("### Set STA_(%d) info\n",psta->mac_id);
-					ODM_CmnInfoPtrArrayHook(podmpriv, ODM_CMNINFO_STA_STATUS,psta->mac_id,psta);
-				}
-				else{
-					DBG_8192C("### Clean STA_(%d) info\n",psta->mac_id);
-					//_enter_critical_bh(&pHalData->odm_stainfo_lock, &irqL);
-					ODM_CmnInfoPtrArrayHook(podmpriv, ODM_CMNINFO_STA_STATUS,psta->mac_id,NULL);
-					
-					//_exit_critical_bh(&pHalData->odm_stainfo_lock, &irqL);
-			            }
-			}
-			break;
-		case HAL_ODM_P2P_STATE:		
-				ODM_CmnInfoUpdate(podmpriv,ODM_CMNINFO_WIFI_DIRECT,bSet);
-			break;
-		case HAL_ODM_WIFI_DISPLAY_STATE:
-				ODM_CmnInfoUpdate(podmpriv,ODM_CMNINFO_WIFI_DISPLAY,bSet);
-			break;
+	switch(eVariable){		
 		default:
+			SetHalODMVar(Adapter,eVariable,pValue1,bSet);
 			break;
 	}
 }	
@@ -5298,8 +5453,11 @@ void UpdateHalRAMask8192E(PADAPTER padapter, u32 mac_id, u8 rssi_level)
 	mask &= rate_bitmap;
 
 #ifdef CONFIG_BT_COEXIST
+    if (pHalData->EEPROMBluetoothCoexist == 1)
+    {
 	rate_bitmap = rtw_btcoex_GetRaMask(padapter);
 	mask &= ~rate_bitmap;
+    }
 #endif // CONFIG_BT_COEXIST
 
 	arg[0] = mac_id;
@@ -5325,6 +5483,10 @@ void rtl8192e_init_default_value(_adapter * padapter)
 	pHalData->fw_ractrl = _FALSE;		
 	if(!pwrctrlpriv->bkeepfwalive)
 		pHalData->LastHMEBoxNum = 0;	
+
+	/* hal capability values */
+	pHalData->macid_num = MACID_NUM_8192E;
+	pHalData->cam_entry_num = CAM_ENTRY_NUM_8192E;
 
 	//init dm default value
 	pHalData->odmpriv.RFCalibrateInfo.bIQKInitialized = _FALSE;
@@ -5389,6 +5551,70 @@ void rtl8192e_init_default_value(_adapter * padapter)
 	_rtw_memset(pHalData->EfuseHal.fakeEfuseModifiedMap, 0xFF, EFUSE_MAX_MAP_LEN);
 }
 
+#ifdef CONFIG_BT_COEXIST
+void rtl8192e_combo_card_WifiOnlyHwInit(PADAPTER Adapter)
+{
+        u8  u1Tmp;
+        u16 u2Tmp;
+        u32 u4Tmp;
+
+        DBG_871X("%s !\n", __FUNCTION__);
+
+        //antenna fixed to wifi
+        rtw_write8(Adapter, 0x944, 0x24);
+        rtw_write32(Adapter, 0x930, 0x700700);  
+        rtw_write8(Adapter, 0x92c, 0x04);  
+#ifdef CONFIG_USB_HCI
+            rtw_write32(Adapter, REG_PAD_CTRL1_8192E, 0x30430004);
+#else
+            rtw_write32(Adapter, REG_PAD_CTRL1_8192E, 0x30030004);
+#endif
+        // 0x4c[27][24]='00', Set Antenna to BB
+        u4Tmp = rtw_read32(Adapter, BIT_REG_LED_CFG_8192E);
+        u4Tmp &= ~BIT24;
+        u4Tmp &= ~BIT27;
+        rtw_write32(Adapter, BIT_REG_LED_CFG_8192E, u4Tmp);
+  
+        //coex. table
+        rtw_write32(Adapter , REG_BT_COEX_TABLE0_8192E, 0x55555555);
+        rtw_write32(Adapter , REG_BT_COEX_TABLE1_8192E, 0x55555555);
+        rtw_write32(Adapter , REG_BT_COEX_TABLE2_8192E, 0xffffff);
+        rtw_write32(Adapter , REG_BT_COEX_TABLE3_8192E, 0x3);
+        // coex parameters
+        rtw_write8(Adapter, REG_BT_STATISTICS_OTH_CTRL_8192E, 0x3);
+        // 0x790[5:0]=0x5
+        u1Tmp =  rtw_read8(Adapter, REG_TDMA_TIME_AND_RPT_SAM_SET_8192E);
+        u1Tmp &= 0xc0;
+        u1Tmp |= 0x5;
+        rtw_write8(Adapter, REG_TDMA_TIME_AND_RPT_SAM_SET_8192E, u1Tmp);
+         
+        // enable counter statistics
+        rtw_write8(Adapter, REG_BT_STATISTICS_CTRL_8192E, 0x4);
+         
+        // enable PTA
+        rtw_write8(Adapter, REG_GPIO_MUXCFG_8192E, 0x20);
+        // enable mailbox interface
+        u2Tmp =  rtw_read16(Adapter, REG_GPIO_MUXCFG_8192E);
+        u2Tmp |= BIT9;
+        rtw_write16(Adapter, REG_GPIO_MUXCFG_8192E, u2Tmp);
+         
+        // enable PTA I2C mailbox 
+        u1Tmp =  rtw_read8(Adapter, REG_CR_8192E+1);
+        u1Tmp |= BIT4;
+        rtw_write8(Adapter, REG_CR_8192E+1, u1Tmp);
+         
+        // enable bt clock when wifi is disabled.
+        u1Tmp =  rtw_read8(Adapter, REG_WLLPS_CTRL_8192E+3);
+        u1Tmp |= BIT0;
+        rtw_write8(Adapter, REG_WLLPS_CTRL_8192E+3, u1Tmp);
+        // enable bt clock when suspend.
+        u1Tmp =  rtw_read8(Adapter, REG_SYS_PW_CTRL_8192E+3);
+        u1Tmp |= BIT0;
+        rtw_write8(Adapter, REG_SYS_PW_CTRL_8192E+3, u1Tmp);
+ 
+}
+#endif //CONFIG_BT_COEXIST
+
 void rtl8192e_set_hal_ops(struct hal_ops *pHalFunc)
 {
 	pHalFunc->free_hal_data = &rtl8192e_free_hal_data;
@@ -5445,9 +5671,10 @@ void rtl8192e_set_hal_ops(struct hal_ops *pHalFunc)
 	pHalFunc->GetHalODMVarHandler = &rtl8192E_GetHalODMVar;
 	pHalFunc->SetHalODMVarHandler = &rtl8192E_SetHalODMVar;
 	//pHalFunc->hal_notch_filter = &hal_notch_filter_rtl8192E;
-	pHalFunc->UpdateRAMaskHandler = &UpdateHalRAMask8192E;	
-	
+	pHalFunc->UpdateRAMaskHandler = &UpdateHalRAMask8192E;
+
+	pHalFunc->c2h_handler = c2h_handler_8192e;
+
+	pHalFunc->fill_h2c_cmd = FillH2CCmd_8192E;
 }
-
-
 

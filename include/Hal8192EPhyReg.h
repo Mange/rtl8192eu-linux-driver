@@ -425,9 +425,8 @@
 
 #define		RF_TX_BB1					0x23	// 
 
-
-#define		RF_T_METER_8192E					0x42	// 
-#define		RF_T_METER_88E					0x42
+#define		RF_T_METER_8192E			0x42	// 
+#define		RF_T_METER_88E				0x42	//
 #define		RF_T_METER					0x24	// 
 
 //#endif
@@ -1064,6 +1063,7 @@
 #define		bMaskHWord                		0xffff0000
 #define		bMaskLWord                		0x0000ffff
 #define		bMaskDWord                		0xffffffff
+#define		bMaskH3Bytes				0xffffff00
 #define		bMask12Bits				0xfff	
 #define		bMaskH4Bits				0xf0000000	
 #define 		bMaskOFDM_D			0xffc00000

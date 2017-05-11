@@ -19,10 +19,7 @@
  ******************************************************************************/
 //***** temporarily flag *******
 #define CONFIG_SINGLE_IMG
-
 //#define CONFIG_DISABLE_ODM
-//for FPGA VERIFICATION config
-#define RTL8188E_FPGA_TRUE_PHY_VERIFICATION 0
 
 //***** temporarily flag *******
 /*
@@ -50,7 +47,6 @@
 /*
  * Internal  General Config
  */
-//#define CONFIG_PWRCTRL
 //#define CONFIG_H2CLBK
 
 #define CONFIG_EMBEDDED_FWIMG	
@@ -73,8 +69,8 @@
 //#define CONFIG_USB_INTERRUPT_IN_PIPE	
 #endif
 
-#define CONFIG_HIGH_CHAN_SUPER_CALIBRATION
 //#define CONFIG_DISABLE_MCS13TO15	1	// Disable MSC13-15 rates for more stable TX throughput with some 5G APs
+#define CONFIG_HIGH_CHAN_SUPER_CALIBRATION
 
 #define CONFIG_IPS	
 	#ifdef CONFIG_IPS
@@ -86,12 +82,6 @@
 
 #if defined(CONFIG_LPS) && defined(CONFIG_SUPPORT_USB_INT)
 	//#define CONFIG_LPS_LCLK	
-#endif
-
-#ifdef CONFIG_LPS_LCLK	
-	#if defined(CONFIG_HIGH_CHAN_SUPER_CALIBRATION) 
-		#undef CONFIG_HIGH_CHAN_SUPER_CALIBRATION
-	#endif
 #endif
 
 
@@ -117,8 +107,6 @@
 	//#define CONFIG_ATMEL_RC_PATCH
 	//#define CONFIG_TSF_RESET_OFFLOAD 			// For 2 PORT TSF SYNC.
 #endif
-
-//#define CONFIG_IOL
 
 #define CONFIG_AP_MODE	
 #ifdef CONFIG_AP_MODE
@@ -173,7 +161,7 @@
 
 #define CONFIG_SKB_COPY	//for amsdu
 
-#define CONFIG_LED
+//#define CONFIG_LED
 #ifdef CONFIG_LED
 	//#define CONFIG_SW_LED
 	#ifdef CONFIG_SW_LED
@@ -181,13 +169,14 @@
 	#endif
 #endif // CONFIG_LED
 
+//#define CONFIG_IOL
 #ifdef CONFIG_IOL
 	#define CONFIG_IOL_NEW_GENERATION
 	#define CONFIG_IOL_READ_EFUSE_MAP
 	//#define DBG_IOL_READ_EFUSE_MAP
-	#define CONFIG_IOL_LLT
-	#define CONFIG_IOL_EFUSE_PATCH		
-	#define CONFIG_IOL_IOREG_CFG
+	//#define CONFIG_IOL_LLT
+	//#define CONFIG_IOL_EFUSE_PATCH
+	//#define CONFIG_IOL_IOREG_CFG
 	//#define CONFIG_IOL_IOREG_CFG_DBG	
 #endif
 
@@ -203,13 +192,12 @@
 #define CONFIG_LONG_DELAY_ISSUE
 #define CONFIG_NEW_SIGNAL_STAT_PROCESS
 //#define CONFIG_SIGNAL_DISPLAY_DBM //display RX signal with dbm
+#ifdef CONFIG_SIGNAL_DISPLAY_DBM
+//#define CONFIG_BACKGROUND_NOISE_MONITOR
+#endif
+
 #define RTW_NOTCH_FILTER 0 /* 0:Disable, 1:Enable, */
 #define CONFIG_DEAUTH_BEFORE_CONNECT
-
-#define CONFIG_BR_EXT	1	// Enable NAT2.5 support for STA mode interface with a L2 Bridge
-#ifdef CONFIG_BR_EXT
-#define CONFIG_BR_EXT_BRNAME	"br0"
-#endif	// CONFIG_BR_EXT
 
 #define CONFIG_TX_MCAST2UNI	1	// Support IP multicast->unicast
 //#define CONFIG_CHECK_AC_LIFETIME 1	// Check packet lifetime of 4 ACs.
@@ -233,9 +221,12 @@
  */
 //#define CONFIG_USE_USB_BUFFER_ALLOC_TX 	// Trade-off: For TX path, improve stability on some platforms, but may cause performance degrade on other platforms.
 //#define CONFIG_USE_USB_BUFFER_ALLOC_RX 	// For RX path
-
 #ifdef CONFIG_USE_USB_BUFFER_ALLOC_RX
 #undef CONFIG_PREALLOC_RECV_SKB
+#else
+	#ifdef CONFIG_PREALLOC_RECV_SKB
+//		#define CONFIG_FIX_NR_BULKIN_BUFFER		// only use USB prealloc_recv_buffer, no use alloc_skb()
+	#endif
 #endif
 
 /* 
@@ -251,7 +242,9 @@
 //#define CONFIG_USB_SUPPORT_ASYNC_VDN_REQ 
 
 #define WAKEUP_GPIO_IDX	14	//WIFI Chip Side
-
+#ifdef CONFIG_WOWLAN
+#define CONFIG_GTK_OL
+#endif //CONFIG_WOWLAN
 /*
  * HAL  Related Config
  */
@@ -307,16 +300,10 @@
 
 
 
-#ifdef CONFIG_PLATFORM_TI_DM365
-#define CONFIG_USE_USB_BUFFER_ALLOC_RX 
-#endif
-
-
-
 /*
  * Outsource  Related Config
  */
-
+#define 	TESTCHIP_SUPPORT				0
 #define 	RTL8192CE_SUPPORT 				0
 #define 	RTL8192CU_SUPPORT 			0
 #define 	RTL8192C_SUPPORT 				(RTL8192CE_SUPPORT|RTL8192CU_SUPPORT)	
@@ -329,32 +316,29 @@
 #define 	RTL8723AS_SUPPORT				0
 #define 	RTL8723AE_SUPPORT				0
 #define 	RTL8723A_SUPPORT				(RTL8723AU_SUPPORT|RTL8723AS_SUPPORT|RTL8723AE_SUPPORT)
-
 #define 	RTL8723_FPGA_VERIFICATION		0
 
-#define RTL8188EE_SUPPORT				0
-#define RTL8188EU_SUPPORT				0
-#define RTL8188ES_SUPPORT				0
-#define RTL8188E_SUPPORT				(RTL8188EE_SUPPORT|RTL8188EU_SUPPORT|RTL8188ES_SUPPORT)
-#define TESTCHIP_SUPPORT				0
 
-#define RTL8812E_SUPPORT				0
-#define RTL8812AU_SUPPORT				0
-#define RTL8812A_SUPPORT				(RTL8812E_SUPPORT|RTL8812AU_SUPPORT)
-
+#define RTL8188E_SUPPORT				0
+#define RTL8812A_SUPPORT				0
 #define RTL8821A_SUPPORT				0
-
 #define RTL8723B_SUPPORT				0
-
 #define RTL8192E_SUPPORT				1
+#define RTL8814A_SUPPORT				0
 
-#define RTL8813A_SUPPORT				0
-
-//#if (RTL8188E_SUPPORT==1)
 #define RATE_ADAPTIVE_SUPPORT 			0
 #define POWER_TRAINING_ACTIVE			0
 
-//#endif
+#ifdef CONFIG_BT_COEXIST
+	// for ODM and outsrc BT-Coex
+	#define BT_30_SUPPORT 1
+	#ifndef CONFIG_LPS
+		#define CONFIG_LPS	// download reserved page to FW
+	#endif
+#else // !CONFIG_BT_COEXIST
+	#define BT_30_SUPPORT 0
+#endif // !CONFIG_BT_COEXIST
+
 
 #ifdef CONFIG_USB_TX_AGGREGATION
 //#define 	CONFIG_TX_EARLY_MODE
@@ -363,6 +347,9 @@
 #ifdef CONFIG_TX_EARLY_MODE
 #define	RTL8192E_EARLY_MODE_PKT_NUM_10	0
 #endif
+
+//Try to handle the Beacon error found in some types of TP-LINK APs
+#define CONFIG_ATTEMPT_TO_FIX_AP_BEACON_ERROR
 
 #define CONFIG_80211D
 
@@ -380,6 +367,7 @@
 //#define DBG_CONFIG_ERROR_DETECT_INT
 //#define DBG_CONFIG_ERROR_RESET
 
+//#define DBG_CMD_QUEUE
 //#define DBG_IO
 //#define DBG_DELAY_OS
 //#define DBG_MEM_ALLOC
@@ -395,6 +383,7 @@
 //#define DBG_RX_SIGNAL_DISPLAY_PROCESSING
 //#define DBG_RX_SIGNAL_DISPLAY_SSID_MONITORED "jeff-ap"
 #define DBG_RX_SIGNAL_DISPLAY_RAW_DATA
+//#define DBG_NOISE_MONITOR
 
 //#define DBG_TX_POWER_IDX
 

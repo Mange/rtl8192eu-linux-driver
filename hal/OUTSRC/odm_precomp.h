@@ -145,6 +145,22 @@
 #include "odm_RegDefine11AC.h"
 #include "odm_RegDefine11N.h"
 #include "odm_AntDiv.h"
+#include "odm_EdcaTurboCheck.h"
+#include "odm_DIG.h"
+#include "odm_PathDiv.h"
+#include "odm_DynamicBBPowerSaving.h"
+#include "odm_PowerTracking.h"
+#include "odm_RaInfo.h"
+#include "odm_DynamicTxPower.h"
+#include "odm_CfoTracking.h"
+#include "odm_ACS.h"
+#include "odm_PowerTracking.h"
+#include "odm_NoiseMonitor.h"
+#include "PhyDM_Adaptivity.h"
+
+#if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
+#include "odm_RXHP.h"
+#endif
 
 #if (DM_ODM_SUPPORT_TYPE == ODM_AP)
 #if (RTL8192C_SUPPORT==1)
@@ -197,7 +213,8 @@
 	#if (RTL8821A_SUPPORT==1)
 		#include "rtl8821a/HalPhyRf_8821A.h"//for IQK,LCK,Power-tracking
 		#include "rtl8812a/HalPhyRf_8812A.h"//for IQK,LCK,Power-tracking
-		#include "rtl8812a_hal.h"		
+		#include "rtl8812a_hal.h"
+		#include "rtl8821a/PhyDM_IQK_8821A.h"
 	#endif
 
 	#if (RTL8723B_SUPPORT==1)
@@ -280,11 +297,6 @@
 #include "rtl8812a/HalHWImg8812A_FW.h"
 #include "rtl8812a/odm_RegConfig8812A.h"
 #include "rtl8812a/odm_RTL8812A.h"
-#if (TESTCHIP_SUPPORT == 1) 
-#include "rtl8812a/HalHWImg8812A_TestChip_MAC.h"
-#include "rtl8812a/HalHWImg8812A_TestChip_RF.h"
-#include "rtl8812a/HalHWImg8812A_TestChip_BB.h"
-#endif
 #endif
 
 
@@ -295,12 +307,6 @@
 #include "rtl8821a/HalHWImg8821A_FW.h"
 #include "rtl8821a/odm_RegConfig8821A.h"
 #include "rtl8821a/odm_RTL8821A.h"
-#if (TESTCHIP_SUPPORT == 1) 
-#include "rtl8821a/HalHWImg8821A_TestChip_MAC.h"
-#include "rtl8821a/HalHWImg8821A_TestChip_RF.h"
-#include "rtl8821a/HalHWImg8821A_TestChip_BB.h"
-#include "rtl8821a/HalHWImg8821A_TestChip_FW.h"
-#endif
 #endif
 
 #endif	// __ODM_PRECOMP_H__

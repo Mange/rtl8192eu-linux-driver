@@ -401,6 +401,7 @@ BOOLEAN PHY_CheckPowerOffFor8192D(PADAPTER Adapter);
 VOID PHY_SetPowerOnFor8192D(PADAPTER Adapter);
 //void PHY_ConfigMacPhyMode92D(PADAPTER Adapter);
 void rtl8192d_free_hal_data(_adapter * padapter);
+void rtl8192d_init_default_value(_adapter *adapter);
 void rtl8192d_set_hal_ops(struct hal_ops *pHalFunc);
 
 void SetHwReg8192D(_adapter *adapter, u8 variable, u8 *val);

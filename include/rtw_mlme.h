@@ -254,6 +254,7 @@ struct cfg80211_wifidirect_info{
 	struct ieee80211_channel	remain_on_ch_channel;
 	enum nl80211_channel_type	remain_on_ch_type;
 	u64						remain_on_ch_cookie;
+	bool not_indic_ro_ch_exp;
 	bool is_ro_ch;
 	u32 last_ro_ch_time; /* this will be updated at the beginning and end of ro_ch */
 };
@@ -401,6 +402,18 @@ enum {
 	RTW_ROAM_ACTIVE = BIT2,
 };
 
+struct beacon_keys {
+	u8 ssid[IW_ESSID_MAX_SIZE];
+	u32 ssid_len;
+	u8 bcn_channel;
+	u16 ht_cap_info;
+	u8 ht_info_infos_0_sco; // bit0 & bit1 in infos[0] is second channel offset
+	int encryp_protocol;
+	int pairwise_cipher;
+	int group_cipher;
+	int is_8021x;
+};
+
 struct mlme_priv {
 
 	_lock	lock;
@@ -431,6 +444,12 @@ struct mlme_priv {
 
 	struct wlan_network	cur_network;
 	struct wlan_network *cur_network_scanned;
+
+	// bcn check info
+	struct beacon_keys cur_beacon_keys; // save current beacon keys
+	struct beacon_keys new_beacon_keys; // save new beacon keys
+	u8 new_beacon_cnts; // if new_beacon_cnts >= threshold, ap beacon is changed
+
 #ifdef CONFIG_ARP_KEEP_ALIVE
 	// for arp offload keep alive
 	u8	gw_mac_addr[6];
@@ -619,6 +638,8 @@ struct mlme_priv {
 	u8	scanning_via_buddy_intf;
 #endif
 
+//	u8 	NumOfBcnInfoChkFail;
+//	u32	timeBcnInfoChkStart;
 };
 
 #define rtw_mlme_set_auto_scan_int(adapter, ms) \

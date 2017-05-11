@@ -433,7 +433,8 @@ efuse_OneByteRead(
 	u32	tmpidx = 0;
 	u8	bResult;
 	u8	readbyte;
-
+	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(pAdapter);
+	
 	//DBG_871X("===> EFUSE_OneByteRead(), addr = %x\n", addr);
 	//DBG_871X("===> EFUSE_OneByteRead() start, 0x34 = 0x%X\n", rtw_read32(pAdapter, EFUSE_TEST));
 
@@ -442,9 +443,12 @@ efuse_OneByteRead(
 		bResult = Efuse_Read1ByteFromFakeContent(pAdapter, addr, data);
 		return bResult;
 	}
-
+	
 	if(	IS_HARDWARE_TYPE_8723B(pAdapter) ||
-		(IS_HARDWARE_TYPE_8192E(pAdapter) && IS_VENDOR_8192E_B_CUT(pAdapter)))
+		(IS_HARDWARE_TYPE_8192E(pAdapter) && (!IS_A_CUT(pHalData->VersionID))) ||
+		//(IS_HARDWARE_TYPE_8188E(pAdapter) && ((IS_I_CUT(pHalData->VersionID)) || (IS_J_CUT(pHalData->VersionID))))
+		(IS_VENDOR_8188E_I_CUT_SERIES(pAdapter))
+	  )
 	{
 		// <20130121, Kordan> For SMIC EFUSE specificatoin.
 		//0x34[11]: SW force PGMEN input of efuse to high. (for the bank selected by 0x34[9:8])	
@@ -495,7 +499,8 @@ efuse_OneByteWrite(
 	u8	tmpidx = 0;
 	u8	bResult=_FALSE;
 	u32 efuseValue = 0;
-
+	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(pAdapter);
+	
 	//DBG_871X("===> EFUSE_OneByteWrite(), addr = %x data=%x\n", addr, data);
 	//DBG_871X("===> EFUSE_OneByteWrite() start, 0x34 = 0x%X\n", rtw_read32(pAdapter, EFUSE_TEST));
 
@@ -517,7 +522,11 @@ efuse_OneByteWrite(
 
 
 	// <20130227, Kordan> 8192E MP chip A-cut had better not set 0x34[11] until B-Cut.
-	if (IS_HARDWARE_TYPE_8723B(pAdapter)||(IS_HARDWARE_TYPE_8192E(pAdapter) && IS_VENDOR_8192E_B_CUT(pAdapter)))
+	if (	IS_HARDWARE_TYPE_8723B(pAdapter) ||
+		(IS_HARDWARE_TYPE_8192E(pAdapter) && (!IS_A_CUT(pHalData->VersionID))) ||
+		//(IS_HARDWARE_TYPE_8188E(pAdapter) && ((IS_I_CUT(pHalData->VersionID)) || (IS_J_CUT(pHalData->VersionID))))
+		(IS_VENDOR_8188E_I_CUT_SERIES(pAdapter))
+	  )
 	{
 		// <20130121, Kordan> For SMIC EFUSE specificatoin.
 		//0x34[11]: SW force PGMEN input of efuse to high. (for the bank selected by 0x34[9:8])
@@ -548,7 +557,11 @@ efuse_OneByteWrite(
 	}
 
 	// disable Efuse program enable
-	if (IS_HARDWARE_TYPE_8723B(pAdapter))
+	if (	IS_HARDWARE_TYPE_8723B(pAdapter) ||
+		(IS_HARDWARE_TYPE_8192E(pAdapter) && (!IS_A_CUT(pHalData->VersionID))) ||
+		//(IS_HARDWARE_TYPE_8188E(pAdapter) && ((IS_I_CUT(pHalData->VersionID)) || (IS_J_CUT(pHalData->VersionID))))
+		(IS_VENDOR_8188E_I_CUT_SERIES(pAdapter))
+	  )
 	{
 		PHY_SetMacReg(pAdapter, EFUSE_TEST, BIT(11), 0);
 	}

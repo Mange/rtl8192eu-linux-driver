@@ -233,9 +233,12 @@ int rtw_os_recvbuf_resource_free(_adapter *padapter, struct recv_buf *precvbuf)
 
 
 	if(precvbuf->pskb)
+	{
+#ifdef CONFIG_PREALLOC_RX_SKB_BUFFER
+		if(rtw_free_skb_premem(precvbuf->pskb)!=0)
+#endif
 		rtw_skb_free(precvbuf->pskb);
-
-
+	}
 	return ret;
 
 }
@@ -302,6 +305,7 @@ void rtw_os_recv_indicate_pkt(_adapter *padapter, _pkt *pkt, struct rx_pkt_attri
 #ifdef CONFIG_BR_EXT
 	void *br_port = NULL;
 #endif
+	int ret;
 
 	/* Indicat the packets to upper layer */
 	if (pkt) {
@@ -342,7 +346,9 @@ void rtw_os_recv_indicate_pkt(_adapter *padapter, _pkt *pkt, struct rx_pkt_attri
 
 					if(bmcast && (pskb2 != NULL) ) {
 						pkt = pskb2;
+						DBG_COUNTER(padapter->rx_logs.os_indicate_ap_mcast);
 					} else {
+						DBG_COUNTER(padapter->rx_logs.os_indicate_ap_forward);
 						return;
 					}
 				}
@@ -350,6 +356,7 @@ void rtw_os_recv_indicate_pkt(_adapter *padapter, _pkt *pkt, struct rx_pkt_attri
 			else// to APself
 			{
 				//DBG_871X("to APSelf\n");
+				DBG_COUNTER(padapter->rx_logs.os_indicate_ap_self);
 			}
 		}
 		
@@ -395,7 +402,11 @@ void rtw_os_recv_indicate_pkt(_adapter *padapter, _pkt *pkt, struct rx_pkt_attri
 		pkt->ip_summed = CHECKSUM_NONE;
 #endif //CONFIG_TCP_CSUM_OFFLOAD_RX
 
-		rtw_netif_rx(padapter->pnetdev, pkt);
+		ret = rtw_netif_rx(padapter->pnetdev, pkt);
+		if (ret == NET_RX_SUCCESS)
+			DBG_COUNTER(padapter->rx_logs.os_netif_ok);
+		else
+			DBG_COUNTER(padapter->rx_logs.os_netif_err);
 	}
 }
 
@@ -558,10 +569,13 @@ int rtw_recv_indicatepkt(_adapter *padapter, union recv_frame *precv_frame)
 	_queue	*pfree_recv_queue;
 	_pkt *skb;
 	struct mlme_priv*pmlmepriv = &padapter->mlmepriv;
-	struct rx_pkt_attrib *pattrib = &precv_frame->u.hdr.attrib;
+	struct rx_pkt_attrib *pattrib;
+	
+	if(NULL == precv_frame)
+		goto _recv_indicatepkt_drop;
 
-_func_enter_;
-
+	DBG_COUNTER(padapter->rx_logs.os_indicate);
+	pattrib = &precv_frame->u.hdr.attrib;
 	precvpriv = &(padapter->recvpriv);
 	pfree_recv_queue = &(precvpriv->free_recv_queue);
 
@@ -629,7 +643,6 @@ _recv_indicatepkt_end:
 
 	RT_TRACE(_module_recv_osdep_c_,_drv_info_,("\n rtw_recv_indicatepkt :after rtw_os_recv_indicate_pkt!!!!\n"));
 
-_func_exit_;
 
         return _SUCCESS;
 
@@ -639,9 +652,9 @@ _recv_indicatepkt_drop:
 	 if(precv_frame)
 		 rtw_free_recvframe(precv_frame, pfree_recv_queue);
 
-	 return _FAIL;
+	 DBG_COUNTER(padapter->rx_logs.os_indicate_err);
 
-_func_exit_;
+	 return _FAIL;
 
 }
 

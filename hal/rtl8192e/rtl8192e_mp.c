@@ -392,12 +392,12 @@ void Hal_SetCCKTxPower(PADAPTER pAdapter, u8 *TxPower)
 	// rf-A cck tx power
 	write_bbreg(pAdapter, rTxAGC_A_CCK1_Mcs32, bMaskByte1, TxPower[RF_PATH_A]);
 	tmpval = (TxPower[RF_PATH_A]<<16) | (TxPower[RF_PATH_A]<<8) | TxPower[RF_PATH_A];
-	write_bbreg(pAdapter, rTxAGC_B_CCK11_A_CCK2_11, 0xffffff00, tmpval);
+	write_bbreg(pAdapter, rTxAGC_B_CCK11_A_CCK2_11, bMaskH3Bytes, tmpval);
 
 	// rf-B cck tx power
 	write_bbreg(pAdapter, rTxAGC_B_CCK11_A_CCK2_11, bMaskByte0, TxPower[RF_PATH_B]);
 	tmpval = (TxPower[RF_PATH_B]<<16) | (TxPower[RF_PATH_B]<<8) | TxPower[RF_PATH_B];
-	write_bbreg(pAdapter, rTxAGC_B_CCK1_55_Mcs32, 0xffffff00, tmpval);
+	write_bbreg(pAdapter, rTxAGC_B_CCK1_55_Mcs32, bMaskH3Bytes, tmpval);
 
 	RT_TRACE(_module_mp_, _drv_notice_,
 		 ("-SetCCKTxPower: A[0x%02x] B[0x%02x]\n",
@@ -750,7 +750,6 @@ void Hal_TriggerRFThermalMeter(PADAPTER pAdapter)
 {
   
 	PHY_SetRFReg(pAdapter, ODM_RF_PATH_A, RF_T_METER_8192E, BIT17 | BIT16, 0x03);
-
 //	RT_TRACE(_module_mp_,_drv_alert_, ("TriggerRFThermalMeter() finished.\n" ));
 }
 
@@ -759,10 +758,9 @@ u8 Hal_ReadRFThermalMeter(PADAPTER pAdapter)
 	u32 ThermalValue = 0;
 
 	//ThermalValue = _read_rfreg(pAdapter, RF_PATH_A, RF_T_METER, 0x1F);	// 0x24: RF Reg[4:0]
-	ThermalValue = (u1Byte)PHY_QueryRFReg(pAdapter, ODM_RF_PATH_A, RF_T_METER_8192E, 0xfc00);	// 0x42: RF Reg[15:10]	
- 	DBG_871X("%s ThermalValue = 0x%x\n", __FUNCTION__,ThermalValue);
-	printk("%s ### REG_C80:0x%08x,REG_C88:0x%08x ####\n",__FUNCTION__,
-		rtw_read32(pAdapter,0xc80),rtw_read32(pAdapter,0xc88));
+	ThermalValue = (u1Byte)PHY_QueryRFReg(pAdapter, ODM_RF_PATH_A, RF_T_METER_8192E, 0xfc00);	// 0x42: RF Reg[15:10]
+	DBG_871X("%s ThermalValue = 0x%x\n", __FUNCTION__,ThermalValue);
+//	RT_TRACE(_module_mp_, _drv_alert_, ("ThermalValue = 0x%x\n", ThermalValue));
 	return (u8)ThermalValue;
 }
 
@@ -873,6 +871,7 @@ void Hal_SetSingleToneTx(PADAPTER pAdapter, u8 bStart)
 	}
 	
 }
+
 
 
 void Hal_SetCarrierSuppressionTx(PADAPTER pAdapter, u8 bStart)

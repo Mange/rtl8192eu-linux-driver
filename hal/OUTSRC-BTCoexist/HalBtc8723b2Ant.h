@@ -129,6 +129,14 @@ typedef struct _COEX_STA_8723B_2ANT{
 // The following is interface which will notify coex module.
 //===========================================
 VOID
+EXhalbtc8723b2ant_PowerOnSetting(
+	IN	PBTC_COEXIST		pBtCoexist
+	);
+VOID
+EXhalbtc8723b2ant_PreLoadFirmware(
+	IN	PBTC_COEXIST		pBtCoexist
+	);
+VOID
 EXhalbtc8723b2ant_InitHwConfig(
 	IN	PBTC_COEXIST		pBtCoexist,
 	IN	BOOLEAN				bWifiOnly

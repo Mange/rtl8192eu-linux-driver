@@ -899,12 +899,17 @@ void rtl8192eu_recv_tasklet(void *priv)
 	_pkt			*pskb;
 	_adapter		*padapter = (_adapter*)priv;
 	struct recv_priv	*precvpriv = &padapter->recvpriv;
+	struct recv_buf	*precvbuf = NULL;
 	
 	while (NULL != (pskb = skb_dequeue(&precvpriv->rx_skb_queue)))
 	{
 		if ((padapter->bDriverStopped == _TRUE)||(padapter->bSurpriseRemoved== _TRUE))
 		{
 			DBG_8192C("recv_tasklet => bDriverStopped or bSurpriseRemoved \n");
+#ifdef CONFIG_PREALLOC_RX_SKB_BUFFER
+			if(rtw_free_skb_premem(pskb)!=0)
+#endif //CONFIG_PREALLOC_RX_SKB_BUFFER
+
 			rtw_skb_free(pskb);
 			break;
 		}
@@ -922,9 +927,12 @@ void rtl8192eu_recv_tasklet(void *priv)
 #else
 		rtw_skb_free(pskb);
 #endif
-				
+		if (NULL != (precvbuf = rtw_dequeue_recvbuf(&precvpriv->recv_buf_pending_queue))) {
+			precvbuf->pskb = NULL;
+			precvbuf->reuse = _FALSE;
+			rtw_read_port(padapter, precvpriv->ff_hwaddr, 0, (unsigned char *)precvbuf);
+		}
 	}
-	
 }
 
 
@@ -984,8 +992,9 @@ static void usb_read_port_complete(struct urb *purb, struct pt_regs *regs)
 			precvbuf->transfer_len = purb->actual_length;			
 			skb_put(precvbuf->pskb, purb->actual_length);	
 			skb_queue_tail(&precvpriv->rx_skb_queue, precvbuf->pskb);
-
+#ifndef CONFIG_FIX_NR_BULKIN_BUFFER
 			if (skb_queue_len(&precvpriv->rx_skb_queue)<=1)
+#endif
 				tasklet_schedule(&precvpriv->recv_tasklet);
 
 			precvbuf->pskb = NULL;
@@ -1083,14 +1092,17 @@ _func_enter_;
 	//re-assign for linux based on skb
 	if((precvbuf->reuse == _FALSE) || (precvbuf->pskb == NULL))
 	{
+#ifndef CONFIG_FIX_NR_BULKIN_BUFFER
 		precvbuf->pskb = rtw_skb_alloc(MAX_RECVBUF_SZ + RECVBUFF_ALIGN_SZ);
-
+#endif
 		if(precvbuf->pskb == NULL)		
 		{
-			RT_TRACE(_module_hci_ops_os_c_,_drv_err_,("init_recvbuf(): alloc_skb fail!\n"));
-			DBG_8192C("#### usb_read_port() alloc_skb fail!#####\n");
+			if (0)
+			DBG_8192C("usb_read_port() enqueue precvbuf=%p \n", precvbuf);
+			//enqueue precvbuf and wait for free skb
+			rtw_enqueue_recvbuf(precvbuf, &precvpriv->recv_buf_pending_queue);
 			return _FAIL;
-		}	
+		}
 
 		tmpaddr = (SIZE_PTR)precvbuf->pskb->data;
         	alignment = tmpaddr & (RECVBUFF_ALIGN_SZ-1);

@@ -279,7 +279,7 @@ static s32 update_txdesc(struct xmit_frame *pxmitframe, u8 *pmem, s32 sz ,u8 bag
 			SET_TX_DESC_AGG_ENABLE_92E(ptxdesc, 1);
 			SET_TX_DESC_MAX_AGG_NUM_92E(ptxdesc, 0x1f);
 			// Set A-MPDU aggregation.
-			SET_TX_DESC_AMPDU_DENSITY_92E(ptxdesc, pHalData->AMPDUDensity);
+			SET_TX_DESC_AMPDU_DENSITY_92E(ptxdesc, pattrib->ampdu_spacing);
 		} else {
 			SET_TX_DESC_BK_92E(ptxdesc, 1);
 		}
@@ -745,6 +745,9 @@ s32 rtl8192eu_xmitframe_complete(_adapter *padapter, struct xmit_priv *pxmitpriv
 		pxmitframe = LIST_CONTAINOR(xmitframe_plist, struct xmit_frame, list);
 		xmitframe_plist = get_next(xmitframe_plist);
 
+		if(_FAIL == rtw_hal_busagg_qsel_check(padapter,pfirstframe->attrib.qsel,pxmitframe->attrib.qsel))
+			break;
+		
              pxmitframe->agg_num = 0; // not first frame of aggregation
 		#ifdef CONFIG_TX_EARLY_MODE
 		pxmitframe->pkt_offset = 1;// not first frame of aggregation,reserve offset for EM Info

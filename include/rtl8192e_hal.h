@@ -59,7 +59,8 @@
 	#define RTL8192E_PHY_MACREG 				"rtl8192e/MAC_REG.txt"
 	#define RTL8192E_PHY_REG_PG				"rtl8192e/PHY_REG_PG.txt"
 	#define RTL8192E_PHY_REG_MP 				"rtl8192e/PHY_REG_MP.txt" 
-	#define RTL8192E_TXPWR_LMT				"rtl8192e/TXPWR_LMT.txt" 
+	#define RTL8192E_TXPWR_LMT					"rtl8192e/TXPWR_LMT.txt"
+	#define RTL8192E_WIFI_ANT_ISOLATION		"rtl8192e/wifi_ant_isolation.txt"
 
 //---------------------------------------------------------------------
 //		RTL8192E Power Configuration CMDs for PCIe interface
@@ -135,17 +136,38 @@ typedef struct _RT_FIRMWARE_8192E {
 #define MAX_RX_DMA_BUFFER_SIZE_8192E		0x3d00 //0x3E80   //0x3FFF	// RX 16K reserved for WOW ?
 
 
-#define TX_TOTAL_PAGE_NUMBER_8192E		243 //0x00~0xF3 totoal pages: F4
+//For General Reserved Page Number(Beacon Queue is reserved page)
+//if (CONFIG_2BCN_EN) Beacon:4, PS-Poll:1, Null Data:1,Prob Rsp:1,Qos Null Data:1
+//Beacon:2, PS-Poll:1, Null Data:1,Prob Rsp:1,Qos Null Data:1
+#define RSVD_PAGE_NUM_8192E		0x08
+//For WoWLan , more reserved page
+//ARP Rsp:1, RWC:1, GTK Info:1,GTK RSP:2,GTK EXT MEM:2, PNO: 6
+#ifdef CONFIG_WOWLAN
+#define WOWLAN_PAGE_NUM_8192E	0x07
+#else
+#define WOWLAN_PAGE_NUM_8192E	0x00
+#endif
 
-#define TX_PAGE_BOUNDARY_8192E			(TX_TOTAL_PAGE_NUMBER_8192E + 1)//0xF4 ~0xFF ,Rserved 12 pages for BCN/PS-POLL..
+#ifdef CONFIG_PNO_SUPPORT
+#undef WOWLAN_PAGE_NUM_8192E
+#define WOWLAN_PAGE_NUM_8192E	0x0d
+#endif
+
+#define	TOTAL_RSVD_PAGE_NUMBER_8192E 	(RSVD_PAGE_NUM_8192E+WOWLAN_PAGE_NUM_8192E)
+#define	TX_TOTAL_PAGE_NUMBER_8192E	(0x100 - TOTAL_RSVD_PAGE_NUMBER_8192E)
+
+#define	TX_PAGE_BOUNDARY_8192E	TX_TOTAL_PAGE_NUMBER_8192E
+
+
 #define TX_PAGE_LOAD_FW_BOUNDARY_8192E		0x47 //0xA5
 #define TX_PAGE_BOUNDARY_WOWLAN_8192E		0xE0
 
 // For Normal Chip Setting
 // (HPQ + LPQ + NPQ + PUBQ) shall be TX_TOTAL_PAGE_NUMBER_92C
-#define NORMAL_PAGE_NUM_LPQ_8192E			0x0C
-#define NORMAL_PAGE_NUM_HPQ_8192E			0x08
-#define NORMAL_PAGE_NUM_NPQ_8192E			0x00
+
+#define NORMAL_PAGE_NUM_HPQ_8192E			0x10
+#define NORMAL_PAGE_NUM_LPQ_8192E			0x10
+#define NORMAL_PAGE_NUM_NPQ_8192E			0x10
 #define NORMAL_PAGE_NUM_EPQ_8192E			0x00
 
 
@@ -158,6 +180,11 @@ typedef struct _RT_FIRMWARE_8192E {
 //-------------------------------------------------------------------------
 //	Chip specific
 //-------------------------------------------------------------------------
+
+// pic buffer descriptor
+#define RTL8192EE_SEG_NUM			TX_BUFFER_SEG_NUM
+#define TX_DESC_NUM_92E			128
+#define RX_DESC_NUM_92E			128
 
 //-------------------------------------------------------------------------
 //	Channel Plan
@@ -201,8 +228,6 @@ typedef struct _RT_FIRMWARE_8192E {
 //#define IS_MULTI_FUNC_CHIP(_Adapter)	(((((PHAL_DATA_TYPE)(_Adapter->HalData))->MultiFunc) & (RT_MULTI_FUNC_BT|RT_MULTI_FUNC_GPS)) ? _TRUE : _FALSE)
 
 //#define RT_IS_FUNC_DISABLED(__pAdapter, __FuncBits) ( (__pAdapter)->DisabledFunctions & (__FuncBits) )
-
-#define GetDefaultAdapter(padapter)	padapter
 
 // rtl8812_hal_init.c
 void	_8051Reset8192E(PADAPTER padapter);
@@ -280,5 +305,16 @@ void SetBcnCtrlReg(PADAPTER padapter, u8 SetBits, u8 ClearBits);
 
 void rtl8192e_start_thread(_adapter *padapter);
 void rtl8192e_stop_thread(_adapter *padapter);
+
+#ifdef CONFIG_PCI_HCI
+BOOLEAN	InterruptRecognized8192EE(PADAPTER Adapter);
+u16	get_txdesc_buf_addr(u16 ff_hwaddr);
+#endif
+
+
+#ifdef CONFIG_BT_COEXIST
+void rtl8192e_combo_card_WifiOnlyHwInit(PADAPTER Adapter);
+#endif
+
 #endif //__RTL8192E_HAL_H__
 

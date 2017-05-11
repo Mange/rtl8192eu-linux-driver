@@ -69,7 +69,8 @@
 		u32	cmd_issued_cnt;
 		u32	cmd_done_cnt;
 		u32	rsp_cnt;
-		u8 cmdthd_running;
+		ATOMIC_T cmdthd_running;
+		//u8 cmdthd_running;
 		u8 stop_req;
 		_adapter *padapter;
 		_mutex sctx_mutex;
@@ -221,6 +222,7 @@ enum rtw_drvextra_cmd_id
 	DM_RA_MSK_WK_CID, //add for STA update RAMask when bandwith change.
 	BEAMFORMING_WK_CID,
 	LPS_CHANGE_DTIM_CID,
+	BTINFO_WK_CID,
 	MAX_WK_CID
 };
 
@@ -386,7 +388,7 @@ when shared key ==> algorithm/keyid
 struct set_stakey_parm {
 	u8	addr[ETH_ALEN];
 	u8	algorithm;
-	u8 	id;// currently for erasing cam entry if algorithm == _NO_PRIVACY_ 
+	u8	keyid;
 	u8	key[16];
 };
 
@@ -950,6 +952,14 @@ struct TDLSoption_param
 	u8 option;
 };
 
+/*H2C Handler index: 64 */
+struct RunInThread_param
+{
+	void (*func)(void*);
+	void *context;
+};
+
+
 #define GEN_CMD_CODE(cmd)	cmd ## _CMD_
 
 
@@ -982,8 +992,11 @@ extern u8 rtw_createbss_cmd(_adapter  *padapter);
 extern u8 rtw_createbss_cmd_ex(_adapter  *padapter, unsigned char *pbss, unsigned int sz);
 u8 rtw_startbss_cmd(_adapter  *padapter, int flags);
 extern u8 rtw_setphy_cmd(_adapter  *padapter, u8 modem, u8 ch);
-extern u8 rtw_setstakey_cmd(_adapter  *padapter, u8 *psta, u8 unicast_key, bool enqueue);
-extern u8 rtw_clearstakey_cmd(_adapter *padapter, u8 *psta, u8 entry, u8 enqueue);
+
+struct sta_info;
+extern u8 rtw_setstakey_cmd(_adapter  *padapter, struct sta_info *sta, u8 unicast_key, bool enqueue);
+extern u8 rtw_clearstakey_cmd(_adapter *padapter, struct sta_info *sta, u8 enqueue);
+
 extern u8 rtw_joinbss_cmd(_adapter  *padapter, struct wlan_network* pnetwork);
 u8 rtw_disassoc_cmd(_adapter *padapter, u32 deauth_timeout_ms, bool enqueue);
 extern u8 rtw_setopmode_cmd(_adapter  *padapter, NDIS_802_11_NETWORK_INFRASTRUCTURE networktype, bool enqueue);
@@ -1027,6 +1040,10 @@ extern u8 rtw_ps_cmd(_adapter*padapter);
 u8 rtw_chk_hi_queue_cmd(_adapter*padapter);
 #endif
 
+#ifdef CONFIG_BT_COEXIST
+u8 rtw_btinfo_cmd(PADAPTER padapter, u8 *pbuf, u16 length);
+#endif
+
 u8 rtw_set_ch_cmd(_adapter*padapter, u8 ch, u8 bw, u8 ch_offset, u8 enqueue);
 extern u8 rtw_set_chplan_cmd(_adapter*padapter, u8 chplan, u8 enqueue, u8 swconfig);
 extern u8 rtw_led_blink_cmd(_adapter*padapter, PVOID pLed);
@@ -1038,6 +1055,8 @@ extern u8 rtw_c2h_packet_wk_cmd(PADAPTER padapter, u8 *pbuf, u16 length);
 //#else
 extern u8 rtw_c2h_wk_cmd(PADAPTER padapter, u8 *c2h_evt);
 //#endif
+
+u8 rtw_run_in_thread_cmd(PADAPTER padapter, void (*func)(void*), void* context);
 
 u8 rtw_drvextra_cmd_hdl(_adapter *padapter, unsigned char *pbuf);
 
@@ -1132,7 +1151,9 @@ enum rtw_h2c_cmd
 	GEN_CMD_CODE(_SetChannelSwitch), /*61*/
 	GEN_CMD_CODE(_TDLS), /*62*/
 	GEN_CMD_CODE(_ChkBMCSleepq), /*63*/
-	
+
+	GEN_CMD_CODE(_RunInThreadCMD), /*64*/
+
 	MAX_H2CCMD
 };
 
@@ -1215,6 +1236,8 @@ struct _cmd_callback 	rtw_cmd_callback[] =
 	{GEN_CMD_CODE(_SetChannelSwitch), NULL},/*61*/
 	{GEN_CMD_CODE(_TDLS), NULL},/*62*/
 	{GEN_CMD_CODE(_ChkBMCSleepq), NULL}, /*63*/
+
+	{GEN_CMD_CODE(_RunInThreadCMD), NULL},/*64*/
 };
 #endif
 

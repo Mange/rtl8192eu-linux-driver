@@ -92,6 +92,12 @@
 //       Regsiter Bit and Content definition
 //============================================================
 
+//========================================================
+// General definitions
+//========================================================
 
-#endif // __RTL8821A_SPEC_H__
+#define MACID_NUM_8821A 128
+#define CAM_ENTRY_NUM_8821A 64
+
+#endif /* __RTL8821A_SPEC_H__ */
 

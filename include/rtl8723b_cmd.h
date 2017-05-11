@@ -361,5 +361,5 @@ u8 rtl8723b_reset_tsf(_adapter *padapter, u8 reset_port);
 #endif	// CONFIG_TSF_RESET_OFFLOAD
 s32 FillH2CCmd8723B(PADAPTER padapter, u8 ElementID, u32 CmdLen, u8 *pCmdBuffer);
 
-#define FillH2CCmd FillH2CCmd8723B
 #endif
+
