@@ -401,13 +401,11 @@ int recvbuf2recvframe(PADAPTER padapter, void *ptr)
 
 			if(pattrib->physt && pphy_status)
 				rx_query_phy_status(precvframe, pphy_status);
-
 			if(rtw_recv_entry(precvframe) != _SUCCESS)
 			{
-				RT_TRACE(_module_rtl871x_recv_c_,_drv_err_,
-					("recvbuf2recvframe: rtw_recv_entry(precvframe) != _SUCCESS\n"));
+				//keep quite for now
+				//RT_TRACE(_module_rtl871x_recv_c_,_drv_err_, ("recvbuf2recvframe: rtw_recv_entry(precvframe) != _SUCCESS\n"));
 			}
-
 		}
 		else{ // pkt_rpt_type == TX_REPORT1-CCX, TX_REPORT2-TX RTP,HIS_REPORT-USB HISR RTP
 
