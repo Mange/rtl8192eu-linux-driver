@@ -243,14 +243,12 @@ dm_InitGPIOSetting(
 //============================================================
 static void Init_ODM_ComInfo_8192e(PADAPTER	Adapter)
 {
-	PHAL_DATA_TYPE	pHalData = GET_HAL_DATA(Adapter);
-	struct dm_priv	*pdmpriv = &pHalData->dmpriv;
+	PHAL_DATA_TYPE	pHalData = GET_HAL_DATA(Adapter);	
 	PDM_ODM_T		pDM_Odm = &(pHalData->odmpriv);
+	u32 SupportAbility = 0;
 	u8	cut_ver,fab_ver;
 
 	Init_ODM_ComInfo(Adapter);
-
-	ODM_CmnInfoInit(pDM_Odm,ODM_CMNINFO_IC_TYPE,ODM_RTL8192E);
 
 	ODM_CmnInfoInit(pDM_Odm,ODM_CMNINFO_FAB_VER,pHalData->VersionID.VendorType);		
 
@@ -267,29 +265,25 @@ static void Init_ODM_ComInfo_8192e(PADAPTER	Adapter)
 	else
 		cut_ver = ODM_CUT_A;
 	ODM_CmnInfoInit(pDM_Odm,ODM_CMNINFO_CUT_VER,cut_ver);
-
- 	ODM_CmnInfoInit(pDM_Odm, ODM_CMNINFO_RF_ANTENNA_TYPE, pHalData->TRxAntDivType);
 	
 	#ifdef CONFIG_DISABLE_ODM
-	pdmpriv->InitODMFlag = 0;
+	SupportAbility = 0;
 	#else
-	pdmpriv->InitODMFlag =	ODM_RF_CALIBRATION		|
-							ODM_RF_TX_PWR_TRACK	//|
-							;	
-	//if(pHalData->AntDivCfg)
-	//	pdmpriv->InitODMFlag |= ODM_BB_ANT_DIV;
+	SupportAbility = 	ODM_RF_CALIBRATION |
+					ODM_RF_TX_PWR_TRACK
+					;
 	#endif	
 
-	ODM_CmnInfoUpdate(pDM_Odm,ODM_CMNINFO_ABILITY,pdmpriv->InitODMFlag);
+	ODM_CmnInfoUpdate(pDM_Odm,ODM_CMNINFO_ABILITY,SupportAbility);
 	
 }
 static void Update_ODM_ComInfo_8192e(PADAPTER	Adapter)
 {
 	PHAL_DATA_TYPE	pHalData = GET_HAL_DATA(Adapter);
 	PDM_ODM_T		pDM_Odm = &(pHalData->odmpriv);
-	struct dm_priv	*pdmpriv = &pHalData->dmpriv;
+	u32 SupportAbility = 0;
 
-	pdmpriv->InitODMFlag = 0
+	SupportAbility = 0
 		| ODM_BB_DIG
 		| ODM_BB_RA_MASK
 		//| ODM_BB_DYNAMIC_TXPWR
@@ -298,7 +292,6 @@ static void Update_ODM_ComInfo_8192e(PADAPTER	Adapter)
 		//| ODM_BB_CCK_PD
 		//| ODM_BB_PWR_SAVE
 		| ODM_BB_CFO_TRACKING
-		| ODM_MAC_EDCA_TURBO
 		| ODM_RF_CALIBRATION
 		| ODM_RF_TX_PWR_TRACK
 		| ODM_BB_PRIMARY_CCA
@@ -306,15 +299,23 @@ static void Update_ODM_ComInfo_8192e(PADAPTER	Adapter)
 //		| ODM_BB_PWR_TRAIN
 		;
 
-	if (rtw_odm_adaptivity_needed(Adapter) == _TRUE)
-		pdmpriv->InitODMFlag |= ODM_BB_ADAPTIVITY;
+	if (rtw_odm_adaptivity_needed(Adapter) == _TRUE) {
+		rtw_odm_adaptivity_config_msg(RTW_DBGDUMP, Adapter);
+		SupportAbility |= ODM_BB_ADAPTIVITY;
+	}
+	
+	if(!Adapter->registrypriv.qos_opt_enable){
+		SupportAbility |= ODM_MAC_EDCA_TURBO;
+	}
 
-	if(pHalData->AntDivCfg)
-		pdmpriv->InitODMFlag |= ODM_BB_ANT_DIV;
+#ifdef CONFIG_ANTENNA_DIVERSITY
+	if (pHalData->AntDivCfg)
+		SupportAbility |= ODM_BB_ANT_DIV;
+#endif
 
 #if (MP_DRIVER==1)
 	if (Adapter->registrypriv.mp_mode == 1) {
-		pdmpriv->InitODMFlag = 0
+		SupportAbility = 0
 			| ODM_RF_CALIBRATION
 			| ODM_RF_TX_PWR_TRACK
 			;
@@ -322,12 +323,10 @@ static void Update_ODM_ComInfo_8192e(PADAPTER	Adapter)
 #endif//(MP_DRIVER==1)
 
 #ifdef CONFIG_DISABLE_ODM
-	pdmpriv->InitODMFlag = 0;
+	SupportAbility = 0;
 #endif//CONFIG_DISABLE_ODM
 
-	ODM_CmnInfoUpdate(pDM_Odm,ODM_CMNINFO_ABILITY,pdmpriv->InitODMFlag);
-
-	ODM_CmnInfoInit(pDM_Odm, ODM_CMNINFO_RF_ANTENNA_TYPE, pHalData->TRxAntDivType);
+	ODM_CmnInfoUpdate(pDM_Odm,ODM_CMNINFO_ABILITY,SupportAbility);
 }
 
 void
@@ -335,8 +334,7 @@ rtl8192e_InitHalDm(
 	IN	PADAPTER	Adapter
 	)
 {
-	PHAL_DATA_TYPE	pHalData = GET_HAL_DATA(Adapter);
-	struct dm_priv	*pdmpriv = &pHalData->dmpriv;
+	PHAL_DATA_TYPE	pHalData = GET_HAL_DATA(Adapter);	
 	PDM_ODM_T		pDM_Odm = &(pHalData->odmpriv);
 	u8	i;
 
@@ -344,9 +342,7 @@ rtl8192e_InitHalDm(
 	dm_InitGPIOSetting(Adapter);
 #endif
 
-	pdmpriv->DM_Type = DM_Type_ByDriver;
-	pdmpriv->DMFlag = DYNAMIC_FUNC_DISABLE;
-
+	pHalData->DM_Type = DM_Type_ByDriver;
 	
 	Update_ODM_ComInfo_8192e(Adapter);
 	ODM_DMInit(pDM_Odm);
@@ -363,9 +359,7 @@ rtl8192e_HalDmWatchDog(
 {
 	BOOLEAN		bFwCurrentInPSMode = _FALSE;
 	BOOLEAN		bFwPSAwake = _TRUE;
-	u8 hw_init_completed = _FALSE;
 	PHAL_DATA_TYPE	pHalData = GET_HAL_DATA(Adapter);
-	struct dm_priv	*pdmpriv = &pHalData->dmpriv;
 	PDM_ODM_T		pDM_Odm = &(pHalData->odmpriv);
 #ifdef CONFIG_CONCURRENT_MODE
 	PADAPTER pbuddy_adapter = Adapter->pbuddy_adapter;
@@ -373,9 +367,7 @@ rtl8192e_HalDmWatchDog(
 
 	_func_enter_;
 
-	hw_init_completed = Adapter->hw_init_completed;
-
-	if (hw_init_completed == _FALSE)
+	if (!rtw_is_hw_init_completed(Adapter))
 		goto skip_dm;
 
 #ifdef CONFIG_LPS
@@ -390,9 +382,8 @@ rtl8192e_HalDmWatchDog(
 		bFwPSAwake = _FALSE;
 #endif //CONFIG_P2P_PS
 
-	if( (hw_init_completed == _TRUE)
-		&& ((!bFwCurrentInPSMode) && bFwPSAwake))
-	{
+	if ((rtw_is_hw_init_completed(Adapter))
+		&& ((!bFwCurrentInPSMode) && bFwPSAwake)) {
 		//
 		// Calculate Tx/Rx statistics.
 		//
@@ -416,7 +407,7 @@ rtl8192e_HalDmWatchDog(
 
 
 	//ODM
-	if (hw_init_completed == _TRUE)
+	if (rtw_is_hw_init_completed(Adapter))
 	{
 		u8	bLinked=_FALSE;
 		u8	bsta_state=_FALSE;
@@ -466,87 +457,20 @@ skip_dm:
 void rtl8192e_init_dm_priv(IN PADAPTER Adapter)
 {
 	PHAL_DATA_TYPE	pHalData = GET_HAL_DATA(Adapter);
-	struct dm_priv	*pdmpriv = &pHalData->dmpriv;
 	PDM_ODM_T 		podmpriv = &pHalData->odmpriv;
-	_rtw_memset(pdmpriv, 0, sizeof(struct dm_priv));
 	//_rtw_spinlock_init(&(pHalData->odm_stainfo_lock));
 	Init_ODM_ComInfo_8192e(Adapter);
 	ODM_InitAllTimers(podmpriv );	
-	ODM_InitDebugSetting(podmpriv);
+	PHYDM_InitDebugSetting(podmpriv);
 
 }
 
 void rtl8192e_deinit_dm_priv(IN PADAPTER Adapter)
 {
 	PHAL_DATA_TYPE	pHalData = GET_HAL_DATA(Adapter);
-	struct dm_priv	*pdmpriv = &pHalData->dmpriv;
 	PDM_ODM_T 		podmpriv = &pHalData->odmpriv;
 	//_rtw_spinlock_free(&pHalData->odm_stainfo_lock);		
-	ODM_CancelAllTimers(podmpriv);	
-
+	ODM_CancelAllTimers(podmpriv);
 }
 
-
-#ifdef CONFIG_ANTENNA_DIVERSITY
-// Add new function to reset the state of antenna diversity before link.
-//
-// Compare RSSI for deciding antenna
-void	AntDivCompare8192e(PADAPTER Adapter, WLAN_BSSID_EX *dst, WLAN_BSSID_EX *src)
-{
-	//PADAPTER Adapter = pDM_Odm->Adapter ;
-	
-	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(Adapter);
-	if(0 != pHalData->AntDivCfg )
-	{
-		//DBG_8192C("update_network=> orgRSSI(%d)(%d),newRSSI(%d)(%d)\n",dst->Rssi,query_rx_pwr_percentage(dst->Rssi),
-		//	src->Rssi,query_rx_pwr_percentage(src->Rssi));
-		//select optimum_antenna for before linked =>For antenna diversity
-		if(dst->Rssi >=  src->Rssi )//keep org parameter
-		{
-			src->Rssi = dst->Rssi;
-			src->PhyInfo.Optimum_antenna = dst->PhyInfo.Optimum_antenna;						
-		}
-	}
-}
-
-// Add new function to reset the state of antenna diversity before link.
-u8 AntDivBeforeLink8192e(PADAPTER Adapter )
-{
-	
-	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(Adapter);	
-	PDM_ODM_T 	pDM_Odm =&pHalData->odmpriv;
-	SWAT_T		*pDM_SWAT_Table = &pDM_Odm->DM_SWAT_Table;
-	struct mlme_priv	*pmlmepriv = &(Adapter->mlmepriv);
-	
-	// Condition that does not need to use antenna diversity.
-	if(pHalData->AntDivCfg==0)
-	{
-		//DBG_8192C("odm_AntDivBeforeLink8192C(): No AntDiv Mechanism.\n");
-		return _FALSE;
-	}
-
-	if(check_fwstate(pmlmepriv, _FW_LINKED) == _TRUE)	
-	{		
-		return _FALSE;
-	}
-
-
-	if(pDM_SWAT_Table->SWAS_NoLink_State == 0){
-		//switch channel
-		pDM_SWAT_Table->SWAS_NoLink_State = 1;
-		pDM_SWAT_Table->CurAntenna = (pDM_SWAT_Table->CurAntenna==MAIN_ANT)?AUX_ANT:MAIN_ANT;
-
-		//PHY_SetBBReg(Adapter, rFPGA0_XA_RFInterfaceOE, 0x300, pDM_SWAT_Table->CurAntenna);
-		rtw_antenna_select_cmd(Adapter, pDM_SWAT_Table->CurAntenna, _FALSE);
-		//DBG_8192C("%s change antenna to ANT_( %s ).....\n",__FUNCTION__, (pDM_SWAT_Table->CurAntenna==MAIN_ANT)?"MAIN":"AUX");
-		return _TRUE;
-	}
-	else
-	{
-		pDM_SWAT_Table->SWAS_NoLink_State = 0;
-		return _FALSE;
-	}	
-
-}
-#endif
 

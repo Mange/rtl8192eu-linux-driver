@@ -101,11 +101,11 @@
 //	0x0600h ~ 0x07FFh	WMAC Configuration
 //
 //-----------------------------------------------------
-#ifdef CONFIG_RF_GAIN_OFFSET
+#ifdef CONFIG_RF_POWER_TRIM
 #define EEPROM_RF_GAIN_OFFSET			0xC1
 #define EEPROM_RF_GAIN_VAL				0xF6
 #define EEPROM_THERMAL_OFFSET			0xF5
-#endif //CONFIG_RF_GAIN_OFFSET
+#endif /*CONFIG_RF_POWER_TRIM*/
 //----------------------------------------------------------------------------
 //       88E Driver Initialization Offload REG_FDHM0(Offset 0x88, 8 bits)  
 //----------------------------------------------------------------------------
@@ -148,7 +148,11 @@
 //========================================================
 
 #define MACID_NUM_88E 64
-#define CAM_ENTRY_NUM_88E 32
+#define SEC_CAM_ENT_NUM_88E 32
+#define NSS_NUM_88E 1
+#define BAND_CAP_88E (BAND_CAP_2G)
+#define BW_CAP_88E (BW_CAP_20M | BW_CAP_40M)
+#define PROTO_CAP_88E (PROTO_CAP_11B|PROTO_CAP_11G|PROTO_CAP_11N)
 
 //----------------------------------------------------------------------------
 //       8192C EEPROM/EFUSE share register definition.

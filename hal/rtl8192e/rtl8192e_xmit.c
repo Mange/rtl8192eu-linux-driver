@@ -22,6 +22,20 @@
 //#include <drv_types.h>
 #include <rtl8192e_hal.h>
 
+ s32	rtl8192e_init_xmit_priv(_adapter *padapter)
+{
+	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(padapter);
+	struct xmit_priv 	*pxmitpriv = &padapter->xmitpriv;
+	
+	#ifdef CONFIG_TX_EARLY_MODE
+	pHalData->bEarlyModeEnable = padapter->registrypriv.early_mode;
+	#endif
+	pxmitpriv->hw_ssn_seq_no = rtw_get_hwseq_no(padapter);	
+	
+	pxmitpriv->nqos_ssn = 0;
+	return _SUCCESS;
+}
+
 void _dbg_dump_tx_info(_adapter	*padapter,int frame_tag, u8 *ptxdesc)
 {
 	u8 bDumpTxPkt;
@@ -250,6 +264,99 @@ void UpdateEarlyModeInfo8192E(struct xmit_priv *pxmitpriv,struct xmit_buf *pxmit
 }
 #endif
 
+#if ((DEV_BUS_TYPE == RT_USB_INTERFACE) ||(DEV_BUS_TYPE == RT_SDIO_INTERFACE))
+void rtl8192e_cal_txdesc_chksum(u8 *ptxdesc)
+{
+	u16	*usPtr = (u16*)ptxdesc;
+	u32 count = 16;	// (32 bytes / 2 bytes per XOR) => 16 times
+	u32 index;
+	u16 checksum = 0;
+
+	//Clear first
+	SET_TX_DESC_TX_DESC_CHECKSUM_92E(ptxdesc, 0);
+
+	for(index = 0 ; index < count ; index++){
+		checksum = checksum ^ le16_to_cpu(*(usPtr + index));
+	}
+
+	SET_TX_DESC_TX_DESC_CHECKSUM_92E(ptxdesc, checksum);
+}
+#endif
+
+void fill_txdesc_sectype(struct pkt_attrib *pattrib, u8 *ptxdesc)
+{
+	if ((pattrib->encrypt > 0) && !pattrib->bswenc)
+	{
+		switch (pattrib->encrypt)
+		{	
+			//SEC_TYPE : 0:NO_ENC,1:WEP40/TKIP,2:WAPI,3:AES
+			case _WEP40_:
+			case _WEP104_:
+			case _TKIP_:
+			case _TKIP_WTMIC_:	
+					SET_TX_DESC_SEC_TYPE_92E(ptxdesc, 0x1);
+					break;
+#ifdef CONFIG_WAPI_SUPPORT
+			case _SMS4_:
+					SET_TX_DESC_SEC_TYPE_92E(ptxdesc, 0x2);
+				break;
+#endif
+			case _AES_:
+					SET_TX_DESC_SEC_TYPE_92E(ptxdesc, 0x3);
+					break;
+			case _NO_PRIVACY_:
+			default:
+					SET_TX_DESC_SEC_TYPE_92E(ptxdesc, 0x0);
+					break;
+		
+		}
+		
+	}
+
+}
+void fill_txdesc_vcs(struct pkt_attrib *pattrib, u8 *ptxdesc)
+{
+	//DBG_8192C("cvs_mode=%d\n", pattrib->vcs_mode);	
+
+	SET_TX_DESC_HW_RTS_ENABLE_92E(ptxdesc, 0);
+
+	switch(pattrib->vcs_mode)
+	{
+		case RTS_CTS:
+			SET_TX_DESC_RTS_ENABLE_92E(ptxdesc, 1);
+			break;
+		case CTS_TO_SELF:
+			SET_TX_DESC_CTS2SELF_92E(ptxdesc, 1);
+			break;
+		case NONE_VCS:
+		default:
+			break;		
+	}
+	#if 0 //to do 
+	// Protection mode related
+	if(pTcb->bRTSEnable || pTcb->bCTSEnable)
+	{
+		SET_TX_DESC_CCA_RTS_92E(pDesc, pTcb->RTSCCA);
+
+		//SET_TX_DESC_RTS_ENABLE_92E(pDesc, ((pTcb->bRTSEnable && !pTcb->bCTSEnable) ? 1 : 0));
+		//SET_TX_DESC_CTS2SELF_92E(pDesc, ((pTcb->bCTSEnable) ? 1 : 0));
+
+		SET_TX_DESC_CTROL_STBC_92E(pDesc, ((pTcb->bRTSSTBC) ? 1 : 0));
+		SET_TX_DESC_RTS_SHORT_92E(pDesc, pTcb->bRTSShort);
+		SET_TX_DESC_RTS_RATE_92E(pDesc, MRateToHwRate((u1Byte)pTcb->RTSRate));
+
+		if(pMgntInfo->ForcedProtectionMode == PROTECTION_MODE_FORCE_ENABLE)
+	    	{
+		    SET_TX_DESC_RTS_RATE_FB_LIMIT_92E(pDesc, 1);
+	    	}
+		else
+		{
+			SET_TX_DESC_RTS_RATE_FB_LIMIT_92E(pDesc, 0xF);
+		}
+	}
+	#endif
+}
+
 u8 
 BWMapping_92E(
 	IN	PADAPTER		Adapter,
@@ -300,7 +407,7 @@ SCMapping_92E(
 			else if(pHalData->nCur80MhzPrimeSC == HAL_PRIME_CHNL_OFFSET_UPPER)
 				SCSettingOfDesc = VHT_DATA_SC_40_UPPER_OF_80MHZ;
 			else
-				DBG_871X("%s- CurrentChannelBW:%d, SCMapping: Not Correct Primary40MHz Setting \n",__FUNCTION__,pHalData->CurrentChannelBW);
+				DBG_871X("%s- CurrentChannelBW:%d, SCMapping: DONOT CARE Mode Setting\n", __func__, pHalData->CurrentChannelBW);
 		}
 		else
 		{
@@ -313,7 +420,7 @@ SCMapping_92E(
 			else if((pHalData->nCur40MhzPrimeSC == HAL_PRIME_CHNL_OFFSET_UPPER) && (pHalData->nCur80MhzPrimeSC == HAL_PRIME_CHNL_OFFSET_UPPER))
 				SCSettingOfDesc = VHT_DATA_SC_20_UPPERST_OF_80MHZ;
 			else
-				DBG_871X("%s- CurrentChannelBW:%d, SCMapping: Not Correct Primary40MHz Setting \n",__FUNCTION__,pHalData->CurrentChannelBW);
+				DBG_871X("%s- CurrentChannelBW:%d, SCMapping: DONOT CARE Mode Setting\n", __func__, pHalData->CurrentChannelBW);
 		}
 	}
 	else if(pHalData->CurrentChannelBW== CHANNEL_WIDTH_40)
@@ -349,4 +456,99 @@ SCMapping_92E(
 	return SCSettingOfDesc;
 }
 
+void fill_txdesc_phy(PADAPTER padapter, struct pkt_attrib *pattrib, u8 *ptxdesc)
+{
+	//DBG_8192C("bwmode=%d, ch_off=%d\n", pattrib->bwmode, pattrib->ch_offset);
+
+	if(pattrib->ht_en)
+	{
+		// Set Bandwidth and sub-channel settings.
+		SET_TX_DESC_DATA_BW_92E(ptxdesc, BWMapping_92E(padapter,pattrib));
+
+		SET_TX_DESC_DATA_SC_92E(ptxdesc, SCMapping_92E(padapter,pattrib));
+	}
+}
+
+void rtl8192e_fixed_rate(_adapter *padapter,u8 *ptxdesc)
+{
+	if(padapter->fix_rate!= 0xFF){
+	
+		SET_TX_DESC_USE_RATE_92E(ptxdesc, 1);
+		//if(pHalData->INIDATA_RATE[pattrib->mac_id] & BIT(7))
+      		{
+			if(padapter->fix_rate & BIT(7))
+				SET_TX_DESC_DATA_SHORT_92E(ptxdesc, 1);
+		}
+		SET_TX_DESC_TX_RATE_92E(ptxdesc, (padapter->fix_rate & 0x7F));
+		//SET_TX_DESC_DISABLE_FB_92E(ptxdesc,1);
+		if (!padapter->data_fb)
+			SET_TX_DESC_DISABLE_FB_92E(ptxdesc,1);
+		
+		//ptxdesc->datarate = padapter->fix_rate;
+	}
+	
+}
+
+//
+// Description: In normal chip, we should send some packet to Hw which will be used by Fw
+//		in FW LPS mode. The function is to fill the Tx descriptor of this packets, then
+//		Fw can tell Hw to send these packet derectly.
+//
+void rtl8192e_fill_fake_txdesc(
+	PADAPTER	padapter,
+	u8*			pDesc,
+	u32			BufferLen,
+	u8			IsPsPoll,
+	u8			IsBTQosNull,
+	u8			bDataFrame)
+{
+	struct mlme_ext_priv	*pmlmeext = &padapter->mlmeextpriv;
+	struct xmit_priv 		*pxmitpriv = &padapter->xmitpriv;
+
+	// Clear all status
+	_rtw_memset(pDesc, 0, TXDESC_SIZE);
+
+	SET_TX_DESC_OFFSET_92E(pDesc, (TXDESC_SIZE+OFFSET_SZ));
+
+	SET_TX_DESC_PKT_SIZE_92E(pDesc, BufferLen);
+	
+	if (pmlmeext->cur_wireless_mode & WIRELESS_11B) {
+		SET_TX_DESC_RATE_ID_92E(pDesc, RATEID_IDX_B);
+	} else {
+		SET_TX_DESC_RATE_ID_92E(pDesc, RATEID_IDX_G);
+	}
+
+	SET_TX_DESC_QUEUE_SEL_92E(pDesc,  QSLT_MGNT);
+
+	//Set NAVUSEHDR to prevent Ps-poll AId filed to be changed to error vlaue by Hw.
+	if (IsPsPoll)
+	{
+		SET_TX_DESC_NAV_USE_HDR_92E(pDesc, 1); 
+	}
+	else
+	{
+		SET_TX_DESC_EN_HWSEQ_92E(pDesc, 1); // Hw set sequence number
+		SET_TX_DESC_HWSEQ_SEL_92E(pDesc, pxmitpriv->hw_ssn_seq_no);
+	}
+
+	SET_TX_DESC_USE_RATE_92E(pDesc, 1);
+	SET_TX_DESC_TX_RATE_92E(pDesc, MRateToHwRate(pmlmeext->tx_rate));
+
+	//
+	// Encrypt the data frame if under security mode excepct null data. Suggested by CCW.
+	//
+	if (_TRUE ==bDataFrame)
+	{		
+		struct pkt_attrib pattrib;
+		pattrib.encrypt = padapter->securitypriv.dot11PrivacyAlgrthm;
+		pattrib.bswenc = _FALSE;
+		fill_txdesc_sectype(&pattrib, pDesc);		
+	}
+
+#if defined(CONFIG_USB_HCI) || defined(CONFIG_SDIO_HCI)
+	// USB interface drop packet if the checksum of descriptor isn't correct.
+	// Using this checksum can let hardware recovery from packet bulk out error (e.g. Cancel URC, Bulk out error.).
+	rtl8192e_cal_txdesc_chksum(pDesc);
+#endif
+}
 

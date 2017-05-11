@@ -114,8 +114,8 @@ phy_RFSerialRead(
 	u1Byte						i;
 	u4Byte						MaskforPhySet=0;
 
+	_enter_critical_mutex(&(adapter_to_dvobj(Adapter)->rf_read_reg_mutex) , NULL);
 	Offset &= 0xff;		
-
 //	RT_TRACE(COMP_INIT, DBG_LOUD, ("phy_RFSerialRead offset 0x%x\n", Offset));
 	
 	//
@@ -168,7 +168,7 @@ phy_RFSerialRead(
 		//RT_DISP(FINIT, INIT_RF,("Readback from RF-SI : 0x%x\n", retValue));
 	}
 	//RT_DISP(FPHY, PHY_RFR, ("RFR-%d Addr[0x%x]=0x%x\n", eRFPath, pPhyReg->rfLSSIReadBack, retValue));
-	
+	_exit_critical_mutex(&(adapter_to_dvobj(Adapter)->rf_read_reg_mutex) , NULL);
 	return retValue;	
 		
 }
@@ -346,59 +346,23 @@ phy_BB8192E_Config_ParaFile(
 	IN	PADAPTER	Adapter
 	)
 {
-	EEPROM_EFUSE_PRIV	*pEEPROM = GET_EEPROM_EFUSE_PRIV(Adapter);
 	HAL_DATA_TYPE		*pHalData = GET_HAL_DATA(Adapter);
 	int			rtStatus = _SUCCESS;
 
 	s8				sz8192EBBRegFile[] = RTL8192E_PHY_REG;	
 	s8				sz8192EAGCTableFile[] = RTL8192E_AGC_TAB;
-	s8				sz8192EBBRegPgFile[] = RTL8192E_PHY_REG_PG;
 	s8				sz8192EBBRegMpFile[] = RTL8192E_PHY_REG_MP;	
-	s8				sz8192ERFRegLimitFile[] = RTL8192E_TXPWR_LMT;	
-
-	s8				*pszBBRegFile = NULL, *pszAGCTableFile = NULL, 
-					*pszBBRegPgFile = NULL, *pszBBRegMpFile=NULL,
-					*pszBBRegLimitFile = NULL,*pszRFTxPwrLmtFile = NULL;
-
+	s8				*pszBBRegFile = NULL, *pszAGCTableFile = NULL, *pszBBRegMpFile = NULL;
 
 	//DBG_871X("==>phy_BB8192E_Config_ParaFile\n");
 
 	pszBBRegFile=sz8192EBBRegFile ;
 	pszAGCTableFile =sz8192EAGCTableFile;
-	pszBBRegPgFile = sz8192EBBRegPgFile;
 	pszBBRegMpFile = sz8192EBBRegMpFile;
-	pszRFTxPwrLmtFile = sz8192ERFRegLimitFile;
-
-	DBG_871X("===> phy_BB8192E_Config_ParaFile() EEPROMRegulatory %d\n", pHalData->EEPROMRegulatory );
 
 	//DBG_871X(" ===> phy_BB8192E_Config_ParaFile() phy_reg:%s\n",pszBBRegFile);
 	//DBG_871X(" ===> phy_BB8192E_Config_ParaFile() phy_reg_pg:%s\n",pszBBRegPgFile);
 	//DBG_871X(" ===> phy_BB8192E_Config_ParaFile() txpwr_lmt_table:%s\n",pszRFTxPwrLmtFile);
-
-	PHY_InitTxPowerLimit( Adapter );
-
-	// EEPROMRegulatory: 
-	// "0" enables PowerByRate, 
-	// "1" enables both PowerByRate and PowerLimit, 
-	// "2" disables both.
-	if ( Adapter->registrypriv.RegEnableTxPowerLimit == 1 || 
-	     ( Adapter->registrypriv.RegEnableTxPowerLimit == 2 && pHalData->EEPROMRegulatory == 1 ) )
-	{
-#ifdef CONFIG_LOAD_PHY_PARA_FROM_FILE
-		if (PHY_ConfigRFWithPowerLimitTableParaFile( Adapter, pszRFTxPwrLmtFile )== _FAIL)
-#endif
-		{
-#ifdef CONFIG_EMBEDDED_FWIMG
-			if (HAL_STATUS_SUCCESS != ODM_ConfigRFWithHeaderFile(&pHalData->odmpriv, CONFIG_RF_TXPWR_LMT, (ODM_RF_RADIO_PATH_E)0))
-				rtStatus = _FAIL;
-#endif
-		}
-
-		if(rtStatus != _SUCCESS){
-			DBG_871X("phy_BB8192E_Config_ParaFile():Read Tx power limit fail\n");
-			goto phy_BB_Config_ParaFile_Fail;
-		}
-	}
 
 	// Read PHY_REG.TXT BB INIT!!
 #ifdef CONFIG_LOAD_PHY_PARA_FROM_FILE
@@ -436,35 +400,6 @@ phy_BB8192E_Config_ParaFile(
 	}
 #endif	// #if (MP_DRIVER == 1)
 
-	// If EEPROM or EFUSE autoload OK, We must config by PHY_REG_PG.txt
-	PHY_InitTxPowerByRate( Adapter );
-	if ( Adapter->registrypriv.RegEnableTxPowerByRate== 1 || 
-	     ( Adapter->registrypriv.RegEnableTxPowerByRate== 2 && pHalData->EEPROMRegulatory != 2 ) )
-	{
-#ifdef CONFIG_LOAD_PHY_PARA_FROM_FILE
-		if (phy_ConfigBBWithPgParaFile(Adapter, pszBBRegPgFile) == _FAIL)
-#endif
-		{
-#ifdef CONFIG_EMBEDDED_FWIMG
-			if (HAL_STATUS_SUCCESS != ODM_ConfigBBWithHeaderFile(&pHalData->odmpriv, CONFIG_BB_PHY_REG_PG))
-				rtStatus = _FAIL;
-#endif
-		}
-
-		if ( pHalData->odmpriv.PhyRegPgValueType == PHY_REG_PG_EXACT_VALUE )
-			PHY_TxPowerByRateConfiguration( Adapter );
-
-		if ( Adapter->registrypriv.RegEnableTxPowerLimit == 1 || 
-	         ( Adapter->registrypriv.RegEnableTxPowerLimit == 2 && pHalData->EEPROMRegulatory == 1 ) )
-			PHY_ConvertTxPowerLimitToPowerIndex( Adapter );
-
-		if(rtStatus != _SUCCESS){
-			DBG_871X("%s(): CONFIG_BB_PHY_REG_PG Fail!!\n",__FUNCTION__);
-			goto phy_BB_Config_ParaFile_Fail;
-		}
-	}
-
-
 	// BB AGC table Initialization
 #ifdef CONFIG_LOAD_PHY_PARA_FROM_FILE
 	if (phy_ConfigBBWithParaFile(Adapter, pszAGCTableFile, CONFIG_BB_AGC_TAB) == _FAIL)
@@ -493,7 +428,6 @@ PHY_BBConfig8192E(
 	int	rtStatus = _SUCCESS;
 	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(Adapter);
 	u16	TmpU2B=0;
-	u8	CrystalCap;
 
 	phy_InitBBRFRegisterDefinition(Adapter);
 
@@ -521,17 +455,10 @@ PHY_BBConfig8192E(
 	// Config BB and AGC
 	//
 	rtStatus = phy_BB8192E_Config_ParaFile(Adapter);
-	
-	
-	CrystalCap = pHalData->CrystalCap & 0x3F;
-	
-#if 1	
-	// write 0x2C[17:12] = 0x2C[23:18] = CrystalCap [6 bits]
-	if(CrystalCap == 0)
-		CrystalCap = EEPROM_Default_CrystalCap_8192E;
-	DBG_871X( "%s ==> CrystalCap:0x%02x \n",__FUNCTION__,CrystalCap);
-	PHY_SetBBReg(Adapter, REG_AFE_CTRL3_8192E, 0xFFF000, (CrystalCap | (CrystalCap << 6)));
 
+	hal_set_crystal_cap(Adapter, pHalData->CrystalCap);
+
+#if 1
 	// write 0x24= 000f81fb ,suggest by Ed		
 	rtw_write32(Adapter,REG_AFE_CTRL1_8192E,0x000f81fb);
 #endif
@@ -539,122 +466,6 @@ PHY_BBConfig8192E(
 	return rtStatus;
 	
 }
-#if 0
-// <20130320, VincentLan> A workaround to eliminate the 2480MHz spur for 92E
-void 
-phy_FixSpur_8192E(
-	IN	PADAPTER				Adapter,
-	IN	SPUR_CAL_METHOD		Method
-	)
-{
-	u32			reg0x18 = 0;
-	u8			retryNum = 0;
-	u8			MaxRetryCount = 8;
-	u8			Pass_A = FALSE, Pass_B = FALSE;
-	u8			SpurOccur = FALSE;
-	u32			PSDReport = 0;
-
-	//DBG_871X("==0419v2==Vincent== FixSpur_8192E \n");
-
-	if (Method == PLL_RESET){
-		MaxRetryCount = 3;
-	}
-	else if (Method == AFE_PHASE_SEL){
-		//PHY_SetMacReg(Adapter, RF_TX_G1, BIT4, 0x1); // enable
-		rtw_write8(Adapter, RF_TX_G1, (rtw_read8(Adapter, RF_TX_G1)|BIT4)); // enable
-		//DBG_871X("===0x20 = %x \n", rtw_read8(Adapter, RF_TX_G1));
-	}
-	
-	// Backup current channel
-	reg0x18 = PHY_QueryRFReg(Adapter, ODM_RF_PATH_A, RF_CHNLBW, bRFRegOffsetMask);
-
-	
-	while ((retryNum++ < MaxRetryCount))
-	{
-		PHY_SetRFReg(Adapter, ODM_RF_PATH_A, RF_CHNLBW, bRFRegOffsetMask, 0x7C0D); //CH13
-		PHY_SetBBReg(Adapter, rOFDM0_XAAGCCore1, bMaskByte0, 0x30); //Path A initial gain
-		PHY_SetBBReg(Adapter, rOFDM0_XBAGCCore1, bMaskByte0, 0x30); //Path B initial gain
-		PHY_SetBBReg(Adapter, rFPGA0_AnalogParameter4, bMaskDWord, 0xccf000c0); 	// disable 3-wire
-
-		// Path A
-		PHY_SetBBReg(Adapter, rFPGA0_TxInfo, bMaskByte0, 0x3);
-		//DBG_871X(" 0x804 = 0x%x\n",PHY_QueryBBReg(Adapter, rFPGA0_TxInfo, bMaskByte0));
-		PHY_SetBBReg(Adapter, rFPGA0_PSDFunction, bMaskDWord, 0xfccd);
-		//DBG_871X(" 0x808 = 0x%x\n",PHY_QueryBBReg(Adapter, rFPGA0_PSDFunction, bMaskDWord));
-		PHY_SetBBReg(Adapter, rFPGA0_PSDFunction, bMaskDWord, 0x40fccd);
-		//DBG_871X(" 0x808 = 0x%x\n",PHY_QueryBBReg(Adapter, rFPGA0_PSDFunction, bMaskDWord));
-		//rtw_msleep_os(100);
-		rtw_mdelay_os(100);
-		PSDReport = PHY_QueryBBReg(Adapter, rFPGA0_PSDReport, bMaskDWord);
-		//DBG_871X(" Path A== PSDReport = 0x%x\n",PSDReport);
-		if (PSDReport < 0x16)
-			Pass_A = TRUE;
-		
-		// Path B
-		PHY_SetBBReg(Adapter, rFPGA0_TxInfo, bMaskByte0, 0x13);
-		PHY_SetBBReg(Adapter, rFPGA0_PSDFunction, bMaskDWord, 0xfccd);
-		PHY_SetBBReg(Adapter, rFPGA0_PSDFunction, bMaskDWord, 0x40fccd);
-		//rtw_msleep_os(100);
-		rtw_mdelay_os(100);
-		PSDReport = PHY_QueryBBReg(Adapter, rFPGA0_PSDReport, bMaskDWord);
-		//DBG_871X(" Path B== PSDReport = 0x%x\n",PSDReport);
-		if (PSDReport < 0x16)
-			Pass_B = TRUE;
-
-		if (Pass_A && Pass_B)
-		{
-			//DBG_871X("=== PathA=%d, PathB=%d\n", Pass_A, Pass_B);
-			DBG_871X("===FixSpur Pass!\n");
-			PHY_SetBBReg(Adapter, rFPGA0_AnalogParameter4, bMaskDWord, 0xcc0000c0); 	// enable 3-wire
-			PHY_SetBBReg(Adapter, rFPGA0_PSDFunction, bMaskDWord, 0xfc00);
-			PHY_SetBBReg(Adapter, rOFDM0_XAAGCCore1, bMaskByte0, 0x20);
-			PHY_SetBBReg(Adapter, rOFDM0_XBAGCCore1, bMaskByte0, 0x20);
-			break;
-		}
-		else
-		{
-			Pass_A = FALSE;
-			Pass_B = FALSE;
-			if (Method == PLL_RESET)
-			{
-				//PHY_SetMacReg(Adapter, 0x28, bMaskByte1, 0x7);	// PLL gated 320M CLK disable
-				//PHY_SetMacReg(Adapter, 0x28, bMaskByte1, 0x47);	// PLL gated 320M CLK enable
-				rtw_write8(Adapter,0x29, 0x7);	// PLL gated 320M CLK disable
-				rtw_write8(Adapter,0x29, 0x47);	// PLL gated 320M CLK enable
-				
-			}
-			else if (Method == AFE_PHASE_SEL)
-			{
-				if (!SpurOccur)
-				{
-					SpurOccur = TRUE;
-					DBG_871X("===FixSpur NOT Pass!\n");
-					//PHY_SetMacReg(Adapter, RF_TX_G1, BIT4, 0x1);
-					//PHY_SetMacReg(Adapter, 0x28, bMaskByte0, 0x80);
-					//PHY_SetMacReg(Adapter, 0x28, bMaskByte0, 0x83);
-					rtw_write8(Adapter, RF_TX_G1, (rtw_read8(Adapter, RF_TX_G1)|BIT4)); // enable
-					rtw_write8(Adapter, 0x28, 0x80);
-					rtw_write8(Adapter, 0x28, 0x83);	
-					
-				}
-				//DBG_871X("===Round %d\n", retryNum+1);
-				if (retryNum < 6){
-					//PHY_SetMacReg(Adapter, RF_TX_G1, BIT5|BIT6|BIT7, 1+retryNum);
-					rtw_write8(Adapter, RF_TX_G1, (rtw_read8(Adapter, RF_TX_G1)&0x1F)|((1+retryNum)<<5));
-				}
-				else{
-					break;
-				}
-			}
-		}
-	}
-	PHY_SetBBReg(Adapter, rFPGA0_PSDFunction, bMaskDWord, 0xfccd); // reset PSD
-	PHY_SetRFReg(Adapter, ODM_RF_PATH_A, RF_CHNLBW, bRFRegOffsetMask, reg0x18); //restore chnl
-	// 0x20 NOT RESET
-	// PHY_SetMacReg(Adapter, RF_TX_G1, BIT4, 0x0); // reset 0x20
-
-}
-#endif
 
 int
 PHY_RFConfig8192E(
@@ -664,7 +475,7 @@ PHY_RFConfig8192E(
 	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(Adapter);
 	int		rtStatus = _SUCCESS;
 
-	if (Adapter->bSurpriseRemoved)
+	if (RTW_CANNOT_RUN(Adapter))
 		return _FAIL;
 
 	switch(pHalData->rf_chip)
@@ -933,7 +744,7 @@ phy_GetSecondaryChnl_8192E(
 		else if(pHalData->nCur80MhzPrimeSC == HAL_PRIME_CHNL_OFFSET_UPPER)
 			SCSettingOf40 = VHT_DATA_SC_40_UPPER_OF_80MHZ;
 		else
-			DBG_871X("%s- CurrentChannelBW:%d, SCMapping: Not Correct Primary40MHz Setting \n",__FUNCTION__,pHalData->CurrentChannelBW);
+			DBG_871X("%s- CurrentChannelBW:%d, SCMapping: DONOT CARE Mode Setting\n", __func__, pHalData->CurrentChannelBW);
 		
 		if((pHalData->nCur40MhzPrimeSC == HAL_PRIME_CHNL_OFFSET_LOWER) && (pHalData->nCur80MhzPrimeSC == HAL_PRIME_CHNL_OFFSET_LOWER))
 			SCSettingOf20 = VHT_DATA_SC_20_LOWEST_OF_80MHZ;
@@ -944,7 +755,7 @@ phy_GetSecondaryChnl_8192E(
 		else if((pHalData->nCur40MhzPrimeSC == HAL_PRIME_CHNL_OFFSET_UPPER) && (pHalData->nCur80MhzPrimeSC == HAL_PRIME_CHNL_OFFSET_UPPER))
 			SCSettingOf20 = VHT_DATA_SC_20_UPPERST_OF_80MHZ;
 		else
-			DBG_871X("%s- CurrentChannelBW:%d, SCMapping: Not Correct Primary40MHz Setting \n",__FUNCTION__,pHalData->CurrentChannelBW);
+			DBG_871X("%s- CurrentChannelBW:%d, SCMapping: DONOT CARE Mode Setting\n", __func__, pHalData->CurrentChannelBW);
 	}
 	else if(pHalData->CurrentChannelBW == CHANNEL_WIDTH_40)
 	{
@@ -955,12 +766,12 @@ phy_GetSecondaryChnl_8192E(
 		else if(pHalData->nCur40MhzPrimeSC == HAL_PRIME_CHNL_OFFSET_LOWER)
 			SCSettingOf20 = VHT_DATA_SC_20_LOWER_OF_80MHZ;
 		else if(pHalData->nCur40MhzPrimeSC == HAL_PRIME_CHNL_OFFSET_DONT_CARE)
-			DBG_871X("%s- CurrentChannelBW:%d, PRIME_CHNL_OFFSET_DONT_CARE \n",__FUNCTION__,pHalData->CurrentChannelBW);
+			DBG_871X("%s- CurrentChannelBW:%d, PRIME_CHNL_OFFSET_DONT_CARE\n", __func__, pHalData->CurrentChannelBW);
 		else			
-			DBG_871X("%s- CurrentChannelBW:%d, SCMapping: Not Correct Primary40MHz Setting \n",__FUNCTION__,pHalData->CurrentChannelBW);
+			DBG_871X("%s- CurrentChannelBW:%d, SCMapping: DONOT CARE Mode Setting\n", __func__, pHalData->CurrentChannelBW);
 	}
 
-	//DBG_871X("SCMapping: SC Value %x \n", ( (SCSettingOf40 << 4) | SCSettingOf20));
+	/*DBG_871X("SCMapping: SC Value %x\n", ((SCSettingOf40 << 4) | SCSettingOf20));*/
 	return  ( (SCSettingOf40 << 4) | SCSettingOf20);
 }
 
@@ -1177,6 +988,20 @@ phy_SpurCalibration_8192E(
 	PHY_SetRFReg(Adapter, ODM_RF_PATH_A, RF_CHNLBW, bRFRegOffsetMask, reg0x18); //restore chnl
 
 }
+
+void PHY_SpurCalibration_8192E(IN PADAPTER Adapter)
+{
+	if(rtw_read32(Adapter, REG_SYS_CFG1_8192E) & BIT_SPSLDO_SEL){
+		//LDO
+		phy_SpurCalibration_8192E(Adapter,PLL_RESET);
+	}else{ 
+		//SPS - 4OM
+		phy_SpurCalibration_8192E(Adapter,AFE_PHASE_SEL);
+		// todo SPS-25M -check
+	}
+}
+
+
 #ifdef CONFIG_SPUR_CAL_NBI
 // to eliminate the 2480MHz spur for 92E suggest by James
 void 
@@ -1235,12 +1060,16 @@ phy_SwChnlAndSetBwMode8192E(
 			pHalData->bSetChnlBW,
 			pHalData->CurrentChannelBW);
 
+#ifdef CONFIG_TDLS
+#ifdef CONFIG_TDLS_CH_SW
+		if(Adapter->tdlsinfo.chsw_info.dump_stack == _TRUE)
+			dump_stack();
+#endif
+#endif /* CONFIG_TDLS */
 	}
 
-	if((Adapter->bDriverStopped) || (Adapter->bSurpriseRemoved))
-	{
+	if (RTW_CANNOT_RUN(Adapter))
 		return;
-	}
 
 	if(pHalData->bSwChnl)
 	{
@@ -1257,9 +1086,14 @@ phy_SwChnlAndSetBwMode8192E(
 #ifdef CONFIG_SPUR_CAL_NBI
 	phy_SpurCalibration_8192E_NBI(Adapter);
 #endif
-
-
-	PHY_SetTxPowerLevel8192E(Adapter, pHalData->CurrentChannel);
+	
+#ifdef CONFIG_TDLS
+#ifdef CONFIG_TDLS_CH_SW
+	/* It takes too much time of setting tx power, influence channel switch */
+	if((ATOMIC_READ(&Adapter->tdlsinfo.chsw_info.chsw_on) == _FALSE))
+#endif
+#endif /* CONFIG_TDLS */
+		PHY_SetTxPowerLevel8192E(Adapter, pHalData->CurrentChannel);
 }
 
 VOID
@@ -1360,12 +1194,9 @@ PHY_HandleSwChnlAndSetBW8192E(
 	}
 
 	//Switch workitem or set timer to do switch channel or setbandwidth operation
-	if((!pDefAdapter->bDriverStopped) && (!pDefAdapter->bSurpriseRemoved))
-	{
+	if (!RTW_CANNOT_RUN(Adapter))
 		phy_SwChnlAndSetBwMode8192E(Adapter);
-	}
-	else
-	{
+	else { 
 		if(pHalData->bSwChnl)
 		{
 			pHalData->CurrentChannel = tmpChannel;
@@ -1435,206 +1266,42 @@ PHY_SetSwChnlBWMode8192E(
 
 	//DBG_871X("<==%s()\n",__FUNCTION__);
 }
-
-#if 0
-static VOID
-_PHY_SetBWMode8192E(
-	IN	PADAPTER	Adapter
-)
-{
-//	PADAPTER			Adapter = (PADAPTER)pTimer->Adapter;
-	HAL_DATA_TYPE		*pHalData = GET_HAL_DATA(Adapter);
-	u8				regBwOpMode;
-	u8				regRRSR_RSC;
-
-	//return;
-
-	// Added it for 20/40 mhz switch time evaluation by guangan 070531
-	//u4Byte				NowL, NowH;
-	//u8Byte				BeginTime, EndTime;
-
-	/*RT_TRACE(COMP_SCAN, DBG_LOUD, ("==>PHY_SetBWModeCallback8192C()  Switch to %s bandwidth\n", \
-					pHalData->CurrentChannelBW == CHANNEL_WIDTH_20?"20MHz":"40MHz"))*/
-
-	if(pHalData->rf_chip == RF_PSEUDO_11N)
-	{
-		//pHalData->SetBWModeInProgress= _FALSE;
-		return;
-	}
-
-	// There is no 40MHz mode in RF_8225.
-	if(pHalData->rf_chip==RF_8225)
-		return;
-
-	if(Adapter->bDriverStopped)
-		return;
-
-	// Added it for 20/40 mhz switch time evaluation by guangan 070531
-	//NowL = PlatformEFIORead4Byte(Adapter, TSFR);
-	//NowH = PlatformEFIORead4Byte(Adapter, TSFR+4);
-	//BeginTime = ((u8Byte)NowH << 32) + NowL;
-
-	//3//
-	//3//<1>Set MAC register
-	//3//
-	//Adapter->HalFunc.SetBWModeHandler();
-
-	regBwOpMode = rtw_read8(Adapter, REG_BWOPMODE);
-	regRRSR_RSC = rtw_read8(Adapter, REG_RRSR+2);
-	//regBwOpMode = rtw_hal_get_hwreg(Adapter,HW_VAR_BWMODE,(pu1Byte)&regBwOpMode);
-
-	switch(pHalData->CurrentChannelBW)
-	{
-		case CHANNEL_WIDTH_20:
-			regBwOpMode |= BW_OPMODE_20MHZ;
-			   // 2007/02/07 Mark by Emily becasue we have not verify whether this register works
-			rtw_write8(Adapter, REG_BWOPMODE, regBwOpMode);
-			break;
-
-		case CHANNEL_WIDTH_40:
-			regBwOpMode &= ~BW_OPMODE_20MHZ;
-				// 2007/02/07 Mark by Emily becasue we have not verify whether this register works
-			rtw_write8(Adapter, REG_BWOPMODE, regBwOpMode);
-
-			regRRSR_RSC = (regRRSR_RSC&0x90) |(pHalData->nCur40MhzPrimeSC<<5);
-			rtw_write8(Adapter, REG_RRSR+2, regRRSR_RSC);
-			break;
-
-		default:
-			/*RT_TRACE(COMP_DBG, DBG_LOUD, ("PHY_SetBWModeCallback8192C():
-						unknown Bandwidth: %#X\n",pHalData->CurrentChannelBW));*/
-			break;
-	}
-
-	//3//
-	//3//<2>Set PHY related register
-	//3//
-	switch(pHalData->CurrentChannelBW)
-	{
-		/* 20 MHz channel*/
-		case CHANNEL_WIDTH_20:
-			PHY_SetBBReg(Adapter, rFPGA0_RFMOD, bRFMOD, 0x0);
-			PHY_SetBBReg(Adapter, rFPGA1_RFMOD, bRFMOD, 0x0);
-			//PHY_SetBBReg(Adapter, rFPGA0_AnalogParameter2, BIT10, 1);
-			PHY_SetBBReg(Adapter, rOFDM0_TxPseudoNoiseWgt, (BIT31|BIT30), 0x0);
-			break;
-
-
-		/* 40 MHz channel*/
-		case CHANNEL_WIDTH_40:
-			PHY_SetBBReg(Adapter, rFPGA0_RFMOD, bRFMOD, 0x1);
-			PHY_SetBBReg(Adapter, rFPGA1_RFMOD, bRFMOD, 0x1);
-
-			// Set Control channel to upper or lower. These settings are required only for 40MHz
-			PHY_SetBBReg(Adapter, rCCK0_System, bCCKSideBand, (pHalData->nCur40MhzPrimeSC>>1));
-			PHY_SetBBReg(Adapter, rOFDM1_LSTF, 0xC00, pHalData->nCur40MhzPrimeSC);
-			//PHY_SetBBReg(Adapter, rFPGA0_AnalogParameter2, BIT10, 0);
-
-			PHY_SetBBReg(Adapter, 0x818, (BIT26|BIT27), (pHalData->nCur40MhzPrimeSC==HAL_PRIME_CHNL_OFFSET_LOWER)?2:1);
-
-			break;
-
-
-
-		default:
-			/*RT_TRACE(COMP_DBG, DBG_LOUD, ("PHY_SetBWModeCallback8192C(): unknown Bandwidth: %#X\n"\
-						,pHalData->CurrentChannelBW));*/
-			break;
-
-	}
-	//Skip over setting of J-mode in BB register here. Default value is "None J mode". Emily 20070315
-
-	// Added it for 20/40 mhz switch time evaluation by guangan 070531
-	//NowL = PlatformEFIORead4Byte(Adapter, TSFR);
-	//NowH = PlatformEFIORead4Byte(Adapter, TSFR+4);
-	//EndTime = ((u8Byte)NowH << 32) + NowL;
-	//RT_TRACE(COMP_SCAN, DBG_LOUD, ("SetBWModeCallback8190Pci: time of SetBWMode = %I64d us!\n", (EndTime - BeginTime)));
-
-	//3<3>Set RF related register
-	switch(pHalData->rf_chip)
-	{
-		case RF_PSEUDO_11N:
-			// Do Nothing
-			break;
-
-		case RF_6052:
-			PHY_RF6052SetBandwidth8192E(Adapter, pHalData->CurrentChannelBW);
-			break;
-
-		default:
-			//RT_ASSERT(FALSE, ("Unknown RFChipID: %d\n", pHalData->rfchip));
-			break;
-	}
-
-	//pHalData->SetBWModeInProgress= FALSE;
-
-	//RT_TRACE(COMP_SCAN, DBG_LOUD, ("<==PHY_SetBWModeCallback8192C() \n" ));
-}
-
 VOID
-PHY_SetBWMode8192E(
-	IN	PADAPTER			Adapter,
-	IN	CHANNEL_WIDTH	Bandwidth,	// 20M or 40M
-	IN	u8					Offset		// Upper, Lower, or Don't care
+PHY_SetRFEReg_8192E(
+	IN PADAPTER		Adapter
 )
 {
+	u8			u1tmp = 0;
 	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(Adapter);
-	CHANNEL_WIDTH 	tmpBW= pHalData->CurrentChannelBW;
-	// Modified it for 20/40 mhz switch by guangan 070531
-	//PMGNT_INFO	pMgntInfo=&Adapter->MgntInfo;
 
-	//return;
+	if ((pHalData->ExternalPA_2G == 0) && (pHalData->ExternalLNA_2G == 0))
+		return;
 
-	//if(pHalData->SwChnlInProgress)
-//	if(pMgntInfo->bScanInProgress)
-//	{
-//		RT_TRACE(COMP_SCAN, DBG_LOUD, ("PHY_SetBWMode8192C() %s Exit because bScanInProgress!\n",
-//					Bandwidth == CHANNEL_WIDTH_20?"20MHz":"40MHz"));
-//		return;
-//	}
+	switch (pHalData->RFEType) {
+	case 0:
+			PHY_SetBBReg(Adapter, BIT_REG_LED_CFG_8192E, bMaskByte2, 0x62);/* Reg[4E] = 0x62 */
+			PHY_SetBBReg(Adapter, BIT_REG_LED_CFG_8192E, bMaskByte3, 0x0);/* Reg[4F] = 0x0 */
+			PHY_SetBBReg(Adapter, 0x930, bMaskDWord, 0x00540000);
+			PHY_SetBBReg(Adapter, 0x934, bMaskDWord, 0x0);
+			PHY_SetBBReg(Adapter, 0x938, bMaskDWord, 0x00000540);
+			PHY_SetBBReg(Adapter, 0x93C, bMaskDWord, 0x0);
+			PHY_SetBBReg(Adapter, 0x940, bMaskDWord, 0x00000015);
+			PHY_SetBBReg(Adapter, 0x944, bMaskDWord, 0x0000ffff);
+			break;
+	case 1:
+			PHY_SetBBReg(Adapter, BIT_REG_LED_CFG_8192E, bMaskByte2, 0x62);/* Reg[4E] = 0x62 */
+			PHY_SetBBReg(Adapter, BIT_REG_LED_CFG_8192E, bMaskByte3, 0x70);/* Reg[4F] = 0x70 */
+			PHY_SetBBReg(Adapter, 0x930, bMaskDWord, 0x00005000);
+			PHY_SetBBReg(Adapter, 0x934, bMaskDWord, 0x00004000);
+			PHY_SetBBReg(Adapter, 0x938, bMaskDWord, 0x00000540);
+			PHY_SetBBReg(Adapter, 0x93C, bMaskDWord, 0x0);
+			PHY_SetBBReg(Adapter, 0x940, bMaskDWord, 0x00000015);
+			PHY_SetBBReg(Adapter, 0x944, bMaskDWord, 0x0000083F);
+			break;
 
-//	if(pHalData->SetBWModeInProgress)
-//	{
-//		// Modified it for 20/40 mhz switch by guangan 070531
-//		RT_TRACE(COMP_SCAN, DBG_LOUD, ("PHY_SetBWMode8192C() %s cancel last timer because SetBWModeInProgress!\n",
-//					Bandwidth == CHANNEL_WIDTH_20?"20MHz":"40MHz"));
-//		PlatformCancelTimer(Adapter, &pHalData->SetBWModeTimer);
-//		//return;
-//	}
-
-	//if(pHalData->SetBWModeInProgress)
-	//	return;
-
-	//pHalData->SetBWModeInProgress= TRUE;
-
-	pHalData->CurrentChannelBW = Bandwidth;
-
-#if 0
-	if(Offset==EXTCHNL_OFFSET_LOWER)
-		pHalData->nCur40MhzPrimeSC = HAL_PRIME_CHNL_OFFSET_UPPER;
-	else if(Offset==EXTCHNL_OFFSET_UPPER)
-		pHalData->nCur40MhzPrimeSC = HAL_PRIME_CHNL_OFFSET_LOWER;
-	else
-		pHalData->nCur40MhzPrimeSC = HAL_PRIME_CHNL_OFFSET_DONT_CARE;
-#else
-	pHalData->nCur40MhzPrimeSC = Offset;
-#endif
-
-	if((!Adapter->bDriverStopped) && (!Adapter->bSurpriseRemoved))
-	{
-	#if 0
-		//PlatformSetTimer(Adapter, &(pHalData->SetBWModeTimer), 0);
-	#else
-		_PHY_SetBWMode8192E(Adapter);
-	#endif
-	}
-	else
-	{
-		//RT_TRACE(COMP_SCAN, DBG_LOUD, ("PHY_SetBWMode8192C() SetBWModeInProgress FALSE driver sleep or unload\n"));
-		//pHalData->SetBWModeInProgress= FALSE;
-		pHalData->CurrentChannelBW = tmpBW;
+	default:
+			break;
 	}
 	
 }
 
-#endif

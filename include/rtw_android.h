@@ -57,6 +57,7 @@ enum ANDROID_WIFI_CMD {
 
 	ANDROID_WIFI_CMD_MACADDR,
 
+	ANDROID_WIFI_CMD_BLOCK_SCAN,
 	ANDROID_WIFI_CMD_BLOCK,
 
 	ANDROID_WIFI_CMD_WFD_ENABLE,
@@ -69,10 +70,11 @@ enum ANDROID_WIFI_CMD {
 	ANDROID_WIFI_CMD_HOSTAPD_SET_MACADDR_ACL,
 	ANDROID_WIFI_CMD_HOSTAPD_ACL_ADD_STA,
 	ANDROID_WIFI_CMD_HOSTAPD_ACL_REMOVE_STA,
-#ifdef CONFIG_GTK_OL
+#if defined(CONFIG_GTK_OL) && (LINUX_VERSION_CODE < KERNEL_VERSION(3, 1, 0))	
 	ANDROID_WIFI_CMD_GTK_REKEY_OFFLOAD,
 #endif //CONFIG_GTK_OL
 	ANDROID_WIFI_CMD_P2P_DISABLE,
+	ANDROID_WIFI_CMD_DRIVERVERSION,
 	ANDROID_WIFI_CMD_MAX
 };
 
@@ -98,6 +100,14 @@ void *wifi_get_country_code(char *ccode);
 static int rtw_android_wifictrl_func_add(void) { return 0; }
 static void rtw_android_wifictrl_func_del(void) {}
 #endif /* defined(RTW_ENABLE_WIFI_CONTROL_FUNC) */
+
+#ifdef CONFIG_GPIO_WAKEUP
+#ifdef CONFIG_PLATFORM_INTEL_BYT
+int wifi_configure_gpio(void);
+#endif //CONFIG_PLATFORM_INTEL_BYT
+void wifi_free_gpio(unsigned int gpio);
+#endif //CONFIG_GPIO_WAKEUP
+
 
 #endif //__RTW_ANDROID_H__
 
