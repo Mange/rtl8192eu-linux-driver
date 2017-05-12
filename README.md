@@ -59,9 +59,32 @@ that it can used to rebuild the module on kernel upgrades.
     $ sudo dkms install rtl8192eu/1.0
     ```
 
+The Makefile is preconfigured to handle most x86/PC versions.  If you are compiling for something other than an intel x86 architecture, you need to first select the platform, e.g. for the Raspberry Pi, you need to set the I386 to n and the ARM_RPI to y:
+
+```sh
+...
+CONFIG_PLATFORM_I386_PC = n
+...
+CONFIG_PLATFORM_ARM_RPI = y
+```
+
+```sh
+# cd /usr/src/rtl8192eu
+# sudo make clean
+# sudo make
+# sudo make install
+# sudo modprobe -a rtl8192eu
+```
+
+4. Check that your kernel has loaded the right module:
+ ```shell
+    $ lshw -c network
+    ```
+    You should see the line ```driver=8192eu```
+    
 If you wish to uninstall the driver at a later point, use
 _sudo dkms uninstall rtl8192eu/1.0_. To completely remove the driver from DKMS use
-_sudo dkms remove rtl8192eu/1.0_.
+_sudo dkms remove rtl8192eu/1.0 --all_.
 
 ## Submitting patches
 
