@@ -52,6 +52,7 @@
 #include <net/ip6_checksum.h>
 #else
 #include <net/checksum.h>
+#include <net/ip6_checksum.h>
 #endif
 #endif
 #endif
