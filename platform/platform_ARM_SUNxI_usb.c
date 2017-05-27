@@ -25,12 +25,12 @@
  */
  
 #include <drv_types.h>
-#include <mach/sys_config.h>
 
 #ifdef CONFIG_PLATFORM_ARM_SUNxI
-extern int sw_usb_disable_hcd(__u32 usbc_no);
-extern int sw_usb_enable_hcd(__u32 usbc_no);
-static int usb_wifi_host = 2;
+extern int sunxi_usb_disable_hcd(__u32 usbc_no);
+extern int sunxi_usb_enable_hcd(__u32 usbc_no);
+extern int sunxi_wlan_get_usb_index(void);
+extern void sunxi_wlan_set_power(int on);
 #endif
 
 #if defined(CONFIG_PLATFORM_ARM_SUN6I) || defined(CONFIG_PLATFORM_ARM_SUN7I)
@@ -51,11 +51,14 @@ static script_item_u item;
 int platform_wifi_power_on(void)
 {
 	int ret = 0;
+	int usb_no = sunxi_wlan_get_usb_index();
 
+	printk("platform_wifi_power_on(), usb_index: %d\n", usb_no);
 #ifdef CONFIG_PLATFORM_ARM_SUNxI
 #ifndef CONFIG_RTL8723A
 	{
 		/* ----------get usb_wifi_usbc_num------------- */
+		/*
 		ret = script_parser_fetch("usb_wifi_para", "usb_wifi_usbc_num", (int *)&usb_wifi_host, 64);
 		if(ret != 0){
 			DBG_8192C("ERR: script_parser_fetch usb_wifi_usbc_num failed\n");
@@ -64,6 +67,10 @@ int platform_wifi_power_on(void)
 		}
 		DBG_8192C("sw_usb_enable_hcd: usbc_num = %d\n", usb_wifi_host);
 		sw_usb_enable_hcd(usb_wifi_host);
+		*/
+		sunxi_wlan_set_power(1);
+		mdelay(100);
+		sunxi_usb_enable_hcd(usb_no);
 	}
 #endif //CONFIG_RTL8723A
 #endif //CONFIG_PLATFORM_ARM_SUNxI
@@ -116,11 +123,16 @@ exit:
 
 void platform_wifi_power_off(void)
 {
+	int usb_no = sunxi_wlan_get_usb_index();
 
+	printk("platform_wifi_power_off(), usb_index: %d\n", usb_no);
 #ifdef CONFIG_PLATFORM_ARM_SUNxI
 #ifndef CONFIG_RTL8723A
-	DBG_8192C("sw_usb_disable_hcd: usbc_num = %d\n", usb_wifi_host);
-	sw_usb_disable_hcd(usb_wifi_host);
+	//DBG_8192C("sw_usb_disable_hcd: usbc_num = %d\n", usb_wifi_host);
+	//sw_usb_disable_hcd(usb_wifi_host);
+	sunxi_usb_disable_hcd(usb_no);
+	mdelay(100);
+	sunxi_wlan_set_power(0);
 #endif //ifndef CONFIG_RTL8723A
 #endif	//CONFIG_PLATFORM_ARM_SUNxI
 

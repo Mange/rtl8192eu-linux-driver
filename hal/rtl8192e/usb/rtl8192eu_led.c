@@ -50,10 +50,8 @@ SwLedOn_8192EU(
 	u8	LedCfg;
 	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(padapter);
 
-	if( (padapter->bSurpriseRemoved == _TRUE) || ( padapter->bDriverStopped == _TRUE))
-	{
+	if (RTW_CANNOT_RUN(padapter))
 		return;
-	}
 
 	if(	RT_GetInterfaceSelection(padapter) == INTF_SEL2_MINICARD ||
 	 	RT_GetInterfaceSelection(padapter) == INTF_SEL3_USB_Solo ||
@@ -131,10 +129,8 @@ SwLedOff_8192EU(
 	u8	LedCfg;
 	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(padapter);
 
-	if(padapter->bSurpriseRemoved == _TRUE)
-	{
+	if (RTW_CANNOT_RUN(padapter))
 		return;
-	}
 
 	if(	RT_GetInterfaceSelection(padapter) == INTF_SEL2_MINICARD ||
 		RT_GetInterfaceSelection(padapter) == INTF_SEL3_USB_Solo ||

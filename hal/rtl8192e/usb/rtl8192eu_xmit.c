@@ -33,9 +33,7 @@ s32	rtl8192eu_init_xmit_priv(_adapter *padapter)
 	     (void(*)(unsigned long))rtl8192eu_xmit_tasklet,
 	     (unsigned long)padapter);
 #endif
-#ifdef CONFIG_TX_EARLY_MODE
-	pHalData->bEarlyModeEnable = padapter->registrypriv.early_mode;
-#endif
+	rtl8192e_init_xmit_priv(padapter);
 
 	return _SUCCESS;
 }
@@ -53,138 +51,6 @@ u8 urb_zero_packet_chk(_adapter *padapter, int sz)
 	return blnSetTxDescOffset;
 }
 
-void rtl8192e_cal_txdesc_chksum(u8 *ptxdesc)
-{
-	u16	*usPtr = (u16*)ptxdesc;
-	u32 count = 16;	// (32 bytes / 2 bytes per XOR) => 16 times
-	u32 index;
-	u16 checksum = 0;
-
-	//Clear first
-	SET_TX_DESC_TX_DESC_CHECKSUM_92E(ptxdesc, 0);
-
-	for(index = 0 ; index < count ; index++){
-		checksum = checksum ^ le16_to_cpu(*(usPtr + index));
-	}
-
-	SET_TX_DESC_TX_DESC_CHECKSUM_92E(ptxdesc, checksum);
-}
-//
-// Description: In normal chip, we should send some packet to Hw which will be used by Fw
-//			in FW LPS mode. The function is to fill the Tx descriptor of this packets, then
-//			Fw can tell Hw to send these packet derectly.
-//
-void rtl8192e_fill_fake_txdesc(
-	PADAPTER	padapter,
-	u8*			pDesc,
-	u32			BufferLen,
-	u8			IsPsPoll,
-	u8			IsBTQosNull)
-{
-	struct mlme_ext_priv	*pmlmeext = &padapter->mlmeextpriv;
-
-
-	// Clear all status
-	_rtw_memset(pDesc, 0, TXDESC_SIZE);
-
-	SET_TX_DESC_OFFSET_92E(pDesc, (TXDESC_SIZE+OFFSET_SZ));
-
-	SET_TX_DESC_PKT_SIZE_92E(pDesc, BufferLen);
-
-	if (pmlmeext->cur_wireless_mode & WIRELESS_11B) {
-		SET_TX_DESC_RATE_ID_92E(pDesc, RATR_INX_WIRELESS_B);
-	} else {
-		SET_TX_DESC_RATE_ID_92E(pDesc, RATR_INX_WIRELESS_G);
-	}
-
-	SET_TX_DESC_QUEUE_SEL_92E(pDesc,  QSLT_MGNT);
-
-	//Set NAVUSEHDR to prevent Ps-poll AId filed to be changed to error vlaue by Hw.
-	if (IsPsPoll)
-	{
-		SET_TX_DESC_NAV_USE_HDR_92E(pDesc, 1); 
-	}
-	else
-	{
-		SET_TX_DESC_EN_HWSEQ_92E(pDesc, 1); // Hw set sequence number
-	}
-
-	SET_TX_DESC_USE_RATE_92E(pDesc, 1);
-	SET_TX_DESC_TX_RATE_92E(pDesc, MRateToHwRate(pmlmeext->tx_rate));
-
-#if defined(CONFIG_USB_HCI) || defined(CONFIG_SDIO_HCI)
-	// USB interface drop packet if the checksum of descriptor isn't correct.
-	// Using this checksum can let hardware recovery from packet bulk out error (e.g. Cancel URC, Bulk out error.).
-	rtl8192e_cal_txdesc_chksum(pDesc);
-#endif
-}
-
-void fill_txdesc_sectype(struct pkt_attrib *pattrib, u8 *ptxdesc)
-{
-	if ((pattrib->encrypt > 0) && !pattrib->bswenc)
-	{
-		switch (pattrib->encrypt)
-		{	
-			//SEC_TYPE : 0:NO_ENC,1:WEP40/TKIP,2:WAPI,3:AES
-			case _WEP40_:
-			case _WEP104_:
-			case _TKIP_:
-			case _TKIP_WTMIC_:	
-					SET_TX_DESC_SEC_TYPE_92E(ptxdesc, 0x1);
-					break;
-#ifdef CONFIG_WAPI_SUPPORT
-			case _SMS4_:
-					SET_TX_DESC_SEC_TYPE_92E(ptxdesc, 0x2);
-				break;
-#endif
-			case _AES_:
-					SET_TX_DESC_SEC_TYPE_92E(ptxdesc, 0x3);
-					break;
-			case _NO_PRIVACY_:
-			default:
-					SET_TX_DESC_SEC_TYPE_92E(ptxdesc, 0x0);
-					break;
-		
-		}
-		
-	}
-
-}
-
-void fill_txdesc_vcs(struct pkt_attrib *pattrib, u8 *ptxdesc)
-{
-	//DBG_8192C("cvs_mode=%d\n", pattrib->vcs_mode);	
-
-	SET_TX_DESC_HW_RTS_ENABLE_92E(ptxdesc, 0);
-
-	switch(pattrib->vcs_mode)
-	{
-		case RTS_CTS:
-			SET_TX_DESC_RTS_ENABLE_92E(ptxdesc, 1);
-			break;
-		case CTS_TO_SELF:
-			SET_TX_DESC_CTS2SELF_92E(ptxdesc, 1);
-			break;
-		case NONE_VCS:
-		default:
-			break;		
-	}
-}
-
-void fill_txdesc_phy(PADAPTER padapter, struct pkt_attrib *pattrib, u8 *ptxdesc)
-{
-	//DBG_8192C("bwmode=%d, ch_off=%d\n", pattrib->bwmode, pattrib->ch_offset);
-
-	if(pattrib->ht_en)
-	{
-		// Set Bandwidth and sub-channel settings.
-		SET_TX_DESC_DATA_BW_92E(ptxdesc, BWMapping_92E(padapter,pattrib));
-
-		SET_TX_DESC_DATA_SC_92E(ptxdesc, SCMapping_92E(padapter,pattrib));
-	}
-}
-
-
 static s32 update_txdesc(struct xmit_frame *pxmitframe, u8 *pmem, s32 sz ,u8 bagg_pkt)
 {	
       int	pull=0;
@@ -194,17 +60,11 @@ static s32 update_txdesc(struct xmit_frame *pxmitframe, u8 *pmem, s32 sz ,u8 bag
 	struct mlme_priv	*pmlmepriv = &padapter->mlmepriv;		
 	struct pkt_attrib	*pattrib = &pxmitframe->attrib;
 	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(padapter);
-	//struct dm_priv	*pdmpriv = &pHalData->dmpriv;
 	u8	*ptxdesc =  pmem;
 	struct mlme_ext_priv	*pmlmeext = &padapter->mlmeextpriv;
 	struct mlme_ext_info	*pmlmeinfo = &(pmlmeext->mlmext_info);
 	sint	bmcst = IS_MCAST(pattrib->ra);
 	
-#ifdef CONFIG_P2P
-	struct wifidirect_info*	pwdinfo = &padapter->wdinfo;
-#endif //CONFIG_P2P
-
-
 #ifndef CONFIG_USE_USB_BUFFER_ALLOC_TX 
 	if (padapter->registrypriv.mp_mode == 0)
 	{
@@ -265,6 +125,7 @@ static s32 update_txdesc(struct xmit_frame *pxmitframe, u8 *pmem, s32 sz ,u8 bag
 
 	if (!pattrib->qos_en) {
 		SET_TX_DESC_EN_HWSEQ_92E(ptxdesc, 1); // Hw set sequence number
+		SET_TX_DESC_HWSEQ_SEL_92E(ptxdesc, pattrib->hw_ssn_sel);
 	} else {
 		SET_TX_DESC_SEQ_92E(ptxdesc, pattrib->seqnum);
 	}
@@ -279,7 +140,7 @@ static s32 update_txdesc(struct xmit_frame *pxmitframe, u8 *pmem, s32 sz ,u8 bag
 			SET_TX_DESC_AGG_ENABLE_92E(ptxdesc, 1);
 			SET_TX_DESC_MAX_AGG_NUM_92E(ptxdesc, 0x1f);
 			// Set A-MPDU aggregation.
-			SET_TX_DESC_AMPDU_DENSITY_92E(ptxdesc, pHalData->AMPDUDensity);
+			SET_TX_DESC_AMPDU_DENSITY_92E(ptxdesc, pattrib->ampdu_spacing);
 		} else {
 			SET_TX_DESC_BK_92E(ptxdesc, 1);
 		}
@@ -311,31 +172,22 @@ static s32 update_txdesc(struct xmit_frame *pxmitframe, u8 *pmem, s32 sz ,u8 bag
 			SET_TX_DESC_DATA_RATE_FB_LIMIT_92E(ptxdesc, 0x1f);
 			SET_TX_DESC_RTS_RATE_FB_LIMIT_92E(ptxdesc, 0xf);
 
-			if(pHalData->fw_ractrl == _FALSE)  {
-				struct dm_priv	*pdmpriv = &pHalData->dmpriv;
+			if(pHalData->fw_ractrl == _FALSE)  {				
 				SET_TX_DESC_USE_RATE_92E(ptxdesc, 1);
 				
-				if(pdmpriv->INIDATA_RATE[pattrib->mac_id] & BIT(7))
+				if(pHalData->INIDATA_RATE[pattrib->mac_id] & BIT(7))
 					SET_TX_DESC_DATA_SHORT_92E(ptxdesc, 1);
 
-				SET_TX_DESC_TX_RATE_92E(ptxdesc, (pdmpriv->INIDATA_RATE[pattrib->mac_id] & 0x7F));
+				SET_TX_DESC_TX_RATE_92E(ptxdesc, (pHalData->INIDATA_RATE[pattrib->mac_id] & 0x7F));
 			}
 
 			//for debug
-               	#if 1
-			if(padapter->fix_rate!= 0xFF){
-				struct dm_priv	*pdmpriv = &pHalData->dmpriv;
-				SET_TX_DESC_USE_RATE_92E(ptxdesc, 1);
-				//if(pdmpriv->INIDATA_RATE[pattrib->mac_id] & BIT(7))
-                 		{
-					if(padapter->fix_rate & BIT(7))
-						SET_TX_DESC_DATA_SHORT_92E(ptxdesc, 1);
-				}
-				SET_TX_DESC_TX_RATE_92E(ptxdesc, (padapter->fix_rate & 0x7F));
-				SET_TX_DESC_DISABLE_FB_92E(ptxdesc,1);
-				//ptxdesc->datarate = padapter->fix_rate;
-			}
-			#endif
+               	rtl8192e_fixed_rate(padapter,ptxdesc);
+
+			if (pattrib->ldpc)
+				SET_TX_DESC_DATA_LDPC_92E(ptxdesc, 1);
+			if (pattrib->stbc)	
+				SET_TX_DESC_DATA_STBC_92E(ptxdesc, 1);
 				
 		}
 		else
@@ -355,6 +207,18 @@ static s32 update_txdesc(struct xmit_frame *pxmitframe, u8 *pmem, s32 sz ,u8 bag
 
 			SET_TX_DESC_TX_RATE_92E(ptxdesc, MRateToHwRate(pmlmeext->tx_rate));
 		}
+
+#ifdef CONFIG_TDLS
+#ifdef CONFIG_XMIT_ACK
+		/* CCX-TXRPT ack for xmit mgmt frames. */
+		if (pxmitframe->ack_report) {
+			SET_TX_DESC_SPE_RPT_92E(ptxdesc, 1);
+			#ifdef DBG_CCX
+			DBG_871X("%s set tx report\n", __func__);
+			#endif
+		}
+#endif /* CONFIG_XMIT_ACK */
+#endif
 	}
 	else if((pxmitframe->frame_tag&0x0f)== MGNT_FRAMETAG)
 	{
@@ -392,10 +256,12 @@ static s32 update_txdesc(struct xmit_frame *pxmitframe, u8 *pmem, s32 sz ,u8 bag
 		}
 #endif //CONFIG_XMIT_ACK
 	}
+/*
 	else if((pxmitframe->frame_tag&0x0f) == TXAGG_FRAMETAG)
 	{
 		DBG_8192C("pxmitframe->frame_tag == TXAGG_FRAMETAG\n");
 	}
+*/
 #ifdef CONFIG_MP_INCLUDED
 	else if(((pxmitframe->frame_tag&0x0f) == MP_FRAMETAG) &&
 		(padapter->registrypriv.mp_mode == 1))
@@ -410,6 +276,10 @@ static s32 update_txdesc(struct xmit_frame *pxmitframe, u8 *pmem, s32 sz ,u8 bag
 		SET_TX_DESC_USE_RATE_92E(ptxdesc, 1);
 		SET_TX_DESC_TX_RATE_92E(ptxdesc, MRateToHwRate(pmlmeext->tx_rate));
 	}
+
+#ifdef CONFIG_ANTENNA_DIVERSITY
+	ODM_SetTxAntByTxInfo(&pHalData->odmpriv, ptxdesc, pxmitframe->attrib.mac_id);
+#endif
 
 	rtl8192e_cal_txdesc_chksum(ptxdesc);
 	_dbg_dump_tx_info(padapter,pxmitframe->frame_tag,ptxdesc);	
@@ -444,11 +314,12 @@ s32 rtl8192eu_xmit_buf_handler(PADAPTER padapter)
 		return _FAIL;
 	}
 
-	ret = (padapter->bDriverStopped == _TRUE) || (padapter->bSurpriseRemoved == _TRUE);
-	if (ret) {
-		RT_TRACE(_module_hal_xmit_c_, _drv_notice_,
-				 ("%s: bDriverStopped(%d) bSurpriseRemoved(%d)!\n",
-				  __FUNCTION__, padapter->bDriverStopped, padapter->bSurpriseRemoved));
+	if (RTW_CANNOT_RUN(padapter)) {
+		RT_TRACE(_module_hal_xmit_c_, _drv_notice_
+				, ("%s: bDriverStopped(%s) bSurpriseRemoved(%s)!\n"
+				, __func__
+				, rtw_is_drv_stopped(padapter)?"True":"False"
+				, rtw_is_surprise_removed(padapter)?"True":"False"));
 		return _FAIL;
 	}
 
@@ -614,6 +485,9 @@ s32 rtl8192eu_xmitframe_complete(_adapter *padapter, struct xmit_priv *pxmitpriv
 	// dump frame variable
 	u32 ff_hwaddr;
 
+	_list *sta_plist, *sta_phead;
+	u8 single_sta_in_queue = _FALSE;
+
 #ifndef IDEA_CONDITION
 	int res = _SUCCESS;
 #endif
@@ -737,6 +611,10 @@ s32 rtl8192eu_xmitframe_complete(_adapter *padapter, struct xmit_priv *pxmitpriv
 
 	_enter_critical_bh(&pxmitpriv->lock, &irqL);
 
+	sta_phead = get_list_head(phwxmit->sta_queue);
+	sta_plist = get_next(sta_phead);
+	single_sta_in_queue = rtw_end_of_queue_search(sta_phead, get_next(sta_plist));
+
 	xmitframe_phead = get_list_head(&ptxservq->sta_pending);
 	xmitframe_plist = get_next(xmitframe_phead);
 	
@@ -745,6 +623,9 @@ s32 rtl8192eu_xmitframe_complete(_adapter *padapter, struct xmit_priv *pxmitpriv
 		pxmitframe = LIST_CONTAINOR(xmitframe_plist, struct xmit_frame, list);
 		xmitframe_plist = get_next(xmitframe_plist);
 
+		if(_FAIL == rtw_hal_busagg_qsel_check(padapter,pfirstframe->attrib.qsel,pxmitframe->attrib.qsel))
+			break;
+		
              pxmitframe->agg_num = 0; // not first frame of aggregation
 		#ifdef CONFIG_TX_EARLY_MODE
 		pxmitframe->pkt_offset = 1;// not first frame of aggregation,reserve offset for EM Info
@@ -828,10 +709,13 @@ s32 rtl8192eu_xmitframe_complete(_adapter *padapter, struct xmit_priv *pxmitpriv
 			bulkPtr = ((pbuf / bulkSize) + 1) * bulkSize;
 		}
 	}//end while( aggregate same priority and same DA(AP or STA) frames)
-
-
 	if (_rtw_queue_empty(&ptxservq->sta_pending) == _TRUE)
 		rtw_list_delete(&ptxservq->tx_pending);
+	else if (single_sta_in_queue == _FALSE) {
+		/* Re-arrange the order of stations in this ac queue to balance the service for these stations */
+		rtw_list_delete(&ptxservq->tx_pending);
+		rtw_list_insert_tail(&ptxservq->tx_pending, get_list_head(phwxmit->sta_queue));
+	}
 
 	_exit_critical_bh(&pxmitpriv->lock, &irqL);
 #ifdef CONFIG_80211N_HT
@@ -993,10 +877,9 @@ static s32 pre_xmitframe(_adapter *padapter, struct xmit_frame *pxmitframe)
 	struct xmit_priv *pxmitpriv = &padapter->xmitpriv;
 	struct pkt_attrib *pattrib = &pxmitframe->attrib;
 	struct mlme_priv *pmlmepriv = &padapter->mlmepriv;
-	
-	_enter_critical_bh(&pxmitpriv->lock, &irqL);
+	u8 lg_sta_num;
 
-//DBG_8192C("==> %s \n",__FUNCTION__);
+	_enter_critical_bh(&pxmitpriv->lock, &irqL);
 
 	if (rtw_txframes_sta_ac_pending(padapter, pattrib) > 0)
 	{
@@ -1004,14 +887,12 @@ static s32 pre_xmitframe(_adapter *padapter, struct xmit_frame *pxmitframe)
 		goto enqueue;
 	}
 
-
-	if (check_fwstate(pmlmepriv, _FW_UNDER_SURVEY|_FW_UNDER_LINKING) == _TRUE)
+	if (rtw_xmit_ac_blocked(padapter) == _TRUE)
 		goto enqueue;
 
-#ifdef CONFIG_CONCURRENT_MODE	
-	if (check_buddy_fwstate(padapter, _FW_UNDER_SURVEY|_FW_UNDER_LINKING) == _TRUE)
+	rtw_dev_iface_status(padapter, NULL, NULL , &lg_sta_num, NULL, NULL);
+	if (lg_sta_num)
 		goto enqueue;
-#endif
 
 	pxmitbuf = rtw_alloc_xmitbuf(pxmitpriv);
 	if (pxmitbuf == NULL)
