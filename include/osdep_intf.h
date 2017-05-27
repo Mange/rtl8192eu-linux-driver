@@ -124,8 +124,10 @@ void rtw_os_ndevs_deinit(struct dvobj_priv *dvobj);
 u16 rtw_recv_select_queue(struct sk_buff *skb);
 #endif //LINUX_VERSION_CODE>=KERNEL_VERSION(2,6,35)
 
+#if (LINUX_VERSION_CODE<KERNEL_VERSION(3, 11, 0))
 int rtw_ndev_notifier_register(void);
 void rtw_ndev_notifier_unregister(void);
+#endif
 
 #include "../os_dep/linux/rtw_proc.h"
 

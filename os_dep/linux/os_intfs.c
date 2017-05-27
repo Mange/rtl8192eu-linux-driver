@@ -978,7 +978,6 @@ u16 rtw_recv_select_queue(struct sk_buff *skb)
 	return rtw_1d_to_queue[priority];
 
 }
-
 #endif
 static int rtw_ndev_notifier_call(struct notifier_block * nb, unsigned long state, void *ptr)
 {	
@@ -1031,7 +1030,7 @@ void rtw_ndev_notifier_unregister(void)
 {
 	unregister_netdevice_notifier(&rtw_ndev_notifier);
 }
-
+#endif
 
 int rtw_ndev_init(struct net_device *dev)
 {
@@ -1071,9 +1070,15 @@ static const struct net_device_ops rtw_netdev_ops = {
 };
 #endif
 
+static const struct device_type wlan_type = {
+	.name = "wlan",
+};
+
 int rtw_init_netdev_name(struct net_device *pnetdev, const char *ifname)
 {
-	_adapter *padapter = rtw_netdev_priv(pnetdev);
+	_adapter *padapter;
+	pnetdev->dev.type = &wlan_type;
+	padapter = rtw_netdev_priv(pnetdev);
 
 #ifdef CONFIG_EASY_REPLACEMENT
 	struct net_device	*TargetNetdev = NULL;
