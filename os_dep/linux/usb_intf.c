@@ -138,6 +138,12 @@ static struct usb_device_id rtw_usb_id_tbl[] ={
 	/*=== Customer ID ===*/
 	/****** 8188EUS ********/
 	{USB_DEVICE(0x07B8, 0x8179),.driver_info = RTL8188E}, /* Abocom - Abocom */
+	{USB_DEVICE(0x056e, 0x4008),.driver_info = RTL8188E}, /* Elecom WDC-150SU2M */
+	{USB_DEVICE(0x2001, 0x330F),.driver_info = RTL8188E}, /* DLink DWA-125 REV D1 */
+	{USB_DEVICE(0x2001, 0x3310),.driver_info = RTL8188E}, /* Dlink DWA-123 REV D1 */
+	{USB_DEVICE(0x2001, 0x3311),.driver_info = RTL8188E}, /* DLink GO-USB-N150 REV B1 */
+	{USB_DEVICE(0x2357, 0x010c),.driver_info = RTL8188E}, /* TP-Link TL-WN722N v2 */
+	{USB_DEVICE(0x0df6, 0x0076),.driver_info = RTL8188E}, /* Sitecom N150 v2 */
 #endif
 
 #ifdef CONFIG_RTL8812A
