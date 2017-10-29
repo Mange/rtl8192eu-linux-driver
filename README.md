@@ -77,10 +77,12 @@ CONFIG_PLATFORM_ARM_RPI = y
 ```
 
 4. Check that your kernel has loaded the right module:
- ```shell
-    $ lshw -c network
+ 
+    ```shell
+        $ lshw -c network
     ```
-    You should see the line ```driver=8192eu```
+   
+You should see the line ```driver=8192eu```
     
 If you wish to uninstall the driver at a later point, use
 _sudo dkms uninstall rtl8192eu/1.0_. To completely remove the driver from DKMS use
