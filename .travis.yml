@@ -4,14 +4,14 @@ sudo: required
 
 before_install:
   - export ALL_DEB=$(wget --quiet -O - ${KERNEL_URL}v${KVER}/ | grep -o 'href=".*"' | grep -m1 all | cut -d '"' -f 2)
-  - export KVER_BUILD=$( echo $ALL_DEB | grep -o '[a-z0-9]*\.[0-9]*\_all\.deb' | cut -d '.' -f 1)
+  - export KVER_BUILD=$(echo $ALL_DEB | cut -d '_' -f 1 | cut -c15-)
   - wget ${KERNEL_URL}v${KVER}/$(wget --quiet -O - ${KERNEL_URL}v${KVER}/ | grep -o 'href=".*"' | grep headers | grep generic | grep -m1 amd64 | cut -d '"' -f 2)
   - wget ${KERNEL_URL}v${KVER}/$ALL_DEB
   - sudo dpkg -i *.deb
 
 script:
   - gcc --version
-  - make CC=$COMPILER KVER=$KVER-$KVER_BUILD-generic
+  - make CC=$COMPILER KVER=$KVER_BUILD-generic
 
 env:
   global:
@@ -26,7 +26,7 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - gcc-5
-      env: COMPILER=gcc-5 KVER=4.13.1
+      env: COMPILER=gcc-5 KVER=4.14
     - compiler: gcc
       addons:
         apt:
@@ -34,7 +34,7 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - gcc-6
-      env: COMPILER=gcc-6 KVER=4.13.1
+      env: COMPILER=gcc-6 KVER=4.14
     - compiler: gcc
       addons:
         apt:
@@ -42,7 +42,7 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - gcc-7
-      env: COMPILER=gcc-7 KVER=4.13.1
+      env: COMPILER=gcc-7 KVER=4.14
     - compiler: gcc
       addons:
         apt:
@@ -50,7 +50,7 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - gcc-5
-      env: COMPILER=gcc-5 KVER=4.4.87
+      env: COMPILER=gcc-5 KVER=4.4.97
     - compiler: gcc
       addons:
         apt:
@@ -58,4 +58,12 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - gcc-4.9
-      env: COMPILER=gcc-4.9 KVER=3.16.47
+      env: COMPILER=gcc-4.9 KVER=3.16.50
+    - compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - gcc-5
+      env: COMPILER=gcc-5 KVER=3.14.79
