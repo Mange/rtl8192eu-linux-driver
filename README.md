@@ -73,7 +73,7 @@ CONFIG_PLATFORM_ARM_RPI = y
 # sudo make clean
 # sudo make
 # sudo make install
-# sudo modprobe -a rtl8192eu
+# sudo modprobe -a 8192eu
 ```
 
 4. Check that your kernel has loaded the right module:
