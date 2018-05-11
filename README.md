@@ -32,28 +32,46 @@ generating kernel modules from out-of-tree kernel sources. It can be used to
 install/uninstall kernel modules, and the module will be automatically rebuilt
 from source when the kernel is upgraded (for example using your package manager).
 
-1. Install DKMS and other required tools
+#### Install DKMS and other required tools
 
-    * for normal Linux systems
-
-    ```shell
-    $ sudo apt-get install git linux-headers-generic build-essential dkms
-    ```
-
-    * for Raspberry Pi
+* for normal Linux systems
 
     ```shell
-    $ sudo apt-get install git raspberrypi-kernel-headers build-essential dkms
+    $ sudo apt install git linux-headers-generic build-essential dkms
     ```
 
-2. Add the driver to DKMS. This will copy the source to a system directory so
+* for Raspberry Pi
+
+    ```shell
+    $ sudo apt install git raspberrypi-kernel-headers build-essential dkms
+    ```
+
+#### Automatic install (x86/PC versions)
+
+* Download install script:
+
+    ```shell
+    $ wget -P /tmp https://github.com/Mange/rtl8192eu-linux-driver/raw/realtek-4.4.x/install.sh
+    ```
+
+* Review install script at `/tmp/install.sh`
+
+* Run it:
+
+    ```shell
+    $ bash /tmp/install.sh
+    ```
+
+#### Manual install
+
+1. Add the driver to DKMS. This will copy the source to a system directory so
 that it can used to rebuild the module on kernel upgrades.
 
     ```shell
     $ sudo dkms add .
     ```
 
-3. Build and install the driver.
+2. Build and install the driver.
 
     ```shell
     $ sudo dkms install rtl8192eu/1.0
@@ -76,14 +94,15 @@ CONFIG_PLATFORM_ARM_RPI = y
 # sudo modprobe -a 8192eu
 ```
 
-4. Check that your kernel has loaded the right module:
+3. Check that your kernel has loaded the right module:
  
     ```shell
-        $ lshw -c network
+    $ lshw -c network
     ```
    
 You should see the line ```driver=8192eu```
-    
+
+#### Uninstall
 If you wish to uninstall the driver at a later point, use
 _sudo dkms uninstall rtl8192eu/1.0_. To completely remove the driver from DKMS use
 _sudo dkms remove rtl8192eu/1.0 --all_.
