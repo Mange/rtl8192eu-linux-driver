@@ -79,7 +79,7 @@ CONFIG_PLATFORM_ARM_RPI = y
 4. Check that your kernel has loaded the right module:
  
     ```shell
-        $ lshw -c network
+        $ sudo lshw -c network
     ```
    
 You should see the line ```driver=8192eu```
