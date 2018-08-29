@@ -7,10 +7,11 @@ before_install:
   - export KVER_BUILD=$(echo $ALL_DEB | cut -d '_' -f 1 | cut -c15-)
   - wget ${KERNEL_URL}v${KVER}/$(wget --quiet -O - ${KERNEL_URL}v${KVER}/ | grep -o 'href=".*"' | grep headers | grep generic | grep -m1 amd64 | cut -d '"' -f 2)
   - wget ${KERNEL_URL}v${KVER}/$ALL_DEB
+  - sudo apt-get update
+  - sudo apt-get install -y dpkg  # to upgrade to dpkg >= 1.17.5ubuntu5.8, which fixes https://bugs.launchpad.net/ubuntu/+source/dpkg/+bug/1730627
   - sudo dpkg -i *.deb
 
 script:
-  - gcc --version
   - make CC=$COMPILER KVER=$KVER_BUILD-generic
 
 env:
@@ -24,28 +25,34 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:ondrej/nginx-mainline'
           packages:
             - gcc-5
             - libelf-dev
-      env: COMPILER=gcc-5 KVER=4.15-rc6
+            - libssl1.1
+      env: COMPILER=gcc-5 KVER=4.19-rc1
     - compiler: gcc
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:ondrej/nginx-mainline'
           packages:
             - gcc-6
             - libelf-dev
-      env: COMPILER=gcc-6 KVER=4.15-rc6
+            - libssl1.1
+      env: COMPILER=gcc-6 KVER=4.19-rc1
     - compiler: gcc
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:ondrej/nginx-mainline'
           packages:
             - gcc-7
             - libelf-dev
-      env: COMPILER=gcc-7 KVER=4.15-rc6
+            - libssl1.1
+      env: COMPILER=gcc-7 KVER=4.19-rc1
     - compiler: gcc
       addons:
         apt:
