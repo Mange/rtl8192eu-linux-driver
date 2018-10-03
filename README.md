@@ -1,5 +1,7 @@
 # rtl8192eu linux drivers
 
+These drivers are patched to work with Linux Kernels up till 4.15 but they work fine with Linux Kernel 4.17.x too.
+
 **NOTE:** This branch is based on Realtek's driver versioned 4.4.1. `master` is based on 4.3.1.1 originally.
 
 The official drivers for D-Link DWA-131 Rev E, with patches to keep it working on newer kernels.
@@ -25,6 +27,114 @@ You can see the applied patches, their sources and/or motivation by looking at t
 
 Note that updates to this README will show up as separate commits. I will not mix changes to this file with changes to the code in case you want to mirror this without the README.
 
+## Preparing for Building and Installing drivers
+
+1. Install DKMS and other required tools
+
+** For Ubuntu Based Systems
+
+Start terminal and run :
+
+sudo apt-get install git linux-headers-generic build-essential dkms lshw gedit
+
+** For Fedora OS
+
+Start terminal and run :
+
+sudo dnf groupinstall "Development Tools" "Development Libraries"
+sudo dnf install git lshw gedit dkms
+
+2. Download the source code of the network drivers :
+
+Click on GREEN button on top of the file listing on this page (https://github.com/Mange/rtl8192eu-linux-driver ) and click on the button which says "Clone or Download" and then finally on "Download Zip.
+
+Once you have downloaded the ZIP file, extract it to any path of your choice.
+
+OR 
+
+Use git to replicate the repository in any directory of your choice by using commands :
+
+** For Ubuntu and Fedora OS
+
+mkdir net_drivers
+cd net_drivers
+git config --global user.name "[name]"
+git config --global user.email "[email address]"
+git clone https://github.com/Mange/rtl8192eu-linux-driver.git
+
+This will download all the files to the current directory. Obviously, "name" and "email address" are your UserName and Email ID that you have registered with on GitHub (github.com) .
+
+If you are not comfortable with using GitHub system, just download the ZIP file as stated earlier on.
+
+3. Blacklist existing network drivers :
+
+Now, again in terminal execute the command :
+
+** For Ubuntu and Fedora OS
+
+sudo lshw -C network
+
+Now, you will get the list of Network Adapters attached to your PC. Check the driver that is being used by your network adapter that you want to install these drivers for.
+
+Sample output :
+
+sudo lshw -class network
+  *-network               
+       description: *
+       product: *
+       vendor: *
+       physical id: *
+       bus info: pci@0000:00:19.0
+       logical name: eth0
+       version: 02
+       serial: 00:1c:c0:f8:79:ee
+       size: *
+       capacity: *
+       width: *
+       clock: *
+       capabilities: pm msi bus_master cap_list ethernet physical tp 10bt 10bt-fd 100bt 100bt-fd 1000bt-fd autonegotiation
+       configuration: autonegotiation=on broadcast=yes driver=e1000e driverversion=2.3.2-k duplex=full firmware=1.1-0 ip=192.168.1.2 latency=0 link=yes multicast=yes port=twisted pair speed=100Mbit/s
+       resources: irq:43 memory:e0300000-e031ffff memory:e0324000-e0324fff ioport:20c0(size=32)
+
+Look at "driver=e1000e". This means that driver loaded for this particular device is e1000e.
+
+** In the case of our device, the driver name would be "rtl8xxxu" or something similar.
+
+Now, we need to disable this inbuilt driver of the wireless adapter first otherwise the new driver that we will build and install will NOT load at all for our hardware.
+
+So, again in terminal type -
+
+For Ubuntu and Fedora :
+
+sudo gedit /etc/modprobe.d/blacklist.conf
+
+Now, this conf file will open in "gedit", so just add the line here :
+
+
+
+blacklist rtl8xxxu
+
+
+
+Obviously replace "rtl8xxxu" with whatever driver that your Linux OS loads up by default for your hardware. 
+Now, save this file and quit gedit application.
+
+4. Final Step in this section - Update initramfs
+
+** For Ubuntu OS
+
+Type in terminal :
+
+sudo update-initramfs -u -k all
+
+** For Fedora OS
+
+Type in terminal :
+
+sudo dracut /boot/initramfs-$(uname -r).img $(uname -r) --force
+
+Now, we are ready to build and install drivers as described in the next section.
+
 ## Building and installing using DKMS
 
 This tree supports Dynamic Kernel Module Support (DKMS), a system for
@@ -32,28 +142,23 @@ generating kernel modules from out-of-tree kernel sources. It can be used to
 install/uninstall kernel modules, and the module will be automatically rebuilt
 from source when the kernel is upgraded (for example using your package manager).
 
-1. Install DKMS and other required tools
 
-    * for normal Linux systems
-
-    ```shell
-    $ sudo apt-get install git linux-headers-generic build-essential dkms
-    ```
-
-    * for Raspberry Pi
+** Only for Raspberry Pi
 
     ```shell
     $ sudo apt-get install git raspberrypi-kernel-headers build-essential dkms
     ```
 
-2. Add the driver to DKMS. This will copy the source to a system directory so
+1. Add the driver to DKMS. This will copy the source to a system directory so
 that it can used to rebuild the module on kernel upgrades.
+
+Extract the ZIP archive and run the following command from within the extracted directory :
 
     ```shell
     $ sudo dkms add .
     ```
 
-3. Build and install the driver.
+2. Build and install the driver.
 
     ```shell
     $ sudo dkms install rtl8192eu/1.0
@@ -76,13 +181,15 @@ CONFIG_PLATFORM_ARM_RPI = y
 # sudo modprobe -a 8192eu
 ```
 
-4. Check that your kernel has loaded the right module:
+3. Now, restart your Linux OS.
+
+After rebooting, check that your kernel has loaded the right module:
  
     ```shell
         $ sudo lshw -c network
     ```
    
-You should see the line ```driver=8192eu```
+You should see the line ```driver=8192eu``` for your wireless network adapter.
     
 If you wish to uninstall the driver at a later point, use
 _sudo dkms uninstall rtl8192eu/1.0_. To completely remove the driver from DKMS use
