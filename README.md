@@ -37,29 +37,25 @@ from source when the kernel is upgraded (for example using your package manager)
     * for normal Linux systems
 
     ```shell
-    $ sudo apt-get install git linux-headers-generic build-essential dkms
+    $ sudo apt-get install git linux-headers-generic build-essential dkms;
     ```
 
     * for Raspberry Pi
 
     ```shell
-    $ sudo apt-get install git raspberrypi-kernel-headers build-essential dkms
+    $ sudo apt-get install git raspberrypi-kernel-headers build-essential dkms;
     ```
 
-2. Add the driver to DKMS. This will copy the source to a system directory so
-that it can used to rebuild the module on kernel upgrades.
+2. Clone this repository and change your directory to cloned path.
 
     ```shell
-    $ sudo dkms add .
+    $ git clone https://github.com/Mange/rtl8192eu-linux-driver;
     ```
-
-3. Build and install the driver.
-
     ```shell
-    $ sudo dkms install rtl8192eu/1.0
+    $ cd rtl8192eu-linux-driver;
     ```
 
-The Makefile is preconfigured to handle most x86/PC versions.  If you are compiling for something other than an intel x86 architecture, you need to first select the platform, e.g. for the Raspberry Pi, you need to set the I386 to n and the ARM_RPI to y:
+3. The Makefile is preconfigured to handle most x86/PC versions. However, if you are compiling for something other than an intel x86 architecture, you need to first select the platform, e.g. for the Raspberry Pi, you need to set the I386 to n and the ARM_RPI to y:
 
 ```sh
 ...
@@ -68,18 +64,52 @@ CONFIG_PLATFORM_I386_PC = n
 CONFIG_PLATFORM_ARM_RPI = y
 ```
 
-```sh
-# cd /usr/src/rtl8192eu
-# sudo make clean
-# sudo make
-# sudo make install
-# sudo modprobe -a 8192eu
-```
+4. Add the driver to DKMS. This will copy the source to a system directory so
+that it can used to rebuild the module on kernel upgrades.
 
-4. Check that your kernel has loaded the right module:
+    ```shell
+    $ sudo dkms add .;
+    ```
+
+5. Build and install the driver.
+
+    ```shell
+    $ sudo dkms install rtl8192eu/1.0;
+    ```
+
+6. Distributions based on Debian & Ubuntu have RTL8XXXU driver present & running in kernelspace. To use our RTL8192EU driver, we need to blacklist RTL8XXXU.
+
+    ```shell
+    $ echo "blacklist rtl8xxxu" | sudo tee /etc/modprobe.d/rtl8xxxu.conf;
+    ```
+
+7. Force RTL8192EU Driver to be active from boot.
+    ```shell
+    $ echo -e "8192eu\n\nloop" | sudo tee /etc/modules;
+    ```
+
+8. Newer versions of Ubuntu has weird plugging/replugging issue (Check #94). This includes weird idling issues, To fix this:
+
+    ```shell
+    $ echo "options 8192eu rtw_power_mgnt=0 rtw_enusbss=0" | sudo tee /etc/modprobe.d/8192eu.conf;
+    ```
+
+9. Update changes to Grub & initramfs
+
+    ```shell
+    $ sudo update-grub; sudo update-initramfs -u;
+    ```
+
+10. Reboot system to load new changes from newly generated initramfs.
+
+    ```shell
+    $ systemctl reboot -i;
+    ```
+
+11. Check that your kernel has loaded the right module:
  
     ```shell
-        $ sudo lshw -c network
+    $ sudo lshw -c network;
     ```
    
 You should see the line ```driver=8192eu```
