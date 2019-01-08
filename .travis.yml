@@ -30,7 +30,7 @@ matrix:
             - gcc-5
             - libelf-dev
             - libssl1.1
-      env: COMPILER=gcc-5 KVER=4.19-rc1
+      env: COMPILER=gcc-5 KVER=5.0-rc1
     - compiler: gcc
       addons:
         apt:
@@ -41,7 +41,7 @@ matrix:
             - gcc-6
             - libelf-dev
             - libssl1.1
-      env: COMPILER=gcc-6 KVER=4.19-rc1
+      env: COMPILER=gcc-6 KVER=5.0-rc1
     - compiler: gcc
       addons:
         apt:
@@ -52,7 +52,7 @@ matrix:
             - gcc-7
             - libelf-dev
             - libssl1.1
-      env: COMPILER=gcc-7 KVER=4.19-rc1
+      env: COMPILER=gcc-7 KVER=5.0-rc1
     - compiler: gcc
       addons:
         apt:
