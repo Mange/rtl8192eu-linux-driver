@@ -3,7 +3,7 @@
 **NOTE:** This branch is based on Realtek's driver versioned 4.4.1. `master` is based on 4.3.1.1 originally.
 
 The official drivers for D-Link DWA-131 Rev E, with patches to keep it working on newer kernels.
-Also works on Rosewill RNX-N180UBE v2 N300 Wireless Adapter.
+Also works on Rosewill RNX-N180UBE v2 N300 Wireless Adapter and TP-Link TL-WN821N V6.
 
 **NOTE:** This is just a "mirror". I have no knowledge about this code or how it works. Expect no support from me or any contributors here. I just think GitHub is a nicer way of keeping track of this than random forum posts and precompiled binaries being sent by email. I don't want someone else to have to spend 5 days of googling and compiling with random patches until it works.
 
@@ -55,14 +55,25 @@ from source when the kernel is upgraded (for example using your package manager)
     $ cd rtl8192eu-linux-driver;
     ```
 
-3. The Makefile is preconfigured to handle most x86/PC versions. However, if you are compiling for something other than an intel x86 architecture, you need to first select the platform, e.g. for the Raspberry Pi, you need to set the I386 to n and the ARM_RPI to y:
+3. The Makefile is preconfigured to handle most x86/PC versions. However, if you are compiling for something other than an intel x86 architecture, you need to first select the platform.
 
-```sh
-...
-CONFIG_PLATFORM_I386_PC = n
-...
-CONFIG_PLATFORM_ARM_RPI = y
-```
+    * for the Raspberry Pi, you need to set the I386 to n and the ARM_RPI to y:
+
+    ```sh
+    ...
+    CONFIG_PLATFORM_I386_PC = n
+    ...
+    CONFIG_PLATFORM_ARM_RPI = y
+    ```
+
+    * for arm64 devices (e.g. Orange Pi PC 2):
+
+    ```sh
+    ...
+    CONFIG_PLATFORM_I386_PC = n
+    ...
+    CONFIG_PLATFORM_ARM_AARCH64 = y
+    ```
 
 4. Add the driver to DKMS. This will copy the source to a system directory so
 that it can used to rebuild the module on kernel upgrades.
