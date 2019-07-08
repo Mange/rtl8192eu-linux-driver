@@ -31,14 +31,18 @@
 #define STATION_INFO_ASSOC_REQ_IES	0
 #endif /* Linux kernel >= 4.0.0 */
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 7, 0))
-enum ieee80211_band {
-        IEEE80211_BAND_2GHZ = NL80211_BAND_2GHZ,
-        IEEE80211_BAND_5GHZ = NL80211_BAND_5GHZ,
-        IEEE80211_BAND_60GHZ = NL80211_BAND_60GHZ,
 
-        /* keep last */
-        IEEE80211_NUM_BANDS
-};
+// Creating your own enum to compare with another one is not very accurate.
+// I have rewritten this through defines, so that it means the same, while keeping compilers happy.
+#define ieee80211_band nl80211_band
+#define IEEE80211_BAND_2GHZ NL80211_BAND_2GHZ
+#define IEEE80211_BAND_5GHZ NL80211_BAND_5GHZ
+#define IEEE80211_BAND_60GHZ NL80211_BAND_60GHZ
+
+// this was not used in the entire *.c file, so I just safely drop it
+/* keep last */
+// IEEE80211_NUM_BANDS
+
 #endif /* Linux kernel >= 4.7.0 */
 
 #include <rtw_wifi_regd.h>
@@ -224,9 +228,7 @@ void rtw_5g_rates_init(struct ieee80211_rate *rates)
 	);
 }
 
-struct ieee80211_supported_band *rtw_spt_band_alloc(
-	enum ieee80211_band band
-	)
+struct ieee80211_supported_band *rtw_spt_band_alloc(enum ieee80211_band band)
 {
 	struct ieee80211_supported_band *spt_band = NULL;
 	int n_channels, n_bitrates;
