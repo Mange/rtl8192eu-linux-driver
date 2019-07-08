@@ -1482,8 +1482,8 @@ static sint aes_cipher(u8 *key, uint	hdrlen,
 //	uint	offset = 0;
 	uint	frtype  = GetFrameType(pframe);
 	uint	frsubtype  = GetFrameSubType(pframe);
-	
-_func_enter_;		
+
+_func_enter_;
 	frsubtype=frsubtype>>4;
 
 
@@ -1506,8 +1506,7 @@ _func_enter_;
 		((frtype|frsubtype) == WIFI_DATA_CFACKPOLL))
 		{
 			qc_exists = 1;
-					if(hdrlen !=  WLAN_HDR_A3_QOS_LEN){
-				 
+			if(hdrlen !=  WLAN_HDR_A3_QOS_LEN){
 					hdrlen += 2;
 			}
 		}
@@ -1519,8 +1518,7 @@ _func_enter_;
 		(frsubtype == 0x0b)))
 		{
 			if(hdrlen !=  WLAN_HDR_A3_QOS_LEN){
-				 
-					hdrlen += 2;
+				hdrlen += 2;
 			}
 			qc_exists = 1;
 		}
@@ -1533,7 +1531,7 @@ _func_enter_;
 	pn_vector[3]=pframe[hdrlen+5];
 	pn_vector[4]=pframe[hdrlen+6];
 	pn_vector[5]=pframe[hdrlen+7];
-	
+
 	construct_mic_iv(
                         mic_iv,
                         qc_exists,
@@ -1596,9 +1594,11 @@ _func_enter_;
 
     /* Insert MIC into payload */
     for (j = 0; j < 8; j++)
-    	pframe[payload_index+j] = mic[j];	//message[payload_index+j] = mic[j];
+    {
+        pframe[payload_index+j] = mic[j];	//message[payload_index+j] = mic[j];
+    }
 
-	payload_index = hdrlen + 8;
+    payload_index = hdrlen + 8;
 	for (i=0; i< num_blocks; i++)
     {
         construct_ctr_preload(
@@ -1654,7 +1654,7 @@ _func_enter_;
     aes128k128d(key, ctr_preload, aes_out);
     bitwise_xor(aes_out, padded_buffer, chain_buffer);
     for (j=0; j<8;j++) pframe[payload_index++] = chain_buffer[j];//for (j=0; j<8;j++) message[payload_index++] = chain_buffer[j];
-_func_exit_;		
+_func_exit_;
 	return _SUCCESS;
 }
 
@@ -1982,9 +1982,11 @@ _func_enter_;
 
     /* Insert MIC into payload */
     for (j = 0; j < 8; j++)
-    	message[payload_index+j] = mic[j];
+    {
+        message[payload_index+j] = mic[j];
+    }
 
-	payload_index = hdrlen + 8;
+    payload_index = hdrlen + 8;
 	for (i=0; i< num_blocks; i++)
     {
         construct_ctr_preload(
