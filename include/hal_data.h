@@ -402,6 +402,7 @@ typedef struct hal_com_data
 	u8	CurrentOfdm24GTxPwrIdx;
 	u8	CurrentBW2024GTxPwrIdx;
 	u8	CurrentBW4024GTxPwrIdx;
+	u8	CurrentTxPwrIdx;
 	
 	// Read/write are allow for following hardware information variables	
 	u8	pwrGroupCnt;

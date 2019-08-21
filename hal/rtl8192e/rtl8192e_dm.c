@@ -460,16 +460,16 @@ void rtl8192e_init_dm_priv(IN PADAPTER Adapter)
 	PDM_ODM_T 		podmpriv = &pHalData->odmpriv;
 	//_rtw_spinlock_init(&(pHalData->odm_stainfo_lock));
 	Init_ODM_ComInfo_8192e(Adapter);
-	ODM_InitAllTimers(podmpriv );	
+	ODM_InitAllTimers(podmpriv);
 	PHYDM_InitDebugSetting(podmpriv);
-
+	pHalData->CurrentTxPwrIdx = 20;
 }
 
 void rtl8192e_deinit_dm_priv(IN PADAPTER Adapter)
 {
 	PHAL_DATA_TYPE	pHalData = GET_HAL_DATA(Adapter);
 	PDM_ODM_T 		podmpriv = &pHalData->odmpriv;
-	//_rtw_spinlock_free(&pHalData->odm_stainfo_lock);		
+	//_rtw_spinlock_free(&pHalData->odm_stainfo_lock);
 	ODM_CancelAllTimers(podmpriv);
 }
 

@@ -503,17 +503,8 @@ PHY_GetTxPowerLevel8192E(
 	OUT s32*    		powerlevel
 	)
 {
-#if 0
-	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(Adapter);
-	PMGNT_INFO		pMgntInfo = &(Adapter->MgntInfo);
-	s4Byte			TxPwrDbm = 13;
-	RT_TRACE(COMP_TXAGC, DBG_LOUD, ("PHY_GetTxPowerLevel8192E(): TxPowerLevel: %#x\n", TxPwrDbm));
-
-	if ( pMgntInfo->ClientConfigPwrInDbm != UNSPECIFIED_PWR_DBM )
-		*powerlevel = pMgntInfo->ClientConfigPwrInDbm;
-	else
-		*powerlevel = TxPwrDbm;
-#endif
+	HAL_DATA_TYPE *pHalData = GET_HAL_DATA(Adapter);
+	*powerlevel = pHalData->CurrentTxPwrIdx;
 }
 
 VOID
@@ -683,29 +674,29 @@ PHY_GetTxPowerIndex_8192E(
 	//DBG_871X("===> PHY_GetTxPowerIndex_8192E\n");
 
 	txPower = (s8) PHY_GetTxPowerIndexBase( pAdapter,RFPath, Rate, BandWidth, Channel, &bIn24G );
-	
+
 	powerDiffByRate = PHY_GetTxPowerByRate( pAdapter, BAND_ON_2_4G, RFPath, txNum, Rate );
 
 	limit = PHY_GetTxPowerLimit( pAdapter, pAdapter->registrypriv.RegPwrTblSel, (u8)(!bIn24G), pHalData->CurrentChannelBW, RFPath, Rate, pHalData->CurrentChannel);
 
 	tpt_offset =  PHY_GetTxPowerTrackingOffset( pAdapter, RFPath, Rate );
 
-#if defined(DBG_TX_POWER_IDX)			
+#if defined(DBG_TX_POWER_IDX)
 	DBG_871X("%s (RF-%c, Channel: %d, BW:0x%02x ,Rate:0x%02x) \n==> txPower= (0x%02x),powerDiffByRate= (0x%02x),limit= (0x%02x),tpt_offset=(0x%02x)\n",
 		__FUNCTION__,((RFPath==0)?'A':'B'), Channel,BandWidth,Rate,txPower,powerDiffByRate,limit,tpt_offset);
 #endif
 	powerDiffByRate = powerDiffByRate > limit ? limit : powerDiffByRate;
 
 	txPower += powerDiffByRate;
-
 	txPower += tpt_offset;
+	txPower += pHalData->CurrentTxPwrIdx - 20;
+	if (txPower > RF6052_MAX_TX_PWR) txPower = RF6052_MAX_TX_PWR;
+	if (txPower > MAX_POWER_INDEX) 	txPower = MAX_POWER_INDEX;
 
-	if(txPower > MAX_POWER_INDEX)
-		txPower = MAX_POWER_INDEX;
-#if defined(DBG_TX_POWER_IDX)	
+#if defined(DBG_TX_POWER_IDX)
 	DBG_871X("Final Tx Power(RF-%c, Channel: %d) = %d(0x%X)\n\n", ((RFPath==0)?'A':'B'), Channel, txPower, txPower);
 #endif
-	return (u8)txPower;	
+	return (u8)txPower;
 }
 
 VOID
