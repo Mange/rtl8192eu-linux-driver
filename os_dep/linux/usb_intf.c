@@ -197,8 +197,8 @@ static struct usb_device_id rtw_usb_id_tbl[] ={
 	{USB_DEVICE(0x2019, 0xab33),.driver_info = RTL8192E}, /* PLANEX - GW-300S Katana */
 	/*=== Customer ID ===*/
 	{USB_DEVICE(0x2001, 0x3319),.driver_info = RTL8192E}, /* D-Link - DWA-131 */
-        {USB_DEVICE(0x2c4e, 0x0100),.driver_info = RTL8192E}, /* Mercusys MW300UM */
-		{USB_DEVICE(0x2c4e, 0x0104),.driver_info = RTL8192E}, /* Mercusys MW300UH */
+	{USB_DEVICE(0x2c4e, 0x0100),.driver_info = RTL8192E}, /* Mercusys MW300UM */
+	{USB_DEVICE(0x2c4e, 0x0104),.driver_info = RTL8192E}, /* Mercusys MW300UH */
 #endif
 
 #ifdef CONFIG_RTL8723B
