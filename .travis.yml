@@ -25,7 +25,7 @@ matrix:
             - sourceline: 'ppa:ondrej/nginx-mainline'
           packages:
             - libssl1.1
-      env: COMPILER=gcc-5 KVER=5.2-rc2
+      env: COMPILER=gcc-5 KVER=5.3
     - compiler: gcc
       addons:
         apt:
@@ -35,7 +35,7 @@ matrix:
           packages:
             - gcc-6
             - libssl1.1
-      env: COMPILER=gcc-6 KVER=5.2-rc2
+      env: COMPILER=gcc-6 KVER=5.3
     - compiler: gcc
       addons:
         apt:
@@ -45,7 +45,7 @@ matrix:
           packages:
             - gcc-7
             - libssl1.1
-      env: COMPILER=gcc-7 KVER=5.2-rc2
+      env: COMPILER=gcc-7 KVER=5.3
     - compiler: gcc
       addons:
         apt:
@@ -53,7 +53,7 @@ matrix:
             - sourceline: 'ppa:ondrej/nginx-mainline'
           packages:
             - libssl1.1
-      env: COMPILER=gcc-5 KVER=4.19.45
+      env: COMPILER=gcc-5 KVER=4.19.74
     - compiler: gcc
       addons:
         apt:
@@ -63,7 +63,7 @@ matrix:
           packages:
             - gcc-6
             - libssl1.1
-      env: COMPILER=gcc-6 KVER=4.19.45
+      env: COMPILER=gcc-6 KVER=4.19.74
     - compiler: gcc
       addons:
         apt:
@@ -73,4 +73,4 @@ matrix:
           packages:
             - gcc-7
             - libssl1.1
-      env: COMPILER=gcc-7 KVER=4.19.45
+      env: COMPILER=gcc-7 KVER=4.19.74
