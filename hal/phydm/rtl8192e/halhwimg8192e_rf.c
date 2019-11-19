@@ -1,125 +1,125 @@
-/****************************************************************************** 
-* 
-* Copyright(c) 2007 - 2011 Realtek Corporation. All rights reserved. 
-* 
-* This program is free software; you can redistribute it and/or modify it 
-* under the terms of version 2 of the GNU General Public License as 
-* published by the Free Software Foundation. 
-* 
-* This program is distributed in the hope that it will be useful, but WITHOUT 
-* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
-* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for 
-* more details. 
-* 
-* You should have received a copy of the GNU General Public License along with 
-* this program; if not, write to the Free Software Foundation, Inc., 
-* 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA 
-* 
-* 
-******************************************************************************/
+/******************************************************************************
+ *
+ * Copyright(c) 2007 - 2017 Realtek Corporation.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of version 2 of the GNU General Public License as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ *
+ * The full GNU General Public License is included in this distribution in the
+ * file called LICENSE.
+ *
+ * Contact Information:
+ * wlanfae <wlanfae@realtek.com>
+ * Realtek Corporation, No. 2, Innovation Road II, Hsinchu Science Park,
+ * Hsinchu 300, Taiwan.
+ *
+ * Larry Finger <Larry.Finger@lwfinger.net>
+ *
+ *****************************************************************************/
 
-/*Image2HeaderVersion: 2.14*/
+/*Image2HeaderVersion: R3 1.5.0*/
 #include "mp_precomp.h"
 #include "../phydm_precomp.h"
 
+#define D_S_SIZE DELTA_SWINGIDX_SIZE
+
 #if (RTL8192E_SUPPORT == 1)
-static BOOLEAN
-CheckPositive(
-	IN  PDM_ODM_T     pDM_Odm,
-	IN  const u4Byte  Condition1,
-	IN  const u4Byte  Condition2,
-	IN	const u4Byte  Condition3,
-	IN	const u4Byte  Condition4
+static boolean
+check_positive(struct dm_struct *dm,
+	       const u32	condition1,
+	       const u32	condition2,
+	       const u32	condition3,
+	       const u32	condition4
 )
 {
-	u1Byte    _BoardType = ((pDM_Odm->BoardType & BIT4) >> 4) << 0 | /* _GLNA*/
-				((pDM_Odm->BoardType & BIT3) >> 3) << 1 | /* _GPA*/ 
-				((pDM_Odm->BoardType & BIT7) >> 7) << 2 | /* _ALNA*/
-				((pDM_Odm->BoardType & BIT6) >> 6) << 3 | /* _APA */
-				((pDM_Odm->BoardType & BIT2) >> 2) << 4;  /* _BT*/  
+	u32	cond1 = condition1, cond2 = condition2,
+		cond3 = condition3, cond4 = condition4;
 
-	u4Byte	cond1   = Condition1, cond2 = Condition2, cond3 = Condition3, cond4 = Condition4;
-	u4Byte    driver1 = pDM_Odm->CutVersion       << 24 | 
-				(pDM_Odm->SupportInterface & 0xF0) << 16 | 
-				pDM_Odm->SupportPlatform  << 16 | 
-				pDM_Odm->PackageType      << 12 | 
-				(pDM_Odm->SupportInterface & 0x0F) << 8  |
-				_BoardType;
+	u8	cut_version_for_para =
+		(dm->cut_version ==  ODM_CUT_A) ? 15 : dm->cut_version;
 
-	u4Byte    driver2 = (pDM_Odm->TypeGLNA & 0xFF) <<  0 |  
-				(pDM_Odm->TypeGPA & 0xFF)  <<  8 | 
-				(pDM_Odm->TypeALNA & 0xFF) << 16 | 
-				(pDM_Odm->TypeAPA & 0xFF)  << 24; 
+	u8	pkg_type_for_para =
+		(dm->package_type == 0) ? 15 : dm->package_type;
 
-u4Byte    driver3 = 0;
+	u32	driver1 = cut_version_for_para << 24 |
+			(dm->support_interface & 0xF0) << 16 |
+			dm->support_platform << 16 |
+			pkg_type_for_para << 12 |
+			(dm->support_interface & 0x0F) << 8  |
+			dm->rfe_type;
 
-	u4Byte    driver4 = (pDM_Odm->TypeGLNA & 0xFF00) >>  8 |
-				(pDM_Odm->TypeGPA & 0xFF00) |
-				(pDM_Odm->TypeALNA & 0xFF00) << 8 |
-				(pDM_Odm->TypeAPA & 0xFF00)  << 16;
+	u32	driver2 = (dm->type_glna & 0xFF) <<  0 |
+			(dm->type_gpa & 0xFF)  <<  8 |
+			(dm->type_alna & 0xFF) << 16 |
+			(dm->type_apa & 0xFF)  << 24;
 
-	ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_TRACE, 
-	("===> CheckPositive (cond1, cond2, cond3, cond4) = (0x%X 0x%X 0x%X 0x%X)\n", cond1, cond2, cond3, cond4));
-	ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_TRACE, 
-	("===> CheckPositive (driver1, driver2, driver3, driver4) = (0x%X 0x%X 0x%X 0x%X)\n", driver1, driver2, driver3, driver4));
+	u32	driver3 = 0;
 
-	ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_TRACE, 
-	("	(Platform, Interface) = (0x%X, 0x%X)\n", pDM_Odm->SupportPlatform, pDM_Odm->SupportInterface));
-	ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_TRACE, 
-	("	(Board, Package) = (0x%X, 0x%X)\n", pDM_Odm->BoardType, pDM_Odm->PackageType));
+	u32	driver4 = (dm->type_glna & 0xFF00) >>  8 |
+			(dm->type_gpa & 0xFF00) |
+			(dm->type_alna & 0xFF00) << 8 |
+			(dm->type_apa & 0xFF00)  << 16;
 
+	PHYDM_DBG(dm, ODM_COMP_INIT,
+		  "===> %s (cond1, cond2, cond3, cond4) = (0x%X 0x%X 0x%X 0x%X)\n",
+		  __func__, cond1, cond2, cond3, cond4);
+	PHYDM_DBG(dm, ODM_COMP_INIT,
+		  "===> %s (driver1, driver2, driver3, driver4) = (0x%X 0x%X 0x%X 0x%X)\n",
+		  __func__, driver1, driver2, driver3, driver4);
 
-	/*============== Value Defined Check ===============*/
-	/*QFN Type [15:12] and Cut Version [27:24] need to do value check*/
-	
-	if (((cond1 & 0x0000F000) != 0) && ((cond1 & 0x0000F000) != (driver1 & 0x0000F000)))
-		return FALSE;
-	if (((cond1 & 0x0F000000) != 0) && ((cond1 & 0x0F000000) != (driver1 & 0x0F000000)))
-		return FALSE;
+	PHYDM_DBG(dm, ODM_COMP_INIT,
+		  "	(Platform, Interface) = (0x%X, 0x%X)\n",
+		  dm->support_platform, dm->support_interface);
+	PHYDM_DBG(dm, ODM_COMP_INIT, "	(RFE, Package) = (0x%X, 0x%X)\n",
+		  dm->rfe_type, dm->package_type);
 
+	/*============== value Defined Check ===============*/
+	/*cut version [27:24] need to do value check*/
+	if (((cond1 & 0x0F000000) != 0) &&
+	    ((cond1 & 0x0F000000) != (driver1 & 0x0F000000)))
+		return false;
+
+	/*pkg type [15:12] need to do value check*/
+	if (((cond1 & 0x0000F000) != 0) &&
+	    ((cond1 & 0x0000F000) != (driver1 & 0x0000F000)))
+		return false;
+
+	/*interface [11:8] need to do value check*/
+	if (((cond1 & 0x00000F00) != 0) &&
+	    ((cond1 & 0x00000F00) != (driver1 & 0x00000F00)))
+		return false;
 	/*=============== Bit Defined Check ================*/
 	/* We don't care [31:28] */
 
-	cond1   &= 0x00FF0FFF; 
-	driver1 &= 0x00FF0FFF; 
+	cond1 &= 0x000000FF;
+	driver1 &= 0x000000FF;
 
-	if ((cond1 & driver1) == cond1) {
-		u4Byte bitMask = 0;
-
-		if ((cond1 & 0x0F) == 0) /* BoardType is DONTCARE*/
-			return TRUE;
-
-		if ((cond1 & BIT0) != 0) /*GLNA*/
-			bitMask |= 0x000000FF;
-		if ((cond1 & BIT1) != 0) /*GPA*/
-			bitMask |= 0x0000FF00;
-		if ((cond1 & BIT2) != 0) /*ALNA*/
-			bitMask |= 0x00FF0000;
-		if ((cond1 & BIT3) != 0) /*APA*/
-			bitMask |= 0xFF000000;
-
-		if (((cond2 & bitMask) == (driver2 & bitMask)) && ((cond4 & bitMask) == (driver4 & bitMask)))  /* BoardType of each RF path is matched*/
-			return TRUE;
-		else
-			return FALSE;
-	} else
-		return FALSE;
+	if (cond1 == driver1)
+		return true;
+	else
+		return false;
 }
-static BOOLEAN
-CheckNegative(
-	IN  PDM_ODM_T     pDM_Odm,
-	IN  const u4Byte  Condition1,
-	IN  const u4Byte  Condition2
+
+static boolean
+check_negative(struct dm_struct *dm,
+	       const u32	condition1,
+	       const u32	condition2
 )
 {
-	return TRUE;
+	return true;
 }
 
 /******************************************************************************
-*                           RadioA.TXT
-******************************************************************************/
+ *                           radioa.TXT
+ ******************************************************************************/
 
-u4Byte Array_MP_8192E_RadioA[] = { 
+const u32 array_mp_8192e_radioa[] = {
 		0x07F, 0x00000082,
 		0x081, 0x0003FC00,
 		0x000, 0x00030000,
@@ -135,7 +135,7 @@ u4Byte Array_MP_8192E_RadioA[] = {
 	0x90000003,	0x0000000f,	0x40000000,	0x00000000,
 		0x01B, 0x0000146C,
 	0x90000002,	0x00000000,	0x40000000,	0x00000000,
-		0x01B, 0x00000064,
+		0x01B, 0x0000394C,
 	0x90000001,	0x00000000,	0x40000000,	0x00000000,
 		0x01B, 0x0000146C,
 	0x90000001,	0x00000005,	0x40000000,	0x00000000,
@@ -144,6 +144,8 @@ u4Byte Array_MP_8192E_RadioA[] = {
 		0x01B, 0x0000146C,
 	0x90000001,	0x0000000f,	0x40000000,	0x00000000,
 		0x01B, 0x0000146C,
+	0x90000400,	0x00000000,	0x40000000,	0x00000000,
+		0x01B, 0x0000394C,
 	0xA0000000,	0x00000000,
 		0x01B, 0x0000394C,
 	0xB0000000,	0x00000000,
@@ -199,6 +201,8 @@ u4Byte Array_MP_8192E_RadioA[] = {
 	0x90000001,	0x0000000a,	0x40000000,	0x00000000,
 		0x01C, 0x00000000,
 	0x90000001,	0x0000000f,	0x40000000,	0x00000000,
+		0x01C, 0x00000000,
+	0x90000400,	0x00000000,	0x40000000,	0x00000000,
 		0x01C, 0x00000000,
 	0xA0000000,	0x00000000,
 		0x01C, 0x00000000,
@@ -327,6 +331,18 @@ u4Byte Array_MP_8192E_RadioA[] = {
 		0x034, 0x0000244F,
 		0x034, 0x0000144C,
 		0x034, 0x00000014,
+	0x90000400,	0x00000000,	0x40000000,	0x00000000,
+		0x034, 0x0000ADD7,
+		0x034, 0x00009DD4,
+		0x034, 0x00008DD1,
+		0x034, 0x00007DCE,
+		0x034, 0x00006DCB,
+		0x034, 0x00005DC8,
+		0x034, 0x00004DC5,
+		0x034, 0x000034CC,
+		0x034, 0x0000244F,
+		0x034, 0x0000144C,
+		0x034, 0x00000014,
 	0xA0000000,	0x00000000,
 		0x034, 0x0000ADD7,
 		0x034, 0x00009DD4,
@@ -344,137 +360,87 @@ u4Byte Array_MP_8192E_RadioA[] = {
 		0x084, 0x00068180,
 	0x80000003,	0x00000000,	0x40000000,	0x00000000,
 		0x086, 0x0000010E,
-	0x90000003,	0x00000005,	0x40000000,	0x00000000,
-		0x086, 0x0000010E,
-	0x90000003,	0x0000000a,	0x40000000,	0x00000000,
-		0x086, 0x0000010E,
-	0x90000003,	0x0000000f,	0x40000000,	0x00000000,
-		0x086, 0x0000010E,
-	0x90000001,	0x00000000,	0x40000000,	0x00000000,
-		0x086, 0x0000010E,
-	0x90000001,	0x00000005,	0x40000000,	0x00000000,
-		0x086, 0x0000010E,
-	0x90000001,	0x0000000a,	0x40000000,	0x00000000,
-		0x086, 0x0000010E,
-	0x90000001,	0x0000000f,	0x40000000,	0x00000000,
-		0x086, 0x0000010E,
-	0xA0000000,	0x00000000,
-		0x086, 0x0000014E,
-	0xB0000000,	0x00000000,
-	0x80000400,	0x00000000,	0x40000000,	0x00000000,
-		0x087, 0x00049F80,
-	0x90000003,	0x00000000,	0x40000000,	0x00000000,
 		0x087, 0x000F5F80,
 	0x90000003,	0x00000005,	0x40000000,	0x00000000,
+		0x086, 0x0000010E,
 		0x087, 0x000F5F80,
 	0x90000003,	0x0000000a,	0x40000000,	0x00000000,
+		0x086, 0x0000010E,
 		0x087, 0x000F5F80,
 	0x90000003,	0x0000000f,	0x40000000,	0x00000000,
+		0x086, 0x0000010E,
 		0x087, 0x000F5F80,
 	0x90000002,	0x00000000,	0x40000000,	0x00000000,
+		0x086, 0x0000014E,
 		0x087, 0x00049F80,
 	0x90000001,	0x00000000,	0x40000000,	0x00000000,
+		0x086, 0x0000010E,
 		0x087, 0x000F5F80,
 	0x90000001,	0x00000005,	0x40000000,	0x00000000,
+		0x086, 0x0000010E,
 		0x087, 0x000F5F80,
 	0x90000001,	0x0000000a,	0x40000000,	0x00000000,
+		0x086, 0x0000010E,
 		0x087, 0x000F5F80,
 	0x90000001,	0x0000000f,	0x40000000,	0x00000000,
+		0x086, 0x0000010E,
 		0x087, 0x000F5F80,
+	0x90000400,	0x00000000,	0x40000000,	0x00000000,
+		0x086, 0x0000014E,
+		0x087, 0x00049F80,
 	0xA0000000,	0x00000000,
+		0x086, 0x0000014E,
 		0x087, 0x00049F80,
 	0xB0000000,	0x00000000,
 		0x08E, 0x00065540,
 		0x08F, 0x00088000,
 		0x0EF, 0x000020A0,
-	0x80000400,	0x00000000,	0x40000000,	0x00000000,
-		0x03B, 0x000F52B0,
-	0x90000003,	0x00000000,	0x40000000,	0x00000000,
+	0x80000003,	0x00000000,	0x40000000,	0x00000000,
 		0x03B, 0x000F0730,
+		0x03B, 0x000E0730,
+		0x03B, 0x000D0020,
+		0x03B, 0x000C0020,
+		0x03B, 0x000B0760,
+		0x03B, 0x000A0010,
+		0x03B, 0x00090000,
+		0x03B, 0x00080000,
+		0x03B, 0x000787B0,
+		0x03B, 0x00060FB0,
 	0x90000003,	0x00000005,	0x40000000,	0x00000000,
 		0x03B, 0x000F0730,
+		0x03B, 0x000E0730,
+		0x03B, 0x000D0020,
+		0x03B, 0x000C0020,
+		0x03B, 0x000B0760,
+		0x03B, 0x000A0010,
+		0x03B, 0x00090000,
+		0x03B, 0x00080000,
+		0x03B, 0x000787B0,
+		0x03B, 0x00060FB0,
 	0x90000003,	0x0000000a,	0x40000000,	0x00000000,
 		0x03B, 0x000F0730,
+		0x03B, 0x000E0730,
+		0x03B, 0x000D0020,
+		0x03B, 0x000C0020,
+		0x03B, 0x000B0760,
+		0x03B, 0x000A0010,
+		0x03B, 0x00090000,
+		0x03B, 0x00080000,
+		0x03B, 0x000787B0,
+		0x03B, 0x00060FB0,
 	0x90000003,	0x0000000f,	0x40000000,	0x00000000,
 		0x03B, 0x000F0730,
+		0x03B, 0x000E0730,
+		0x03B, 0x000D0020,
+		0x03B, 0x000C0020,
+		0x03B, 0x000B0760,
+		0x03B, 0x000A0010,
+		0x03B, 0x00090000,
+		0x03B, 0x00080000,
+		0x03B, 0x000787B0,
+		0x03B, 0x00060FB0,
 	0x90000002,	0x00000000,	0x40000000,	0x00000000,
 		0x03B, 0x000F02B0,
-	0x90000001,	0x00000000,	0x40000000,	0x00000000,
-		0x03B, 0x000F0730,
-	0x90000001,	0x00000005,	0x40000000,	0x00000000,
-		0x03B, 0x000F0730,
-	0x90000001,	0x0000000a,	0x40000000,	0x00000000,
-		0x03B, 0x000F0730,
-	0x90000001,	0x0000000f,	0x40000000,	0x00000000,
-		0x03B, 0x000F0730,
-	0xA0000000,	0x00000000,
-		0x03B, 0x000F02B0,
-	0xB0000000,	0x00000000,
-	0x80000003,	0x00000000,	0x40000000,	0x00000000,
-		0x03B, 0x000E0730,
-		0x03B, 0x000D0020,
-		0x03B, 0x000C0020,
-		0x03B, 0x000B0760,
-		0x03B, 0x000A0010,
-		0x03B, 0x00090000,
-		0x03B, 0x00080000,
-	0x90000003,	0x00000005,	0x40000000,	0x00000000,
-		0x03B, 0x000E0730,
-		0x03B, 0x000D0020,
-		0x03B, 0x000C0020,
-		0x03B, 0x000B0760,
-		0x03B, 0x000A0010,
-		0x03B, 0x00090000,
-		0x03B, 0x00080000,
-	0x90000003,	0x0000000a,	0x40000000,	0x00000000,
-		0x03B, 0x000E0730,
-		0x03B, 0x000D0020,
-		0x03B, 0x000C0020,
-		0x03B, 0x000B0760,
-		0x03B, 0x000A0010,
-		0x03B, 0x00090000,
-		0x03B, 0x00080000,
-	0x90000003,	0x0000000f,	0x40000000,	0x00000000,
-		0x03B, 0x000E0730,
-		0x03B, 0x000D0020,
-		0x03B, 0x000C0020,
-		0x03B, 0x000B0760,
-		0x03B, 0x000A0010,
-		0x03B, 0x00090000,
-		0x03B, 0x00080000,
-	0x90000001,	0x00000000,	0x40000000,	0x00000000,
-		0x03B, 0x000E0730,
-		0x03B, 0x000D0020,
-		0x03B, 0x000C0020,
-		0x03B, 0x000B0760,
-		0x03B, 0x000A0010,
-		0x03B, 0x00090000,
-		0x03B, 0x00080000,
-	0x90000001,	0x00000005,	0x40000000,	0x00000000,
-		0x03B, 0x000E0730,
-		0x03B, 0x000D0020,
-		0x03B, 0x000C0020,
-		0x03B, 0x000B0760,
-		0x03B, 0x000A0010,
-		0x03B, 0x00090000,
-		0x03B, 0x00080000,
-	0x90000001,	0x0000000a,	0x40000000,	0x00000000,
-		0x03B, 0x000E0730,
-		0x03B, 0x000D0020,
-		0x03B, 0x000C0020,
-		0x03B, 0x000B0760,
-		0x03B, 0x000A0010,
-		0x03B, 0x00090000,
-		0x03B, 0x00080000,
-	0x90000001,	0x0000000f,	0x40000000,	0x00000000,
-		0x03B, 0x000E0730,
-		0x03B, 0x000D0020,
-		0x03B, 0x000C0020,
-		0x03B, 0x000B0760,
-		0x03B, 0x000A0010,
-		0x03B, 0x00090000,
-		0x03B, 0x00080000,
-	0xA0000000,	0x00000000,
 		0x03B, 0x000EF7B0,
 		0x03B, 0x000D4FB0,
 		0x03B, 0x000CF060,
@@ -482,31 +448,75 @@ u4Byte Array_MP_8192E_RadioA[] = {
 		0x03B, 0x000A0080,
 		0x03B, 0x00090080,
 		0x03B, 0x0008F780,
-	0xB0000000,	0x00000000,
-	0x80000400,	0x00000000,	0x40000000,	0x00000000,
-		0x03B, 0x00070730,
-	0x90000003,	0x00000000,	0x40000000,	0x00000000,
-		0x03B, 0x000787B0,
-	0x90000003,	0x00000005,	0x40000000,	0x00000000,
-		0x03B, 0x000787B0,
-	0x90000003,	0x0000000a,	0x40000000,	0x00000000,
-		0x03B, 0x000787B0,
-	0x90000003,	0x0000000f,	0x40000000,	0x00000000,
-		0x03B, 0x000787B0,
-	0x90000002,	0x00000000,	0x40000000,	0x00000000,
 		0x03B, 0x00078730,
+		0x03B, 0x0006FFB0,
 	0x90000001,	0x00000000,	0x40000000,	0x00000000,
+		0x03B, 0x000F0730,
+		0x03B, 0x000E0730,
+		0x03B, 0x000D0020,
+		0x03B, 0x000C0020,
+		0x03B, 0x000B0760,
+		0x03B, 0x000A0010,
+		0x03B, 0x00090000,
+		0x03B, 0x00080000,
 		0x03B, 0x000787B0,
-	0x90000001,	0x00000005,	0x40000000,	0x00000000,
-		0x03B, 0x000787B0,
-	0x90000001,	0x0000000a,	0x40000000,	0x00000000,
-		0x03B, 0x000787B0,
-	0x90000001,	0x0000000f,	0x40000000,	0x00000000,
-		0x03B, 0x000787B0,
-	0xA0000000,	0x00000000,
-		0x03B, 0x00078730,
-	0xB0000000,	0x00000000,
 		0x03B, 0x00060FB0,
+	0x90000001,	0x00000005,	0x40000000,	0x00000000,
+		0x03B, 0x000F0730,
+		0x03B, 0x000E0730,
+		0x03B, 0x000D0020,
+		0x03B, 0x000C0020,
+		0x03B, 0x000B0760,
+		0x03B, 0x000A0010,
+		0x03B, 0x00090000,
+		0x03B, 0x00080000,
+		0x03B, 0x000787B0,
+		0x03B, 0x00060FB0,
+	0x90000001,	0x0000000a,	0x40000000,	0x00000000,
+		0x03B, 0x000F0730,
+		0x03B, 0x000E0730,
+		0x03B, 0x000D0020,
+		0x03B, 0x000C0020,
+		0x03B, 0x000B0760,
+		0x03B, 0x000A0010,
+		0x03B, 0x00090000,
+		0x03B, 0x00080000,
+		0x03B, 0x000787B0,
+		0x03B, 0x00060FB0,
+	0x90000001,	0x0000000f,	0x40000000,	0x00000000,
+		0x03B, 0x000F0730,
+		0x03B, 0x000E0730,
+		0x03B, 0x000D0020,
+		0x03B, 0x000C0020,
+		0x03B, 0x000B0760,
+		0x03B, 0x000A0010,
+		0x03B, 0x00090000,
+		0x03B, 0x00080000,
+		0x03B, 0x000787B0,
+		0x03B, 0x00060FB0,
+	0x90000400,	0x00000000,	0x40000000,	0x00000000,
+		0x03B, 0x000F52B0,
+		0x03B, 0x000EF7B0,
+		0x03B, 0x000D4FB0,
+		0x03B, 0x000CF060,
+		0x03B, 0x000B0090,
+		0x03B, 0x000A0080,
+		0x03B, 0x00090080,
+		0x03B, 0x0008F780,
+		0x03B, 0x00070730,
+		0x03B, 0x0006FFB0,
+	0xA0000000,	0x00000000,
+		0x03B, 0x000F02B0,
+		0x03B, 0x000EF7B0,
+		0x03B, 0x000D4FB0,
+		0x03B, 0x000CF060,
+		0x03B, 0x000B0090,
+		0x03B, 0x000A0080,
+		0x03B, 0x00090080,
+		0x03B, 0x0008F780,
+		0x03B, 0x00078730,
+		0x03B, 0x0006FFB0,
+	0xB0000000,	0x00000000,
 		0x03B, 0x0005FFA0,
 		0x03B, 0x00040620,
 		0x03B, 0x00037090,
@@ -514,12 +524,12 @@ u4Byte Array_MP_8192E_RadioA[] = {
 		0x03B, 0x0001F060,
 		0x03B, 0x0000FFB0,
 		0x0EF, 0x000000A0,
-		0x0FE, 0x00000000,
+		0xFFE, 0x00000000,
 		0x018, 0x0000FC07,
-		0x0FE, 0x00000000,
-		0x0FE, 0x00000000,
-		0x0FE, 0x00000000,
-		0x0FE, 0x00000000,
+		0xFFE, 0x00000000,
+		0xFFE, 0x00000000,
+		0xFFE, 0x00000000,
+		0xFFE, 0x00000000,
 		0x01E, 0x00000001,
 		0x01F, 0x00080000,
 		0x000, 0x00033E70,
@@ -527,71 +537,76 @@ u4Byte Array_MP_8192E_RadioA[] = {
 };
 
 void
-ODM_ReadAndConfig_MP_8192E_RadioA(
-	IN   PDM_ODM_T  pDM_Odm
-)
+odm_read_and_config_mp_8192e_radioa(struct dm_struct *dm)
 {
-	u4Byte     i         = 0;
-	u1Byte     cCond;
-	BOOLEAN bMatched = TRUE, bSkipped = FALSE;
-	u4Byte     ArrayLen    = sizeof(Array_MP_8192E_RadioA)/sizeof(u4Byte);
-	pu4Byte    Array       = Array_MP_8192E_RadioA;
-	
-	u4Byte	v1 = 0, v2 = 0, pre_v1 = 0, pre_v2 = 0;
+	u32	i = 0;
+	u8	c_cond;
+	boolean	is_matched = true, is_skipped = false;
+	u32	array_len =
+			sizeof(array_mp_8192e_radioa) / sizeof(u32);
+	u32	*array = (u32 *)array_mp_8192e_radioa;
 
-	ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_LOUD, ("===> ODM_ReadAndConfig_MP_8192E_RadioA\n"));
+	u32	v1 = 0, v2 = 0, pre_v1 = 0, pre_v2 = 0;
+	u32	a1 = 0, a2 = 0, a3 = 0, a4 = 0;
 
-	while ((i + 1) < ArrayLen) {
-		v1 = Array[i];
-		v2 = Array[i + 1];
+	PHYDM_DBG(dm, ODM_COMP_INIT, "===> %s\n", __func__);
 
-		if (v1 & (BIT31 | BIT30)) {/*positive & negative condition*/
-			if (v1 & BIT31) {/* positive condition*/
-				cCond  = (u1Byte)((v1 & (BIT29|BIT28)) >> 28);
-				if (cCond == COND_ENDIF) {/*end*/
-					bMatched = TRUE;
-					bSkipped = FALSE;
-					ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_LOUD, ("ENDIF\n"));
-				} else if (cCond == COND_ELSE) { /*else*/
-					bMatched = bSkipped?FALSE:TRUE;
-					ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_LOUD, ("ELSE\n"));
-				}
-				else {/*if , else if*/
+	while ((i + 1) < array_len) {
+		v1 = array[i];
+		v2 = array[i + 1];
+
+		if (v1 & (BIT(31) | BIT(30))) {/*positive & negative condition*/
+			if (v1 & BIT(31)) {/* positive condition*/
+				c_cond  =
+					(u8)((v1 & (BIT(29) | BIT(28))) >> 28);
+				if (c_cond == COND_ENDIF) {/*end*/
+					is_matched = true;
+					is_skipped = false;
+					PHYDM_DBG(dm, ODM_COMP_INIT, "ENDIF\n");
+				} else if (c_cond == COND_ELSE) { /*else*/
+					is_matched = is_skipped ? false : true;
+					PHYDM_DBG(dm, ODM_COMP_INIT, "ELSE\n");
+				} else {/*if , else if*/
 					pre_v1 = v1;
 					pre_v2 = v2;
-					ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_LOUD, ("IF or ELSE IF\n"));
+					PHYDM_DBG(dm, ODM_COMP_INIT,
+						  "IF or ELSE IF\n");
 				}
-			} else if (v1 & BIT30) { /*negative condition*/
-				if (bSkipped == FALSE) {
-					if (CheckPositive(pDM_Odm, pre_v1, pre_v2, v1, v2)) {
-						bMatched = TRUE;
-						bSkipped = TRUE;
+			} else if (v1 & BIT(30)) { /*negative condition*/
+				if (!is_skipped) {
+					a1 = pre_v1; a2 = pre_v2;
+					a3 = v1; a4 = v2;
+					if (check_positive(dm,
+							   a1, a2, a3, a4)) {
+						is_matched = true;
+						is_skipped = true;
 					} else {
-						bMatched = FALSE;
-						bSkipped = FALSE;
+						is_matched = false;
+						is_skipped = false;
 					}
-				} else
-					bMatched = FALSE;
+				} else {
+					is_matched = false;
+				}
 			}
 		} else {
-			if (bMatched)
-				odm_ConfigRF_RadioA_8192E(pDM_Odm, v1, v2);
+			if (is_matched)
+				odm_config_rf_radio_a_8192e(dm, v1, v2);
 		}
 		i = i + 2;
 	}
 }
 
-u4Byte
-ODM_GetVersion_MP_8192E_RadioA(void)
+u32
+odm_get_version_mp_8192e_radioa(void)
 {
-	   return 51;
+		return 60;
 }
 
 /******************************************************************************
-*                           RadioB.TXT
-******************************************************************************/
+ *                           radiob.TXT
+ ******************************************************************************/
 
-u4Byte Array_MP_8192E_RadioB[] = { 
+const u32 array_mp_8192e_radiob[] = {
 		0x07F, 0x00000082,
 		0x081, 0x0003FC00,
 		0x000, 0x00030000,
@@ -607,7 +622,7 @@ u4Byte Array_MP_8192E_RadioB[] = {
 	0x90000003,	0x0000000f,	0x40000000,	0x00000000,
 		0x01B, 0x0000146C,
 	0x90000002,	0x00000000,	0x40000000,	0x00000000,
-		0x01B, 0x00000064,
+		0x01B, 0x0000394C,
 	0x90000001,	0x00000000,	0x40000000,	0x00000000,
 		0x01B, 0x0000146C,
 	0x90000001,	0x00000005,	0x40000000,	0x00000000,
@@ -616,6 +631,8 @@ u4Byte Array_MP_8192E_RadioB[] = {
 		0x01B, 0x0000146C,
 	0x90000001,	0x0000000f,	0x40000000,	0x00000000,
 		0x01B, 0x0000146C,
+	0x90000400,	0x00000000,	0x40000000,	0x00000000,
+		0x01B, 0x0000394C,
 	0xA0000000,	0x00000000,
 		0x01B, 0x0000394C,
 	0xB0000000,	0x00000000,
@@ -640,6 +657,16 @@ u4Byte Array_MP_8192E_RadioB[] = {
 		0x01C, 0x00001C00,
 	0x90000002,	0x00000000,	0x40000000,	0x00000000,
 		0x01C, 0x00001C00,
+	0x90000001,	0x00000000,	0x40000000,	0x00000000,
+		0x01C, 0x00000000,
+	0x90000001,	0x00000005,	0x40000000,	0x00000000,
+		0x01C, 0x00000000,
+	0x90000001,	0x0000000a,	0x40000000,	0x00000000,
+		0x01C, 0x00000000,
+	0x90000001,	0x0000000f,	0x40000000,	0x00000000,
+		0x01C, 0x00000000,
+	0x90000400,	0x00000000,	0x40000000,	0x00000000,
+		0x01C, 0x00000000,
 	0xA0000000,	0x00000000,
 		0x01C, 0x00000000,
 	0xB0000000,	0x00000000,
@@ -767,6 +794,18 @@ u4Byte Array_MP_8192E_RadioB[] = {
 		0x034, 0x0000244F,
 		0x034, 0x0000144C,
 		0x034, 0x00000014,
+	0x90000400,	0x00000000,	0x40000000,	0x00000000,
+		0x034, 0x0000ADD7,
+		0x034, 0x00009DD4,
+		0x034, 0x00008DD1,
+		0x034, 0x00007DCE,
+		0x034, 0x00006DCB,
+		0x034, 0x00005DC8,
+		0x034, 0x00004DC5,
+		0x034, 0x000034CC,
+		0x034, 0x0000244F,
+		0x034, 0x0000144C,
+		0x034, 0x00000014,
 	0xA0000000,	0x00000000,
 		0x034, 0x0000ADD7,
 		0x034, 0x00009DD4,
@@ -784,137 +823,87 @@ u4Byte Array_MP_8192E_RadioB[] = {
 		0x084, 0x00068180,
 	0x80000003,	0x00000000,	0x40000000,	0x00000000,
 		0x086, 0x0000010E,
-	0x90000003,	0x00000005,	0x40000000,	0x00000000,
-		0x086, 0x0000010E,
-	0x90000003,	0x0000000a,	0x40000000,	0x00000000,
-		0x086, 0x0000010E,
-	0x90000003,	0x0000000f,	0x40000000,	0x00000000,
-		0x086, 0x0000010E,
-	0x90000001,	0x00000000,	0x40000000,	0x00000000,
-		0x086, 0x0000010E,
-	0x90000001,	0x00000005,	0x40000000,	0x00000000,
-		0x086, 0x0000010E,
-	0x90000001,	0x0000000a,	0x40000000,	0x00000000,
-		0x086, 0x0000010E,
-	0x90000001,	0x0000000f,	0x40000000,	0x00000000,
-		0x086, 0x0000010E,
-	0xA0000000,	0x00000000,
-		0x086, 0x000000CE,
-	0xB0000000,	0x00000000,
-	0x80000400,	0x00000000,	0x40000000,	0x00000000,
-		0x087, 0x00049F80,
-	0x90000003,	0x00000000,	0x40000000,	0x00000000,
 		0x087, 0x000F5F80,
 	0x90000003,	0x00000005,	0x40000000,	0x00000000,
+		0x086, 0x0000010E,
 		0x087, 0x000F5F80,
 	0x90000003,	0x0000000a,	0x40000000,	0x00000000,
+		0x086, 0x0000010E,
 		0x087, 0x000F5F80,
 	0x90000003,	0x0000000f,	0x40000000,	0x00000000,
+		0x086, 0x0000010E,
 		0x087, 0x000F5F80,
 	0x90000002,	0x00000000,	0x40000000,	0x00000000,
+		0x086, 0x000000CE,
 		0x087, 0x00049F80,
 	0x90000001,	0x00000000,	0x40000000,	0x00000000,
+		0x086, 0x0000010E,
 		0x087, 0x000F5F80,
 	0x90000001,	0x00000005,	0x40000000,	0x00000000,
+		0x086, 0x0000010E,
 		0x087, 0x000F5F80,
 	0x90000001,	0x0000000a,	0x40000000,	0x00000000,
+		0x086, 0x0000010E,
 		0x087, 0x000F5F80,
 	0x90000001,	0x0000000f,	0x40000000,	0x00000000,
+		0x086, 0x0000010E,
 		0x087, 0x000F5F80,
+	0x90000400,	0x00000000,	0x40000000,	0x00000000,
+		0x086, 0x000000CE,
+		0x087, 0x00049F80,
 	0xA0000000,	0x00000000,
+		0x086, 0x000000CE,
 		0x087, 0x00049F80,
 	0xB0000000,	0x00000000,
 		0x08E, 0x00065540,
 		0x08F, 0x00088000,
 		0x0EF, 0x000020A0,
-	0x80000400,	0x00000000,	0x40000000,	0x00000000,
-		0x03B, 0x000F52B0,
-	0x90000003,	0x00000000,	0x40000000,	0x00000000,
+	0x80000003,	0x00000000,	0x40000000,	0x00000000,
 		0x03B, 0x000F0730,
+		0x03B, 0x000E0730,
+		0x03B, 0x000D0020,
+		0x03B, 0x000C0020,
+		0x03B, 0x000B0760,
+		0x03B, 0x000A0010,
+		0x03B, 0x00090000,
+		0x03B, 0x00080000,
+		0x03B, 0x000787B0,
+		0x03B, 0x00060FB0,
 	0x90000003,	0x00000005,	0x40000000,	0x00000000,
 		0x03B, 0x000F0730,
+		0x03B, 0x000E0730,
+		0x03B, 0x000D0020,
+		0x03B, 0x000C0020,
+		0x03B, 0x000B0760,
+		0x03B, 0x000A0010,
+		0x03B, 0x00090000,
+		0x03B, 0x00080000,
+		0x03B, 0x000787B0,
+		0x03B, 0x00060FB0,
 	0x90000003,	0x0000000a,	0x40000000,	0x00000000,
 		0x03B, 0x000F0730,
+		0x03B, 0x000E0730,
+		0x03B, 0x000D0020,
+		0x03B, 0x000C0020,
+		0x03B, 0x000B0760,
+		0x03B, 0x000A0010,
+		0x03B, 0x00090000,
+		0x03B, 0x00080000,
+		0x03B, 0x000787B0,
+		0x03B, 0x00060FB0,
 	0x90000003,	0x0000000f,	0x40000000,	0x00000000,
 		0x03B, 0x000F0730,
+		0x03B, 0x000E0730,
+		0x03B, 0x000D0020,
+		0x03B, 0x000C0020,
+		0x03B, 0x000B0760,
+		0x03B, 0x000A0010,
+		0x03B, 0x00090000,
+		0x03B, 0x00080000,
+		0x03B, 0x000787B0,
+		0x03B, 0x00060FB0,
 	0x90000002,	0x00000000,	0x40000000,	0x00000000,
 		0x03B, 0x000F02B0,
-	0x90000001,	0x00000000,	0x40000000,	0x00000000,
-		0x03B, 0x000F0730,
-	0x90000001,	0x00000005,	0x40000000,	0x00000000,
-		0x03B, 0x000F0730,
-	0x90000001,	0x0000000a,	0x40000000,	0x00000000,
-		0x03B, 0x000F0730,
-	0x90000001,	0x0000000f,	0x40000000,	0x00000000,
-		0x03B, 0x000F0730,
-	0xA0000000,	0x00000000,
-		0x03B, 0x000F02B0,
-	0xB0000000,	0x00000000,
-	0x80000003,	0x00000000,	0x40000000,	0x00000000,
-		0x03B, 0x000E0730,
-		0x03B, 0x000D0020,
-		0x03B, 0x000C0020,
-		0x03B, 0x000B0760,
-		0x03B, 0x000A0010,
-		0x03B, 0x00090000,
-		0x03B, 0x00080000,
-	0x90000003,	0x00000005,	0x40000000,	0x00000000,
-		0x03B, 0x000E0730,
-		0x03B, 0x000D0020,
-		0x03B, 0x000C0020,
-		0x03B, 0x000B0760,
-		0x03B, 0x000A0010,
-		0x03B, 0x00090000,
-		0x03B, 0x00080000,
-	0x90000003,	0x0000000a,	0x40000000,	0x00000000,
-		0x03B, 0x000E0730,
-		0x03B, 0x000D0020,
-		0x03B, 0x000C0020,
-		0x03B, 0x000B0760,
-		0x03B, 0x000A0010,
-		0x03B, 0x00090000,
-		0x03B, 0x00080000,
-	0x90000003,	0x0000000f,	0x40000000,	0x00000000,
-		0x03B, 0x000E0730,
-		0x03B, 0x000D0020,
-		0x03B, 0x000C0020,
-		0x03B, 0x000B0760,
-		0x03B, 0x000A0010,
-		0x03B, 0x00090000,
-		0x03B, 0x00080000,
-	0x90000001,	0x00000000,	0x40000000,	0x00000000,
-		0x03B, 0x000E0730,
-		0x03B, 0x000D0020,
-		0x03B, 0x000C0020,
-		0x03B, 0x000B0760,
-		0x03B, 0x000A0010,
-		0x03B, 0x00090000,
-		0x03B, 0x00080000,
-	0x90000001,	0x00000005,	0x40000000,	0x00000000,
-		0x03B, 0x000E0730,
-		0x03B, 0x000D0020,
-		0x03B, 0x000C0020,
-		0x03B, 0x000B0760,
-		0x03B, 0x000A0010,
-		0x03B, 0x00090000,
-		0x03B, 0x00080000,
-	0x90000001,	0x0000000a,	0x40000000,	0x00000000,
-		0x03B, 0x000E0730,
-		0x03B, 0x000D0020,
-		0x03B, 0x000C0020,
-		0x03B, 0x000B0760,
-		0x03B, 0x000A0010,
-		0x03B, 0x00090000,
-		0x03B, 0x00080000,
-	0x90000001,	0x0000000f,	0x40000000,	0x00000000,
-		0x03B, 0x000E0730,
-		0x03B, 0x000D0020,
-		0x03B, 0x000C0020,
-		0x03B, 0x000B0760,
-		0x03B, 0x000A0010,
-		0x03B, 0x00090000,
-		0x03B, 0x00080000,
-	0xA0000000,	0x00000000,
 		0x03B, 0x000EF7B0,
 		0x03B, 0x000D4FB0,
 		0x03B, 0x000CF060,
@@ -922,31 +911,75 @@ u4Byte Array_MP_8192E_RadioB[] = {
 		0x03B, 0x000A0080,
 		0x03B, 0x00090080,
 		0x03B, 0x0008F780,
-	0xB0000000,	0x00000000,
-	0x80000400,	0x00000000,	0x40000000,	0x00000000,
-		0x03B, 0x00070730,
-	0x90000003,	0x00000000,	0x40000000,	0x00000000,
-		0x03B, 0x000787B0,
-	0x90000003,	0x00000005,	0x40000000,	0x00000000,
-		0x03B, 0x000787B0,
-	0x90000003,	0x0000000a,	0x40000000,	0x00000000,
-		0x03B, 0x000787B0,
-	0x90000003,	0x0000000f,	0x40000000,	0x00000000,
-		0x03B, 0x000787B0,
-	0x90000002,	0x00000000,	0x40000000,	0x00000000,
 		0x03B, 0x00078730,
+		0x03B, 0x0006FFB0,
 	0x90000001,	0x00000000,	0x40000000,	0x00000000,
+		0x03B, 0x000F0730,
+		0x03B, 0x000E0730,
+		0x03B, 0x000D0020,
+		0x03B, 0x000C0020,
+		0x03B, 0x000B0760,
+		0x03B, 0x000A0010,
+		0x03B, 0x00090000,
+		0x03B, 0x00080000,
 		0x03B, 0x000787B0,
-	0x90000001,	0x00000005,	0x40000000,	0x00000000,
-		0x03B, 0x000787B0,
-	0x90000001,	0x0000000a,	0x40000000,	0x00000000,
-		0x03B, 0x000787B0,
-	0x90000001,	0x0000000f,	0x40000000,	0x00000000,
-		0x03B, 0x000787B0,
-	0xA0000000,	0x00000000,
-		0x03B, 0x00078730,
-	0xB0000000,	0x00000000,
 		0x03B, 0x00060FB0,
+	0x90000001,	0x00000005,	0x40000000,	0x00000000,
+		0x03B, 0x000F0730,
+		0x03B, 0x000E0730,
+		0x03B, 0x000D0020,
+		0x03B, 0x000C0020,
+		0x03B, 0x000B0760,
+		0x03B, 0x000A0010,
+		0x03B, 0x00090000,
+		0x03B, 0x00080000,
+		0x03B, 0x000787B0,
+		0x03B, 0x00060FB0,
+	0x90000001,	0x0000000a,	0x40000000,	0x00000000,
+		0x03B, 0x000F0730,
+		0x03B, 0x000E0730,
+		0x03B, 0x000D0020,
+		0x03B, 0x000C0020,
+		0x03B, 0x000B0760,
+		0x03B, 0x000A0010,
+		0x03B, 0x00090000,
+		0x03B, 0x00080000,
+		0x03B, 0x000787B0,
+		0x03B, 0x00060FB0,
+	0x90000001,	0x0000000f,	0x40000000,	0x00000000,
+		0x03B, 0x000F0730,
+		0x03B, 0x000E0730,
+		0x03B, 0x000D0020,
+		0x03B, 0x000C0020,
+		0x03B, 0x000B0760,
+		0x03B, 0x000A0010,
+		0x03B, 0x00090000,
+		0x03B, 0x00080000,
+		0x03B, 0x000787B0,
+		0x03B, 0x00060FB0,
+	0x90000400,	0x00000000,	0x40000000,	0x00000000,
+		0x03B, 0x000F52B0,
+		0x03B, 0x000EF7B0,
+		0x03B, 0x000D4FB0,
+		0x03B, 0x000CF060,
+		0x03B, 0x000B0090,
+		0x03B, 0x000A0080,
+		0x03B, 0x00090080,
+		0x03B, 0x0008F780,
+		0x03B, 0x00070730,
+		0x03B, 0x0006FFB0,
+	0xA0000000,	0x00000000,
+		0x03B, 0x000F02B0,
+		0x03B, 0x000EF7B0,
+		0x03B, 0x000D4FB0,
+		0x03B, 0x000CF060,
+		0x03B, 0x000B0090,
+		0x03B, 0x000A0080,
+		0x03B, 0x00090080,
+		0x03B, 0x0008F780,
+		0x03B, 0x00078730,
+		0x03B, 0x0006FFB0,
+	0xB0000000,	0x00000000,
 		0x03B, 0x0005FFA0,
 		0x03B, 0x00040620,
 		0x03B, 0x00037090,
@@ -955,10 +988,10 @@ u4Byte Array_MP_8192E_RadioB[] = {
 		0x03B, 0x0000FFB0,
 		0x0EF, 0x000000A0,
 		0x000, 0x00010159,
-		0x0FE, 0x00000000,
-		0x0FE, 0x00000000,
-		0x0FE, 0x00000000,
-		0x0FE, 0x00000000,
+		0xFFE, 0x00000000,
+		0xFFE, 0x00000000,
+		0xFFE, 0x00000000,
+		0xFFE, 0x00000000,
 		0x01E, 0x00000001,
 		0x01F, 0x00080000,
 		0x000, 0x00033E70,
@@ -966,1244 +999,1527 @@ u4Byte Array_MP_8192E_RadioB[] = {
 };
 
 void
-ODM_ReadAndConfig_MP_8192E_RadioB(
-	IN   PDM_ODM_T  pDM_Odm
-)
+odm_read_and_config_mp_8192e_radiob(struct dm_struct *dm)
 {
-	u4Byte     i         = 0;
-	u1Byte     cCond;
-	BOOLEAN bMatched = TRUE, bSkipped = FALSE;
-	u4Byte     ArrayLen    = sizeof(Array_MP_8192E_RadioB)/sizeof(u4Byte);
-	pu4Byte    Array       = Array_MP_8192E_RadioB;
-	
-	u4Byte	v1 = 0, v2 = 0, pre_v1 = 0, pre_v2 = 0;
+	u32	i = 0;
+	u8	c_cond;
+	boolean	is_matched = true, is_skipped = false;
+	u32	array_len =
+			sizeof(array_mp_8192e_radiob) / sizeof(u32);
+	u32	*array = (u32 *)array_mp_8192e_radiob;
 
-	ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_LOUD, ("===> ODM_ReadAndConfig_MP_8192E_RadioB\n"));
+	u32	v1 = 0, v2 = 0, pre_v1 = 0, pre_v2 = 0;
+	u32	a1 = 0, a2 = 0, a3 = 0, a4 = 0;
 
-	while ((i + 1) < ArrayLen) {
-		v1 = Array[i];
-		v2 = Array[i + 1];
+	PHYDM_DBG(dm, ODM_COMP_INIT, "===> %s\n", __func__);
 
-		if (v1 & (BIT31 | BIT30)) {/*positive & negative condition*/
-			if (v1 & BIT31) {/* positive condition*/
-				cCond  = (u1Byte)((v1 & (BIT29|BIT28)) >> 28);
-				if (cCond == COND_ENDIF) {/*end*/
-					bMatched = TRUE;
-					bSkipped = FALSE;
-					ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_LOUD, ("ENDIF\n"));
-				} else if (cCond == COND_ELSE) { /*else*/
-					bMatched = bSkipped?FALSE:TRUE;
-					ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_LOUD, ("ELSE\n"));
-				}
-				else {/*if , else if*/
+	while ((i + 1) < array_len) {
+		v1 = array[i];
+		v2 = array[i + 1];
+
+		if (v1 & (BIT(31) | BIT(30))) {/*positive & negative condition*/
+			if (v1 & BIT(31)) {/* positive condition*/
+				c_cond  =
+					(u8)((v1 & (BIT(29) | BIT(28))) >> 28);
+				if (c_cond == COND_ENDIF) {/*end*/
+					is_matched = true;
+					is_skipped = false;
+					PHYDM_DBG(dm, ODM_COMP_INIT, "ENDIF\n");
+				} else if (c_cond == COND_ELSE) { /*else*/
+					is_matched = is_skipped ? false : true;
+					PHYDM_DBG(dm, ODM_COMP_INIT, "ELSE\n");
+				} else {/*if , else if*/
 					pre_v1 = v1;
 					pre_v2 = v2;
-					ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_LOUD, ("IF or ELSE IF\n"));
+					PHYDM_DBG(dm, ODM_COMP_INIT,
+						  "IF or ELSE IF\n");
 				}
-			} else if (v1 & BIT30) { /*negative condition*/
-				if (bSkipped == FALSE) {
-					if (CheckPositive(pDM_Odm, pre_v1, pre_v2, v1, v2)) {
-						bMatched = TRUE;
-						bSkipped = TRUE;
+			} else if (v1 & BIT(30)) { /*negative condition*/
+				if (!is_skipped) {
+					a1 = pre_v1; a2 = pre_v2;
+					a3 = v1; a4 = v2;
+					if (check_positive(dm,
+							   a1, a2, a3, a4)) {
+						is_matched = true;
+						is_skipped = true;
 					} else {
-						bMatched = FALSE;
-						bSkipped = FALSE;
+						is_matched = false;
+						is_skipped = false;
 					}
-				} else
-					bMatched = FALSE;
+				} else {
+					is_matched = false;
+				}
 			}
 		} else {
-			if (bMatched)
-				odm_ConfigRF_RadioB_8192E(pDM_Odm, v1, v2);
+			if (is_matched)
+				odm_config_rf_radio_b_8192e(dm, v1, v2);
 		}
 		i = i + 2;
 	}
 }
 
-u4Byte
-ODM_GetVersion_MP_8192E_RadioB(void)
+u32
+odm_get_version_mp_8192e_radiob(void)
 {
-	   return 51;
+		return 60;
 }
 
 /******************************************************************************
-*                           TxPowerTrack_AP.TXT
-******************************************************************************/
+ *                           txpowertrack_ap.TXT
+ ******************************************************************************/
+
+#ifdef CONFIG_8192E_AP
+#if (DM_ODM_SUPPORT_TYPE & (ODM_AP))
+const u8 delta_swingidx_mp_5gb_n_txpwrtrk_ap_8192e[][D_S_SIZE] = {
+	{0, 1, 1, 2, 2, 3, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10,
+	 11, 12, 12, 13, 13, 14, 14, 14, 14, 14, 14, 14},
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10,
+	 11, 11, 12, 12, 13, 13, 14, 14, 14, 14, 14, 14, 14},
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10,
+	 11, 11, 12, 12, 13, 13, 14, 14, 14, 14, 14, 14, 14},
+};
+
+const u8 delta_swingidx_mp_5gb_p_txpwrtrk_ap_8192e[][D_S_SIZE] = {
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12,
+	 13, 14, 15, 15, 16, 16, 17, 17, 18, 19, 20, 20, 20},
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12,
+	 13, 14, 15, 15, 16, 17, 18, 18, 19, 19, 20, 20, 20},
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12,
+	 13, 14, 15, 15, 16, 17, 18, 18, 19, 20, 21, 21, 21},
+};
+
+const u8 delta_swingidx_mp_5ga_n_txpwrtrk_ap_8192e[][D_S_SIZE] = {
+	{0, 1, 2, 3, 3, 4, 4, 5, 5, 6, 7, 8, 8, 9, 9, 10, 10,
+	 11, 11, 12, 12, 13, 13, 14, 14, 14, 14, 14, 14, 14},
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 6, 7, 7, 8, 8, 9, 10, 11,
+	 11, 12, 13, 13, 14, 15, 16, 16, 16, 16, 16, 16, 16},
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 10, 11, 11,
+	 12, 13, 14, 14, 15, 15, 16, 16, 16, 16, 16, 16, 16},
+};
+
+const u8 delta_swingidx_mp_5ga_p_txpwrtrk_ap_8192e[][D_S_SIZE] = {
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12,
+	 13, 14, 15, 15, 16, 17, 18, 18, 19, 20, 21, 21, 21},
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12,
+	 13, 14, 15, 15, 16, 17, 18, 18, 19, 20, 21, 21, 21},
+};
+
+const u8 delta_swingidx_mp_2gb_n_txpwrtrk_ap_8192e[]    = {
+	0, 0, 1, 2, 2, 2, 3, 3, 3, 4, 5, 5, 6, 6, 6, 6, 7,
+	 7, 7, 8, 8, 9, 9, 10, 10, 11, 12, 13, 14, 15};
+const u8 delta_swingidx_mp_2gb_p_txpwrtrk_ap_8192e[]    = {
+	0, 0, 1, 2, 2, 2, 3, 3, 3, 4, 5, 5, 6, 6, 7, 7, 8,
+	 8, 9, 9, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
+const u8 delta_swingidx_mp_2ga_n_txpwrtrk_ap_8192e[]    = {
+	0, 0, 1, 2, 2, 2, 3, 3, 3, 4, 5, 5, 6, 6, 6, 6, 7,
+	 7, 7, 8, 8, 9, 9, 10, 10, 11, 12, 13, 14, 15};
+const u8 delta_swingidx_mp_2ga_p_txpwrtrk_ap_8192e[]    = {
+	0, 0, 1, 2, 2, 2, 3, 3, 3, 4, 5, 5, 6, 6, 7, 7, 8,
+	 8, 9, 9, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
+const u8 delta_swingidx_mp_2g_cck_b_n_txpwrtrk_ap_8192e[] = {
+	0, 0, 1, 2, 2, 3, 3, 4, 4, 5, 6, 6, 7, 7, 7, 8, 8,
+	 8, 9, 9, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
+const u8 delta_swingidx_mp_2g_cck_b_p_txpwrtrk_ap_8192e[] = {
+	0, 0, 0, 0, 1, 1, 1, 3, 3, 4, 4, 4, 4, 6, 6, 6, 6,
+	 7, 7, 7, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
+const u8 delta_swingidx_mp_2g_cck_a_n_txpwrtrk_ap_8192e[] = {
+	0, 0, 1, 2, 2, 3, 3, 4, 4, 5, 6, 6, 7, 7, 7, 8, 8,
+	 8, 9, 9, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
+const u8 delta_swingidx_mp_2g_cck_a_p_txpwrtrk_ap_8192e[] = {
+	0, 0, 0, 0, 1, 1, 1, 3, 3, 4, 4, 4, 4, 6, 6, 6, 6,
+	 7, 7, 7, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
+#endif
+#endif
+
+void
+odm_read_and_config_mp_8192e_txpowertrack_ap(struct dm_struct *dm)
+{
+#ifdef CONFIG_8192E_AP
 
 #if (DM_ODM_SUPPORT_TYPE & (ODM_AP))
-u1Byte gDeltaSwingTableIdx_MP_5GB_N_TxPowerTrack_AP_8192E[][DELTA_SWINGIDX_SIZE] = {
-	{0, 1, 1, 2, 2, 3, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 11, 12, 12, 13, 13, 14, 14, 14, 14, 14, 14, 14},
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 14, 14, 14, 14, 14},
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 14, 14, 14, 14, 14},
-};
-u1Byte gDeltaSwingTableIdx_MP_5GB_P_TxPowerTrack_AP_8192E[][DELTA_SWINGIDX_SIZE] = {
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12, 13, 14, 15, 15, 16, 16, 17, 17, 18, 19, 20, 20, 20},
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12, 13, 14, 15, 15, 16, 17, 18, 18, 19, 19, 20, 20, 20},
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12, 13, 14, 15, 15, 16, 17, 18, 18, 19, 20, 21, 21, 21},
-};
-u1Byte gDeltaSwingTableIdx_MP_5GA_N_TxPowerTrack_AP_8192E[][DELTA_SWINGIDX_SIZE] = {
-	{0, 1, 2, 3, 3, 4, 4, 5, 5, 6, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 14, 14, 14, 14, 14},
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 6, 7, 7, 8, 8, 9, 10, 11, 11, 12, 13, 13, 14, 15, 16, 16, 16, 16, 16, 16, 16},
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 10, 11, 11, 12, 13, 14, 14, 15, 15, 16, 16, 16, 16, 16, 16, 16},
-};
-u1Byte gDeltaSwingTableIdx_MP_5GA_P_TxPowerTrack_AP_8192E[][DELTA_SWINGIDX_SIZE] = {
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12, 13, 14, 15, 15, 16, 17, 18, 18, 19, 20, 21, 21, 21},
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12, 13, 14, 15, 15, 16, 17, 18, 18, 19, 20, 21, 21, 21},
-};
-u1Byte gDeltaSwingTableIdx_MP_2GB_N_TxPowerTrack_AP_8192E[]    = {0, 0, 1, 2, 2, 2, 3, 3, 3, 4, 5, 5, 6, 6, 6, 6, 7, 7, 7, 8, 8, 9, 9, 10, 10, 11, 12, 13, 14, 15};
-u1Byte gDeltaSwingTableIdx_MP_2GB_P_TxPowerTrack_AP_8192E[]    = {0, 0, 1, 2, 2, 2, 3, 3, 3, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
-u1Byte gDeltaSwingTableIdx_MP_2GA_N_TxPowerTrack_AP_8192E[]    = {0, 0, 1, 2, 2, 2, 3, 3, 3, 4, 5, 5, 6, 6, 6, 6, 7, 7, 7, 8, 8, 9, 9, 10, 10, 11, 12, 13, 14, 15};
-u1Byte gDeltaSwingTableIdx_MP_2GA_P_TxPowerTrack_AP_8192E[]    = {0, 0, 1, 2, 2, 2, 3, 3, 3, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
-u1Byte gDeltaSwingTableIdx_MP_2GCCKB_N_TxPowerTrack_AP_8192E[] = {0, 0, 1, 2, 2, 3, 3, 4, 4, 5, 6, 6, 7, 7, 7, 8, 8, 8, 9, 9, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
-u1Byte gDeltaSwingTableIdx_MP_2GCCKB_P_TxPowerTrack_AP_8192E[] = {0, 0, 0, 0, 1, 1, 1, 3, 3, 4, 4, 4, 4, 6, 6, 6, 6, 7, 7, 7, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
-u1Byte gDeltaSwingTableIdx_MP_2GCCKA_N_TxPowerTrack_AP_8192E[] = {0, 0, 1, 2, 2, 3, 3, 4, 4, 5, 6, 6, 7, 7, 7, 8, 8, 8, 9, 9, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
-u1Byte gDeltaSwingTableIdx_MP_2GCCKA_P_TxPowerTrack_AP_8192E[] = {0, 0, 0, 0, 1, 1, 1, 3, 3, 4, 4, 4, 4, 6, 6, 6, 6, 7, 7, 7, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
+struct dm_rf_calibration_struct  *cali_info = &dm->rf_calibrate_info;
+
+PHYDM_DBG(dm, ODM_COMP_INIT, "===> ODM_ReadAndConfig_MP_mp_8192e\n");
+
+odm_move_memory(dm, cali_info->delta_swing_table_idx_2ga_p,
+		(void *)delta_swingidx_mp_2ga_p_txpwrtrk_ap_8192e,
+		DELTA_SWINGIDX_SIZE);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_2ga_n,
+		(void *)delta_swingidx_mp_2ga_n_txpwrtrk_ap_8192e,
+		DELTA_SWINGIDX_SIZE);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_2gb_p,
+		(void *)delta_swingidx_mp_2gb_p_txpwrtrk_ap_8192e,
+		DELTA_SWINGIDX_SIZE);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_2gb_n,
+		(void *)delta_swingidx_mp_2gb_n_txpwrtrk_ap_8192e,
+		DELTA_SWINGIDX_SIZE);
+
+odm_move_memory(dm, cali_info->delta_swing_table_idx_2g_cck_a_p,
+		(void *)delta_swingidx_mp_2g_cck_a_p_txpwrtrk_ap_8192e,
+		DELTA_SWINGIDX_SIZE);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_2g_cck_a_n,
+		(void *)delta_swingidx_mp_2g_cck_a_n_txpwrtrk_ap_8192e,
+		DELTA_SWINGIDX_SIZE);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_2g_cck_b_p,
+		(void *)delta_swingidx_mp_2g_cck_b_p_txpwrtrk_ap_8192e,
+		DELTA_SWINGIDX_SIZE);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_2g_cck_b_n,
+		(void *)delta_swingidx_mp_2g_cck_b_n_txpwrtrk_ap_8192e,
+		DELTA_SWINGIDX_SIZE);
+
+odm_move_memory(dm, cali_info->delta_swing_table_idx_5ga_p,
+		(void *)delta_swingidx_mp_5ga_p_txpwrtrk_ap_8192e,
+		DELTA_SWINGIDX_SIZE * 3);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_5ga_n,
+		(void *)delta_swingidx_mp_5ga_n_txpwrtrk_ap_8192e,
+		DELTA_SWINGIDX_SIZE * 3);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_5gb_p,
+		(void *)delta_swingidx_mp_5gb_p_txpwrtrk_ap_8192e,
+		DELTA_SWINGIDX_SIZE * 3);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_5gb_n,
+		(void *)delta_swingidx_mp_5gb_n_txpwrtrk_ap_8192e,
+		DELTA_SWINGIDX_SIZE * 3);
 #endif
-
-void
-ODM_ReadAndConfig_MP_8192E_TxPowerTrack_AP(
-	IN   PDM_ODM_T  pDM_Odm
-)
-{
-#if (DM_ODM_SUPPORT_TYPE & (ODM_AP))
-	PODM_RF_CAL_T  pRFCalibrateInfo = &(pDM_Odm->RFCalibrateInfo);
-
-	ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_LOUD, ("===> ODM_ReadAndConfig_MP_MP_8192E\n"));
-
-
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_2GA_P, gDeltaSwingTableIdx_MP_2GA_P_TxPowerTrack_AP_8192E, DELTA_SWINGIDX_SIZE);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_2GA_N, gDeltaSwingTableIdx_MP_2GA_N_TxPowerTrack_AP_8192E, DELTA_SWINGIDX_SIZE);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_2GB_P, gDeltaSwingTableIdx_MP_2GB_P_TxPowerTrack_AP_8192E, DELTA_SWINGIDX_SIZE);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_2GB_N, gDeltaSwingTableIdx_MP_2GB_N_TxPowerTrack_AP_8192E, DELTA_SWINGIDX_SIZE);
-
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_2GCCKA_P, gDeltaSwingTableIdx_MP_2GCCKA_P_TxPowerTrack_AP_8192E, DELTA_SWINGIDX_SIZE);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_2GCCKA_N, gDeltaSwingTableIdx_MP_2GCCKA_N_TxPowerTrack_AP_8192E, DELTA_SWINGIDX_SIZE);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_2GCCKB_P, gDeltaSwingTableIdx_MP_2GCCKB_P_TxPowerTrack_AP_8192E, DELTA_SWINGIDX_SIZE);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_2GCCKB_N, gDeltaSwingTableIdx_MP_2GCCKB_N_TxPowerTrack_AP_8192E, DELTA_SWINGIDX_SIZE);
-
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_5GA_P, gDeltaSwingTableIdx_MP_5GA_P_TxPowerTrack_AP_8192E, DELTA_SWINGIDX_SIZE*3);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_5GA_N, gDeltaSwingTableIdx_MP_5GA_N_TxPowerTrack_AP_8192E, DELTA_SWINGIDX_SIZE*3);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_5GB_P, gDeltaSwingTableIdx_MP_5GB_P_TxPowerTrack_AP_8192E, DELTA_SWINGIDX_SIZE*3);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_5GB_N, gDeltaSwingTableIdx_MP_5GB_N_TxPowerTrack_AP_8192E, DELTA_SWINGIDX_SIZE*3);
 #endif
 }
 
 /******************************************************************************
-*                           TxPowerTrack_PCIE.TXT
-******************************************************************************/
+ *                           txpowertrack_pcie.TXT
+ ******************************************************************************/
+
+#ifdef CONFIG_8192E_PCIE
+#if DEV_BUS_TYPE == RT_PCI_INTERFACE
+const u8 delta_swingidx_mp_5gb_n_txpwrtrk_pcie_8192e[][D_S_SIZE] = {
+	{0, 1, 1, 2, 2, 3, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10,
+	 11, 12, 12, 13, 13, 14, 14, 14, 14, 14, 14, 14},
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10,
+	 11, 11, 12, 12, 13, 13, 14, 14, 14, 14, 14, 14, 14},
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10,
+	 11, 11, 12, 12, 13, 13, 14, 14, 14, 14, 14, 14, 14},
+};
+
+const u8 delta_swingidx_mp_5gb_p_txpwrtrk_pcie_8192e[][D_S_SIZE] = {
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12,
+	 13, 14, 15, 15, 16, 16, 17, 17, 18, 19, 20, 20, 20},
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12,
+	 13, 14, 15, 15, 16, 17, 18, 18, 19, 19, 20, 20, 20},
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12,
+	 13, 14, 15, 15, 16, 17, 18, 18, 19, 20, 21, 21, 21},
+};
+
+const u8 delta_swingidx_mp_5ga_n_txpwrtrk_pcie_8192e[][D_S_SIZE] = {
+	{0, 1, 2, 3, 3, 4, 4, 5, 5, 6, 7, 8, 8, 9, 9, 10, 10,
+	 11, 11, 12, 12, 13, 13, 14, 14, 14, 14, 14, 14, 14},
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 6, 7, 7, 8, 8, 9, 10, 11,
+	 11, 12, 13, 13, 14, 15, 16, 16, 16, 16, 16, 16, 16},
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 10, 11, 11,
+	 12, 13, 14, 14, 15, 15, 16, 16, 16, 16, 16, 16, 16},
+};
+
+const u8 delta_swingidx_mp_5ga_p_txpwrtrk_pcie_8192e[][D_S_SIZE] = {
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12,
+	 13, 14, 15, 15, 16, 17, 18, 18, 19, 20, 21, 21, 21},
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12,
+	 13, 14, 15, 15, 16, 17, 18, 18, 19, 20, 21, 21, 21},
+};
+
+const u8 delta_swingidx_mp_2gb_n_txpwrtrk_pcie_8192e[]    = {
+	0, 0, 1, 2, 2, 2, 3, 3, 3, 4, 5, 5, 6, 6, 6, 6, 7,
+	 7, 7, 8, 8, 9, 9, 10, 10, 11, 12, 13, 14, 15};
+const u8 delta_swingidx_mp_2gb_p_txpwrtrk_pcie_8192e[]    = {
+	0, 0, 1, 2, 2, 2, 3, 3, 3, 4, 5, 5, 6, 6, 7, 7, 8,
+	 8, 9, 9, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
+const u8 delta_swingidx_mp_2ga_n_txpwrtrk_pcie_8192e[]    = {
+	0, 0, 1, 2, 2, 2, 3, 3, 3, 4, 5, 5, 6, 6, 6, 6, 7,
+	 7, 7, 8, 8, 9, 9, 10, 10, 11, 12, 13, 14, 15};
+const u8 delta_swingidx_mp_2ga_p_txpwrtrk_pcie_8192e[]    = {
+	0, 0, 1, 2, 2, 2, 3, 3, 3, 4, 5, 5, 6, 6, 7, 7, 8,
+	 8, 9, 9, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
+const u8 delta_swingidx_mp_2g_cck_b_n_txpwrtrk_pcie_8192e[] = {
+	0, 0, 1, 2, 2, 3, 3, 4, 4, 5, 6, 6, 7, 7, 7, 8, 8,
+	 8, 9, 9, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
+const u8 delta_swingidx_mp_2g_cck_b_p_txpwrtrk_pcie_8192e[] = {
+	0, 0, 0, 0, 1, 1, 1, 3, 3, 4, 4, 4, 4, 6, 6, 6, 6,
+	 7, 7, 7, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
+const u8 delta_swingidx_mp_2g_cck_a_n_txpwrtrk_pcie_8192e[] = {
+	0, 0, 1, 2, 2, 3, 3, 4, 4, 5, 6, 6, 7, 7, 7, 8, 8,
+	 8, 9, 9, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
+const u8 delta_swingidx_mp_2g_cck_a_p_txpwrtrk_pcie_8192e[] = {
+	0, 0, 0, 0, 1, 1, 1, 3, 3, 4, 4, 4, 4, 6, 6, 6, 6,
+	 7, 7, 7, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
+#endif
+#endif
+
+void
+odm_read_and_config_mp_8192e_txpowertrack_pcie(struct dm_struct *dm)
+{
+#ifdef CONFIG_8192E_PCIE
 
 #if DEV_BUS_TYPE == RT_PCI_INTERFACE
-u1Byte gDeltaSwingTableIdx_MP_5GB_N_TxPowerTrack_PCIE_8192E[][DELTA_SWINGIDX_SIZE] = {
-	{0, 1, 1, 2, 2, 3, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 11, 12, 12, 13, 13, 14, 14, 14, 14, 14, 14, 14},
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 14, 14, 14, 14, 14},
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 14, 14, 14, 14, 14},
-};
-u1Byte gDeltaSwingTableIdx_MP_5GB_P_TxPowerTrack_PCIE_8192E[][DELTA_SWINGIDX_SIZE] = {
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12, 13, 14, 15, 15, 16, 16, 17, 17, 18, 19, 20, 20, 20},
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12, 13, 14, 15, 15, 16, 17, 18, 18, 19, 19, 20, 20, 20},
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12, 13, 14, 15, 15, 16, 17, 18, 18, 19, 20, 21, 21, 21},
-};
-u1Byte gDeltaSwingTableIdx_MP_5GA_N_TxPowerTrack_PCIE_8192E[][DELTA_SWINGIDX_SIZE] = {
-	{0, 1, 2, 3, 3, 4, 4, 5, 5, 6, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 14, 14, 14, 14, 14},
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 6, 7, 7, 8, 8, 9, 10, 11, 11, 12, 13, 13, 14, 15, 16, 16, 16, 16, 16, 16, 16},
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 10, 11, 11, 12, 13, 14, 14, 15, 15, 16, 16, 16, 16, 16, 16, 16},
-};
-u1Byte gDeltaSwingTableIdx_MP_5GA_P_TxPowerTrack_PCIE_8192E[][DELTA_SWINGIDX_SIZE] = {
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12, 13, 14, 15, 15, 16, 17, 18, 18, 19, 20, 21, 21, 21},
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12, 13, 14, 15, 15, 16, 17, 18, 18, 19, 20, 21, 21, 21},
-};
-u1Byte gDeltaSwingTableIdx_MP_2GB_N_TxPowerTrack_PCIE_8192E[]    = {0, 0, 1, 2, 2, 2, 3, 3, 3, 4, 5, 5, 6, 6, 6, 6, 7, 7, 7, 8, 8, 9, 9, 10, 10, 11, 12, 13, 14, 15};
-u1Byte gDeltaSwingTableIdx_MP_2GB_P_TxPowerTrack_PCIE_8192E[]    = {0, 0, 1, 2, 2, 2, 3, 3, 3, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
-u1Byte gDeltaSwingTableIdx_MP_2GA_N_TxPowerTrack_PCIE_8192E[]    = {0, 0, 1, 2, 2, 2, 3, 3, 3, 4, 5, 5, 6, 6, 6, 6, 7, 7, 7, 8, 8, 9, 9, 10, 10, 11, 12, 13, 14, 15};
-u1Byte gDeltaSwingTableIdx_MP_2GA_P_TxPowerTrack_PCIE_8192E[]    = {0, 0, 1, 2, 2, 2, 3, 3, 3, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
-u1Byte gDeltaSwingTableIdx_MP_2GCCKB_N_TxPowerTrack_PCIE_8192E[] = {0, 0, 1, 2, 2, 3, 3, 4, 4, 5, 6, 6, 7, 7, 7, 8, 8, 8, 9, 9, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
-u1Byte gDeltaSwingTableIdx_MP_2GCCKB_P_TxPowerTrack_PCIE_8192E[] = {0, 0, 0, 0, 1, 1, 1, 3, 3, 4, 4, 4, 4, 6, 6, 6, 6, 7, 7, 7, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
-u1Byte gDeltaSwingTableIdx_MP_2GCCKA_N_TxPowerTrack_PCIE_8192E[] = {0, 0, 1, 2, 2, 3, 3, 4, 4, 5, 6, 6, 7, 7, 7, 8, 8, 8, 9, 9, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
-u1Byte gDeltaSwingTableIdx_MP_2GCCKA_P_TxPowerTrack_PCIE_8192E[] = {0, 0, 0, 0, 1, 1, 1, 3, 3, 4, 4, 4, 4, 6, 6, 6, 6, 7, 7, 7, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
+struct dm_rf_calibration_struct  *cali_info = &dm->rf_calibrate_info;
+
+PHYDM_DBG(dm, ODM_COMP_INIT, "===> ODM_ReadAndConfig_MP_mp_8192e\n");
+
+odm_move_memory(dm, cali_info->delta_swing_table_idx_2ga_p,
+		(void *)delta_swingidx_mp_2ga_p_txpwrtrk_pcie_8192e,
+		DELTA_SWINGIDX_SIZE);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_2ga_n,
+		(void *)delta_swingidx_mp_2ga_n_txpwrtrk_pcie_8192e,
+		DELTA_SWINGIDX_SIZE);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_2gb_p,
+		(void *)delta_swingidx_mp_2gb_p_txpwrtrk_pcie_8192e,
+		DELTA_SWINGIDX_SIZE);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_2gb_n,
+		(void *)delta_swingidx_mp_2gb_n_txpwrtrk_pcie_8192e,
+		DELTA_SWINGIDX_SIZE);
+
+odm_move_memory(dm, cali_info->delta_swing_table_idx_2g_cck_a_p,
+		(void *)delta_swingidx_mp_2g_cck_a_p_txpwrtrk_pcie_8192e,
+		DELTA_SWINGIDX_SIZE);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_2g_cck_a_n,
+		(void *)delta_swingidx_mp_2g_cck_a_n_txpwrtrk_pcie_8192e,
+		DELTA_SWINGIDX_SIZE);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_2g_cck_b_p,
+		(void *)delta_swingidx_mp_2g_cck_b_p_txpwrtrk_pcie_8192e,
+		DELTA_SWINGIDX_SIZE);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_2g_cck_b_n,
+		(void *)delta_swingidx_mp_2g_cck_b_n_txpwrtrk_pcie_8192e,
+		DELTA_SWINGIDX_SIZE);
+
+odm_move_memory(dm, cali_info->delta_swing_table_idx_5ga_p,
+		(void *)delta_swingidx_mp_5ga_p_txpwrtrk_pcie_8192e,
+		DELTA_SWINGIDX_SIZE * 3);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_5ga_n,
+		(void *)delta_swingidx_mp_5ga_n_txpwrtrk_pcie_8192e,
+		DELTA_SWINGIDX_SIZE * 3);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_5gb_p,
+		(void *)delta_swingidx_mp_5gb_p_txpwrtrk_pcie_8192e,
+		DELTA_SWINGIDX_SIZE * 3);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_5gb_n,
+		(void *)delta_swingidx_mp_5gb_n_txpwrtrk_pcie_8192e,
+		DELTA_SWINGIDX_SIZE * 3);
 #endif
-
-void
-ODM_ReadAndConfig_MP_8192E_TxPowerTrack_PCIE(
-	IN   PDM_ODM_T  pDM_Odm
-)
-{
-#if DEV_BUS_TYPE == RT_PCI_INTERFACE
-	PODM_RF_CAL_T  pRFCalibrateInfo = &(pDM_Odm->RFCalibrateInfo);
-
-	ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_LOUD, ("===> ODM_ReadAndConfig_MP_MP_8192E\n"));
-
-
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_2GA_P, gDeltaSwingTableIdx_MP_2GA_P_TxPowerTrack_PCIE_8192E, DELTA_SWINGIDX_SIZE);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_2GA_N, gDeltaSwingTableIdx_MP_2GA_N_TxPowerTrack_PCIE_8192E, DELTA_SWINGIDX_SIZE);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_2GB_P, gDeltaSwingTableIdx_MP_2GB_P_TxPowerTrack_PCIE_8192E, DELTA_SWINGIDX_SIZE);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_2GB_N, gDeltaSwingTableIdx_MP_2GB_N_TxPowerTrack_PCIE_8192E, DELTA_SWINGIDX_SIZE);
-
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_2GCCKA_P, gDeltaSwingTableIdx_MP_2GCCKA_P_TxPowerTrack_PCIE_8192E, DELTA_SWINGIDX_SIZE);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_2GCCKA_N, gDeltaSwingTableIdx_MP_2GCCKA_N_TxPowerTrack_PCIE_8192E, DELTA_SWINGIDX_SIZE);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_2GCCKB_P, gDeltaSwingTableIdx_MP_2GCCKB_P_TxPowerTrack_PCIE_8192E, DELTA_SWINGIDX_SIZE);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_2GCCKB_N, gDeltaSwingTableIdx_MP_2GCCKB_N_TxPowerTrack_PCIE_8192E, DELTA_SWINGIDX_SIZE);
-
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_5GA_P, gDeltaSwingTableIdx_MP_5GA_P_TxPowerTrack_PCIE_8192E, DELTA_SWINGIDX_SIZE*3);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_5GA_N, gDeltaSwingTableIdx_MP_5GA_N_TxPowerTrack_PCIE_8192E, DELTA_SWINGIDX_SIZE*3);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_5GB_P, gDeltaSwingTableIdx_MP_5GB_P_TxPowerTrack_PCIE_8192E, DELTA_SWINGIDX_SIZE*3);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_5GB_N, gDeltaSwingTableIdx_MP_5GB_N_TxPowerTrack_PCIE_8192E, DELTA_SWINGIDX_SIZE*3);
 #endif
 }
 
 /******************************************************************************
-*                           TxPowerTrack_SDIO.TXT
-******************************************************************************/
+ *                           txpowertrack_sdio.TXT
+ ******************************************************************************/
+
+#ifdef CONFIG_8192E_SDIO
+#if DEV_BUS_TYPE == RT_SDIO_INTERFACE
+const u8 delta_swingidx_mp_5gb_n_txpwrtrk_sdio_8192e[][D_S_SIZE] = {
+	{0, 1, 1, 2, 2, 3, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10,
+	 11, 12, 12, 13, 13, 14, 14, 14, 14, 14, 14, 14},
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10,
+	 11, 11, 12, 12, 13, 13, 14, 14, 14, 14, 14, 14, 14},
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10,
+	 11, 11, 12, 12, 13, 13, 14, 14, 14, 14, 14, 14, 14},
+};
+
+const u8 delta_swingidx_mp_5gb_p_txpwrtrk_sdio_8192e[][D_S_SIZE] = {
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12,
+	 13, 14, 15, 15, 16, 16, 17, 17, 18, 19, 20, 20, 20},
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12,
+	 13, 14, 15, 15, 16, 17, 18, 18, 19, 19, 20, 20, 20},
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12,
+	 13, 14, 15, 15, 16, 17, 18, 18, 19, 20, 21, 21, 21},
+};
+
+const u8 delta_swingidx_mp_5ga_n_txpwrtrk_sdio_8192e[][D_S_SIZE] = {
+	{0, 1, 2, 3, 3, 4, 4, 5, 5, 6, 7, 8, 8, 9, 9, 10, 10,
+	 11, 11, 12, 12, 13, 13, 14, 14, 14, 14, 14, 14, 14},
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 6, 7, 7, 8, 8, 9, 10, 11,
+	 11, 12, 13, 13, 14, 15, 16, 16, 16, 16, 16, 16, 16},
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 10, 11, 11,
+	 12, 13, 14, 14, 15, 15, 16, 16, 16, 16, 16, 16, 16},
+};
+
+const u8 delta_swingidx_mp_5ga_p_txpwrtrk_sdio_8192e[][D_S_SIZE] = {
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12,
+	 13, 14, 15, 15, 16, 17, 18, 18, 19, 20, 21, 21, 21},
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12,
+	 13, 14, 15, 15, 16, 17, 18, 18, 19, 20, 21, 21, 21},
+};
+
+const u8 delta_swingidx_mp_2gb_n_txpwrtrk_sdio_8192e[]    = {
+	0, 0, 1, 2, 2, 2, 3, 3, 3, 4, 5, 5, 6, 6, 6, 6, 7,
+	 7, 7, 8, 8, 9, 9, 10, 10, 11, 12, 13, 14, 15};
+const u8 delta_swingidx_mp_2gb_p_txpwrtrk_sdio_8192e[]    = {
+	0, 0, 1, 2, 2, 2, 3, 3, 3, 4, 5, 5, 6, 6, 7, 7, 8,
+	 8, 9, 9, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
+const u8 delta_swingidx_mp_2ga_n_txpwrtrk_sdio_8192e[]    = {
+	0, 0, 1, 2, 2, 2, 3, 3, 3, 4, 5, 5, 6, 6, 6, 6, 7,
+	 7, 7, 8, 8, 9, 9, 10, 10, 11, 12, 13, 14, 15};
+const u8 delta_swingidx_mp_2ga_p_txpwrtrk_sdio_8192e[]    = {
+	0, 0, 1, 2, 2, 2, 3, 3, 3, 4, 5, 5, 6, 6, 7, 7, 8,
+	 8, 9, 9, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
+const u8 delta_swingidx_mp_2g_cck_b_n_txpwrtrk_sdio_8192e[] = {
+	0, 0, 1, 2, 2, 3, 3, 4, 4, 5, 6, 6, 7, 7, 7, 8, 8,
+	 8, 9, 9, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
+const u8 delta_swingidx_mp_2g_cck_b_p_txpwrtrk_sdio_8192e[] = {
+	0, 0, 0, 0, 1, 1, 1, 3, 3, 4, 4, 4, 4, 6, 6, 6, 6,
+	 7, 7, 7, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
+const u8 delta_swingidx_mp_2g_cck_a_n_txpwrtrk_sdio_8192e[] = {
+	0, 0, 1, 2, 2, 3, 3, 4, 4, 5, 6, 6, 7, 7, 7, 8, 8,
+	 8, 9, 9, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
+const u8 delta_swingidx_mp_2g_cck_a_p_txpwrtrk_sdio_8192e[] = {
+	0, 0, 0, 0, 1, 1, 1, 3, 3, 4, 4, 4, 4, 6, 6, 6, 6,
+	 7, 7, 7, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
+#endif
+#endif
+
+void
+odm_read_and_config_mp_8192e_txpowertrack_sdio(struct dm_struct *dm)
+{
+#ifdef CONFIG_8192E_SDIO
 
 #if DEV_BUS_TYPE == RT_SDIO_INTERFACE
-u1Byte gDeltaSwingTableIdx_MP_5GB_N_TxPowerTrack_SDIO_8192E[][DELTA_SWINGIDX_SIZE] = {
-	{0, 1, 1, 2, 2, 3, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 11, 12, 12, 13, 13, 14, 14, 14, 14, 14, 14, 14},
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 14, 14, 14, 14, 14},
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 14, 14, 14, 14, 14},
-};
-u1Byte gDeltaSwingTableIdx_MP_5GB_P_TxPowerTrack_SDIO_8192E[][DELTA_SWINGIDX_SIZE] = {
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12, 13, 14, 15, 15, 16, 16, 17, 17, 18, 19, 20, 20, 20},
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12, 13, 14, 15, 15, 16, 17, 18, 18, 19, 19, 20, 20, 20},
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12, 13, 14, 15, 15, 16, 17, 18, 18, 19, 20, 21, 21, 21},
-};
-u1Byte gDeltaSwingTableIdx_MP_5GA_N_TxPowerTrack_SDIO_8192E[][DELTA_SWINGIDX_SIZE] = {
-	{0, 1, 2, 3, 3, 4, 4, 5, 5, 6, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 14, 14, 14, 14, 14},
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 6, 7, 7, 8, 8, 9, 10, 11, 11, 12, 13, 13, 14, 15, 16, 16, 16, 16, 16, 16, 16},
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 10, 11, 11, 12, 13, 14, 14, 15, 15, 16, 16, 16, 16, 16, 16, 16},
-};
-u1Byte gDeltaSwingTableIdx_MP_5GA_P_TxPowerTrack_SDIO_8192E[][DELTA_SWINGIDX_SIZE] = {
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12, 13, 14, 15, 15, 16, 17, 18, 18, 19, 20, 21, 21, 21},
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12, 13, 14, 15, 15, 16, 17, 18, 18, 19, 20, 21, 21, 21},
-};
-u1Byte gDeltaSwingTableIdx_MP_2GB_N_TxPowerTrack_SDIO_8192E[]    = {0, 0, 1, 2, 2, 2, 3, 3, 3, 4, 5, 5, 6, 6, 6, 6, 7, 7, 7, 8, 8, 9, 9, 10, 10, 11, 12, 13, 14, 15};
-u1Byte gDeltaSwingTableIdx_MP_2GB_P_TxPowerTrack_SDIO_8192E[]    = {0, 0, 1, 2, 2, 2, 3, 3, 3, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
-u1Byte gDeltaSwingTableIdx_MP_2GA_N_TxPowerTrack_SDIO_8192E[]    = {0, 0, 1, 2, 2, 2, 3, 3, 3, 4, 5, 5, 6, 6, 6, 6, 7, 7, 7, 8, 8, 9, 9, 10, 10, 11, 12, 13, 14, 15};
-u1Byte gDeltaSwingTableIdx_MP_2GA_P_TxPowerTrack_SDIO_8192E[]    = {0, 0, 1, 2, 2, 2, 3, 3, 3, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
-u1Byte gDeltaSwingTableIdx_MP_2GCCKB_N_TxPowerTrack_SDIO_8192E[] = {0, 0, 1, 2, 2, 3, 3, 4, 4, 5, 6, 6, 7, 7, 7, 8, 8, 8, 9, 9, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
-u1Byte gDeltaSwingTableIdx_MP_2GCCKB_P_TxPowerTrack_SDIO_8192E[] = {0, 0, 0, 0, 1, 1, 1, 3, 3, 4, 4, 4, 4, 6, 6, 6, 6, 7, 7, 7, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
-u1Byte gDeltaSwingTableIdx_MP_2GCCKA_N_TxPowerTrack_SDIO_8192E[] = {0, 0, 1, 2, 2, 3, 3, 4, 4, 5, 6, 6, 7, 7, 7, 8, 8, 8, 9, 9, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
-u1Byte gDeltaSwingTableIdx_MP_2GCCKA_P_TxPowerTrack_SDIO_8192E[] = {0, 0, 0, 0, 1, 1, 1, 3, 3, 4, 4, 4, 4, 6, 6, 6, 6, 7, 7, 7, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
+struct dm_rf_calibration_struct  *cali_info = &dm->rf_calibrate_info;
+
+PHYDM_DBG(dm, ODM_COMP_INIT, "===> ODM_ReadAndConfig_MP_mp_8192e\n");
+
+odm_move_memory(dm, cali_info->delta_swing_table_idx_2ga_p,
+		(void *)delta_swingidx_mp_2ga_p_txpwrtrk_sdio_8192e,
+		DELTA_SWINGIDX_SIZE);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_2ga_n,
+		(void *)delta_swingidx_mp_2ga_n_txpwrtrk_sdio_8192e,
+		DELTA_SWINGIDX_SIZE);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_2gb_p,
+		(void *)delta_swingidx_mp_2gb_p_txpwrtrk_sdio_8192e,
+		DELTA_SWINGIDX_SIZE);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_2gb_n,
+		(void *)delta_swingidx_mp_2gb_n_txpwrtrk_sdio_8192e,
+		DELTA_SWINGIDX_SIZE);
+
+odm_move_memory(dm, cali_info->delta_swing_table_idx_2g_cck_a_p,
+		(void *)delta_swingidx_mp_2g_cck_a_p_txpwrtrk_sdio_8192e,
+		DELTA_SWINGIDX_SIZE);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_2g_cck_a_n,
+		(void *)delta_swingidx_mp_2g_cck_a_n_txpwrtrk_sdio_8192e,
+		DELTA_SWINGIDX_SIZE);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_2g_cck_b_p,
+		(void *)delta_swingidx_mp_2g_cck_b_p_txpwrtrk_sdio_8192e,
+		DELTA_SWINGIDX_SIZE);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_2g_cck_b_n,
+		(void *)delta_swingidx_mp_2g_cck_b_n_txpwrtrk_sdio_8192e,
+		DELTA_SWINGIDX_SIZE);
+
+odm_move_memory(dm, cali_info->delta_swing_table_idx_5ga_p,
+		(void *)delta_swingidx_mp_5ga_p_txpwrtrk_sdio_8192e,
+		DELTA_SWINGIDX_SIZE * 3);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_5ga_n,
+		(void *)delta_swingidx_mp_5ga_n_txpwrtrk_sdio_8192e,
+		DELTA_SWINGIDX_SIZE * 3);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_5gb_p,
+		(void *)delta_swingidx_mp_5gb_p_txpwrtrk_sdio_8192e,
+		DELTA_SWINGIDX_SIZE * 3);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_5gb_n,
+		(void *)delta_swingidx_mp_5gb_n_txpwrtrk_sdio_8192e,
+		DELTA_SWINGIDX_SIZE * 3);
 #endif
-
-void
-ODM_ReadAndConfig_MP_8192E_TxPowerTrack_SDIO(
-	IN   PDM_ODM_T  pDM_Odm
-)
-{
-#if DEV_BUS_TYPE == RT_SDIO_INTERFACE
-	PODM_RF_CAL_T  pRFCalibrateInfo = &(pDM_Odm->RFCalibrateInfo);
-
-	ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_LOUD, ("===> ODM_ReadAndConfig_MP_MP_8192E\n"));
-
-
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_2GA_P, gDeltaSwingTableIdx_MP_2GA_P_TxPowerTrack_SDIO_8192E, DELTA_SWINGIDX_SIZE);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_2GA_N, gDeltaSwingTableIdx_MP_2GA_N_TxPowerTrack_SDIO_8192E, DELTA_SWINGIDX_SIZE);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_2GB_P, gDeltaSwingTableIdx_MP_2GB_P_TxPowerTrack_SDIO_8192E, DELTA_SWINGIDX_SIZE);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_2GB_N, gDeltaSwingTableIdx_MP_2GB_N_TxPowerTrack_SDIO_8192E, DELTA_SWINGIDX_SIZE);
-
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_2GCCKA_P, gDeltaSwingTableIdx_MP_2GCCKA_P_TxPowerTrack_SDIO_8192E, DELTA_SWINGIDX_SIZE);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_2GCCKA_N, gDeltaSwingTableIdx_MP_2GCCKA_N_TxPowerTrack_SDIO_8192E, DELTA_SWINGIDX_SIZE);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_2GCCKB_P, gDeltaSwingTableIdx_MP_2GCCKB_P_TxPowerTrack_SDIO_8192E, DELTA_SWINGIDX_SIZE);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_2GCCKB_N, gDeltaSwingTableIdx_MP_2GCCKB_N_TxPowerTrack_SDIO_8192E, DELTA_SWINGIDX_SIZE);
-
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_5GA_P, gDeltaSwingTableIdx_MP_5GA_P_TxPowerTrack_SDIO_8192E, DELTA_SWINGIDX_SIZE*3);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_5GA_N, gDeltaSwingTableIdx_MP_5GA_N_TxPowerTrack_SDIO_8192E, DELTA_SWINGIDX_SIZE*3);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_5GB_P, gDeltaSwingTableIdx_MP_5GB_P_TxPowerTrack_SDIO_8192E, DELTA_SWINGIDX_SIZE*3);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_5GB_N, gDeltaSwingTableIdx_MP_5GB_N_TxPowerTrack_SDIO_8192E, DELTA_SWINGIDX_SIZE*3);
 #endif
 }
 
 /******************************************************************************
-*                           TxPowerTrack_USB.TXT
-******************************************************************************/
+ *                           txpowertrack_usb.TXT
+ ******************************************************************************/
 
+#ifdef CONFIG_8192E_USB
 #if DEV_BUS_TYPE == RT_USB_INTERFACE
-u1Byte gDeltaSwingTableIdx_MP_5GB_N_TxPowerTrack_USB_8192E[][DELTA_SWINGIDX_SIZE] = {
-	{0, 1, 1, 2, 2, 3, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 11, 12, 12, 13, 13, 14, 14, 14, 14, 14, 14, 14},
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 14, 14, 14, 14, 14},
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 14, 14, 14, 14, 14},
+const u8 delta_swingidx_mp_5gb_n_txpwrtrk_usb_8192e[][D_S_SIZE] = {
+	{0, 1, 1, 2, 2, 3, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10,
+	 11, 12, 12, 13, 13, 14, 14, 14, 14, 14, 14, 14},
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10,
+	 11, 11, 12, 12, 13, 13, 14, 14, 14, 14, 14, 14, 14},
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10,
+	 11, 11, 12, 12, 13, 13, 14, 14, 14, 14, 14, 14, 14},
 };
-u1Byte gDeltaSwingTableIdx_MP_5GB_P_TxPowerTrack_USB_8192E[][DELTA_SWINGIDX_SIZE] = {
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12, 13, 14, 15, 15, 16, 16, 17, 17, 18, 19, 20, 20, 20},
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12, 13, 14, 15, 15, 16, 17, 18, 18, 19, 19, 20, 20, 20},
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12, 13, 14, 15, 15, 16, 17, 18, 18, 19, 20, 21, 21, 21},
+
+const u8 delta_swingidx_mp_5gb_p_txpwrtrk_usb_8192e[][D_S_SIZE] = {
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12,
+	 13, 14, 15, 15, 16, 16, 17, 17, 18, 19, 20, 20, 20},
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12,
+	 13, 14, 15, 15, 16, 17, 18, 18, 19, 19, 20, 20, 20},
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12,
+	 13, 14, 15, 15, 16, 17, 18, 18, 19, 20, 21, 21, 21},
 };
-u1Byte gDeltaSwingTableIdx_MP_5GA_N_TxPowerTrack_USB_8192E[][DELTA_SWINGIDX_SIZE] = {
-	{0, 1, 2, 3, 3, 4, 4, 5, 5, 6, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 14, 14, 14, 14, 14},
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 6, 7, 7, 8, 8, 9, 10, 11, 11, 12, 13, 13, 14, 15, 16, 16, 16, 16, 16, 16, 16},
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 10, 11, 11, 12, 13, 14, 14, 15, 15, 16, 16, 16, 16, 16, 16, 16},
+
+const u8 delta_swingidx_mp_5ga_n_txpwrtrk_usb_8192e[][D_S_SIZE] = {
+	{0, 1, 2, 3, 3, 4, 4, 5, 5, 6, 7, 8, 8, 9, 9, 10, 10,
+	 11, 11, 12, 12, 13, 13, 14, 14, 14, 14, 14, 14, 14},
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 6, 7, 7, 8, 8, 9, 10, 11,
+	 11, 12, 13, 13, 14, 15, 16, 16, 16, 16, 16, 16, 16},
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 10, 11, 11,
+	 12, 13, 14, 14, 15, 15, 16, 16, 16, 16, 16, 16, 16},
 };
-u1Byte gDeltaSwingTableIdx_MP_5GA_P_TxPowerTrack_USB_8192E[][DELTA_SWINGIDX_SIZE] = {
-	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12, 13, 14, 15, 15, 16, 17, 18, 18, 19, 20, 21, 21, 21},
-	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12, 13, 14, 15, 15, 16, 17, 18, 18, 19, 20, 21, 21, 21},
+
+const u8 delta_swingidx_mp_5ga_p_txpwrtrk_usb_8192e[][D_S_SIZE] = {
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12,
+	 13, 14, 15, 15, 16, 17, 18, 18, 19, 20, 21, 21, 21},
+	{0, 1, 2, 3, 3, 4, 5, 6, 6, 7, 8, 9, 9, 10, 11, 12, 12,
+	 13, 14, 15, 15, 16, 17, 18, 18, 19, 20, 21, 21, 21},
 };
-u1Byte gDeltaSwingTableIdx_MP_2GB_N_TxPowerTrack_USB_8192E[]    = {0, 0, 0, 1, 1, 2, 2, 3, 3, 3, 4, 4, 5, 5, 5, 5, 7, 7, 7, 8, 9, 9, 9, 10, 10, 11, 12, 13, 14, 15};
-u1Byte gDeltaSwingTableIdx_MP_2GB_P_TxPowerTrack_USB_8192E[]    = {0, 0, 0, 1, 2, 2, 2, 3, 4, 4, 5, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
-u1Byte gDeltaSwingTableIdx_MP_2GA_N_TxPowerTrack_USB_8192E[]    = {0, 0, 0, 1, 1, 2, 2, 3, 3, 3, 4, 4, 5, 5, 5, 5, 7, 7, 7, 8, 9, 9, 9, 10, 10, 11, 12, 13, 14, 15};
-u1Byte gDeltaSwingTableIdx_MP_2GA_P_TxPowerTrack_USB_8192E[]    = {0, 0, 0, 1, 2, 2, 2, 3, 4, 4, 5, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
-u1Byte gDeltaSwingTableIdx_MP_2GCCKB_N_TxPowerTrack_USB_8192E[] = {0, 0, 1, 2, 2, 3, 3, 4, 4, 5, 6, 6, 7, 7, 7, 8, 8, 8, 9, 9, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
-u1Byte gDeltaSwingTableIdx_MP_2GCCKB_P_TxPowerTrack_USB_8192E[] = {0, 0, 0, 0, 1, 1, 1, 3, 3, 4, 4, 4, 4, 6, 6, 6, 6, 7, 7, 7, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
-u1Byte gDeltaSwingTableIdx_MP_2GCCKA_N_TxPowerTrack_USB_8192E[] = {0, 0, 1, 2, 2, 3, 3, 4, 4, 5, 6, 6, 7, 7, 7, 8, 8, 8, 9, 9, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
-u1Byte gDeltaSwingTableIdx_MP_2GCCKA_P_TxPowerTrack_USB_8192E[] = {0, 0, 0, 0, 1, 1, 1, 3, 3, 4, 4, 4, 4, 6, 6, 6, 6, 7, 7, 7, 9, 10, 10, 11, 11, 12, 12, 13, 14, 15};
+
+const u8 delta_swingidx_mp_2gb_n_txpwrtrk_usb_8192e[]    = {
+	0, 0, 1, 1, 2, 3, 3, 4, 5, 5, 5, 5, 5, 6, 6, 7, 8,
+	 8, 8, 9, 10, 10, 10, 10, 11, 11, 12, 13, 14, 15};
+const u8 delta_swingidx_mp_2gb_p_txpwrtrk_usb_8192e[]    = {
+	0, 0, 1, 1, 2, 2, 3, 3, 4, 5, 5, 5, 5, 6, 6, 7, 8,
+	 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 14, 14, 15};
+const u8 delta_swingidx_mp_2ga_n_txpwrtrk_usb_8192e[]    = {
+	0, 0, 1, 1, 2, 3, 3, 4, 5, 5, 5, 5, 5, 6, 6, 7, 8,
+	 8, 8, 9, 10, 10, 10, 10, 11, 11, 12, 13, 14, 15};
+const u8 delta_swingidx_mp_2ga_p_txpwrtrk_usb_8192e[]    = {
+	0, 0, 1, 1, 2, 2, 3, 3, 4, 5, 5, 5, 5, 6, 6, 7, 8,
+	 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 14, 14, 15};
+const u8 delta_swingidx_mp_2g_cck_b_n_txpwrtrk_usb_8192e[] = {
+	0, 0, 1, 2, 2, 3, 3, 4, 4, 4, 4, 5, 5, 6, 6, 7, 7,
+	 8, 9, 9, 9, 10, 11, 11, 11, 12, 12, 13, 14, 15};
+const u8 delta_swingidx_mp_2g_cck_b_p_txpwrtrk_usb_8192e[] = {
+	0, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8,
+	 8, 8, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 15};
+const u8 delta_swingidx_mp_2g_cck_a_n_txpwrtrk_usb_8192e[] = {
+	0, 0, 1, 2, 2, 3, 3, 4, 4, 4, 4, 5, 5, 6, 6, 7, 7,
+	 8, 9, 9, 9, 10, 11, 11, 11, 12, 12, 13, 14, 15};
+const u8 delta_swingidx_mp_2g_cck_a_p_txpwrtrk_usb_8192e[] = {
+	0, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8,
+	 8, 8, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 15};
+#endif
 #endif
 
 void
-ODM_ReadAndConfig_MP_8192E_TxPowerTrack_USB(
-	IN   PDM_ODM_T  pDM_Odm
-)
+odm_read_and_config_mp_8192e_txpowertrack_usb(struct dm_struct *dm)
 {
+#ifdef CONFIG_8192E_USB
+
 #if DEV_BUS_TYPE == RT_USB_INTERFACE
-	PODM_RF_CAL_T  pRFCalibrateInfo = &(pDM_Odm->RFCalibrateInfo);
+struct dm_rf_calibration_struct  *cali_info = &dm->rf_calibrate_info;
 
-	ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_LOUD, ("===> ODM_ReadAndConfig_MP_MP_8192E\n"));
+PHYDM_DBG(dm, ODM_COMP_INIT, "===> ODM_ReadAndConfig_MP_mp_8192e\n");
 
+odm_move_memory(dm, cali_info->delta_swing_table_idx_2ga_p,
+		(void *)delta_swingidx_mp_2ga_p_txpwrtrk_usb_8192e,
+		DELTA_SWINGIDX_SIZE);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_2ga_n,
+		(void *)delta_swingidx_mp_2ga_n_txpwrtrk_usb_8192e,
+		DELTA_SWINGIDX_SIZE);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_2gb_p,
+		(void *)delta_swingidx_mp_2gb_p_txpwrtrk_usb_8192e,
+		DELTA_SWINGIDX_SIZE);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_2gb_n,
+		(void *)delta_swingidx_mp_2gb_n_txpwrtrk_usb_8192e,
+		DELTA_SWINGIDX_SIZE);
 
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_2GA_P, gDeltaSwingTableIdx_MP_2GA_P_TxPowerTrack_USB_8192E, DELTA_SWINGIDX_SIZE);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_2GA_N, gDeltaSwingTableIdx_MP_2GA_N_TxPowerTrack_USB_8192E, DELTA_SWINGIDX_SIZE);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_2GB_P, gDeltaSwingTableIdx_MP_2GB_P_TxPowerTrack_USB_8192E, DELTA_SWINGIDX_SIZE);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_2GB_N, gDeltaSwingTableIdx_MP_2GB_N_TxPowerTrack_USB_8192E, DELTA_SWINGIDX_SIZE);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_2g_cck_a_p,
+		(void *)delta_swingidx_mp_2g_cck_a_p_txpwrtrk_usb_8192e,
+		DELTA_SWINGIDX_SIZE);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_2g_cck_a_n,
+		(void *)delta_swingidx_mp_2g_cck_a_n_txpwrtrk_usb_8192e,
+		DELTA_SWINGIDX_SIZE);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_2g_cck_b_p,
+		(void *)delta_swingidx_mp_2g_cck_b_p_txpwrtrk_usb_8192e,
+		DELTA_SWINGIDX_SIZE);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_2g_cck_b_n,
+		(void *)delta_swingidx_mp_2g_cck_b_n_txpwrtrk_usb_8192e,
+		DELTA_SWINGIDX_SIZE);
 
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_2GCCKA_P, gDeltaSwingTableIdx_MP_2GCCKA_P_TxPowerTrack_USB_8192E, DELTA_SWINGIDX_SIZE);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_2GCCKA_N, gDeltaSwingTableIdx_MP_2GCCKA_N_TxPowerTrack_USB_8192E, DELTA_SWINGIDX_SIZE);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_2GCCKB_P, gDeltaSwingTableIdx_MP_2GCCKB_P_TxPowerTrack_USB_8192E, DELTA_SWINGIDX_SIZE);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_2GCCKB_N, gDeltaSwingTableIdx_MP_2GCCKB_N_TxPowerTrack_USB_8192E, DELTA_SWINGIDX_SIZE);
-
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_5GA_P, gDeltaSwingTableIdx_MP_5GA_P_TxPowerTrack_USB_8192E, DELTA_SWINGIDX_SIZE*3);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_5GA_N, gDeltaSwingTableIdx_MP_5GA_N_TxPowerTrack_USB_8192E, DELTA_SWINGIDX_SIZE*3);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_5GB_P, gDeltaSwingTableIdx_MP_5GB_P_TxPowerTrack_USB_8192E, DELTA_SWINGIDX_SIZE*3);
-	ODM_MoveMemory(pDM_Odm, pRFCalibrateInfo->DeltaSwingTableIdx_5GB_N, gDeltaSwingTableIdx_MP_5GB_N_TxPowerTrack_USB_8192E, DELTA_SWINGIDX_SIZE*3);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_5ga_p,
+		(void *)delta_swingidx_mp_5ga_p_txpwrtrk_usb_8192e,
+		DELTA_SWINGIDX_SIZE * 3);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_5ga_n,
+		(void *)delta_swingidx_mp_5ga_n_txpwrtrk_usb_8192e,
+		DELTA_SWINGIDX_SIZE * 3);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_5gb_p,
+		(void *)delta_swingidx_mp_5gb_p_txpwrtrk_usb_8192e,
+		DELTA_SWINGIDX_SIZE * 3);
+odm_move_memory(dm, cali_info->delta_swing_table_idx_5gb_n,
+		(void *)delta_swingidx_mp_5gb_n_txpwrtrk_usb_8192e,
+		DELTA_SWINGIDX_SIZE * 3);
+#endif
 #endif
 }
 
 /******************************************************************************
-*                           TXPWR_LMT.TXT
-******************************************************************************/
+ *                           txpwr_lmt.TXT
+ ******************************************************************************/
 
-const char *Array_MP_8192E_TXPWR_LMT[] = { 
-	"FCC", "2.4G", "20M", "CCK", "1T", "01", "34", 
-	"ETSI", "2.4G", "20M", "CCK", "1T", "01", "28", 
+#ifdef CONFIG_8192E
+const char *array_mp_8192e_txpwr_lmt[] = {
+	"FCC", "2.4G", "20M", "CCK", "1T", "01", "34",
+	"ETSI", "2.4G", "20M", "CCK", "1T", "01", "28",
 	"MKK", "2.4G", "20M", "CCK", "1T", "01", "32",
-	"FCC", "2.4G", "20M", "CCK", "1T", "02", "34", 
-	"ETSI", "2.4G", "20M", "CCK", "1T", "02", "28", 
+	"FCC", "2.4G", "20M", "CCK", "1T", "02", "34",
+	"ETSI", "2.4G", "20M", "CCK", "1T", "02", "28",
 	"MKK", "2.4G", "20M", "CCK", "1T", "02", "32",
-	"FCC", "2.4G", "20M", "CCK", "1T", "03", "34", 
-	"ETSI", "2.4G", "20M", "CCK", "1T", "03", "28", 
+	"FCC", "2.4G", "20M", "CCK", "1T", "03", "34",
+	"ETSI", "2.4G", "20M", "CCK", "1T", "03", "28",
 	"MKK", "2.4G", "20M", "CCK", "1T", "03", "32",
-	"FCC", "2.4G", "20M", "CCK", "1T", "04", "34", 
-	"ETSI", "2.4G", "20M", "CCK", "1T", "04", "28", 
+	"FCC", "2.4G", "20M", "CCK", "1T", "04", "34",
+	"ETSI", "2.4G", "20M", "CCK", "1T", "04", "28",
 	"MKK", "2.4G", "20M", "CCK", "1T", "04", "32",
-	"FCC", "2.4G", "20M", "CCK", "1T", "05", "34", 
-	"ETSI", "2.4G", "20M", "CCK", "1T", "05", "28", 
+	"FCC", "2.4G", "20M", "CCK", "1T", "05", "34",
+	"ETSI", "2.4G", "20M", "CCK", "1T", "05", "28",
 	"MKK", "2.4G", "20M", "CCK", "1T", "05", "32",
-	"FCC", "2.4G", "20M", "CCK", "1T", "06", "34", 
-	"ETSI", "2.4G", "20M", "CCK", "1T", "06", "28", 
+	"FCC", "2.4G", "20M", "CCK", "1T", "06", "34",
+	"ETSI", "2.4G", "20M", "CCK", "1T", "06", "28",
 	"MKK", "2.4G", "20M", "CCK", "1T", "06", "32",
-	"FCC", "2.4G", "20M", "CCK", "1T", "07", "34", 
-	"ETSI", "2.4G", "20M", "CCK", "1T", "07", "28", 
+	"FCC", "2.4G", "20M", "CCK", "1T", "07", "34",
+	"ETSI", "2.4G", "20M", "CCK", "1T", "07", "28",
 	"MKK", "2.4G", "20M", "CCK", "1T", "07", "32",
-	"FCC", "2.4G", "20M", "CCK", "1T", "08", "34", 
-	"ETSI", "2.4G", "20M", "CCK", "1T", "08", "28", 
+	"FCC", "2.4G", "20M", "CCK", "1T", "08", "34",
+	"ETSI", "2.4G", "20M", "CCK", "1T", "08", "28",
 	"MKK", "2.4G", "20M", "CCK", "1T", "08", "32",
-	"FCC", "2.4G", "20M", "CCK", "1T", "09", "34", 
-	"ETSI", "2.4G", "20M", "CCK", "1T", "09", "28", 
+	"FCC", "2.4G", "20M", "CCK", "1T", "09", "34",
+	"ETSI", "2.4G", "20M", "CCK", "1T", "09", "28",
 	"MKK", "2.4G", "20M", "CCK", "1T", "09", "32",
-	"FCC", "2.4G", "20M", "CCK", "1T", "10", "34", 
-	"ETSI", "2.4G", "20M", "CCK", "1T", "10", "28", 
+	"FCC", "2.4G", "20M", "CCK", "1T", "10", "34",
+	"ETSI", "2.4G", "20M", "CCK", "1T", "10", "28",
 	"MKK", "2.4G", "20M", "CCK", "1T", "10", "32",
-	"FCC", "2.4G", "20M", "CCK", "1T", "11", "34", 
-	"ETSI", "2.4G", "20M", "CCK", "1T", "11", "28", 
+	"FCC", "2.4G", "20M", "CCK", "1T", "11", "34",
+	"ETSI", "2.4G", "20M", "CCK", "1T", "11", "28",
 	"MKK", "2.4G", "20M", "CCK", "1T", "11", "32",
-	"FCC", "2.4G", "20M", "CCK", "1T", "12", "63", 
-	"ETSI", "2.4G", "20M", "CCK", "1T", "12", "28", 
+	"FCC", "2.4G", "20M", "CCK", "1T", "12", "63",
+	"ETSI", "2.4G", "20M", "CCK", "1T", "12", "28",
 	"MKK", "2.4G", "20M", "CCK", "1T", "12", "32",
-	"FCC", "2.4G", "20M", "CCK", "1T", "13", "63", 
-	"ETSI", "2.4G", "20M", "CCK", "1T", "13", "28", 
+	"FCC", "2.4G", "20M", "CCK", "1T", "13", "63",
+	"ETSI", "2.4G", "20M", "CCK", "1T", "13", "28",
 	"MKK", "2.4G", "20M", "CCK", "1T", "13", "32",
-	"FCC", "2.4G", "20M", "CCK", "1T", "14", "63", 
-	"ETSI", "2.4G", "20M", "CCK", "1T", "14", "63", 
+	"FCC", "2.4G", "20M", "CCK", "1T", "14", "63",
+	"ETSI", "2.4G", "20M", "CCK", "1T", "14", "63",
 	"MKK", "2.4G", "20M", "CCK", "1T", "14", "32",
-	"FCC", "2.4G", "20M", "CCK", "2T", "01", "26", 
-	"ETSI", "2.4G", "20M", "CCK", "2T", "01", "22", 
+	"FCC", "2.4G", "20M", "CCK", "2T", "01", "26",
+	"ETSI", "2.4G", "20M", "CCK", "2T", "01", "22",
 	"MKK", "2.4G", "20M", "CCK", "2T", "01", "26",
-	"FCC", "2.4G", "20M", "CCK", "2T", "02", "26", 
-	"ETSI", "2.4G", "20M", "CCK", "2T", "02", "22", 
+	"FCC", "2.4G", "20M", "CCK", "2T", "02", "26",
+	"ETSI", "2.4G", "20M", "CCK", "2T", "02", "22",
 	"MKK", "2.4G", "20M", "CCK", "2T", "02", "26",
-	"FCC", "2.4G", "20M", "CCK", "2T", "03", "26", 
-	"ETSI", "2.4G", "20M", "CCK", "2T", "03", "22", 
+	"FCC", "2.4G", "20M", "CCK", "2T", "03", "26",
+	"ETSI", "2.4G", "20M", "CCK", "2T", "03", "22",
 	"MKK", "2.4G", "20M", "CCK", "2T", "03", "26",
-	"FCC", "2.4G", "20M", "CCK", "2T", "04", "26", 
-	"ETSI", "2.4G", "20M", "CCK", "2T", "04", "22", 
+	"FCC", "2.4G", "20M", "CCK", "2T", "04", "26",
+	"ETSI", "2.4G", "20M", "CCK", "2T", "04", "22",
 	"MKK", "2.4G", "20M", "CCK", "2T", "04", "26",
-	"FCC", "2.4G", "20M", "CCK", "2T", "05", "26", 
-	"ETSI", "2.4G", "20M", "CCK", "2T", "05", "22", 
+	"FCC", "2.4G", "20M", "CCK", "2T", "05", "26",
+	"ETSI", "2.4G", "20M", "CCK", "2T", "05", "22",
 	"MKK", "2.4G", "20M", "CCK", "2T", "05", "26",
-	"FCC", "2.4G", "20M", "CCK", "2T", "06", "26", 
-	"ETSI", "2.4G", "20M", "CCK", "2T", "06", "22", 
+	"FCC", "2.4G", "20M", "CCK", "2T", "06", "26",
+	"ETSI", "2.4G", "20M", "CCK", "2T", "06", "22",
 	"MKK", "2.4G", "20M", "CCK", "2T", "06", "26",
-	"FCC", "2.4G", "20M", "CCK", "2T", "07", "26", 
-	"ETSI", "2.4G", "20M", "CCK", "2T", "07", "22", 
+	"FCC", "2.4G", "20M", "CCK", "2T", "07", "26",
+	"ETSI", "2.4G", "20M", "CCK", "2T", "07", "22",
 	"MKK", "2.4G", "20M", "CCK", "2T", "07", "26",
-	"FCC", "2.4G", "20M", "CCK", "2T", "08", "26", 
-	"ETSI", "2.4G", "20M", "CCK", "2T", "08", "22", 
+	"FCC", "2.4G", "20M", "CCK", "2T", "08", "26",
+	"ETSI", "2.4G", "20M", "CCK", "2T", "08", "22",
 	"MKK", "2.4G", "20M", "CCK", "2T", "08", "26",
-	"FCC", "2.4G", "20M", "CCK", "2T", "09", "26", 
-	"ETSI", "2.4G", "20M", "CCK", "2T", "09", "22", 
+	"FCC", "2.4G", "20M", "CCK", "2T", "09", "26",
+	"ETSI", "2.4G", "20M", "CCK", "2T", "09", "22",
 	"MKK", "2.4G", "20M", "CCK", "2T", "09", "26",
-	"FCC", "2.4G", "20M", "CCK", "2T", "10", "26", 
-	"ETSI", "2.4G", "20M", "CCK", "2T", "10", "22", 
+	"FCC", "2.4G", "20M", "CCK", "2T", "10", "26",
+	"ETSI", "2.4G", "20M", "CCK", "2T", "10", "22",
 	"MKK", "2.4G", "20M", "CCK", "2T", "10", "26",
-	"FCC", "2.4G", "20M", "CCK", "2T", "11", "26", 
-	"ETSI", "2.4G", "20M", "CCK", "2T", "11", "22", 
+	"FCC", "2.4G", "20M", "CCK", "2T", "11", "26",
+	"ETSI", "2.4G", "20M", "CCK", "2T", "11", "22",
 	"MKK", "2.4G", "20M", "CCK", "2T", "11", "26",
-	"FCC", "2.4G", "20M", "CCK", "2T", "12", "63", 
-	"ETSI", "2.4G", "20M", "CCK", "2T", "12", "22", 
+	"FCC", "2.4G", "20M", "CCK", "2T", "12", "63",
+	"ETSI", "2.4G", "20M", "CCK", "2T", "12", "22",
 	"MKK", "2.4G", "20M", "CCK", "2T", "12", "26",
-	"FCC", "2.4G", "20M", "CCK", "2T", "13", "63", 
-	"ETSI", "2.4G", "20M", "CCK", "2T", "13", "22", 
+	"FCC", "2.4G", "20M", "CCK", "2T", "13", "63",
+	"ETSI", "2.4G", "20M", "CCK", "2T", "13", "22",
 	"MKK", "2.4G", "20M", "CCK", "2T", "13", "26",
-	"FCC", "2.4G", "20M", "CCK", "2T", "14", "63", 
-	"ETSI", "2.4G", "20M", "CCK", "2T", "14", "63", 
+	"FCC", "2.4G", "20M", "CCK", "2T", "14", "63",
+	"ETSI", "2.4G", "20M", "CCK", "2T", "14", "63",
 	"MKK", "2.4G", "20M", "CCK", "2T", "14", "26",
-	"FCC", "2.4G", "20M", "OFDM", "1T", "01", "30", 
-	"ETSI", "2.4G", "20M", "OFDM", "1T", "01", "28", 
+	"FCC", "2.4G", "20M", "OFDM", "1T", "01", "30",
+	"ETSI", "2.4G", "20M", "OFDM", "1T", "01", "28",
 	"MKK", "2.4G", "20M", "OFDM", "1T", "01", "28",
-	"FCC", "2.4G", "20M", "OFDM", "1T", "02", "30", 
-	"ETSI", "2.4G", "20M", "OFDM", "1T", "02", "28", 
+	"FCC", "2.4G", "20M", "OFDM", "1T", "02", "30",
+	"ETSI", "2.4G", "20M", "OFDM", "1T", "02", "28",
 	"MKK", "2.4G", "20M", "OFDM", "1T", "02", "28",
-	"FCC", "2.4G", "20M", "OFDM", "1T", "03", "34", 
-	"ETSI", "2.4G", "20M", "OFDM", "1T", "03", "32", 
+	"FCC", "2.4G", "20M", "OFDM", "1T", "03", "34",
+	"ETSI", "2.4G", "20M", "OFDM", "1T", "03", "32",
 	"MKK", "2.4G", "20M", "OFDM", "1T", "03", "34",
-	"FCC", "2.4G", "20M", "OFDM", "1T", "04", "34", 
-	"ETSI", "2.4G", "20M", "OFDM", "1T", "04", "32", 
+	"FCC", "2.4G", "20M", "OFDM", "1T", "04", "34",
+	"ETSI", "2.4G", "20M", "OFDM", "1T", "04", "32",
 	"MKK", "2.4G", "20M", "OFDM", "1T", "04", "34",
-	"FCC", "2.4G", "20M", "OFDM", "1T", "05", "34", 
-	"ETSI", "2.4G", "20M", "OFDM", "1T", "05", "32", 
+	"FCC", "2.4G", "20M", "OFDM", "1T", "05", "34",
+	"ETSI", "2.4G", "20M", "OFDM", "1T", "05", "32",
 	"MKK", "2.4G", "20M", "OFDM", "1T", "05", "34",
-	"FCC", "2.4G", "20M", "OFDM", "1T", "06", "34", 
-	"ETSI", "2.4G", "20M", "OFDM", "1T", "06", "32", 
+	"FCC", "2.4G", "20M", "OFDM", "1T", "06", "34",
+	"ETSI", "2.4G", "20M", "OFDM", "1T", "06", "32",
 	"MKK", "2.4G", "20M", "OFDM", "1T", "06", "34",
-	"FCC", "2.4G", "20M", "OFDM", "1T", "07", "34", 
-	"ETSI", "2.4G", "20M", "OFDM", "1T", "07", "32", 
+	"FCC", "2.4G", "20M", "OFDM", "1T", "07", "34",
+	"ETSI", "2.4G", "20M", "OFDM", "1T", "07", "32",
 	"MKK", "2.4G", "20M", "OFDM", "1T", "07", "34",
-	"FCC", "2.4G", "20M", "OFDM", "1T", "08", "34", 
-	"ETSI", "2.4G", "20M", "OFDM", "1T", "08", "32", 
+	"FCC", "2.4G", "20M", "OFDM", "1T", "08", "34",
+	"ETSI", "2.4G", "20M", "OFDM", "1T", "08", "32",
 	"MKK", "2.4G", "20M", "OFDM", "1T", "08", "34",
-	"FCC", "2.4G", "20M", "OFDM", "1T", "09", "30", 
-	"ETSI", "2.4G", "20M", "OFDM", "1T", "09", "28", 
+	"FCC", "2.4G", "20M", "OFDM", "1T", "09", "30",
+	"ETSI", "2.4G", "20M", "OFDM", "1T", "09", "28",
 	"MKK", "2.4G", "20M", "OFDM", "1T", "09", "28",
-	"FCC", "2.4G", "20M", "OFDM", "1T", "10", "30", 
-	"ETSI", "2.4G", "20M", "OFDM", "1T", "10", "28", 
+	"FCC", "2.4G", "20M", "OFDM", "1T", "10", "30",
+	"ETSI", "2.4G", "20M", "OFDM", "1T", "10", "28",
 	"MKK", "2.4G", "20M", "OFDM", "1T", "10", "28",
-	"FCC", "2.4G", "20M", "OFDM", "1T", "11", "30", 
-	"ETSI", "2.4G", "20M", "OFDM", "1T", "11", "28", 
+	"FCC", "2.4G", "20M", "OFDM", "1T", "11", "30",
+	"ETSI", "2.4G", "20M", "OFDM", "1T", "11", "28",
 	"MKK", "2.4G", "20M", "OFDM", "1T", "11", "28",
-	"FCC", "2.4G", "20M", "OFDM", "1T", "12", "63", 
-	"ETSI", "2.4G", "20M", "OFDM", "1T", "12", "28", 
+	"FCC", "2.4G", "20M", "OFDM", "1T", "12", "63",
+	"ETSI", "2.4G", "20M", "OFDM", "1T", "12", "28",
 	"MKK", "2.4G", "20M", "OFDM", "1T", "12", "28",
-	"FCC", "2.4G", "20M", "OFDM", "1T", "13", "63", 
-	"ETSI", "2.4G", "20M", "OFDM", "1T", "13", "28", 
+	"FCC", "2.4G", "20M", "OFDM", "1T", "13", "63",
+	"ETSI", "2.4G", "20M", "OFDM", "1T", "13", "28",
 	"MKK", "2.4G", "20M", "OFDM", "1T", "13", "28",
-	"FCC", "2.4G", "20M", "OFDM", "1T", "14", "63", 
-	"ETSI", "2.4G", "20M", "OFDM", "1T", "14", "63", 
+	"FCC", "2.4G", "20M", "OFDM", "1T", "14", "63",
+	"ETSI", "2.4G", "20M", "OFDM", "1T", "14", "63",
 	"MKK", "2.4G", "20M", "OFDM", "1T", "14", "63",
-	"FCC", "2.4G", "20M", "OFDM", "2T", "01", "26", 
-	"ETSI", "2.4G", "20M", "OFDM", "2T", "01", "26", 
+	"FCC", "2.4G", "20M", "OFDM", "2T", "01", "26",
+	"ETSI", "2.4G", "20M", "OFDM", "2T", "01", "26",
 	"MKK", "2.4G", "20M", "OFDM", "2T", "01", "28",
-	"FCC", "2.4G", "20M", "OFDM", "2T", "02", "26", 
-	"ETSI", "2.4G", "20M", "OFDM", "2T", "02", "26", 
+	"FCC", "2.4G", "20M", "OFDM", "2T", "02", "26",
+	"ETSI", "2.4G", "20M", "OFDM", "2T", "02", "26",
 	"MKK", "2.4G", "20M", "OFDM", "2T", "02", "28",
-	"FCC", "2.4G", "20M", "OFDM", "2T", "03", "34", 
-	"ETSI", "2.4G", "20M", "OFDM", "2T", "03", "26", 
+	"FCC", "2.4G", "20M", "OFDM", "2T", "03", "34",
+	"ETSI", "2.4G", "20M", "OFDM", "2T", "03", "26",
 	"MKK", "2.4G", "20M", "OFDM", "2T", "03", "28",
-	"FCC", "2.4G", "20M", "OFDM", "2T", "04", "34", 
-	"ETSI", "2.4G", "20M", "OFDM", "2T", "04", "26", 
+	"FCC", "2.4G", "20M", "OFDM", "2T", "04", "34",
+	"ETSI", "2.4G", "20M", "OFDM", "2T", "04", "26",
 	"MKK", "2.4G", "20M", "OFDM", "2T", "04", "28",
-	"FCC", "2.4G", "20M", "OFDM", "2T", "05", "34", 
-	"ETSI", "2.4G", "20M", "OFDM", "2T", "05", "26", 
+	"FCC", "2.4G", "20M", "OFDM", "2T", "05", "34",
+	"ETSI", "2.4G", "20M", "OFDM", "2T", "05", "26",
 	"MKK", "2.4G", "20M", "OFDM", "2T", "05", "28",
-	"FCC", "2.4G", "20M", "OFDM", "2T", "06", "34", 
-	"ETSI", "2.4G", "20M", "OFDM", "2T", "06", "26", 
+	"FCC", "2.4G", "20M", "OFDM", "2T", "06", "34",
+	"ETSI", "2.4G", "20M", "OFDM", "2T", "06", "26",
 	"MKK", "2.4G", "20M", "OFDM", "2T", "06", "28",
-	"FCC", "2.4G", "20M", "OFDM", "2T", "07", "34", 
-	"ETSI", "2.4G", "20M", "OFDM", "2T", "07", "26", 
+	"FCC", "2.4G", "20M", "OFDM", "2T", "07", "34",
+	"ETSI", "2.4G", "20M", "OFDM", "2T", "07", "26",
 	"MKK", "2.4G", "20M", "OFDM", "2T", "07", "28",
-	"FCC", "2.4G", "20M", "OFDM", "2T", "08", "34", 
-	"ETSI", "2.4G", "20M", "OFDM", "2T", "08", "26", 
+	"FCC", "2.4G", "20M", "OFDM", "2T", "08", "34",
+	"ETSI", "2.4G", "20M", "OFDM", "2T", "08", "26",
 	"MKK", "2.4G", "20M", "OFDM", "2T", "08", "28",
-	"FCC", "2.4G", "20M", "OFDM", "2T", "09", "30", 
-	"ETSI", "2.4G", "20M", "OFDM", "2T", "09", "26", 
+	"FCC", "2.4G", "20M", "OFDM", "2T", "09", "30",
+	"ETSI", "2.4G", "20M", "OFDM", "2T", "09", "26",
 	"MKK", "2.4G", "20M", "OFDM", "2T", "09", "28",
-	"FCC", "2.4G", "20M", "OFDM", "2T", "10", "30", 
-	"ETSI", "2.4G", "20M", "OFDM", "2T", "10", "26", 
+	"FCC", "2.4G", "20M", "OFDM", "2T", "10", "30",
+	"ETSI", "2.4G", "20M", "OFDM", "2T", "10", "26",
 	"MKK", "2.4G", "20M", "OFDM", "2T", "10", "28",
-	"FCC", "2.4G", "20M", "OFDM", "2T", "11", "30", 
-	"ETSI", "2.4G", "20M", "OFDM", "2T", "11", "26", 
+	"FCC", "2.4G", "20M", "OFDM", "2T", "11", "30",
+	"ETSI", "2.4G", "20M", "OFDM", "2T", "11", "26",
 	"MKK", "2.4G", "20M", "OFDM", "2T", "11", "28",
-	"FCC", "2.4G", "20M", "OFDM", "2T", "12", "63", 
-	"ETSI", "2.4G", "20M", "OFDM", "2T", "12", "26", 
+	"FCC", "2.4G", "20M", "OFDM", "2T", "12", "63",
+	"ETSI", "2.4G", "20M", "OFDM", "2T", "12", "26",
 	"MKK", "2.4G", "20M", "OFDM", "2T", "12", "28",
-	"FCC", "2.4G", "20M", "OFDM", "2T", "13", "63", 
-	"ETSI", "2.4G", "20M", "OFDM", "2T", "13", "26", 
+	"FCC", "2.4G", "20M", "OFDM", "2T", "13", "63",
+	"ETSI", "2.4G", "20M", "OFDM", "2T", "13", "26",
 	"MKK", "2.4G", "20M", "OFDM", "2T", "13", "28",
-	"FCC", "2.4G", "20M", "OFDM", "2T", "14", "63", 
-	"ETSI", "2.4G", "20M", "OFDM", "2T", "14", "63", 
+	"FCC", "2.4G", "20M", "OFDM", "2T", "14", "63",
+	"ETSI", "2.4G", "20M", "OFDM", "2T", "14", "63",
 	"MKK", "2.4G", "20M", "OFDM", "2T", "14", "63",
-	"FCC", "2.4G", "20M", "HT", "1T", "01", "30", 
-	"ETSI", "2.4G", "20M", "HT", "1T", "01", "28", 
+	"FCC", "2.4G", "20M", "HT", "1T", "01", "30",
+	"ETSI", "2.4G", "20M", "HT", "1T", "01", "28",
 	"MKK", "2.4G", "20M", "HT", "1T", "01", "28",
-	"FCC", "2.4G", "20M", "HT", "1T", "02", "30", 
-	"ETSI", "2.4G", "20M", "HT", "1T", "02", "28", 
+	"FCC", "2.4G", "20M", "HT", "1T", "02", "30",
+	"ETSI", "2.4G", "20M", "HT", "1T", "02", "28",
 	"MKK", "2.4G", "20M", "HT", "1T", "02", "28",
-	"FCC", "2.4G", "20M", "HT", "1T", "03", "34", 
-	"ETSI", "2.4G", "20M", "HT", "1T", "03", "32", 
+	"FCC", "2.4G", "20M", "HT", "1T", "03", "34",
+	"ETSI", "2.4G", "20M", "HT", "1T", "03", "32",
 	"MKK", "2.4G", "20M", "HT", "1T", "03", "34",
-	"FCC", "2.4G", "20M", "HT", "1T", "04", "34", 
-	"ETSI", "2.4G", "20M", "HT", "1T", "04", "32", 
+	"FCC", "2.4G", "20M", "HT", "1T", "04", "34",
+	"ETSI", "2.4G", "20M", "HT", "1T", "04", "32",
 	"MKK", "2.4G", "20M", "HT", "1T", "04", "34",
-	"FCC", "2.4G", "20M", "HT", "1T", "05", "34", 
-	"ETSI", "2.4G", "20M", "HT", "1T", "05", "32", 
+	"FCC", "2.4G", "20M", "HT", "1T", "05", "34",
+	"ETSI", "2.4G", "20M", "HT", "1T", "05", "32",
 	"MKK", "2.4G", "20M", "HT", "1T", "05", "34",
-	"FCC", "2.4G", "20M", "HT", "1T", "06", "34", 
-	"ETSI", "2.4G", "20M", "HT", "1T", "06", "32", 
+	"FCC", "2.4G", "20M", "HT", "1T", "06", "34",
+	"ETSI", "2.4G", "20M", "HT", "1T", "06", "32",
 	"MKK", "2.4G", "20M", "HT", "1T", "06", "34",
-	"FCC", "2.4G", "20M", "HT", "1T", "07", "34", 
-	"ETSI", "2.4G", "20M", "HT", "1T", "07", "32", 
+	"FCC", "2.4G", "20M", "HT", "1T", "07", "34",
+	"ETSI", "2.4G", "20M", "HT", "1T", "07", "32",
 	"MKK", "2.4G", "20M", "HT", "1T", "07", "34",
-	"FCC", "2.4G", "20M", "HT", "1T", "08", "34", 
-	"ETSI", "2.4G", "20M", "HT", "1T", "08", "32", 
+	"FCC", "2.4G", "20M", "HT", "1T", "08", "34",
+	"ETSI", "2.4G", "20M", "HT", "1T", "08", "32",
 	"MKK", "2.4G", "20M", "HT", "1T", "08", "34",
-	"FCC", "2.4G", "20M", "HT", "1T", "09", "30", 
-	"ETSI", "2.4G", "20M", "HT", "1T", "09", "28", 
+	"FCC", "2.4G", "20M", "HT", "1T", "09", "30",
+	"ETSI", "2.4G", "20M", "HT", "1T", "09", "28",
 	"MKK", "2.4G", "20M", "HT", "1T", "09", "28",
-	"FCC", "2.4G", "20M", "HT", "1T", "10", "30", 
-	"ETSI", "2.4G", "20M", "HT", "1T", "10", "28", 
+	"FCC", "2.4G", "20M", "HT", "1T", "10", "30",
+	"ETSI", "2.4G", "20M", "HT", "1T", "10", "28",
 	"MKK", "2.4G", "20M", "HT", "1T", "10", "28",
-	"FCC", "2.4G", "20M", "HT", "1T", "11", "30", 
-	"ETSI", "2.4G", "20M", "HT", "1T", "11", "28", 
+	"FCC", "2.4G", "20M", "HT", "1T", "11", "30",
+	"ETSI", "2.4G", "20M", "HT", "1T", "11", "28",
 	"MKK", "2.4G", "20M", "HT", "1T", "11", "28",
-	"FCC", "2.4G", "20M", "HT", "1T", "12", "63", 
-	"ETSI", "2.4G", "20M", "HT", "1T", "12", "28", 
+	"FCC", "2.4G", "20M", "HT", "1T", "12", "63",
+	"ETSI", "2.4G", "20M", "HT", "1T", "12", "28",
 	"MKK", "2.4G", "20M", "HT", "1T", "12", "28",
-	"FCC", "2.4G", "20M", "HT", "1T", "13", "63", 
-	"ETSI", "2.4G", "20M", "HT", "1T", "13", "28", 
+	"FCC", "2.4G", "20M", "HT", "1T", "13", "63",
+	"ETSI", "2.4G", "20M", "HT", "1T", "13", "28",
 	"MKK", "2.4G", "20M", "HT", "1T", "13", "28",
-	"FCC", "2.4G", "20M", "HT", "1T", "14", "63", 
-	"ETSI", "2.4G", "20M", "HT", "1T", "14", "63", 
+	"FCC", "2.4G", "20M", "HT", "1T", "14", "63",
+	"ETSI", "2.4G", "20M", "HT", "1T", "14", "63",
 	"MKK", "2.4G", "20M", "HT", "1T", "14", "63",
-	"FCC", "2.4G", "20M", "HT", "2T", "01", "28", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "01", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "01", "28",
+	"ETSI", "2.4G", "20M", "HT", "2T", "01", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "01", "28",
-	"FCC", "2.4G", "20M", "HT", "2T", "02", "28", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "02", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "02", "28",
+	"ETSI", "2.4G", "20M", "HT", "2T", "02", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "02", "28",
-	"FCC", "2.4G", "20M", "HT", "2T", "03", "34", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "03", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "03", "34",
+	"ETSI", "2.4G", "20M", "HT", "2T", "03", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "03", "30",
-	"FCC", "2.4G", "20M", "HT", "2T", "04", "34", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "04", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "04", "34",
+	"ETSI", "2.4G", "20M", "HT", "2T", "04", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "04", "30",
-	"FCC", "2.4G", "20M", "HT", "2T", "05", "34", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "05", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "05", "34",
+	"ETSI", "2.4G", "20M", "HT", "2T", "05", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "05", "30",
-	"FCC", "2.4G", "20M", "HT", "2T", "06", "34", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "06", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "06", "34",
+	"ETSI", "2.4G", "20M", "HT", "2T", "06", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "06", "30",
-	"FCC", "2.4G", "20M", "HT", "2T", "07", "34", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "07", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "07", "34",
+	"ETSI", "2.4G", "20M", "HT", "2T", "07", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "07", "30",
-	"FCC", "2.4G", "20M", "HT", "2T", "08", "34", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "08", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "08", "34",
+	"ETSI", "2.4G", "20M", "HT", "2T", "08", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "08", "30",
-	"FCC", "2.4G", "20M", "HT", "2T", "09", "26", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "09", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "09", "26",
+	"ETSI", "2.4G", "20M", "HT", "2T", "09", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "09", "28",
-	"FCC", "2.4G", "20M", "HT", "2T", "10", "26", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "10", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "10", "26",
+	"ETSI", "2.4G", "20M", "HT", "2T", "10", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "10", "28",
-	"FCC", "2.4G", "20M", "HT", "2T", "11", "26", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "11", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "11", "26",
+	"ETSI", "2.4G", "20M", "HT", "2T", "11", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "11", "28",
-	"FCC", "2.4G", "20M", "HT", "2T", "12", "63", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "12", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "12", "63",
+	"ETSI", "2.4G", "20M", "HT", "2T", "12", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "12", "28",
-	"FCC", "2.4G", "20M", "HT", "2T", "13", "63", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "13", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "13", "63",
+	"ETSI", "2.4G", "20M", "HT", "2T", "13", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "13", "28",
-	"FCC", "2.4G", "20M", "HT", "2T", "14", "63", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "14", "63", 
+	"FCC", "2.4G", "20M", "HT", "2T", "14", "63",
+	"ETSI", "2.4G", "20M", "HT", "2T", "14", "63",
 	"MKK", "2.4G", "20M", "HT", "2T", "14", "63",
-	"FCC", "2.4G", "20M", "HT", "2T", "01", "28", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "01", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "01", "28",
+	"ETSI", "2.4G", "20M", "HT", "2T", "01", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "01", "26",
-	"FCC", "2.4G", "20M", "HT", "2T", "02", "28", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "02", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "02", "28",
+	"ETSI", "2.4G", "20M", "HT", "2T", "02", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "02", "26",
-	"FCC", "2.4G", "20M", "HT", "2T", "03", "34", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "03", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "03", "34",
+	"ETSI", "2.4G", "20M", "HT", "2T", "03", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "03", "30",
-	"FCC", "2.4G", "20M", "HT", "2T", "04", "34", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "04", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "04", "34",
+	"ETSI", "2.4G", "20M", "HT", "2T", "04", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "04", "30",
-	"FCC", "2.4G", "20M", "HT", "2T", "05", "34", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "05", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "05", "34",
+	"ETSI", "2.4G", "20M", "HT", "2T", "05", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "05", "30",
-	"FCC", "2.4G", "20M", "HT", "2T", "06", "34", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "06", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "06", "34",
+	"ETSI", "2.4G", "20M", "HT", "2T", "06", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "06", "30",
-	"FCC", "2.4G", "20M", "HT", "2T", "07", "34", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "07", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "07", "34",
+	"ETSI", "2.4G", "20M", "HT", "2T", "07", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "07", "30",
-	"FCC", "2.4G", "20M", "HT", "2T", "08", "34", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "08", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "08", "34",
+	"ETSI", "2.4G", "20M", "HT", "2T", "08", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "08", "30",
-	"FCC", "2.4G", "20M", "HT", "2T", "09", "28", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "09", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "09", "28",
+	"ETSI", "2.4G", "20M", "HT", "2T", "09", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "09", "26",
-	"FCC", "2.4G", "20M", "HT", "2T", "10", "28", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "10", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "10", "28",
+	"ETSI", "2.4G", "20M", "HT", "2T", "10", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "10", "26",
-	"FCC", "2.4G", "20M", "HT", "2T", "11", "28", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "11", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "11", "28",
+	"ETSI", "2.4G", "20M", "HT", "2T", "11", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "11", "26",
-	"FCC", "2.4G", "20M", "HT", "2T", "12", "63", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "12", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "12", "63",
+	"ETSI", "2.4G", "20M", "HT", "2T", "12", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "12", "26",
-	"FCC", "2.4G", "20M", "HT", "2T", "13", "63", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "13", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "13", "63",
+	"ETSI", "2.4G", "20M", "HT", "2T", "13", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "13", "26",
-	"FCC", "2.4G", "20M", "HT", "2T", "14", "63", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "14", "63", 
+	"FCC", "2.4G", "20M", "HT", "2T", "14", "63",
+	"ETSI", "2.4G", "20M", "HT", "2T", "14", "63",
 	"MKK", "2.4G", "20M", "HT", "2T", "14", "63",
-	"FCC", "2.4G", "40M", "HT", "1T", "01", "63", 
-	"ETSI", "2.4G", "40M", "HT", "1T", "01", "63", 
+	"FCC", "2.4G", "40M", "HT", "1T", "01", "63",
+	"ETSI", "2.4G", "40M", "HT", "1T", "01", "63",
 	"MKK", "2.4G", "40M", "HT", "1T", "01", "63",
-	"FCC", "2.4G", "40M", "HT", "1T", "02", "63", 
-	"ETSI", "2.4G", "40M", "HT", "1T", "02", "63", 
+	"FCC", "2.4G", "40M", "HT", "1T", "02", "63",
+	"ETSI", "2.4G", "40M", "HT", "1T", "02", "63",
 	"MKK", "2.4G", "40M", "HT", "1T", "02", "63",
-	"FCC", "2.4G", "40M", "HT", "1T", "03", "28", 
-	"ETSI", "2.4G", "40M", "HT", "1T", "03", "28", 
+	"FCC", "2.4G", "40M", "HT", "1T", "03", "28",
+	"ETSI", "2.4G", "40M", "HT", "1T", "03", "28",
 	"MKK", "2.4G", "40M", "HT", "1T", "03", "28",
-	"FCC", "2.4G", "40M", "HT", "1T", "04", "28", 
-	"ETSI", "2.4G", "40M", "HT", "1T", "04", "28", 
+	"FCC", "2.4G", "40M", "HT", "1T", "04", "28",
+	"ETSI", "2.4G", "40M", "HT", "1T", "04", "28",
 	"MKK", "2.4G", "40M", "HT", "1T", "04", "28",
-	"FCC", "2.4G", "40M", "HT", "1T", "05", "28", 
-	"ETSI", "2.4G", "40M", "HT", "1T", "05", "28", 
+	"FCC", "2.4G", "40M", "HT", "1T", "05", "28",
+	"ETSI", "2.4G", "40M", "HT", "1T", "05", "28",
 	"MKK", "2.4G", "40M", "HT", "1T", "05", "28",
-	"FCC", "2.4G", "40M", "HT", "1T", "06", "32", 
-	"ETSI", "2.4G", "40M", "HT", "1T", "06", "32", 
+	"FCC", "2.4G", "40M", "HT", "1T", "06", "32",
+	"ETSI", "2.4G", "40M", "HT", "1T", "06", "32",
 	"MKK", "2.4G", "40M", "HT", "1T", "06", "30",
-	"FCC", "2.4G", "40M", "HT", "1T", "07", "32", 
-	"ETSI", "2.4G", "40M", "HT", "1T", "07", "32", 
+	"FCC", "2.4G", "40M", "HT", "1T", "07", "32",
+	"ETSI", "2.4G", "40M", "HT", "1T", "07", "32",
 	"MKK", "2.4G", "40M", "HT", "1T", "07", "30",
-	"FCC", "2.4G", "40M", "HT", "1T", "08", "32", 
-	"ETSI", "2.4G", "40M", "HT", "1T", "08", "32", 
+	"FCC", "2.4G", "40M", "HT", "1T", "08", "32",
+	"ETSI", "2.4G", "40M", "HT", "1T", "08", "32",
 	"MKK", "2.4G", "40M", "HT", "1T", "08", "30",
-	"FCC", "2.4G", "40M", "HT", "1T", "09", "28", 
-	"ETSI", "2.4G", "40M", "HT", "1T", "09", "28", 
+	"FCC", "2.4G", "40M", "HT", "1T", "09", "28",
+	"ETSI", "2.4G", "40M", "HT", "1T", "09", "28",
 	"MKK", "2.4G", "40M", "HT", "1T", "09", "28",
-	"FCC", "2.4G", "40M", "HT", "1T", "10", "28", 
-	"ETSI", "2.4G", "40M", "HT", "1T", "10", "28", 
+	"FCC", "2.4G", "40M", "HT", "1T", "10", "28",
+	"ETSI", "2.4G", "40M", "HT", "1T", "10", "28",
 	"MKK", "2.4G", "40M", "HT", "1T", "10", "28",
-	"FCC", "2.4G", "40M", "HT", "1T", "11", "28", 
-	"ETSI", "2.4G", "40M", "HT", "1T", "11", "28", 
+	"FCC", "2.4G", "40M", "HT", "1T", "11", "28",
+	"ETSI", "2.4G", "40M", "HT", "1T", "11", "28",
 	"MKK", "2.4G", "40M", "HT", "1T", "11", "28",
-	"FCC", "2.4G", "40M", "HT", "1T", "12", "63", 
-	"ETSI", "2.4G", "40M", "HT", "1T", "12", "63", 
+	"FCC", "2.4G", "40M", "HT", "1T", "12", "63",
+	"ETSI", "2.4G", "40M", "HT", "1T", "12", "63",
 	"MKK", "2.4G", "40M", "HT", "1T", "12", "63",
-	"FCC", "2.4G", "40M", "HT", "1T", "13", "63", 
-	"ETSI", "2.4G", "40M", "HT", "1T", "13", "63", 
+	"FCC", "2.4G", "40M", "HT", "1T", "13", "63",
+	"ETSI", "2.4G", "40M", "HT", "1T", "13", "63",
 	"MKK", "2.4G", "40M", "HT", "1T", "13", "63",
-	"FCC", "2.4G", "40M", "HT", "1T", "14", "63", 
-	"ETSI", "2.4G", "40M", "HT", "1T", "14", "63", 
+	"FCC", "2.4G", "40M", "HT", "1T", "14", "63",
+	"ETSI", "2.4G", "40M", "HT", "1T", "14", "63",
 	"MKK", "2.4G", "40M", "HT", "1T", "14", "63",
-	"FCC", "2.4G", "40M", "HT", "2T", "01", "63", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "01", "63", 
+	"FCC", "2.4G", "40M", "HT", "2T", "01", "63",
+	"ETSI", "2.4G", "40M", "HT", "2T", "01", "63",
 	"MKK", "2.4G", "40M", "HT", "2T", "01", "63",
-	"FCC", "2.4G", "40M", "HT", "2T", "02", "63", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "02", "63", 
+	"FCC", "2.4G", "40M", "HT", "2T", "02", "63",
+	"ETSI", "2.4G", "40M", "HT", "2T", "02", "63",
 	"MKK", "2.4G", "40M", "HT", "2T", "02", "63",
-	"FCC", "2.4G", "40M", "HT", "2T", "03", "20", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "03", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "03", "20",
+	"ETSI", "2.4G", "40M", "HT", "2T", "03", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "03", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "04", "20", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "04", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "04", "20",
+	"ETSI", "2.4G", "40M", "HT", "2T", "04", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "04", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "05", "20", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "05", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "05", "20",
+	"ETSI", "2.4G", "40M", "HT", "2T", "05", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "05", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "06", "28", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "06", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "06", "28",
+	"ETSI", "2.4G", "40M", "HT", "2T", "06", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "06", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "07", "28", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "07", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "07", "28",
+	"ETSI", "2.4G", "40M", "HT", "2T", "07", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "07", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "08", "28", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "08", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "08", "28",
+	"ETSI", "2.4G", "40M", "HT", "2T", "08", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "08", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "09", "22", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "09", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "09", "22",
+	"ETSI", "2.4G", "40M", "HT", "2T", "09", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "09", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "10", "22", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "10", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "10", "22",
+	"ETSI", "2.4G", "40M", "HT", "2T", "10", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "10", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "11", "22", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "11", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "11", "22",
+	"ETSI", "2.4G", "40M", "HT", "2T", "11", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "11", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "12", "63", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "12", "63", 
+	"FCC", "2.4G", "40M", "HT", "2T", "12", "63",
+	"ETSI", "2.4G", "40M", "HT", "2T", "12", "63",
 	"MKK", "2.4G", "40M", "HT", "2T", "12", "63",
-	"FCC", "2.4G", "40M", "HT", "2T", "13", "63", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "13", "63", 
+	"FCC", "2.4G", "40M", "HT", "2T", "13", "63",
+	"ETSI", "2.4G", "40M", "HT", "2T", "13", "63",
 	"MKK", "2.4G", "40M", "HT", "2T", "13", "63",
-	"FCC", "2.4G", "40M", "HT", "2T", "14", "63", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "14", "63", 
+	"FCC", "2.4G", "40M", "HT", "2T", "14", "63",
+	"ETSI", "2.4G", "40M", "HT", "2T", "14", "63",
 	"MKK", "2.4G", "40M", "HT", "2T", "14", "63",
-	"FCC", "2.4G", "40M", "HT", "2T", "01", "63", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "01", "63", 
+	"FCC", "2.4G", "40M", "HT", "2T", "01", "63",
+	"ETSI", "2.4G", "40M", "HT", "2T", "01", "63",
 	"MKK", "2.4G", "40M", "HT", "2T", "01", "63",
-	"FCC", "2.4G", "40M", "HT", "2T", "02", "63", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "02", "63", 
+	"FCC", "2.4G", "40M", "HT", "2T", "02", "63",
+	"ETSI", "2.4G", "40M", "HT", "2T", "02", "63",
 	"MKK", "2.4G", "40M", "HT", "2T", "02", "63",
-	"FCC", "2.4G", "40M", "HT", "2T", "03", "26", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "03", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "03", "26",
+	"ETSI", "2.4G", "40M", "HT", "2T", "03", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "03", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "04", "26", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "04", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "04", "26",
+	"ETSI", "2.4G", "40M", "HT", "2T", "04", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "04", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "05", "26", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "05", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "05", "26",
+	"ETSI", "2.4G", "40M", "HT", "2T", "05", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "05", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "06", "30", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "06", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "06", "30",
+	"ETSI", "2.4G", "40M", "HT", "2T", "06", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "06", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "07", "30", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "07", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "07", "30",
+	"ETSI", "2.4G", "40M", "HT", "2T", "07", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "07", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "08", "30", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "08", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "08", "30",
+	"ETSI", "2.4G", "40M", "HT", "2T", "08", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "08", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "09", "26", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "09", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "09", "26",
+	"ETSI", "2.4G", "40M", "HT", "2T", "09", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "09", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "10", "26", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "10", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "10", "26",
+	"ETSI", "2.4G", "40M", "HT", "2T", "10", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "10", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "11", "26", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "11", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "11", "26",
+	"ETSI", "2.4G", "40M", "HT", "2T", "11", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "11", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "12", "63", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "12", "63", 
+	"FCC", "2.4G", "40M", "HT", "2T", "12", "63",
+	"ETSI", "2.4G", "40M", "HT", "2T", "12", "63",
 	"MKK", "2.4G", "40M", "HT", "2T", "12", "63",
-	"FCC", "2.4G", "40M", "HT", "2T", "13", "63", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "13", "63", 
+	"FCC", "2.4G", "40M", "HT", "2T", "13", "63",
+	"ETSI", "2.4G", "40M", "HT", "2T", "13", "63",
 	"MKK", "2.4G", "40M", "HT", "2T", "13", "63",
-	"FCC", "2.4G", "40M", "HT", "2T", "14", "63", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "14", "63", 
+	"FCC", "2.4G", "40M", "HT", "2T", "14", "63",
+	"ETSI", "2.4G", "40M", "HT", "2T", "14", "63",
 	"MKK", "2.4G", "40M", "HT", "2T", "14", "63"
 };
-
-void
-ODM_ReadAndConfig_MP_8192E_TXPWR_LMT(
-	IN   PDM_ODM_T  pDM_Odm
-)
-{
-	u4Byte     i           = 0;
-	u4Byte     ArrayLen    = sizeof(Array_MP_8192E_TXPWR_LMT)/sizeof(pu1Byte);
-	pu1Byte    *Array      = (pu1Byte *)Array_MP_8192E_TXPWR_LMT;
-
-#if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
-	PADAPTER		Adapter = pDM_Odm->Adapter;
-	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(Adapter);
-
-	PlatformZeroMemory(pHalData->BufOfLinesPwrLmt, MAX_LINES_HWCONFIG_TXT*MAX_BYTES_LINE_HWCONFIG_TXT);
-	pHalData->nLinesReadPwrLmt = ArrayLen/7;
 #endif
 
-	ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_LOUD, ("===> ODM_ReadAndConfig_MP_8192E_TXPWR_LMT\n"));
+void
+odm_read_and_config_mp_8192e_txpwr_lmt(struct dm_struct *dm)
+{
+#ifdef CONFIG_8192E
 
-	for (i = 0; i < ArrayLen; i += 7) {
-		pu1Byte regulation = Array[i];
-		pu1Byte band = Array[i+1];
-		pu1Byte bandwidth = Array[i+2];
-		pu1Byte rate = Array[i+3];
-		pu1Byte rfPath = Array[i+4];
-		pu1Byte chnl = Array[i+5];
-		pu1Byte val = Array[i+6];
-	
-		odm_ConfigBB_TXPWR_LMT_8192E(pDM_Odm, regulation, band, bandwidth, rate, rfPath, chnl, val);
+	u32	i = 0;
+#if (DM_ODM_SUPPORT_TYPE == ODM_IOT)
+	u32	array_len =
+			sizeof(array_mp_8192e_txpwr_lmt) / sizeof(u8);
+	u8	*array = (u8 *)array_mp_8192e_txpwr_lmt;
+#else
+	u32	array_len =
+			sizeof(array_mp_8192e_txpwr_lmt) / sizeof(u8 *);
+	u8	**array = (u8 **)array_mp_8192e_txpwr_lmt;
+#endif
+
 #if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
-		rsprintf(pHalData->BufOfLinesPwrLmt[i/7], 100, "\"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\",",
-			regulation, band, bandwidth, rate, rfPath, chnl, val);
+	void	*adapter = dm->adapter;
+	HAL_DATA_TYPE	*hal_data = GET_HAL_DATA(((PADAPTER)adapter));
+
+	odm_memory_set(dm, hal_data->BufOfLinesPwrLmt, 0,
+		       MAX_LINES_HWCONFIG_TXT *
+		       MAX_BYTES_LINE_HWCONFIG_TXT);
+	hal_data->nLinesReadPwrLmt = array_len / 7;
+#endif
+
+	PHYDM_DBG(dm, ODM_COMP_INIT, "===> %s\n", __func__);
+
+	for (i = 0; i < array_len; i += 7) {
+#if (DM_ODM_SUPPORT_TYPE == ODM_IOT)
+		u8	regulation = array[i];
+		u8	band = array[i + 1];
+		u8	bandwidth = array[i + 2];
+		u8	rate = array[i + 3];
+		u8	rf_path = array[i + 4];
+		u8	chnl = array[i + 5];
+		u8	val = array[i + 6];
+#else
+		u8	*regulation = array[i];
+		u8	*band = array[i + 1];
+		u8	*bandwidth = array[i + 2];
+		u8	*rate = array[i + 3];
+		u8	*rf_path = array[i + 4];
+		u8	*chnl = array[i + 5];
+		u8	*val = array[i + 6];
+#endif
+
+		odm_config_bb_txpwr_lmt_8192e(dm, regulation, band, bandwidth,
+					      rate, rf_path, chnl, val);
+#if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
+		rsprintf((char *)hal_data->BufOfLinesPwrLmt[i / 7], 100, "\"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\",",
+			 regulation, band, bandwidth, rate, rf_path, chnl, val);
 #endif
 	}
 
+#endif
 }
 
 /******************************************************************************
-*                           TXPWR_LMT_8192E_SAR_5mm.TXT
-******************************************************************************/
+ *                           txpwr_lmt_8192e_sar_5mm.TXT
+ ******************************************************************************/
 
-const char *Array_MP_8192E_TXPWR_LMT_8192E_SAR_5mm[] = { 
-	"FCC", "2.4G", "20M", "CCK", "1T", "01", "30", 
-	"ETSI", "2.4G", "20M", "CCK", "1T", "01", "32", 
+#ifdef CONFIG_8192E_8192E_SAR_5MM
+const char *array_mp_8192e_txpwr_lmt_8192e_sar_5mm[] = {
+	"FCC", "2.4G", "20M", "CCK", "1T", "01", "30",
+	"ETSI", "2.4G", "20M", "CCK", "1T", "01", "32",
 	"MKK", "2.4G", "20M", "CCK", "1T", "01", "32",
-	"FCC", "2.4G", "20M", "CCK", "1T", "02", "30", 
-	"ETSI", "2.4G", "20M", "CCK", "1T", "02", "32", 
+	"FCC", "2.4G", "20M", "CCK", "1T", "02", "30",
+	"ETSI", "2.4G", "20M", "CCK", "1T", "02", "32",
 	"MKK", "2.4G", "20M", "CCK", "1T", "02", "32",
-	"FCC", "2.4G", "20M", "CCK", "1T", "03", "30", 
-	"ETSI", "2.4G", "20M", "CCK", "1T", "03", "32", 
+	"FCC", "2.4G", "20M", "CCK", "1T", "03", "30",
+	"ETSI", "2.4G", "20M", "CCK", "1T", "03", "32",
 	"MKK", "2.4G", "20M", "CCK", "1T", "03", "32",
-	"FCC", "2.4G", "20M", "CCK", "1T", "04", "30", 
-	"ETSI", "2.4G", "20M", "CCK", "1T", "04", "32", 
+	"FCC", "2.4G", "20M", "CCK", "1T", "04", "30",
+	"ETSI", "2.4G", "20M", "CCK", "1T", "04", "32",
 	"MKK", "2.4G", "20M", "CCK", "1T", "04", "32",
-	"FCC", "2.4G", "20M", "CCK", "1T", "05", "30", 
-	"ETSI", "2.4G", "20M", "CCK", "1T", "05", "32", 
+	"FCC", "2.4G", "20M", "CCK", "1T", "05", "30",
+	"ETSI", "2.4G", "20M", "CCK", "1T", "05", "32",
 	"MKK", "2.4G", "20M", "CCK", "1T", "05", "32",
-	"FCC", "2.4G", "20M", "CCK", "1T", "06", "30", 
-	"ETSI", "2.4G", "20M", "CCK", "1T", "06", "32", 
+	"FCC", "2.4G", "20M", "CCK", "1T", "06", "30",
+	"ETSI", "2.4G", "20M", "CCK", "1T", "06", "32",
 	"MKK", "2.4G", "20M", "CCK", "1T", "06", "32",
-	"FCC", "2.4G", "20M", "CCK", "1T", "07", "30", 
-	"ETSI", "2.4G", "20M", "CCK", "1T", "07", "32", 
+	"FCC", "2.4G", "20M", "CCK", "1T", "07", "30",
+	"ETSI", "2.4G", "20M", "CCK", "1T", "07", "32",
 	"MKK", "2.4G", "20M", "CCK", "1T", "07", "32",
-	"FCC", "2.4G", "20M", "CCK", "1T", "08", "30", 
-	"ETSI", "2.4G", "20M", "CCK", "1T", "08", "32", 
+	"FCC", "2.4G", "20M", "CCK", "1T", "08", "30",
+	"ETSI", "2.4G", "20M", "CCK", "1T", "08", "32",
 	"MKK", "2.4G", "20M", "CCK", "1T", "08", "32",
-	"FCC", "2.4G", "20M", "CCK", "1T", "09", "28", 
-	"ETSI", "2.4G", "20M", "CCK", "1T", "09", "32", 
+	"FCC", "2.4G", "20M", "CCK", "1T", "09", "28",
+	"ETSI", "2.4G", "20M", "CCK", "1T", "09", "32",
 	"MKK", "2.4G", "20M", "CCK", "1T", "09", "32",
-	"FCC", "2.4G", "20M", "CCK", "1T", "10", "28", 
-	"ETSI", "2.4G", "20M", "CCK", "1T", "10", "32", 
+	"FCC", "2.4G", "20M", "CCK", "1T", "10", "28",
+	"ETSI", "2.4G", "20M", "CCK", "1T", "10", "32",
 	"MKK", "2.4G", "20M", "CCK", "1T", "10", "32",
-	"FCC", "2.4G", "20M", "CCK", "1T", "11", "28", 
-	"ETSI", "2.4G", "20M", "CCK", "1T", "11", "32", 
+	"FCC", "2.4G", "20M", "CCK", "1T", "11", "28",
+	"ETSI", "2.4G", "20M", "CCK", "1T", "11", "32",
 	"MKK", "2.4G", "20M", "CCK", "1T", "11", "32",
-	"FCC", "2.4G", "20M", "CCK", "1T", "12", "63", 
-	"ETSI", "2.4G", "20M", "CCK", "1T", "12", "32", 
+	"FCC", "2.4G", "20M", "CCK", "1T", "12", "63",
+	"ETSI", "2.4G", "20M", "CCK", "1T", "12", "32",
 	"MKK", "2.4G", "20M", "CCK", "1T", "12", "32",
-	"FCC", "2.4G", "20M", "CCK", "1T", "13", "63", 
-	"ETSI", "2.4G", "20M", "CCK", "1T", "13", "32", 
+	"FCC", "2.4G", "20M", "CCK", "1T", "13", "63",
+	"ETSI", "2.4G", "20M", "CCK", "1T", "13", "32",
 	"MKK", "2.4G", "20M", "CCK", "1T", "13", "32",
-	"FCC", "2.4G", "20M", "CCK", "1T", "14", "63", 
-	"ETSI", "2.4G", "20M", "CCK", "1T", "14", "63", 
+	"FCC", "2.4G", "20M", "CCK", "1T", "14", "63",
+	"ETSI", "2.4G", "20M", "CCK", "1T", "14", "63",
 	"MKK", "2.4G", "20M", "CCK", "1T", "14", "32",
-	"FCC", "2.4G", "20M", "CCK", "2T", "01", "24", 
-	"ETSI", "2.4G", "20M", "CCK", "2T", "01", "22", 
+	"FCC", "2.4G", "20M", "CCK", "2T", "01", "24",
+	"ETSI", "2.4G", "20M", "CCK", "2T", "01", "22",
 	"MKK", "2.4G", "20M", "CCK", "2T", "01", "26",
-	"FCC", "2.4G", "20M", "CCK", "2T", "02", "24", 
-	"ETSI", "2.4G", "20M", "CCK", "2T", "02", "22", 
+	"FCC", "2.4G", "20M", "CCK", "2T", "02", "24",
+	"ETSI", "2.4G", "20M", "CCK", "2T", "02", "22",
 	"MKK", "2.4G", "20M", "CCK", "2T", "02", "26",
-	"FCC", "2.4G", "20M", "CCK", "2T", "03", "24", 
-	"ETSI", "2.4G", "20M", "CCK", "2T", "03", "22", 
+	"FCC", "2.4G", "20M", "CCK", "2T", "03", "24",
+	"ETSI", "2.4G", "20M", "CCK", "2T", "03", "22",
 	"MKK", "2.4G", "20M", "CCK", "2T", "03", "26",
-	"FCC", "2.4G", "20M", "CCK", "2T", "04", "24", 
-	"ETSI", "2.4G", "20M", "CCK", "2T", "04", "22", 
+	"FCC", "2.4G", "20M", "CCK", "2T", "04", "24",
+	"ETSI", "2.4G", "20M", "CCK", "2T", "04", "22",
 	"MKK", "2.4G", "20M", "CCK", "2T", "04", "26",
-	"FCC", "2.4G", "20M", "CCK", "2T", "05", "24", 
-	"ETSI", "2.4G", "20M", "CCK", "2T", "05", "22", 
+	"FCC", "2.4G", "20M", "CCK", "2T", "05", "24",
+	"ETSI", "2.4G", "20M", "CCK", "2T", "05", "22",
 	"MKK", "2.4G", "20M", "CCK", "2T", "05", "26",
-	"FCC", "2.4G", "20M", "CCK", "2T", "06", "24", 
-	"ETSI", "2.4G", "20M", "CCK", "2T", "06", "22", 
+	"FCC", "2.4G", "20M", "CCK", "2T", "06", "24",
+	"ETSI", "2.4G", "20M", "CCK", "2T", "06", "22",
 	"MKK", "2.4G", "20M", "CCK", "2T", "06", "26",
-	"FCC", "2.4G", "20M", "CCK", "2T", "07", "24", 
-	"ETSI", "2.4G", "20M", "CCK", "2T", "07", "22", 
+	"FCC", "2.4G", "20M", "CCK", "2T", "07", "24",
+	"ETSI", "2.4G", "20M", "CCK", "2T", "07", "22",
 	"MKK", "2.4G", "20M", "CCK", "2T", "07", "26",
-	"FCC", "2.4G", "20M", "CCK", "2T", "08", "24", 
-	"ETSI", "2.4G", "20M", "CCK", "2T", "08", "22", 
+	"FCC", "2.4G", "20M", "CCK", "2T", "08", "24",
+	"ETSI", "2.4G", "20M", "CCK", "2T", "08", "22",
 	"MKK", "2.4G", "20M", "CCK", "2T", "08", "26",
-	"FCC", "2.4G", "20M", "CCK", "2T", "09", "22", 
-	"ETSI", "2.4G", "20M", "CCK", "2T", "09", "22", 
+	"FCC", "2.4G", "20M", "CCK", "2T", "09", "22",
+	"ETSI", "2.4G", "20M", "CCK", "2T", "09", "22",
 	"MKK", "2.4G", "20M", "CCK", "2T", "09", "26",
-	"FCC", "2.4G", "20M", "CCK", "2T", "10", "22", 
-	"ETSI", "2.4G", "20M", "CCK", "2T", "10", "22", 
+	"FCC", "2.4G", "20M", "CCK", "2T", "10", "22",
+	"ETSI", "2.4G", "20M", "CCK", "2T", "10", "22",
 	"MKK", "2.4G", "20M", "CCK", "2T", "10", "26",
-	"FCC", "2.4G", "20M", "CCK", "2T", "11", "22", 
-	"ETSI", "2.4G", "20M", "CCK", "2T", "11", "22", 
+	"FCC", "2.4G", "20M", "CCK", "2T", "11", "22",
+	"ETSI", "2.4G", "20M", "CCK", "2T", "11", "22",
 	"MKK", "2.4G", "20M", "CCK", "2T", "11", "26",
-	"FCC", "2.4G", "20M", "CCK", "2T", "12", "63", 
-	"ETSI", "2.4G", "20M", "CCK", "2T", "12", "22", 
+	"FCC", "2.4G", "20M", "CCK", "2T", "12", "63",
+	"ETSI", "2.4G", "20M", "CCK", "2T", "12", "22",
 	"MKK", "2.4G", "20M", "CCK", "2T", "12", "26",
-	"FCC", "2.4G", "20M", "CCK", "2T", "13", "63", 
-	"ETSI", "2.4G", "20M", "CCK", "2T", "13", "22", 
+	"FCC", "2.4G", "20M", "CCK", "2T", "13", "63",
+	"ETSI", "2.4G", "20M", "CCK", "2T", "13", "22",
 	"MKK", "2.4G", "20M", "CCK", "2T", "13", "26",
-	"FCC", "2.4G", "20M", "CCK", "2T", "14", "63", 
-	"ETSI", "2.4G", "20M", "CCK", "2T", "14", "63", 
+	"FCC", "2.4G", "20M", "CCK", "2T", "14", "63",
+	"ETSI", "2.4G", "20M", "CCK", "2T", "14", "63",
 	"MKK", "2.4G", "20M", "CCK", "2T", "14", "26",
-	"FCC", "2.4G", "20M", "OFDM", "1T", "01", "30", 
-	"ETSI", "2.4G", "20M", "OFDM", "1T", "01", "28", 
+	"FCC", "2.4G", "20M", "OFDM", "1T", "01", "30",
+	"ETSI", "2.4G", "20M", "OFDM", "1T", "01", "28",
 	"MKK", "2.4G", "20M", "OFDM", "1T", "01", "28",
-	"FCC", "2.4G", "20M", "OFDM", "1T", "02", "30", 
-	"ETSI", "2.4G", "20M", "OFDM", "1T", "02", "28", 
+	"FCC", "2.4G", "20M", "OFDM", "1T", "02", "30",
+	"ETSI", "2.4G", "20M", "OFDM", "1T", "02", "28",
 	"MKK", "2.4G", "20M", "OFDM", "1T", "02", "28",
-	"FCC", "2.4G", "20M", "OFDM", "1T", "03", "30", 
-	"ETSI", "2.4G", "20M", "OFDM", "1T", "03", "32", 
+	"FCC", "2.4G", "20M", "OFDM", "1T", "03", "30",
+	"ETSI", "2.4G", "20M", "OFDM", "1T", "03", "32",
 	"MKK", "2.4G", "20M", "OFDM", "1T", "03", "34",
-	"FCC", "2.4G", "20M", "OFDM", "1T", "04", "30", 
-	"ETSI", "2.4G", "20M", "OFDM", "1T", "04", "32", 
+	"FCC", "2.4G", "20M", "OFDM", "1T", "04", "30",
+	"ETSI", "2.4G", "20M", "OFDM", "1T", "04", "32",
 	"MKK", "2.4G", "20M", "OFDM", "1T", "04", "34",
-	"FCC", "2.4G", "20M", "OFDM", "1T", "05", "30", 
-	"ETSI", "2.4G", "20M", "OFDM", "1T", "05", "32", 
+	"FCC", "2.4G", "20M", "OFDM", "1T", "05", "30",
+	"ETSI", "2.4G", "20M", "OFDM", "1T", "05", "32",
 	"MKK", "2.4G", "20M", "OFDM", "1T", "05", "34",
-	"FCC", "2.4G", "20M", "OFDM", "1T", "06", "30", 
-	"ETSI", "2.4G", "20M", "OFDM", "1T", "06", "32", 
+	"FCC", "2.4G", "20M", "OFDM", "1T", "06", "30",
+	"ETSI", "2.4G", "20M", "OFDM", "1T", "06", "32",
 	"MKK", "2.4G", "20M", "OFDM", "1T", "06", "34",
-	"FCC", "2.4G", "20M", "OFDM", "1T", "07", "30", 
-	"ETSI", "2.4G", "20M", "OFDM", "1T", "07", "32", 
+	"FCC", "2.4G", "20M", "OFDM", "1T", "07", "30",
+	"ETSI", "2.4G", "20M", "OFDM", "1T", "07", "32",
 	"MKK", "2.4G", "20M", "OFDM", "1T", "07", "34",
-	"FCC", "2.4G", "20M", "OFDM", "1T", "08", "30", 
-	"ETSI", "2.4G", "20M", "OFDM", "1T", "08", "32", 
+	"FCC", "2.4G", "20M", "OFDM", "1T", "08", "30",
+	"ETSI", "2.4G", "20M", "OFDM", "1T", "08", "32",
 	"MKK", "2.4G", "20M", "OFDM", "1T", "08", "34",
-	"FCC", "2.4G", "20M", "OFDM", "1T", "09", "30", 
-	"ETSI", "2.4G", "20M", "OFDM", "1T", "09", "28", 
+	"FCC", "2.4G", "20M", "OFDM", "1T", "09", "30",
+	"ETSI", "2.4G", "20M", "OFDM", "1T", "09", "28",
 	"MKK", "2.4G", "20M", "OFDM", "1T", "09", "28",
-	"FCC", "2.4G", "20M", "OFDM", "1T", "10", "30", 
-	"ETSI", "2.4G", "20M", "OFDM", "1T", "10", "28", 
+	"FCC", "2.4G", "20M", "OFDM", "1T", "10", "30",
+	"ETSI", "2.4G", "20M", "OFDM", "1T", "10", "28",
 	"MKK", "2.4G", "20M", "OFDM", "1T", "10", "28",
-	"FCC", "2.4G", "20M", "OFDM", "1T", "11", "30", 
-	"ETSI", "2.4G", "20M", "OFDM", "1T", "11", "28", 
+	"FCC", "2.4G", "20M", "OFDM", "1T", "11", "30",
+	"ETSI", "2.4G", "20M", "OFDM", "1T", "11", "28",
 	"MKK", "2.4G", "20M", "OFDM", "1T", "11", "28",
-	"FCC", "2.4G", "20M", "OFDM", "1T", "12", "63", 
-	"ETSI", "2.4G", "20M", "OFDM", "1T", "12", "28", 
+	"FCC", "2.4G", "20M", "OFDM", "1T", "12", "63",
+	"ETSI", "2.4G", "20M", "OFDM", "1T", "12", "28",
 	"MKK", "2.4G", "20M", "OFDM", "1T", "12", "28",
-	"FCC", "2.4G", "20M", "OFDM", "1T", "13", "63", 
-	"ETSI", "2.4G", "20M", "OFDM", "1T", "13", "28", 
+	"FCC", "2.4G", "20M", "OFDM", "1T", "13", "63",
+	"ETSI", "2.4G", "20M", "OFDM", "1T", "13", "28",
 	"MKK", "2.4G", "20M", "OFDM", "1T", "13", "28",
-	"FCC", "2.4G", "20M", "OFDM", "1T", "14", "63", 
-	"ETSI", "2.4G", "20M", "OFDM", "1T", "14", "63", 
+	"FCC", "2.4G", "20M", "OFDM", "1T", "14", "63",
+	"ETSI", "2.4G", "20M", "OFDM", "1T", "14", "63",
 	"MKK", "2.4G", "20M", "OFDM", "1T", "14", "63",
-	"FCC", "2.4G", "20M", "OFDM", "2T", "01", "26", 
-	"ETSI", "2.4G", "20M", "OFDM", "2T", "01", "26", 
+	"FCC", "2.4G", "20M", "OFDM", "2T", "01", "26",
+	"ETSI", "2.4G", "20M", "OFDM", "2T", "01", "26",
 	"MKK", "2.4G", "20M", "OFDM", "2T", "01", "28",
-	"FCC", "2.4G", "20M", "OFDM", "2T", "02", "26", 
-	"ETSI", "2.4G", "20M", "OFDM", "2T", "02", "26", 
+	"FCC", "2.4G", "20M", "OFDM", "2T", "02", "26",
+	"ETSI", "2.4G", "20M", "OFDM", "2T", "02", "26",
 	"MKK", "2.4G", "20M", "OFDM", "2T", "02", "28",
-	"FCC", "2.4G", "20M", "OFDM", "2T", "03", "28", 
-	"ETSI", "2.4G", "20M", "OFDM", "2T", "03", "26", 
+	"FCC", "2.4G", "20M", "OFDM", "2T", "03", "28",
+	"ETSI", "2.4G", "20M", "OFDM", "2T", "03", "26",
 	"MKK", "2.4G", "20M", "OFDM", "2T", "03", "28",
-	"FCC", "2.4G", "20M", "OFDM", "2T", "04", "28", 
-	"ETSI", "2.4G", "20M", "OFDM", "2T", "04", "26", 
+	"FCC", "2.4G", "20M", "OFDM", "2T", "04", "28",
+	"ETSI", "2.4G", "20M", "OFDM", "2T", "04", "26",
 	"MKK", "2.4G", "20M", "OFDM", "2T", "04", "28",
-	"FCC", "2.4G", "20M", "OFDM", "2T", "05", "28", 
-	"ETSI", "2.4G", "20M", "OFDM", "2T", "05", "26", 
+	"FCC", "2.4G", "20M", "OFDM", "2T", "05", "28",
+	"ETSI", "2.4G", "20M", "OFDM", "2T", "05", "26",
 	"MKK", "2.4G", "20M", "OFDM", "2T", "05", "28",
-	"FCC", "2.4G", "20M", "OFDM", "2T", "06", "28", 
-	"ETSI", "2.4G", "20M", "OFDM", "2T", "06", "26", 
+	"FCC", "2.4G", "20M", "OFDM", "2T", "06", "28",
+	"ETSI", "2.4G", "20M", "OFDM", "2T", "06", "26",
 	"MKK", "2.4G", "20M", "OFDM", "2T", "06", "28",
-	"FCC", "2.4G", "20M", "OFDM", "2T", "07", "28", 
-	"ETSI", "2.4G", "20M", "OFDM", "2T", "07", "26", 
+	"FCC", "2.4G", "20M", "OFDM", "2T", "07", "28",
+	"ETSI", "2.4G", "20M", "OFDM", "2T", "07", "26",
 	"MKK", "2.4G", "20M", "OFDM", "2T", "07", "28",
-	"FCC", "2.4G", "20M", "OFDM", "2T", "08", "28", 
-	"ETSI", "2.4G", "20M", "OFDM", "2T", "08", "26", 
+	"FCC", "2.4G", "20M", "OFDM", "2T", "08", "28",
+	"ETSI", "2.4G", "20M", "OFDM", "2T", "08", "26",
 	"MKK", "2.4G", "20M", "OFDM", "2T", "08", "28",
-	"FCC", "2.4G", "20M", "OFDM", "2T", "09", "28", 
-	"ETSI", "2.4G", "20M", "OFDM", "2T", "09", "26", 
+	"FCC", "2.4G", "20M", "OFDM", "2T", "09", "28",
+	"ETSI", "2.4G", "20M", "OFDM", "2T", "09", "26",
 	"MKK", "2.4G", "20M", "OFDM", "2T", "09", "28",
-	"FCC", "2.4G", "20M", "OFDM", "2T", "10", "28", 
-	"ETSI", "2.4G", "20M", "OFDM", "2T", "10", "26", 
+	"FCC", "2.4G", "20M", "OFDM", "2T", "10", "28",
+	"ETSI", "2.4G", "20M", "OFDM", "2T", "10", "26",
 	"MKK", "2.4G", "20M", "OFDM", "2T", "10", "28",
-	"FCC", "2.4G", "20M", "OFDM", "2T", "11", "28", 
-	"ETSI", "2.4G", "20M", "OFDM", "2T", "11", "26", 
+	"FCC", "2.4G", "20M", "OFDM", "2T", "11", "28",
+	"ETSI", "2.4G", "20M", "OFDM", "2T", "11", "26",
 	"MKK", "2.4G", "20M", "OFDM", "2T", "11", "28",
-	"FCC", "2.4G", "20M", "OFDM", "2T", "12", "63", 
-	"ETSI", "2.4G", "20M", "OFDM", "2T", "12", "26", 
+	"FCC", "2.4G", "20M", "OFDM", "2T", "12", "63",
+	"ETSI", "2.4G", "20M", "OFDM", "2T", "12", "26",
 	"MKK", "2.4G", "20M", "OFDM", "2T", "12", "28",
-	"FCC", "2.4G", "20M", "OFDM", "2T", "13", "63", 
-	"ETSI", "2.4G", "20M", "OFDM", "2T", "13", "26", 
+	"FCC", "2.4G", "20M", "OFDM", "2T", "13", "63",
+	"ETSI", "2.4G", "20M", "OFDM", "2T", "13", "26",
 	"MKK", "2.4G", "20M", "OFDM", "2T", "13", "28",
-	"FCC", "2.4G", "20M", "OFDM", "2T", "14", "63", 
-	"ETSI", "2.4G", "20M", "OFDM", "2T", "14", "63", 
+	"FCC", "2.4G", "20M", "OFDM", "2T", "14", "63",
+	"ETSI", "2.4G", "20M", "OFDM", "2T", "14", "63",
 	"MKK", "2.4G", "20M", "OFDM", "2T", "14", "63",
-	"FCC", "2.4G", "20M", "HT", "1T", "01", "30", 
-	"ETSI", "2.4G", "20M", "HT", "1T", "01", "28", 
+	"FCC", "2.4G", "20M", "HT", "1T", "01", "30",
+	"ETSI", "2.4G", "20M", "HT", "1T", "01", "28",
 	"MKK", "2.4G", "20M", "HT", "1T", "01", "28",
-	"FCC", "2.4G", "20M", "HT", "1T", "02", "30", 
-	"ETSI", "2.4G", "20M", "HT", "1T", "02", "28", 
+	"FCC", "2.4G", "20M", "HT", "1T", "02", "30",
+	"ETSI", "2.4G", "20M", "HT", "1T", "02", "28",
 	"MKK", "2.4G", "20M", "HT", "1T", "02", "28",
-	"FCC", "2.4G", "20M", "HT", "1T", "03", "30", 
-	"ETSI", "2.4G", "20M", "HT", "1T", "03", "32", 
+	"FCC", "2.4G", "20M", "HT", "1T", "03", "30",
+	"ETSI", "2.4G", "20M", "HT", "1T", "03", "32",
 	"MKK", "2.4G", "20M", "HT", "1T", "03", "34",
-	"FCC", "2.4G", "20M", "HT", "1T", "04", "30", 
-	"ETSI", "2.4G", "20M", "HT", "1T", "04", "32", 
+	"FCC", "2.4G", "20M", "HT", "1T", "04", "30",
+	"ETSI", "2.4G", "20M", "HT", "1T", "04", "32",
 	"MKK", "2.4G", "20M", "HT", "1T", "04", "34",
-	"FCC", "2.4G", "20M", "HT", "1T", "05", "30", 
-	"ETSI", "2.4G", "20M", "HT", "1T", "05", "32", 
+	"FCC", "2.4G", "20M", "HT", "1T", "05", "30",
+	"ETSI", "2.4G", "20M", "HT", "1T", "05", "32",
 	"MKK", "2.4G", "20M", "HT", "1T", "05", "34",
-	"FCC", "2.4G", "20M", "HT", "1T", "06", "30", 
-	"ETSI", "2.4G", "20M", "HT", "1T", "06", "32", 
+	"FCC", "2.4G", "20M", "HT", "1T", "06", "30",
+	"ETSI", "2.4G", "20M", "HT", "1T", "06", "32",
 	"MKK", "2.4G", "20M", "HT", "1T", "06", "34",
-	"FCC", "2.4G", "20M", "HT", "1T", "07", "30", 
-	"ETSI", "2.4G", "20M", "HT", "1T", "07", "32", 
+	"FCC", "2.4G", "20M", "HT", "1T", "07", "30",
+	"ETSI", "2.4G", "20M", "HT", "1T", "07", "32",
 	"MKK", "2.4G", "20M", "HT", "1T", "07", "34",
-	"FCC", "2.4G", "20M", "HT", "1T", "08", "30", 
-	"ETSI", "2.4G", "20M", "HT", "1T", "08", "32", 
+	"FCC", "2.4G", "20M", "HT", "1T", "08", "30",
+	"ETSI", "2.4G", "20M", "HT", "1T", "08", "32",
 	"MKK", "2.4G", "20M", "HT", "1T", "08", "34",
-	"FCC", "2.4G", "20M", "HT", "1T", "09", "30", 
-	"ETSI", "2.4G", "20M", "HT", "1T", "09", "28", 
+	"FCC", "2.4G", "20M", "HT", "1T", "09", "30",
+	"ETSI", "2.4G", "20M", "HT", "1T", "09", "28",
 	"MKK", "2.4G", "20M", "HT", "1T", "09", "28",
-	"FCC", "2.4G", "20M", "HT", "1T", "10", "30", 
-	"ETSI", "2.4G", "20M", "HT", "1T", "10", "28", 
+	"FCC", "2.4G", "20M", "HT", "1T", "10", "30",
+	"ETSI", "2.4G", "20M", "HT", "1T", "10", "28",
 	"MKK", "2.4G", "20M", "HT", "1T", "10", "28",
-	"FCC", "2.4G", "20M", "HT", "1T", "11", "30", 
-	"ETSI", "2.4G", "20M", "HT", "1T", "11", "28", 
+	"FCC", "2.4G", "20M", "HT", "1T", "11", "30",
+	"ETSI", "2.4G", "20M", "HT", "1T", "11", "28",
 	"MKK", "2.4G", "20M", "HT", "1T", "11", "28",
-	"FCC", "2.4G", "20M", "HT", "1T", "12", "63", 
-	"ETSI", "2.4G", "20M", "HT", "1T", "12", "28", 
+	"FCC", "2.4G", "20M", "HT", "1T", "12", "63",
+	"ETSI", "2.4G", "20M", "HT", "1T", "12", "28",
 	"MKK", "2.4G", "20M", "HT", "1T", "12", "28",
-	"FCC", "2.4G", "20M", "HT", "1T", "13", "63", 
-	"ETSI", "2.4G", "20M", "HT", "1T", "13", "28", 
+	"FCC", "2.4G", "20M", "HT", "1T", "13", "63",
+	"ETSI", "2.4G", "20M", "HT", "1T", "13", "28",
 	"MKK", "2.4G", "20M", "HT", "1T", "13", "28",
-	"FCC", "2.4G", "20M", "HT", "1T", "14", "63", 
-	"ETSI", "2.4G", "20M", "HT", "1T", "14", "63", 
+	"FCC", "2.4G", "20M", "HT", "1T", "14", "63",
+	"ETSI", "2.4G", "20M", "HT", "1T", "14", "63",
 	"MKK", "2.4G", "20M", "HT", "1T", "14", "63",
-	"FCC", "2.4G", "20M", "HT", "2T", "01", "28", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "01", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "01", "28",
+	"ETSI", "2.4G", "20M", "HT", "2T", "01", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "01", "28",
-	"FCC", "2.4G", "20M", "HT", "2T", "02", "28", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "02", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "02", "28",
+	"ETSI", "2.4G", "20M", "HT", "2T", "02", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "02", "28",
-	"FCC", "2.4G", "20M", "HT", "2T", "03", "28", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "03", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "03", "28",
+	"ETSI", "2.4G", "20M", "HT", "2T", "03", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "03", "30",
-	"FCC", "2.4G", "20M", "HT", "2T", "04", "28", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "04", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "04", "28",
+	"ETSI", "2.4G", "20M", "HT", "2T", "04", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "04", "30",
-	"FCC", "2.4G", "20M", "HT", "2T", "05", "28", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "05", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "05", "28",
+	"ETSI", "2.4G", "20M", "HT", "2T", "05", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "05", "30",
-	"FCC", "2.4G", "20M", "HT", "2T", "06", "28", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "06", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "06", "28",
+	"ETSI", "2.4G", "20M", "HT", "2T", "06", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "06", "30",
-	"FCC", "2.4G", "20M", "HT", "2T", "07", "28", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "07", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "07", "28",
+	"ETSI", "2.4G", "20M", "HT", "2T", "07", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "07", "30",
-	"FCC", "2.4G", "20M", "HT", "2T", "08", "28", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "08", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "08", "28",
+	"ETSI", "2.4G", "20M", "HT", "2T", "08", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "08", "30",
-	"FCC", "2.4G", "20M", "HT", "2T", "09", "26", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "09", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "09", "26",
+	"ETSI", "2.4G", "20M", "HT", "2T", "09", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "09", "28",
-	"FCC", "2.4G", "20M", "HT", "2T", "10", "26", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "10", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "10", "26",
+	"ETSI", "2.4G", "20M", "HT", "2T", "10", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "10", "28",
-	"FCC", "2.4G", "20M", "HT", "2T", "11", "26", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "11", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "11", "26",
+	"ETSI", "2.4G", "20M", "HT", "2T", "11", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "11", "28",
-	"FCC", "2.4G", "20M", "HT", "2T", "12", "63", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "12", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "12", "63",
+	"ETSI", "2.4G", "20M", "HT", "2T", "12", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "12", "28",
-	"FCC", "2.4G", "20M", "HT", "2T", "13", "63", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "13", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "13", "63",
+	"ETSI", "2.4G", "20M", "HT", "2T", "13", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "13", "28",
-	"FCC", "2.4G", "20M", "HT", "2T", "14", "63", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "14", "63", 
+	"FCC", "2.4G", "20M", "HT", "2T", "14", "63",
+	"ETSI", "2.4G", "20M", "HT", "2T", "14", "63",
 	"MKK", "2.4G", "20M", "HT", "2T", "14", "63",
-	"FCC", "2.4G", "20M", "HT", "2T", "01", "28", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "01", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "01", "28",
+	"ETSI", "2.4G", "20M", "HT", "2T", "01", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "01", "26",
-	"FCC", "2.4G", "20M", "HT", "2T", "02", "28", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "02", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "02", "28",
+	"ETSI", "2.4G", "20M", "HT", "2T", "02", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "02", "26",
-	"FCC", "2.4G", "20M", "HT", "2T", "03", "28", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "03", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "03", "28",
+	"ETSI", "2.4G", "20M", "HT", "2T", "03", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "03", "30",
-	"FCC", "2.4G", "20M", "HT", "2T", "04", "28", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "04", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "04", "28",
+	"ETSI", "2.4G", "20M", "HT", "2T", "04", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "04", "30",
-	"FCC", "2.4G", "20M", "HT", "2T", "05", "28", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "05", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "05", "28",
+	"ETSI", "2.4G", "20M", "HT", "2T", "05", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "05", "30",
-	"FCC", "2.4G", "20M", "HT", "2T", "06", "28", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "06", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "06", "28",
+	"ETSI", "2.4G", "20M", "HT", "2T", "06", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "06", "30",
-	"FCC", "2.4G", "20M", "HT", "2T", "07", "28", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "07", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "07", "28",
+	"ETSI", "2.4G", "20M", "HT", "2T", "07", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "07", "30",
-	"FCC", "2.4G", "20M", "HT", "2T", "08", "28", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "08", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "08", "28",
+	"ETSI", "2.4G", "20M", "HT", "2T", "08", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "08", "30",
-	"FCC", "2.4G", "20M", "HT", "2T", "09", "26", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "09", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "09", "26",
+	"ETSI", "2.4G", "20M", "HT", "2T", "09", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "09", "26",
-	"FCC", "2.4G", "20M", "HT", "2T", "10", "26", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "10", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "10", "26",
+	"ETSI", "2.4G", "20M", "HT", "2T", "10", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "10", "26",
-	"FCC", "2.4G", "20M", "HT", "2T", "11", "26", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "11", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "11", "26",
+	"ETSI", "2.4G", "20M", "HT", "2T", "11", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "11", "26",
-	"FCC", "2.4G", "20M", "HT", "2T", "12", "63", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "12", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "12", "63",
+	"ETSI", "2.4G", "20M", "HT", "2T", "12", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "12", "26",
-	"FCC", "2.4G", "20M", "HT", "2T", "13", "63", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "13", "26", 
+	"FCC", "2.4G", "20M", "HT", "2T", "13", "63",
+	"ETSI", "2.4G", "20M", "HT", "2T", "13", "26",
 	"MKK", "2.4G", "20M", "HT", "2T", "13", "26",
-	"FCC", "2.4G", "20M", "HT", "2T", "14", "63", 
-	"ETSI", "2.4G", "20M", "HT", "2T", "14", "63", 
+	"FCC", "2.4G", "20M", "HT", "2T", "14", "63",
+	"ETSI", "2.4G", "20M", "HT", "2T", "14", "63",
 	"MKK", "2.4G", "20M", "HT", "2T", "14", "63",
-	"FCC", "2.4G", "40M", "HT", "1T", "01", "63", 
-	"ETSI", "2.4G", "40M", "HT", "1T", "01", "63", 
+	"FCC", "2.4G", "40M", "HT", "1T", "01", "63",
+	"ETSI", "2.4G", "40M", "HT", "1T", "01", "63",
 	"MKK", "2.4G", "40M", "HT", "1T", "01", "63",
-	"FCC", "2.4G", "40M", "HT", "1T", "02", "63", 
-	"ETSI", "2.4G", "40M", "HT", "1T", "02", "63", 
+	"FCC", "2.4G", "40M", "HT", "1T", "02", "63",
+	"ETSI", "2.4G", "40M", "HT", "1T", "02", "63",
 	"MKK", "2.4G", "40M", "HT", "1T", "02", "63",
-	"FCC", "2.4G", "40M", "HT", "1T", "03", "28", 
-	"ETSI", "2.4G", "40M", "HT", "1T", "03", "28", 
+	"FCC", "2.4G", "40M", "HT", "1T", "03", "28",
+	"ETSI", "2.4G", "40M", "HT", "1T", "03", "28",
 	"MKK", "2.4G", "40M", "HT", "1T", "03", "28",
-	"FCC", "2.4G", "40M", "HT", "1T", "04", "28", 
-	"ETSI", "2.4G", "40M", "HT", "1T", "04", "28", 
+	"FCC", "2.4G", "40M", "HT", "1T", "04", "28",
+	"ETSI", "2.4G", "40M", "HT", "1T", "04", "28",
 	"MKK", "2.4G", "40M", "HT", "1T", "04", "28",
-	"FCC", "2.4G", "40M", "HT", "1T", "05", "28", 
-	"ETSI", "2.4G", "40M", "HT", "1T", "05", "28", 
+	"FCC", "2.4G", "40M", "HT", "1T", "05", "28",
+	"ETSI", "2.4G", "40M", "HT", "1T", "05", "28",
 	"MKK", "2.4G", "40M", "HT", "1T", "05", "28",
-	"FCC", "2.4G", "40M", "HT", "1T", "06", "30", 
-	"ETSI", "2.4G", "40M", "HT", "1T", "06", "32", 
+	"FCC", "2.4G", "40M", "HT", "1T", "06", "30",
+	"ETSI", "2.4G", "40M", "HT", "1T", "06", "32",
 	"MKK", "2.4G", "40M", "HT", "1T", "06", "30",
-	"FCC", "2.4G", "40M", "HT", "1T", "07", "30", 
-	"ETSI", "2.4G", "40M", "HT", "1T", "07", "32", 
+	"FCC", "2.4G", "40M", "HT", "1T", "07", "30",
+	"ETSI", "2.4G", "40M", "HT", "1T", "07", "32",
 	"MKK", "2.4G", "40M", "HT", "1T", "07", "30",
-	"FCC", "2.4G", "40M", "HT", "1T", "08", "30", 
-	"ETSI", "2.4G", "40M", "HT", "1T", "08", "32", 
+	"FCC", "2.4G", "40M", "HT", "1T", "08", "30",
+	"ETSI", "2.4G", "40M", "HT", "1T", "08", "32",
 	"MKK", "2.4G", "40M", "HT", "1T", "08", "30",
-	"FCC", "2.4G", "40M", "HT", "1T", "09", "28", 
-	"ETSI", "2.4G", "40M", "HT", "1T", "09", "28", 
+	"FCC", "2.4G", "40M", "HT", "1T", "09", "28",
+	"ETSI", "2.4G", "40M", "HT", "1T", "09", "28",
 	"MKK", "2.4G", "40M", "HT", "1T", "09", "28",
-	"FCC", "2.4G", "40M", "HT", "1T", "10", "28", 
-	"ETSI", "2.4G", "40M", "HT", "1T", "10", "28", 
+	"FCC", "2.4G", "40M", "HT", "1T", "10", "28",
+	"ETSI", "2.4G", "40M", "HT", "1T", "10", "28",
 	"MKK", "2.4G", "40M", "HT", "1T", "10", "28",
-	"FCC", "2.4G", "40M", "HT", "1T", "11", "28", 
-	"ETSI", "2.4G", "40M", "HT", "1T", "11", "28", 
+	"FCC", "2.4G", "40M", "HT", "1T", "11", "28",
+	"ETSI", "2.4G", "40M", "HT", "1T", "11", "28",
 	"MKK", "2.4G", "40M", "HT", "1T", "11", "28",
-	"FCC", "2.4G", "40M", "HT", "1T", "12", "63", 
-	"ETSI", "2.4G", "40M", "HT", "1T", "12", "63", 
+	"FCC", "2.4G", "40M", "HT", "1T", "12", "63",
+	"ETSI", "2.4G", "40M", "HT", "1T", "12", "63",
 	"MKK", "2.4G", "40M", "HT", "1T", "12", "63",
-	"FCC", "2.4G", "40M", "HT", "1T", "13", "63", 
-	"ETSI", "2.4G", "40M", "HT", "1T", "13", "63", 
+	"FCC", "2.4G", "40M", "HT", "1T", "13", "63",
+	"ETSI", "2.4G", "40M", "HT", "1T", "13", "63",
 	"MKK", "2.4G", "40M", "HT", "1T", "13", "63",
-	"FCC", "2.4G", "40M", "HT", "1T", "14", "63", 
-	"ETSI", "2.4G", "40M", "HT", "1T", "14", "63", 
+	"FCC", "2.4G", "40M", "HT", "1T", "14", "63",
+	"ETSI", "2.4G", "40M", "HT", "1T", "14", "63",
 	"MKK", "2.4G", "40M", "HT", "1T", "14", "63",
-	"FCC", "2.4G", "40M", "HT", "2T", "01", "63", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "01", "63", 
+	"FCC", "2.4G", "40M", "HT", "2T", "01", "63",
+	"ETSI", "2.4G", "40M", "HT", "2T", "01", "63",
 	"MKK", "2.4G", "40M", "HT", "2T", "01", "63",
-	"FCC", "2.4G", "40M", "HT", "2T", "02", "63", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "02", "63", 
+	"FCC", "2.4G", "40M", "HT", "2T", "02", "63",
+	"ETSI", "2.4G", "40M", "HT", "2T", "02", "63",
 	"MKK", "2.4G", "40M", "HT", "2T", "02", "63",
-	"FCC", "2.4G", "40M", "HT", "2T", "03", "20", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "03", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "03", "20",
+	"ETSI", "2.4G", "40M", "HT", "2T", "03", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "03", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "04", "20", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "04", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "04", "20",
+	"ETSI", "2.4G", "40M", "HT", "2T", "04", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "04", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "05", "20", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "05", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "05", "20",
+	"ETSI", "2.4G", "40M", "HT", "2T", "05", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "05", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "06", "28", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "06", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "06", "28",
+	"ETSI", "2.4G", "40M", "HT", "2T", "06", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "06", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "07", "28", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "07", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "07", "28",
+	"ETSI", "2.4G", "40M", "HT", "2T", "07", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "07", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "08", "28", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "08", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "08", "28",
+	"ETSI", "2.4G", "40M", "HT", "2T", "08", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "08", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "09", "22", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "09", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "09", "22",
+	"ETSI", "2.4G", "40M", "HT", "2T", "09", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "09", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "10", "22", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "10", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "10", "22",
+	"ETSI", "2.4G", "40M", "HT", "2T", "10", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "10", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "11", "22", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "11", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "11", "22",
+	"ETSI", "2.4G", "40M", "HT", "2T", "11", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "11", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "12", "63", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "12", "63", 
+	"FCC", "2.4G", "40M", "HT", "2T", "12", "63",
+	"ETSI", "2.4G", "40M", "HT", "2T", "12", "63",
 	"MKK", "2.4G", "40M", "HT", "2T", "12", "63",
-	"FCC", "2.4G", "40M", "HT", "2T", "13", "63", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "13", "63", 
+	"FCC", "2.4G", "40M", "HT", "2T", "13", "63",
+	"ETSI", "2.4G", "40M", "HT", "2T", "13", "63",
 	"MKK", "2.4G", "40M", "HT", "2T", "13", "63",
-	"FCC", "2.4G", "40M", "HT", "2T", "14", "63", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "14", "63", 
+	"FCC", "2.4G", "40M", "HT", "2T", "14", "63",
+	"ETSI", "2.4G", "40M", "HT", "2T", "14", "63",
 	"MKK", "2.4G", "40M", "HT", "2T", "14", "63",
-	"FCC", "2.4G", "40M", "HT", "2T", "01", "63", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "01", "63", 
+	"FCC", "2.4G", "40M", "HT", "2T", "01", "63",
+	"ETSI", "2.4G", "40M", "HT", "2T", "01", "63",
 	"MKK", "2.4G", "40M", "HT", "2T", "01", "63",
-	"FCC", "2.4G", "40M", "HT", "2T", "02", "63", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "02", "63", 
+	"FCC", "2.4G", "40M", "HT", "2T", "02", "63",
+	"ETSI", "2.4G", "40M", "HT", "2T", "02", "63",
 	"MKK", "2.4G", "40M", "HT", "2T", "02", "63",
-	"FCC", "2.4G", "40M", "HT", "2T", "03", "26", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "03", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "03", "26",
+	"ETSI", "2.4G", "40M", "HT", "2T", "03", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "03", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "04", "26", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "04", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "04", "26",
+	"ETSI", "2.4G", "40M", "HT", "2T", "04", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "04", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "05", "26", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "05", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "05", "26",
+	"ETSI", "2.4G", "40M", "HT", "2T", "05", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "05", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "06", "28", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "06", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "06", "28",
+	"ETSI", "2.4G", "40M", "HT", "2T", "06", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "06", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "07", "28", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "07", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "07", "28",
+	"ETSI", "2.4G", "40M", "HT", "2T", "07", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "07", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "08", "28", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "08", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "08", "28",
+	"ETSI", "2.4G", "40M", "HT", "2T", "08", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "08", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "09", "26", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "09", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "09", "26",
+	"ETSI", "2.4G", "40M", "HT", "2T", "09", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "09", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "10", "26", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "10", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "10", "26",
+	"ETSI", "2.4G", "40M", "HT", "2T", "10", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "10", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "11", "26", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "11", "26", 
+	"FCC", "2.4G", "40M", "HT", "2T", "11", "26",
+	"ETSI", "2.4G", "40M", "HT", "2T", "11", "26",
 	"MKK", "2.4G", "40M", "HT", "2T", "11", "26",
-	"FCC", "2.4G", "40M", "HT", "2T", "12", "63", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "12", "63", 
+	"FCC", "2.4G", "40M", "HT", "2T", "12", "63",
+	"ETSI", "2.4G", "40M", "HT", "2T", "12", "63",
 	"MKK", "2.4G", "40M", "HT", "2T", "12", "63",
-	"FCC", "2.4G", "40M", "HT", "2T", "13", "63", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "13", "63", 
+	"FCC", "2.4G", "40M", "HT", "2T", "13", "63",
+	"ETSI", "2.4G", "40M", "HT", "2T", "13", "63",
 	"MKK", "2.4G", "40M", "HT", "2T", "13", "63",
-	"FCC", "2.4G", "40M", "HT", "2T", "14", "63", 
-	"ETSI", "2.4G", "40M", "HT", "2T", "14", "63", 
+	"FCC", "2.4G", "40M", "HT", "2T", "14", "63",
+	"ETSI", "2.4G", "40M", "HT", "2T", "14", "63",
 	"MKK", "2.4G", "40M", "HT", "2T", "14", "63"
 };
-
-void
-ODM_ReadAndConfig_MP_8192E_TXPWR_LMT_8192E_SAR_5mm(
-	IN   PDM_ODM_T  pDM_Odm
-)
-{
-	u4Byte     i           = 0;
-	u4Byte     ArrayLen    = sizeof(Array_MP_8192E_TXPWR_LMT_8192E_SAR_5mm)/sizeof(pu1Byte);
-	pu1Byte    *Array      = (pu1Byte *)Array_MP_8192E_TXPWR_LMT_8192E_SAR_5mm;
-
-#if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
-	PADAPTER		Adapter = pDM_Odm->Adapter;
-	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(Adapter);
-
-	PlatformZeroMemory(pHalData->BufOfLinesPwrLmt, MAX_LINES_HWCONFIG_TXT*MAX_BYTES_LINE_HWCONFIG_TXT);
-	pHalData->nLinesReadPwrLmt = ArrayLen/7;
 #endif
 
-	ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_LOUD, ("===> ODM_ReadAndConfig_MP_8192E_TXPWR_LMT_8192E_SAR_5mm\n"));
+void
+odm_read_and_config_mp_8192e_txpwr_lmt_8192e_sar_5mm(struct dm_struct *dm)
+{
+#ifdef CONFIG_8192E_8192E_SAR_5MM
 
-	for (i = 0; i < ArrayLen; i += 7) {
-		pu1Byte regulation = Array[i];
-		pu1Byte band = Array[i+1];
-		pu1Byte bandwidth = Array[i+2];
-		pu1Byte rate = Array[i+3];
-		pu1Byte rfPath = Array[i+4];
-		pu1Byte chnl = Array[i+5];
-		pu1Byte val = Array[i+6];
-	
-		odm_ConfigBB_TXPWR_LMT_8192E(pDM_Odm, regulation, band, bandwidth, rate, rfPath, chnl, val);
+	u32	i = 0;
+#if (DM_ODM_SUPPORT_TYPE == ODM_IOT)
+	u32	array_len =
+			sizeof(array_mp_8192e_txpwr_lmt_8192e_sar_5mm) / sizeof(u8);
+	u8	*array = (u8 *)array_mp_8192e_txpwr_lmt_8192e_sar_5mm;
+#else
+	u32	array_len =
+			sizeof(array_mp_8192e_txpwr_lmt_8192e_sar_5mm) / sizeof(u8 *);
+	u8	**array = (u8 **)array_mp_8192e_txpwr_lmt_8192e_sar_5mm;
+#endif
+
 #if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
-		rsprintf(pHalData->BufOfLinesPwrLmt[i/7], 100, "\"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\",",
-			regulation, band, bandwidth, rate, rfPath, chnl, val);
+	void	*adapter = dm->adapter;
+	HAL_DATA_TYPE	*hal_data = GET_HAL_DATA(((PADAPTER)adapter));
+
+	odm_memory_set(dm, hal_data->BufOfLinesPwrLmt, 0,
+		       MAX_LINES_HWCONFIG_TXT *
+		       MAX_BYTES_LINE_HWCONFIG_TXT);
+	hal_data->nLinesReadPwrLmt = array_len / 7;
+#endif
+
+	PHYDM_DBG(dm, ODM_COMP_INIT, "===> %s\n", __func__);
+
+	for (i = 0; i < array_len; i += 7) {
+#if (DM_ODM_SUPPORT_TYPE == ODM_IOT)
+		u8	regulation = array[i];
+		u8	band = array[i + 1];
+		u8	bandwidth = array[i + 2];
+		u8	rate = array[i + 3];
+		u8	rf_path = array[i + 4];
+		u8	chnl = array[i + 5];
+		u8	val = array[i + 6];
+#else
+		u8	*regulation = array[i];
+		u8	*band = array[i + 1];
+		u8	*bandwidth = array[i + 2];
+		u8	*rate = array[i + 3];
+		u8	*rf_path = array[i + 4];
+		u8	*chnl = array[i + 5];
+		u8	*val = array[i + 6];
+#endif
+
+		odm_config_bb_txpwr_lmt_8192e(dm, regulation, band, bandwidth,
+					      rate, rf_path, chnl, val);
+#if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
+		rsprintf((char *)hal_data->BufOfLinesPwrLmt[i / 7], 100, "\"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\",",
+			 regulation, band, bandwidth, rate, rf_path, chnl, val);
 #endif
 	}
 
+#endif
 }
 
 #endif /* end of HWIMG_SUPPORT*/
