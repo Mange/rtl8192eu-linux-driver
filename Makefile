@@ -1,24 +1,27 @@
 EXTRA_CFLAGS += $(USER_EXTRA_CFLAGS)
-EXTRA_CFLAGS += -O1
+
+##################### Optimization Flags ##########################
+#EXTRA_CFLAGS += -O1
+EXTRA_CFLAGS += -O2
 #EXTRA_CFLAGS += -O3
+##################### Compile-time Warnings #######################
 #EXTRA_CFLAGS += -Wall
 #EXTRA_CFLAGS += -Wextra
 #EXTRA_CFLAGS += -Werror
 #EXTRA_CFLAGS += -pedantic
 #EXTRA_CFLAGS += -Wshadow -Wpointer-arith -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes
-
+#EXTRA_CFLAGS += -Wno-uninitialized
 EXTRA_CFLAGS += -Wno-unused-variable
 EXTRA_CFLAGS += -Wno-unused-value
 EXTRA_CFLAGS += -Wno-unused-label
 EXTRA_CFLAGS += -Wno-unused-parameter
 EXTRA_CFLAGS += -Wno-unused-function
 EXTRA_CFLAGS += -Wno-unused
-#EXTRA_CFLAGS += -Wno-uninitialized
 EXTRA_CFLAGS += -Wno-incompatible-pointer-types
+EXTRA_CFLAGS += -Wno-date-time
 
 GCC_VER_49 := $(shell echo `$(CC) -dumpversion | cut -f1-2 -d.` \>= 4.9 | bc )
 ifeq ($(GCC_VER_49),1)
-EXTRA_CFLAGS += -Wno-date-time	# Fix compile error && warning on gcc 4.9 and later
 endif
 
 EXTRA_CFLAGS += -I$(src)/include
@@ -50,7 +53,11 @@ CONFIG_SDIO_HCI = n
 CONFIG_GSPI_HCI = n
 ########################## Features ###########################
 CONFIG_MP_INCLUDED = y
+# Exposes power saving features to the system if the wireless adapter supports them.
+# Say "y" here if unsure.
 CONFIG_POWER_SAVING = y
+# Automatically suspends the wireless adapter during inactivity.
+# Say "n" here if unsure. It may save a small amount of power, while introducing instability.
 CONFIG_USB_AUTOSUSPEND = n
 CONFIG_HW_PWRP_DETECTION = n
 CONFIG_BT_COEXIST = y
@@ -68,16 +75,28 @@ CONFIG_RTW_CHPLAN = 0xFF
 CONFIG_RTW_ADAPTIVITY_EN = disable
 CONFIG_RTW_ADAPTIVITY_MODE = normal
 CONFIG_SIGNAL_SCALE_MAPPING = n
+# Enables Protected Management Frames (PMF). Say "y" here if unsure.
+# This is required for TKIP/CCMP support.
 CONFIG_80211W = y
 CONFIG_REDUCE_TX_CPU_LOADING = n
 CONFIG_BR_EXT = y
+# Compile in TDLS (Tunneled Direct Link Setup) support.
+# Part of the IEEE 802.11z standard. Say "n" here if unsure. 
 CONFIG_TDLS = n
+# Compile in monitor-mode support. Say "y" here if unsure.
+# Some userspace applications may complain if the wireless adapter doesn't have this.
+# Used mainly to grab packets from a wireless network.
 CONFIG_WIFI_MONITOR = y
 CONFIG_MCC_MODE = n
 CONFIG_APPEND_VENDOR_IE_ENABLE = n
 CONFIG_RTW_NAPI = y
-CONFIG_RTW_GRO = y
+# GRO is not usually beneficial in lossy or slow (<1GB/s) networks, such as wireless.
+# Setting "n" here will prevent queue management from having to "peel" packets, at no performance cost.
+# Further reading: https://www.bufferbloat.net/projects/codel/wiki/Cake/#tso-gso-gro-peeling
+CONFIG_RTW_GRO = n
 CONFIG_RTW_NETIF_SG = y
+# Try to offload checksum operations to the wireless adapter. Say "n" if unsure, the CPU usually does a better job at this.
+# Say "y" here if this is an embedded device.
 CONFIG_TX_CSUM_OFFLOAD = n
 CONFIG_RTW_IPCAM_APPLICATION = n
 CONFIG_RTW_REPEATER_SON = n
@@ -85,10 +104,11 @@ CONFIG_RTW_WIFI_HAL = n
 CONFIG_ICMP_VOQ = n
 CONFIG_IP_R_MONITOR = n #arp VOQ and high rate
 ########################## Debug ###########################
-CONFIG_RTW_DEBUG = y
-# default log level is _DRV_INFO_ = 4,
-# please refer to "How_to_set_driver_debug_log_level.doc" to set the available level.
-CONFIG_RTW_LOG_LEVEL = 4
+# Say "y" here to have the driver output debugging messages. Not intended for normal use.
+CONFIG_RTW_DEBUG = n
+# Default log level is 2, which only displays errors.
+# Available levels = none(0), always(1), error(2), warning(3), info(4), debug(5), max(6)
+CONFIG_RTW_LOG_LEVEL = 2
 ######################## Wake On Lan ##########################
 CONFIG_WOWLAN = n
 #bit2: deauth, bit1: unicast, bit0: magic pkt.
@@ -171,6 +191,7 @@ CONFIG_PLATFORM_NV_TK1_UBUNTU = n
 CONFIG_PLATFORM_RTL8197D = n
 CONFIG_PLATFORM_AML_S905 = n
 CONFIG_PLATFORM_ZTE_ZX296716 = n
+
 ########### CUSTOMER ################################
 CONFIG_CUSTOMER_HUAWEI_GENERAL = n
 
