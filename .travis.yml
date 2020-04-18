@@ -1,12 +1,13 @@
 language: c
 compiler: gcc
-sudo: required
 dist: bionic
+os: linux
 
 before_install:
-  - export ALL_DEB=$(wget --quiet -O - ${KERNEL_URL}v${KVER}/ | grep -o 'href=".*"' | grep -m1 all | cut -d '"' -f 2)
+  - export KERNEL_URL_DETAILS=$(wget --quiet -O - ${KERNEL_URL}v${KVER}/ | grep -A8 'Build for amd64')
+  - export ALL_DEB=$(echo "$KERNEL_URL_DETAILS" |  grep -m1 'all.deb' | cut -d '"' -f 2)
   - export KVER_BUILD=$(echo $ALL_DEB | cut -d '_' -f 1 | cut -c15-)
-  - wget ${KERNEL_URL}v${KVER}/$(wget --quiet -O - ${KERNEL_URL}v${KVER}/ | grep -o 'href=".*"' | grep headers | grep generic | grep -m1 amd64 | cut -d '"' -f 2)
+  - wget ${KERNEL_URL}v${KVER}/$(echo "$KERNEL_URL_DETAILS" | grep -m1 'amd64.deb' | cut -d '"' -f 2)
   - wget ${KERNEL_URL}v${KVER}/$ALL_DEB
   - sudo dpkg -i *.deb
 
@@ -14,9 +15,9 @@ script:
   - make CC=$COMPILER KVER=$KVER_BUILD-generic
 env:
   global:
-    - KERNEL_URL=http://kernel.ubuntu.com/~kernel-ppa/mainline/
+    - KERNEL_URL=https://kernel.ubuntu.com/~kernel-ppa/mainline/
 
-matrix:
+jobs:
   include:
     - compiler: gcc
       addons:
@@ -25,31 +26,40 @@ matrix:
             - sourceline: "ppa:ubuntu-toolchain-r/test"
           packages:
             - gcc-9
-      env: COMPILER=gcc-9 KVER=5.4.13
+      env: COMPILER=gcc-9 KVER="$(curl -s https://www.kernel.org/ | grep -A1 'mainline:' | grep -oP '(?<=strong>).*(?=</strong.*)')"
     - compiler: gcc
       addons:
         apt:
           packages:
             - gcc-8
-      env: COMPILER=gcc-8 KVER=5.4.13
-    #No longer builds on gcc-7.4 should be fixed by gcc-7.5
-    #- compiler: gcc
-    #  env: COMPILER=gcc-7 KVER=5.4.13
-    - compiler: gcc
-      addons:
-        apt:
-          sources:
-            - sourceline: "ppa:ubuntu-toolchain-r/test"
-          packages:
-            - gcc-9
-      env: COMPILER=gcc-9 KVER=4.19.97
+      env: COMPILER=gcc-8 KVER="$(curl -s https://www.kernel.org/ | grep -A1 'mainline:' | grep -oP '(?<=strong>).*(?=</strong.*)')"
+ #Kernels >= 5.4 No longer builds on gcc-7.4 should be fixed by gcc-7.5
     - compiler: gcc
       addons:
         apt:
           packages:
             - gcc-8
-      env: COMPILER=gcc-8 KVER=4.19.97
+      env: COMPILER=gcc-8 KVER=5.6.5
     - compiler: gcc
-      env: COMPILER=gcc-7 KVER=4.19.97
+      addons:
+        apt:
+          packages:
+            - gcc-8
+      env: COMPILER=gcc-8 KVER=5.5.18
     - compiler: gcc
-      env: COMPILER=gcc-7 KVER=4.15.18
+      addons:
+        apt:
+          packages:
+            - gcc-8
+ #Kernels 5.4 with minor versions > 24 are failing on amd64. Not upgrade the minot version without check https://kernel.ubuntu.com/~kernel-ppa/mainline/ 
+      env: COMPILER=gcc-8 KVER=5.4.27
+    - compiler: gcc
+      env: COMPILER=gcc-7 KVER=4.19.116
+    - compiler: gcc
+      env: COMPILER=gcc-7 KVER=4.14.176
+    - compiler: gcc
+      env: COMPILER=gcc-7 KVER=4.9.219
+    - compiler: gcc
+      env: COMPILER=gcc-7 KVER=4.4.219
+    - compiler: gcc
+      env: COMPILER=gcc-7 KVER=3.16.82
