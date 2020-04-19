@@ -203,14 +203,15 @@ static struct usb_device_id rtw_usb_id_tbl[] = {
 	{USB_DEVICE_AND_INTERFACE_INFO(USB_VENDER_ID_REALTEK, 0x818B, 0xff, 0xff, 0xff), .driver_info = RTL8192E}, /* Default ID */
 	{USB_DEVICE_AND_INTERFACE_INFO(USB_VENDER_ID_REALTEK, 0x818C, 0xff, 0xff, 0xff), .driver_info = RTL8192E}, /* Default ID */
 	/*===TPLINK ID===========*/
+	{USB_DEVICE(0x2001, 0x3312),.driver_info = RTL8192E}, /* D-Link - DWA-131 rev C1 */
+	{USB_DEVICE(0x2001, 0x3319),.driver_info = RTL8192E}, /* D-Link - DWA-131 */
 	{USB_DEVICE(0x2357, 0x0107),.driver_info = RTL8192E}, /* TP-Link - Cameo */
 	{USB_DEVICE(0x2357, 0x0108),.driver_info = RTL8192E}, /* TP-Link - Cameo */
 	{USB_DEVICE(0x2357, 0x0109),.driver_info = RTL8192E}, /* TP-Link - Cameo */
 	{USB_DEVICE(0x2357, 0x0126),.driver_info = RTL8192E}, /* TP-Link TL-WN8200ND V2 */
 	/*=== PLANEX ===========*/
-	{USB_DEVICE(0x2019, 0xab33),.driver_info = RTL8192E}, /* PLANEX - GW-300S Katana */
+	{USB_DEVICE(0x2019, 0xAB33),.driver_info = RTL8192E}, /* PLANEX - GW-300S Katana */
 	/*=== Customer ID ===*/
-	{USB_DEVICE(0x2001, 0x3319),.driver_info = RTL8192E}, /* D-Link - DWA-131 */
 	{USB_DEVICE(0x2c4e, 0x0100),.driver_info = RTL8192E}, /* Mercusys MW300UM */
 	{USB_DEVICE(0x2c4e, 0x0104),.driver_info = RTL8192E}, /* Mercusys MW300UH */
 #endif
