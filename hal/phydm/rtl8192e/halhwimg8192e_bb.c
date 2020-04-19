@@ -1,179 +1,179 @@
-/****************************************************************************** 
-* 
-* Copyright(c) 2007 - 2011 Realtek Corporation. All rights reserved. 
-* 
-* This program is free software; you can redistribute it and/or modify it 
-* under the terms of version 2 of the GNU General Public License as 
-* published by the Free Software Foundation. 
-* 
-* This program is distributed in the hope that it will be useful, but WITHOUT 
-* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
-* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for 
-* more details. 
-* 
-* You should have received a copy of the GNU General Public License along with 
-* this program; if not, write to the Free Software Foundation, Inc., 
-* 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA 
-* 
-* 
-******************************************************************************/
+/******************************************************************************
+ *
+ * Copyright(c) 2007 - 2017 Realtek Corporation.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of version 2 of the GNU General Public License as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ *
+ * The full GNU General Public License is included in this distribution in the
+ * file called LICENSE.
+ *
+ * Contact Information:
+ * wlanfae <wlanfae@realtek.com>
+ * Realtek Corporation, No. 2, Innovation Road II, Hsinchu Science Park,
+ * Hsinchu 300, Taiwan.
+ *
+ * Larry Finger <Larry.Finger@lwfinger.net>
+ *
+ *****************************************************************************/
 
-/*Image2HeaderVersion: 2.14*/
+/*Image2HeaderVersion: R3 1.5.0*/
 #include "mp_precomp.h"
 #include "../phydm_precomp.h"
 
+#define D_S_SIZE DELTA_SWINGIDX_SIZE
+
 #if (RTL8192E_SUPPORT == 1)
-static BOOLEAN
-CheckPositive(
-	IN  PDM_ODM_T     pDM_Odm,
-	IN  const u4Byte  Condition1,
-	IN  const u4Byte  Condition2,
-	IN	const u4Byte  Condition3,
-	IN	const u4Byte  Condition4
+static boolean
+check_positive(struct dm_struct *dm,
+	       const u32	condition1,
+	       const u32	condition2,
+	       const u32	condition3,
+	       const u32	condition4
 )
 {
-	u1Byte    _BoardType = ((pDM_Odm->BoardType & BIT4) >> 4) << 0 | /* _GLNA*/
-				((pDM_Odm->BoardType & BIT3) >> 3) << 1 | /* _GPA*/ 
-				((pDM_Odm->BoardType & BIT7) >> 7) << 2 | /* _ALNA*/
-				((pDM_Odm->BoardType & BIT6) >> 6) << 3 | /* _APA */
-				((pDM_Odm->BoardType & BIT2) >> 2) << 4;  /* _BT*/  
+	u32	cond1 = condition1, cond2 = condition2,
+		cond3 = condition3, cond4 = condition4;
 
-	u4Byte	cond1   = Condition1, cond2 = Condition2, cond3 = Condition3, cond4 = Condition4;
-	u4Byte    driver1 = pDM_Odm->CutVersion       << 24 | 
-				(pDM_Odm->SupportInterface & 0xF0) << 16 | 
-				pDM_Odm->SupportPlatform  << 16 | 
-				pDM_Odm->PackageType      << 12 | 
-				(pDM_Odm->SupportInterface & 0x0F) << 8  |
-				_BoardType;
+	u8	cut_version_for_para =
+		(dm->cut_version ==  ODM_CUT_A) ? 15 : dm->cut_version;
 
-	u4Byte    driver2 = (pDM_Odm->TypeGLNA & 0xFF) <<  0 |  
-				(pDM_Odm->TypeGPA & 0xFF)  <<  8 | 
-				(pDM_Odm->TypeALNA & 0xFF) << 16 | 
-				(pDM_Odm->TypeAPA & 0xFF)  << 24; 
+	u8	pkg_type_for_para =
+		(dm->package_type == 0) ? 15 : dm->package_type;
 
-u4Byte    driver3 = 0;
+	u32	driver1 = cut_version_for_para << 24 |
+			(dm->support_interface & 0xF0) << 16 |
+			dm->support_platform << 16 |
+			pkg_type_for_para << 12 |
+			(dm->support_interface & 0x0F) << 8  |
+			dm->rfe_type;
 
-	u4Byte    driver4 = (pDM_Odm->TypeGLNA & 0xFF00) >>  8 |
-				(pDM_Odm->TypeGPA & 0xFF00) |
-				(pDM_Odm->TypeALNA & 0xFF00) << 8 |
-				(pDM_Odm->TypeAPA & 0xFF00)  << 16;
+	u32	driver2 = (dm->type_glna & 0xFF) <<  0 |
+			(dm->type_gpa & 0xFF)  <<  8 |
+			(dm->type_alna & 0xFF) << 16 |
+			(dm->type_apa & 0xFF)  << 24;
 
-	ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_TRACE, 
-	("===> CheckPositive (cond1, cond2, cond3, cond4) = (0x%X 0x%X 0x%X 0x%X)\n", cond1, cond2, cond3, cond4));
-	ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_TRACE, 
-	("===> CheckPositive (driver1, driver2, driver3, driver4) = (0x%X 0x%X 0x%X 0x%X)\n", driver1, driver2, driver3, driver4));
+	u32	driver3 = 0;
 
-	ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_TRACE, 
-	("	(Platform, Interface) = (0x%X, 0x%X)\n", pDM_Odm->SupportPlatform, pDM_Odm->SupportInterface));
-	ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_TRACE, 
-	("	(Board, Package) = (0x%X, 0x%X)\n", pDM_Odm->BoardType, pDM_Odm->PackageType));
+	u32	driver4 = (dm->type_glna & 0xFF00) >>  8 |
+			(dm->type_gpa & 0xFF00) |
+			(dm->type_alna & 0xFF00) << 8 |
+			(dm->type_apa & 0xFF00)  << 16;
 
+	PHYDM_DBG(dm, ODM_COMP_INIT,
+		  "===> %s (cond1, cond2, cond3, cond4) = (0x%X 0x%X 0x%X 0x%X)\n",
+		  __func__, cond1, cond2, cond3, cond4);
+	PHYDM_DBG(dm, ODM_COMP_INIT,
+		  "===> %s (driver1, driver2, driver3, driver4) = (0x%X 0x%X 0x%X 0x%X)\n",
+		  __func__, driver1, driver2, driver3, driver4);
 
-	/*============== Value Defined Check ===============*/
-	/*QFN Type [15:12] and Cut Version [27:24] need to do value check*/
-	
-	if (((cond1 & 0x0000F000) != 0) && ((cond1 & 0x0000F000) != (driver1 & 0x0000F000)))
-		return FALSE;
-	if (((cond1 & 0x0F000000) != 0) && ((cond1 & 0x0F000000) != (driver1 & 0x0F000000)))
-		return FALSE;
+	PHYDM_DBG(dm, ODM_COMP_INIT,
+		  "	(Platform, Interface) = (0x%X, 0x%X)\n",
+		  dm->support_platform, dm->support_interface);
+	PHYDM_DBG(dm, ODM_COMP_INIT, "	(RFE, Package) = (0x%X, 0x%X)\n",
+		  dm->rfe_type, dm->package_type);
 
+	/*============== value Defined Check ===============*/
+	/*cut version [27:24] need to do value check*/
+	if (((cond1 & 0x0F000000) != 0) &&
+	    ((cond1 & 0x0F000000) != (driver1 & 0x0F000000)))
+		return false;
+
+	/*pkg type [15:12] need to do value check*/
+	if (((cond1 & 0x0000F000) != 0) &&
+	    ((cond1 & 0x0000F000) != (driver1 & 0x0000F000)))
+		return false;
+
+	/*interface [11:8] need to do value check*/
+	if (((cond1 & 0x00000F00) != 0) &&
+	    ((cond1 & 0x00000F00) != (driver1 & 0x00000F00)))
+		return false;
 	/*=============== Bit Defined Check ================*/
 	/* We don't care [31:28] */
 
-	cond1   &= 0x00FF0FFF; 
-	driver1 &= 0x00FF0FFF; 
+	cond1 &= 0x000000FF;
+	driver1 &= 0x000000FF;
 
-	if ((cond1 & driver1) == cond1) {
-		u4Byte bitMask = 0;
-
-		if ((cond1 & 0x0F) == 0) /* BoardType is DONTCARE*/
-			return TRUE;
-
-		if ((cond1 & BIT0) != 0) /*GLNA*/
-			bitMask |= 0x000000FF;
-		if ((cond1 & BIT1) != 0) /*GPA*/
-			bitMask |= 0x0000FF00;
-		if ((cond1 & BIT2) != 0) /*ALNA*/
-			bitMask |= 0x00FF0000;
-		if ((cond1 & BIT3) != 0) /*APA*/
-			bitMask |= 0xFF000000;
-
-		if (((cond2 & bitMask) == (driver2 & bitMask)) && ((cond4 & bitMask) == (driver4 & bitMask)))  /* BoardType of each RF path is matched*/
-			return TRUE;
-		else
-			return FALSE;
-	} else
-		return FALSE;
+	if (cond1 == driver1)
+		return true;
+	else
+		return false;
 }
-static BOOLEAN
-CheckNegative(
-	IN  PDM_ODM_T     pDM_Odm,
-	IN  const u4Byte  Condition1,
-	IN  const u4Byte  Condition2
+
+static boolean
+check_negative(struct dm_struct *dm,
+	       const u32	condition1,
+	       const u32	condition2
 )
 {
-	return TRUE;
+	return true;
 }
 
 /******************************************************************************
-*                           AGC_TAB.TXT
-******************************************************************************/
+ *                           agc_tab.TXT
+ ******************************************************************************/
 
-u4Byte Array_MP_8192E_AGC_TAB[] = { 
-	0x80000400,	0x00000000,	0x40000000,	0x00000000,
-		0xC78, 0xFB000001,
-		0xC78, 0xFB010001,
-		0xC78, 0xFB020001,
-		0xC78, 0xFB030001,
-		0xC78, 0xFB040001,
+const u32 array_mp_8192e_agc_tab[] = {
+	0x80000002,	0x00000000,	0x40000000,	0x00000000,
+		0xC78, 0xFF000001,
+		0xC78, 0xFF010001,
+		0xC78, 0xFE020001,
+		0xC78, 0xFD030001,
+		0xC78, 0xFC040001,
 		0xC78, 0xFB050001,
-		0xC78, 0xFB060001,
-		0xC78, 0xFB070001,
-		0xC78, 0xFA080001,
-		0xC78, 0xF9090001,
-		0xC78, 0xF80A0001,
-		0xC78, 0xF70B0001,
-		0xC78, 0xF60C0001,
-		0xC78, 0xF50D0001,
-		0xC78, 0xF40E0001,
-		0xC78, 0xF30F0001,
-		0xC78, 0xF2100001,
-		0xC78, 0xF1110001,
-		0xC78, 0xF0120001,
-		0xC78, 0xEF130001,
-		0xC78, 0xEE140001,
-		0xC78, 0xED150001,
-		0xC78, 0xEC160001,
-		0xC78, 0xEB170001,
-		0xC78, 0xEA180001,
-		0xC78, 0xE9190001,
+		0xC78, 0xFA060001,
+		0xC78, 0xF9070001,
+		0xC78, 0xF8080001,
+		0xC78, 0xF7090001,
+		0xC78, 0xF60A0001,
+		0xC78, 0xF50B0001,
+		0xC78, 0xF40C0001,
+		0xC78, 0xF30D0001,
+		0xC78, 0xF20E0001,
+		0xC78, 0xF10F0001,
+		0xC78, 0xF0100001,
+		0xC78, 0xEF110001,
+		0xC78, 0xEE120001,
+		0xC78, 0xED130001,
+		0xC78, 0xEC140001,
+		0xC78, 0xEB150001,
+		0xC78, 0xEA160001,
+		0xC78, 0xE9170001,
+		0xC78, 0xE8180001,
+		0xC78, 0xC9190001,
 		0xC78, 0xC81A0001,
 		0xC78, 0xC71B0001,
 		0xC78, 0xC61C0001,
-		0xC78, 0x071D0001,
-		0xC78, 0x061E0001,
-		0xC78, 0x051F0001,
-		0xC78, 0x04200001,
-		0xC78, 0x03210001,
-		0xC78, 0xAA220001,
-		0xC78, 0xA9230001,
+		0xC78, 0xC51D0001,
+		0xC78, 0xC41E0001,
+		0xC78, 0xC31F0001,
+		0xC78, 0x05200001,
+		0xC78, 0x04210001,
+		0xC78, 0x03220001,
+		0xC78, 0x02230001,
 		0xC78, 0xA8240001,
 		0xC78, 0xA7250001,
 		0xC78, 0xA6260001,
-		0xC78, 0x85270001,
-		0xC78, 0x84280001,
-		0xC78, 0x83290001,
+		0xC78, 0xA5270001,
+		0xC78, 0x27280001,
+		0xC78, 0x26290001,
 		0xC78, 0x252A0001,
 		0xC78, 0x242B0001,
 		0xC78, 0x232C0001,
 		0xC78, 0x222D0001,
-		0xC78, 0x672E0001,
-		0xC78, 0x662F0001,
-		0xC78, 0x65300001,
-		0xC78, 0x64310001,
-		0xC78, 0x63320001,
-		0xC78, 0x62330001,
-		0xC78, 0x61340001,
+		0xC78, 0x662E0001,
+		0xC78, 0x652F0001,
+		0xC78, 0x64300001,
+		0xC78, 0x63310001,
+		0xC78, 0x62320001,
+		0xC78, 0x61330001,
+		0xC78, 0x46340001,
 		0xC78, 0x45350001,
 		0xC78, 0x44360001,
 		0xC78, 0x43370001,
@@ -445,7 +445,7 @@ u4Byte Array_MP_8192E_AGC_TAB[] = {
 		0xC78, 0x403D0001,
 		0xC78, 0x403E0001,
 		0xC78, 0x403F0001,
-	0xA0000000,	0x00000000,
+	0x90000400,	0x00000000,	0x40000000,	0x00000000,
 		0xC78, 0xFB000001,
 		0xC78, 0xFB010001,
 		0xC78, 0xFB020001,
@@ -453,131 +453,196 @@ u4Byte Array_MP_8192E_AGC_TAB[] = {
 		0xC78, 0xFB040001,
 		0xC78, 0xFB050001,
 		0xC78, 0xFB060001,
-		0xC78, 0xFA070001,
-		0xC78, 0xF9080001,
-		0xC78, 0xF8090001,
-		0xC78, 0xF70A0001,
-		0xC78, 0xF60B0001,
-		0xC78, 0xF50C0001,
-		0xC78, 0xF40D0001,
-		0xC78, 0xF30E0001,
-		0xC78, 0xF20F0001,
-		0xC78, 0xF1100001,
-		0xC78, 0xF0110001,
-		0xC78, 0xEF120001,
-		0xC78, 0xEE130001,
-		0xC78, 0xED140001,
-		0xC78, 0xEC150001,
-		0xC78, 0xEB160001,
-		0xC78, 0xEA170001,
-		0xC78, 0xCD180001,
-		0xC78, 0xCC190001,
-		0xC78, 0xCB1A0001,
-		0xC78, 0xCA1B0001,
-		0xC78, 0xC91C0001,
-		0xC78, 0xC81D0001,
-		0xC78, 0x071E0001,
-		0xC78, 0x061F0001,
+		0xC78, 0xFB070001,
+		0xC78, 0xFA080001,
+		0xC78, 0xF9090001,
+		0xC78, 0xF80A0001,
+		0xC78, 0xF70B0001,
+		0xC78, 0xF60C0001,
+		0xC78, 0xF50D0001,
+		0xC78, 0xF40E0001,
+		0xC78, 0xF30F0001,
+		0xC78, 0xF2100001,
+		0xC78, 0xF1110001,
+		0xC78, 0xF0120001,
+		0xC78, 0xEF130001,
+		0xC78, 0xEE140001,
+		0xC78, 0xED150001,
+		0xC78, 0xEC160001,
+		0xC78, 0xEB170001,
+		0xC78, 0xEA180001,
+		0xC78, 0xE9190001,
+		0xC78, 0xC81A0001,
+		0xC78, 0xC71B0001,
+		0xC78, 0xC61C0001,
+		0xC78, 0x071D0001,
+		0xC78, 0x061E0001,
+		0xC78, 0x051F0001,
+		0xC78, 0x04200001,
+		0xC78, 0x03210001,
+		0xC78, 0xAA220001,
+		0xC78, 0xA9230001,
+		0xC78, 0xA8240001,
+		0xC78, 0xA7250001,
+		0xC78, 0xA6260001,
+		0xC78, 0x85270001,
+		0xC78, 0x84280001,
+		0xC78, 0x83290001,
+		0xC78, 0x252A0001,
+		0xC78, 0x242B0001,
+		0xC78, 0x232C0001,
+		0xC78, 0x222D0001,
+		0xC78, 0x672E0001,
+		0xC78, 0x662F0001,
+		0xC78, 0x65300001,
+		0xC78, 0x64310001,
+		0xC78, 0x63320001,
+		0xC78, 0x62330001,
+		0xC78, 0x61340001,
+		0xC78, 0x45350001,
+		0xC78, 0x44360001,
+		0xC78, 0x43370001,
+		0xC78, 0x42380001,
+		0xC78, 0x41390001,
+		0xC78, 0x403A0001,
+		0xC78, 0x403B0001,
+		0xC78, 0x403C0001,
+		0xC78, 0x403D0001,
+		0xC78, 0x403E0001,
+		0xC78, 0x403F0001,
+	0xA0000000,	0x00000000,
+		0xC78, 0xFF000001,
+		0xC78, 0xFF010001,
+		0xC78, 0xFE020001,
+		0xC78, 0xFD030001,
+		0xC78, 0xFC040001,
+		0xC78, 0xFB050001,
+		0xC78, 0xFA060001,
+		0xC78, 0xF9070001,
+		0xC78, 0xF8080001,
+		0xC78, 0xF7090001,
+		0xC78, 0xF60A0001,
+		0xC78, 0xF50B0001,
+		0xC78, 0xF40C0001,
+		0xC78, 0xF30D0001,
+		0xC78, 0xF20E0001,
+		0xC78, 0xF10F0001,
+		0xC78, 0xF0100001,
+		0xC78, 0xEF110001,
+		0xC78, 0xEE120001,
+		0xC78, 0xED130001,
+		0xC78, 0xEC140001,
+		0xC78, 0xEB150001,
+		0xC78, 0xEA160001,
+		0xC78, 0xE9170001,
+		0xC78, 0xE8180001,
+		0xC78, 0xC9190001,
+		0xC78, 0xC81A0001,
+		0xC78, 0xC71B0001,
+		0xC78, 0xC61C0001,
+		0xC78, 0xC51D0001,
+		0xC78, 0xC41E0001,
+		0xC78, 0xC31F0001,
 		0xC78, 0x05200001,
 		0xC78, 0x04210001,
 		0xC78, 0x03220001,
-		0xC78, 0xAA230001,
-		0xC78, 0xA9240001,
-		0xC78, 0xA8250001,
-		0xC78, 0xA7260001,
-		0xC78, 0xA6270001,
-		0xC78, 0x85280001,
-		0xC78, 0x84290001,
-		0xC78, 0x832A0001,
-		0xC78, 0x252B0001,
-		0xC78, 0x242C0001,
-		0xC78, 0x232D0001,
-		0xC78, 0x222E0001,
-		0xC78, 0x672F0001,
-		0xC78, 0x66300001,
-		0xC78, 0x65310001,
-		0xC78, 0x64320001,
-		0xC78, 0x63330001,
-		0xC78, 0x62340001,
-		0xC78, 0x61350001,
-		0xC78, 0x45360001,
-		0xC78, 0x44370001,
-		0xC78, 0x43380001,
-		0xC78, 0x42390001,
-		0xC78, 0x413A0001,
+		0xC78, 0x02230001,
+		0xC78, 0xA8240001,
+		0xC78, 0xA7250001,
+		0xC78, 0xA6260001,
+		0xC78, 0xA5270001,
+		0xC78, 0x27280001,
+		0xC78, 0x26290001,
+		0xC78, 0x252A0001,
+		0xC78, 0x242B0001,
+		0xC78, 0x232C0001,
+		0xC78, 0x222D0001,
+		0xC78, 0x662E0001,
+		0xC78, 0x652F0001,
+		0xC78, 0x64300001,
+		0xC78, 0x63310001,
+		0xC78, 0x62320001,
+		0xC78, 0x61330001,
+		0xC78, 0x46340001,
+		0xC78, 0x45350001,
+		0xC78, 0x44360001,
+		0xC78, 0x43370001,
+		0xC78, 0x42380001,
+		0xC78, 0x41390001,
+		0xC78, 0x403A0001,
 		0xC78, 0x403B0001,
 		0xC78, 0x403C0001,
 		0xC78, 0x403D0001,
 		0xC78, 0x403E0001,
 		0xC78, 0x403F0001,
 	0xB0000000,	0x00000000,
-	0x80000400,	0x00000000,	0x40000000,	0x00000000,
+	0x80000002,	0x00000000,	0x40000000,	0x00000000,
 		0xC78, 0xFB400001,
 		0xC78, 0xFB410001,
 		0xC78, 0xFB420001,
 		0xC78, 0xFB430001,
 		0xC78, 0xFB440001,
 		0xC78, 0xFB450001,
-		0xC78, 0xFA460001,
-		0xC78, 0xF9470001,
-		0xC78, 0xF8480001,
-		0xC78, 0xF7490001,
-		0xC78, 0xF64A0001,
-		0xC78, 0xF54B0001,
-		0xC78, 0xF44C0001,
-		0xC78, 0xF34D0001,
-		0xC78, 0xF24E0001,
-		0xC78, 0xF14F0001,
-		0xC78, 0xF0500001,
-		0xC78, 0xEF510001,
-		0xC78, 0xEE520001,
-		0xC78, 0xED530001,
-		0xC78, 0xEC540001,
-		0xC78, 0xEB550001,
-		0xC78, 0xEA560001,
-		0xC78, 0xE9570001,
-		0xC78, 0xE8580001,
-		0xC78, 0xE7590001,
-		0xC78, 0xE65A0001,
-		0xC78, 0xE55B0001,
-		0xC78, 0xE45C0001,
-		0xC78, 0xE35D0001,
-		0xC78, 0xE25E0001,
-		0xC78, 0xE15F0001,
-		0xC78, 0x8A600001,
-		0xC78, 0x89610001,
-		0xC78, 0x88620001,
-		0xC78, 0x87630001,
-		0xC78, 0x86640001,
-		0xC78, 0x85650001,
-		0xC78, 0x84660001,
-		0xC78, 0x83670001,
-		0xC78, 0x82680001,
-		0xC78, 0x6B690001,
-		0xC78, 0x6A6A0001,
-		0xC78, 0x696B0001,
-		0xC78, 0x686C0001,
-		0xC78, 0x676D0001,
-		0xC78, 0x666E0001,
-		0xC78, 0x656F0001,
-		0xC78, 0x64700001,
-		0xC78, 0x63710001,
-		0xC78, 0x62720001,
-		0xC78, 0x61730001,
-		0xC78, 0x49740001,
-		0xC78, 0x48750001,
-		0xC78, 0x47760001,
-		0xC78, 0x46770001,
-		0xC78, 0x45780001,
-		0xC78, 0x44790001,
-		0xC78, 0x437A0001,
-		0xC78, 0x427B0001,
-		0xC78, 0x417C0001,
-		0xC78, 0x407D0001,
+		0xC78, 0xFB460001,
+		0xC78, 0xFA470001,
+		0xC78, 0xF9480001,
+		0xC78, 0xF8490001,
+		0xC78, 0xF74A0001,
+		0xC78, 0xF64B0001,
+		0xC78, 0xF54C0001,
+		0xC78, 0xF44D0001,
+		0xC78, 0xF34E0001,
+		0xC78, 0xF24F0001,
+		0xC78, 0xF1500001,
+		0xC78, 0xF0510001,
+		0xC78, 0xEF520001,
+		0xC78, 0xEE530001,
+		0xC78, 0xED540001,
+		0xC78, 0xEC550001,
+		0xC78, 0xEB560001,
+		0xC78, 0xEA570001,
+		0xC78, 0xE9580001,
+		0xC78, 0xE8590001,
+		0xC78, 0xE75A0001,
+		0xC78, 0xE65B0001,
+		0xC78, 0xE55C0001,
+		0xC78, 0xE45D0001,
+		0xC78, 0xE35E0001,
+		0xC78, 0xE25F0001,
+		0xC78, 0xE1600001,
+		0xC78, 0x8A610001,
+		0xC78, 0x89620001,
+		0xC78, 0x88630001,
+		0xC78, 0x87640001,
+		0xC78, 0x86650001,
+		0xC78, 0x85660001,
+		0xC78, 0x84670001,
+		0xC78, 0x83680001,
+		0xC78, 0x82690001,
+		0xC78, 0x6B6A0001,
+		0xC78, 0x6A6B0001,
+		0xC78, 0x696C0001,
+		0xC78, 0x686D0001,
+		0xC78, 0x676E0001,
+		0xC78, 0x666F0001,
+		0xC78, 0x65700001,
+		0xC78, 0x64710001,
+		0xC78, 0x63720001,
+		0xC78, 0x62730001,
+		0xC78, 0x61740001,
+		0xC78, 0x49750001,
+		0xC78, 0x48760001,
+		0xC78, 0x47770001,
+		0xC78, 0x46780001,
+		0xC78, 0x45790001,
+		0xC78, 0x447A0001,
+		0xC78, 0x437B0001,
+		0xC78, 0x427C0001,
+		0xC78, 0x417D0001,
 		0xC78, 0x407E0001,
 		0xC78, 0x407F0001,
-		0xC50, 0x00040020,
-		0xC58, 0x00000020,
+		0xC50, 0x00040220,
+		0xC58, 0x00000220,
 	0x90000001,	0x00000000,	0x40000000,	0x00000000,
 		0xC78, 0xFE400001,
 		0xC78, 0xFD410001,
@@ -805,36 +870,36 @@ u4Byte Array_MP_8192E_AGC_TAB[] = {
 		0xC78, 0xEC560001,
 		0xC78, 0xEB570001,
 		0xC78, 0xEA580001,
-		0xC78, 0xE9590001,
-		0xC78, 0xE85A0001,
-		0xC78, 0xE75B0001,
-		0xC78, 0xE65C0001,
-		0xC78, 0xE55D0001,
-		0xC78, 0xE45E0001,
-		0xC78, 0xE35F0001,
-		0xC78, 0x88600001,
-		0xC78, 0x87610001,
-		0xC78, 0xAA620001,
-		0xC78, 0xA9630001,
-		0xC78, 0xA8640001,
-		0xC78, 0xA7650001,
-		0xC78, 0xA6660001,
-		0xC78, 0xA5670001,
-		0xC78, 0x66680001,
-		0xC78, 0x65690001,
-		0xC78, 0x646A0001,
-		0xC78, 0x636B0001,
-		0xC78, 0x626C0001,
-		0xC78, 0x496D0001,
-		0xC78, 0x486E0001,
-		0xC78, 0x476F0001,
-		0xC78, 0x46700001,
-		0xC78, 0x45710001,
-		0xC78, 0x44720001,
-		0xC78, 0x43730001,
-		0xC78, 0x42740001,
-		0xC78, 0x41750001,
-		0xC78, 0x40760001,
+		0xC78, 0x09590001,
+		0xC78, 0x085A0001,
+		0xC78, 0x075B0001,
+		0xC78, 0x065C0001,
+		0xC78, 0x055D0001,
+		0xC78, 0x045E0001,
+		0xC78, 0x035F0001,
+		0xC78, 0x29600001,
+		0xC78, 0x28610001,
+		0xC78, 0x27620001,
+		0xC78, 0x26630001,
+		0xC78, 0x25640001,
+		0xC78, 0x24650001,
+		0xC78, 0x23660001,
+		0xC78, 0x68670001,
+		0xC78, 0x67680001,
+		0xC78, 0x66690001,
+		0xC78, 0x656A0001,
+		0xC78, 0x646B0001,
+		0xC78, 0x636C0001,
+		0xC78, 0x626D0001,
+		0xC78, 0x496E0001,
+		0xC78, 0x486F0001,
+		0xC78, 0x47700001,
+		0xC78, 0x46710001,
+		0xC78, 0x45720001,
+		0xC78, 0x44730001,
+		0xC78, 0x43740001,
+		0xC78, 0x42750001,
+		0xC78, 0x41760001,
 		0xC78, 0x40770001,
 		0xC78, 0x40780001,
 		0xC78, 0x40790001,
@@ -846,6 +911,73 @@ u4Byte Array_MP_8192E_AGC_TAB[] = {
 		0xC78, 0x407F0001,
 		0xC50, 0x00040220,
 		0xC58, 0x00000220,
+	0x90000400,	0x00000000,	0x40000000,	0x00000000,
+		0xC78, 0xFB400001,
+		0xC78, 0xFB410001,
+		0xC78, 0xFB420001,
+		0xC78, 0xFB430001,
+		0xC78, 0xFB440001,
+		0xC78, 0xFB450001,
+		0xC78, 0xFA460001,
+		0xC78, 0xF9470001,
+		0xC78, 0xF8480001,
+		0xC78, 0xF7490001,
+		0xC78, 0xF64A0001,
+		0xC78, 0xF54B0001,
+		0xC78, 0xF44C0001,
+		0xC78, 0xF34D0001,
+		0xC78, 0xF24E0001,
+		0xC78, 0xF14F0001,
+		0xC78, 0xF0500001,
+		0xC78, 0xEF510001,
+		0xC78, 0xEE520001,
+		0xC78, 0xED530001,
+		0xC78, 0xEC540001,
+		0xC78, 0xEB550001,
+		0xC78, 0xEA560001,
+		0xC78, 0xE9570001,
+		0xC78, 0xE8580001,
+		0xC78, 0xE7590001,
+		0xC78, 0xE65A0001,
+		0xC78, 0xE55B0001,
+		0xC78, 0xE45C0001,
+		0xC78, 0xE35D0001,
+		0xC78, 0xE25E0001,
+		0xC78, 0xE15F0001,
+		0xC78, 0x8A600001,
+		0xC78, 0x89610001,
+		0xC78, 0x88620001,
+		0xC78, 0x87630001,
+		0xC78, 0x86640001,
+		0xC78, 0x85650001,
+		0xC78, 0x84660001,
+		0xC78, 0x83670001,
+		0xC78, 0x82680001,
+		0xC78, 0x6B690001,
+		0xC78, 0x6A6A0001,
+		0xC78, 0x696B0001,
+		0xC78, 0x686C0001,
+		0xC78, 0x676D0001,
+		0xC78, 0x666E0001,
+		0xC78, 0x656F0001,
+		0xC78, 0x64700001,
+		0xC78, 0x63710001,
+		0xC78, 0x62720001,
+		0xC78, 0x61730001,
+		0xC78, 0x49740001,
+		0xC78, 0x48750001,
+		0xC78, 0x47760001,
+		0xC78, 0x46770001,
+		0xC78, 0x45780001,
+		0xC78, 0x44790001,
+		0xC78, 0x437A0001,
+		0xC78, 0x427B0001,
+		0xC78, 0x417C0001,
+		0xC78, 0x407D0001,
+		0xC78, 0x407E0001,
+		0xC78, 0x407F0001,
+		0xC50, 0x00040020,
+		0xC58, 0x00000020,
 	0xA0000000,	0x00000000,
 		0xC78, 0xFB400001,
 		0xC78, 0xFB410001,
@@ -918,71 +1050,76 @@ u4Byte Array_MP_8192E_AGC_TAB[] = {
 };
 
 void
-ODM_ReadAndConfig_MP_8192E_AGC_TAB(
-	IN   PDM_ODM_T  pDM_Odm
-)
+odm_read_and_config_mp_8192e_agc_tab(struct dm_struct *dm)
 {
-	u4Byte     i         = 0;
-	u1Byte     cCond;
-	BOOLEAN bMatched = TRUE, bSkipped = FALSE;
-	u4Byte     ArrayLen    = sizeof(Array_MP_8192E_AGC_TAB)/sizeof(u4Byte);
-	pu4Byte    Array       = Array_MP_8192E_AGC_TAB;
-	
-	u4Byte	v1 = 0, v2 = 0, pre_v1 = 0, pre_v2 = 0;
+	u32	i = 0;
+	u8	c_cond;
+	boolean	is_matched = true, is_skipped = false;
+	u32	array_len =
+			sizeof(array_mp_8192e_agc_tab) / sizeof(u32);
+	u32	*array = (u32 *)array_mp_8192e_agc_tab;
 
-	ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_LOUD, ("===> ODM_ReadAndConfig_MP_8192E_AGC_TAB\n"));
+	u32	v1 = 0, v2 = 0, pre_v1 = 0, pre_v2 = 0;
+	u32	a1 = 0, a2 = 0, a3 = 0, a4 = 0;
 
-	while ((i + 1) < ArrayLen) {
-		v1 = Array[i];
-		v2 = Array[i + 1];
+	PHYDM_DBG(dm, ODM_COMP_INIT, "===> %s\n", __func__);
 
-		if (v1 & (BIT31 | BIT30)) {/*positive & negative condition*/
-			if (v1 & BIT31) {/* positive condition*/
-				cCond  = (u1Byte)((v1 & (BIT29|BIT28)) >> 28);
-				if (cCond == COND_ENDIF) {/*end*/
-					bMatched = TRUE;
-					bSkipped = FALSE;
-					ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_LOUD, ("ENDIF\n"));
-				} else if (cCond == COND_ELSE) { /*else*/
-					bMatched = bSkipped?FALSE:TRUE;
-					ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_LOUD, ("ELSE\n"));
-				}
-				else {/*if , else if*/
+	while ((i + 1) < array_len) {
+		v1 = array[i];
+		v2 = array[i + 1];
+
+		if (v1 & (BIT(31) | BIT(30))) {/*positive & negative condition*/
+			if (v1 & BIT(31)) {/* positive condition*/
+				c_cond  =
+					(u8)((v1 & (BIT(29) | BIT(28))) >> 28);
+				if (c_cond == COND_ENDIF) {/*end*/
+					is_matched = true;
+					is_skipped = false;
+					PHYDM_DBG(dm, ODM_COMP_INIT, "ENDIF\n");
+				} else if (c_cond == COND_ELSE) { /*else*/
+					is_matched = is_skipped ? false : true;
+					PHYDM_DBG(dm, ODM_COMP_INIT, "ELSE\n");
+				} else {/*if , else if*/
 					pre_v1 = v1;
 					pre_v2 = v2;
-					ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_LOUD, ("IF or ELSE IF\n"));
+					PHYDM_DBG(dm, ODM_COMP_INIT,
+						  "IF or ELSE IF\n");
 				}
-			} else if (v1 & BIT30) { /*negative condition*/
-				if (bSkipped == FALSE) {
-					if (CheckPositive(pDM_Odm, pre_v1, pre_v2, v1, v2)) {
-						bMatched = TRUE;
-						bSkipped = TRUE;
+			} else if (v1 & BIT(30)) { /*negative condition*/
+				if (!is_skipped) {
+					a1 = pre_v1; a2 = pre_v2;
+					a3 = v1; a4 = v2;
+					if (check_positive(dm,
+							   a1, a2, a3, a4)) {
+						is_matched = true;
+						is_skipped = true;
 					} else {
-						bMatched = FALSE;
-						bSkipped = FALSE;
+						is_matched = false;
+						is_skipped = false;
 					}
-				} else
-					bMatched = FALSE;
+				} else {
+					is_matched = false;
+				}
 			}
 		} else {
-			if (bMatched)
-				odm_ConfigBB_AGC_8192E(pDM_Odm, v1, bMaskDWord, v2);
+			if (is_matched)
+				odm_config_bb_agc_8192e(dm, v1, MASKDWORD, v2);
 		}
 		i = i + 2;
 	}
 }
 
-u4Byte
-ODM_GetVersion_MP_8192E_AGC_TAB(void)
+u32
+odm_get_version_mp_8192e_agc_tab(void)
 {
-	   return 51;
+		return 60;
 }
 
 /******************************************************************************
-*                           PHY_REG.TXT
-******************************************************************************/
+ *                           phy_reg.TXT
+ ******************************************************************************/
 
-u4Byte Array_MP_8192E_PHY_REG[] = { 
+const u32 array_mp_8192e_phy_reg[] = {
 		0x800, 0x80040000,
 		0x804, 0x00000003,
 		0x808, 0x0000FC00,
@@ -992,7 +1129,11 @@ u4Byte Array_MP_8192E_PHY_REG[] = {
 		0x818, 0x02220385,
 		0x81C, 0x00000000,
 		0x820, 0x01000100,
-	0x80000001,	0x00000000,	0x40000000,	0x00000000,
+	0x80000003,	0x00000000,	0x40000000,	0x00000000,
+		0x824, 0x00390004,
+	0x90000002,	0x00000000,	0x40000000,	0x00000000,
+		0x824, 0x00390204,
+	0x90000001,	0x00000000,	0x40000000,	0x00000000,
 		0x824, 0x00390004,
 	0x90000001,	0x00000005,	0x40000000,	0x00000000,
 		0x824, 0x00390004,
@@ -1004,7 +1145,11 @@ u4Byte Array_MP_8192E_PHY_REG[] = {
 		0x824, 0x00390204,
 	0xB0000000,	0x00000000,
 		0x828, 0x01000100,
-	0x80000001,	0x00000000,	0x40000000,	0x00000000,
+	0x80000003,	0x00000000,	0x40000000,	0x00000000,
+		0x82C, 0x00390004,
+	0x90000002,	0x00000000,	0x40000000,	0x00000000,
+		0x82C, 0x00390204,
+	0x90000001,	0x00000000,	0x40000000,	0x00000000,
 		0x82C, 0x00390004,
 	0x90000001,	0x00000005,	0x40000000,	0x00000000,
 		0x82C, 0x00390004,
@@ -1060,17 +1205,21 @@ u4Byte Array_MP_8192E_PHY_REG[] = {
 		0x940, 0x00000000,
 		0x944, 0x00000000,
 		0x94C, 0x00000008,
-		0xA00, 0x00D0C7C8,
+		0xA00, 0x00D047C8,
 		0xA04, 0x81FF800C,
 		0xA08, 0x8C838300,
-	0x80000001,	0x00000000,	0x40000000,	0x00000000,
-		0xA0C, 0x2E2E120F,
+	0x80000003,	0x00000000,	0x40000000,	0x00000000,
+		0xA0C, 0x2E30120F,
+	0x90000002,	0x00000000,	0x40000000,	0x00000000,
+		0xA0C, 0x2E68120F,
+	0x90000001,	0x00000000,	0x40000000,	0x00000000,
+		0xA0C, 0x2E30120F,
 	0x90000001,	0x00000005,	0x40000000,	0x00000000,
-		0xA0C, 0x2E2E120F,
+		0xA0C, 0x2E30120F,
 	0x90000001,	0x0000000a,	0x40000000,	0x00000000,
-		0xA0C, 0x2E2E120F,
+		0xA0C, 0x2E30120F,
 	0x90000001,	0x0000000f,	0x40000000,	0x00000000,
-		0xA0C, 0x2E2E120F,
+		0xA0C, 0x2E30120F,
 	0xA0000000,	0x00000000,
 		0xA0C, 0x2E68120F,
 	0xB0000000,	0x00000000,
@@ -1096,7 +1245,11 @@ u4Byte Array_MP_8192E_PHY_REG[] = {
 		0xA74, 0x00000007,
 		0xA78, 0x00000900,
 		0xA7C, 0x225B0606,
-	0x80000001,	0x00000000,	0x40000000,	0x00000000,
+	0x80000003,	0x00000000,	0x40000000,	0x00000000,
+		0xA80, 0x21807531,
+	0x90000002,	0x00000000,	0x40000000,	0x00000000,
+		0xA80, 0x218075B1,
+	0x90000001,	0x00000000,	0x40000000,	0x00000000,
 		0xA80, 0x21807531,
 	0x90000001,	0x00000005,	0x40000000,	0x00000000,
 		0xA80, 0x21807531,
@@ -1161,11 +1314,11 @@ u4Byte Array_MP_8192E_PHY_REG[] = {
 	0xB0000000,	0x00000000,
 		0xC5C, 0x00248492,
 		0xC60, 0x00000000,
-		0xC64, 0x7112848B,
+		0xC64, 0x2112848B,
 		0xC68, 0x47C00BFF,
 		0xC6C, 0x00000036,
 		0xC70, 0x00000600,
-		0xC74, 0x02013169,
+		0xC74, 0x02013269,
 		0xC78, 0x0000001F,
 		0xC7C, 0x00B91612,
 	0x80000003,	0x00000000,	0x40000000,	0x00000000,
@@ -1216,9 +1369,9 @@ u4Byte Array_MP_8192E_PHY_REG[] = {
 		0xD14, 0x3333BC43,
 		0xD18, 0x7A8F5B6B,
 		0xD1C, 0x0000007F,
-		0xD2C, 0xCC979975,
+		0xD2C, 0xCC979175,
 		0xD30, 0x00000000,
-		0xD34, 0x80608000,
+		0xD34, 0x40608000,
 		0xD38, 0x00000000,
 		0xD3C, 0x00127353,
 		0xD40, 0x00000000,
@@ -1229,7 +1382,7 @@ u4Byte Array_MP_8192E_PHY_REG[] = {
 		0xD54, 0x00000000,
 		0xD58, 0x00000282,
 		0xD5C, 0x30032064,
-		0xD60, 0x4653DE68,
+		0xD60, 0x4653DA68,
 		0xD64, 0x04518A3C,
 		0xD68, 0x00002101,
 		0xD6C, 0x2A201C16,
@@ -1285,71 +1438,77 @@ u4Byte Array_MP_8192E_PHY_REG[] = {
 };
 
 void
-ODM_ReadAndConfig_MP_8192E_PHY_REG(
-	IN   PDM_ODM_T  pDM_Odm
-)
+odm_read_and_config_mp_8192e_phy_reg(struct dm_struct *dm)
 {
-	u4Byte     i         = 0;
-	u1Byte     cCond;
-	BOOLEAN bMatched = TRUE, bSkipped = FALSE;
-	u4Byte     ArrayLen    = sizeof(Array_MP_8192E_PHY_REG)/sizeof(u4Byte);
-	pu4Byte    Array       = Array_MP_8192E_PHY_REG;
-	
-	u4Byte	v1 = 0, v2 = 0, pre_v1 = 0, pre_v2 = 0;
+	u32	i = 0;
+	u8	c_cond;
+	boolean	is_matched = true, is_skipped = false;
+	u32	array_len =
+			sizeof(array_mp_8192e_phy_reg) / sizeof(u32);
+	u32	*array = (u32 *)array_mp_8192e_phy_reg;
 
-	ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_LOUD, ("===> ODM_ReadAndConfig_MP_8192E_PHY_REG\n"));
+	u32	v1 = 0, v2 = 0, pre_v1 = 0, pre_v2 = 0;
+	u32	a1 = 0, a2 = 0, a3 = 0, a4 = 0;
 
-	while ((i + 1) < ArrayLen) {
-		v1 = Array[i];
-		v2 = Array[i + 1];
+	PHYDM_DBG(dm, ODM_COMP_INIT, "===> %s\n", __func__);
 
-		if (v1 & (BIT31 | BIT30)) {/*positive & negative condition*/
-			if (v1 & BIT31) {/* positive condition*/
-				cCond  = (u1Byte)((v1 & (BIT29|BIT28)) >> 28);
-				if (cCond == COND_ENDIF) {/*end*/
-					bMatched = TRUE;
-					bSkipped = FALSE;
-					ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_LOUD, ("ENDIF\n"));
-				} else if (cCond == COND_ELSE) { /*else*/
-					bMatched = bSkipped?FALSE:TRUE;
-					ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_LOUD, ("ELSE\n"));
-				}
-				else {/*if , else if*/
+	while ((i + 1) < array_len) {
+		v1 = array[i];
+		v2 = array[i + 1];
+
+		if (v1 & (BIT(31) | BIT(30))) {/*positive & negative condition*/
+			if (v1 & BIT(31)) {/* positive condition*/
+				c_cond  =
+					(u8)((v1 & (BIT(29) | BIT(28))) >> 28);
+				if (c_cond == COND_ENDIF) {/*end*/
+					is_matched = true;
+					is_skipped = false;
+					PHYDM_DBG(dm, ODM_COMP_INIT, "ENDIF\n");
+				} else if (c_cond == COND_ELSE) { /*else*/
+					is_matched = is_skipped ? false : true;
+					PHYDM_DBG(dm, ODM_COMP_INIT, "ELSE\n");
+				} else {/*if , else if*/
 					pre_v1 = v1;
 					pre_v2 = v2;
-					ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_LOUD, ("IF or ELSE IF\n"));
+					PHYDM_DBG(dm, ODM_COMP_INIT,
+						  "IF or ELSE IF\n");
 				}
-			} else if (v1 & BIT30) { /*negative condition*/
-				if (bSkipped == FALSE) {
-					if (CheckPositive(pDM_Odm, pre_v1, pre_v2, v1, v2)) {
-						bMatched = TRUE;
-						bSkipped = TRUE;
+			} else if (v1 & BIT(30)) { /*negative condition*/
+				if (!is_skipped) {
+					a1 = pre_v1; a2 = pre_v2;
+					a3 = v1; a4 = v2;
+					if (check_positive(dm,
+							   a1, a2, a3, a4)) {
+						is_matched = true;
+						is_skipped = true;
 					} else {
-						bMatched = FALSE;
-						bSkipped = FALSE;
+						is_matched = false;
+						is_skipped = false;
 					}
-				} else
-					bMatched = FALSE;
+				} else {
+					is_matched = false;
+				}
 			}
 		} else {
-			if (bMatched)
-				odm_ConfigBB_PHY_8192E(pDM_Odm, v1, bMaskDWord, v2);
+			if (is_matched)
+				odm_config_bb_phy_8192e(dm, v1, MASKDWORD, v2);
 		}
 		i = i + 2;
 	}
 }
 
-u4Byte
-ODM_GetVersion_MP_8192E_PHY_REG(void)
+u32
+odm_get_version_mp_8192e_phy_reg(void)
 {
-	   return 51;
+		return 60;
 }
 
 /******************************************************************************
-*                           PHY_REG_PG.TXT
-******************************************************************************/
+ *                           phy_reg_pg.TXT
+ ******************************************************************************/
 
-u4Byte Array_MP_8192E_PHY_REG_PG[] = { 
+#ifdef CONFIG_8192E
+const u32 array_mp_8192e_phy_reg_pg[] = {
 	0, 0, 0, 0x00000e08, 0x0000ff00, 0x00003200,
 	0, 0, 1, 0x00000e08, 0x0000ff00, 0x00003200,
 	0, 0, 0, 0x0000086c, 0xffffff00, 0x32323200,
@@ -1380,46 +1539,52 @@ u4Byte Array_MP_8192E_PHY_REG_PG[] = {
 	0, 1, 1, 0x00000868, 0xffffffff, 0x24262832
 };
 
-void
-ODM_ReadAndConfig_MP_8192E_PHY_REG_PG(
-	IN   PDM_ODM_T  pDM_Odm
-)
-{
-	u4Byte     i         = 0;
-	u4Byte     ArrayLen    = sizeof(Array_MP_8192E_PHY_REG_PG)/sizeof(u4Byte);
-	pu4Byte    Array       = Array_MP_8192E_PHY_REG_PG;
-
-#if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
-	PADAPTER		Adapter = pDM_Odm->Adapter;
-	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(Adapter);
-
-	PlatformZeroMemory(pHalData->BufOfLinesPwrByRate, MAX_LINES_HWCONFIG_TXT*MAX_BYTES_LINE_HWCONFIG_TXT);
-	pHalData->nLinesReadPwrByRate = ArrayLen/6;
 #endif
 
-	ODM_RT_TRACE(pDM_Odm, ODM_COMP_INIT, ODM_DBG_LOUD, ("===> ODM_ReadAndConfig_MP_8192E_PHY_REG_PG\n"));
+void
+odm_read_and_config_mp_8192e_phy_reg_pg(struct dm_struct *dm)
+{
+#ifdef CONFIG_8192E
 
-	pDM_Odm->PhyRegPgVersion = 1;
-	pDM_Odm->PhyRegPgValueType = PHY_REG_PG_EXACT_VALUE;
-
-	for (i = 0; i < ArrayLen; i += 6) {
-		u4Byte v1 = Array[i];
-		u4Byte v2 = Array[i+1];
-		u4Byte v3 = Array[i+2];
-		u4Byte v4 = Array[i+3];
-		u4Byte v5 = Array[i+4];
-		u4Byte v6 = Array[i+5];
-
-	    odm_ConfigBB_PHY_REG_PG_8192E(pDM_Odm, v1, v2, v3, v4, v5, v6);
+	u32 i = 0;
+	u32 array_len =
+		 sizeof(array_mp_8192e_phy_reg_pg) / sizeof(u32);
+	u32 *array = (u32 *)array_mp_8192e_phy_reg_pg;
 
 #if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
-	rsprintf(pHalData->BufOfLinesPwrByRate[i/6], 100, "%s, %s, %s, 0x%X, 0x%08X, 0x%08X,",
-		(v1 == 0?"2.4G":"  5G"), (v2 == 0?"A":"B"), (v3 == 0?"1Tx":"2Tx"), v4, v5, v6);
+	void	*adapter = dm->adapter;
+	HAL_DATA_TYPE	*hal_data = GET_HAL_DATA(((PADAPTER)adapter));
+
+	odm_memory_set(dm, hal_data->BufOfLinesPwrByRate, 0,
+		       MAX_LINES_HWCONFIG_TXT *
+		       MAX_BYTES_LINE_HWCONFIG_TXT);
+	hal_data->nLinesReadPwrByRate = array_len / 6;
+#endif
+
+	PHYDM_DBG(dm, ODM_COMP_INIT, "===> %s\n", __func__);
+
+	dm->phy_reg_pg_version = 1;
+	dm->phy_reg_pg_value_type = PHY_REG_PG_EXACT_VALUE;
+
+	for (i = 0; i < array_len; i += 6) {
+		u32	v1 = array[i];
+		u32	v2 = array[i + 1];
+		u32	v3 = array[i + 2];
+		u32	v4 = array[i + 3];
+		u32	v5 = array[i + 4];
+		u32	v6 = array[i + 5];
+
+		odm_config_bb_phy_reg_pg_8192e(dm, v1, v2, v3, v4, v5, v6);
+
+#if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
+	rsprintf((char *)hal_data->BufOfLinesPwrByRate[i / 6], 100,
+		 "%s, %s, %s, 0x%X, 0x%08X, 0x%08X,",
+		 (v1 == 0 ? "2.4G" : "  5G"), (v2 == 0 ? "A" : "B"),
+		 (v3 == 0 ? "1Tx" : "2Tx"), v4, v5, v6);
 #endif
 	}
+#endif
 }
-
-
 
 #endif /* end of HWIMG_SUPPORT*/
 
