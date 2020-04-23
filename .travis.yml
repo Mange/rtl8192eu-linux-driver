@@ -4,62 +4,52 @@ dist: bionic
 os: linux
 
 before_install:
-  - export KERNEL_URL_DETAILS=$(wget --quiet -O - ${KERNEL_URL}v${KVER}/ | grep -A8 'Build for amd64')
+  #Cron builds only build mainline kernel. Stable and LTS kernels usually not have breaking changes.
+  - if [ "$TRAVIS_EVENT_TYPE" == "cron" ] && [ "$KVER_BUILD" != "$KERNEL_MAINLINE" ]; then exit 0; fi
+  - export KERNEL_URL_DETAILS=$(wget --quiet -O - ${KERNEL_URL}v${KVER_BUILD}/ | grep -A8 "Build for ${TRAVIS_CPU_ARCH}")
   - export ALL_DEB=$(echo "$KERNEL_URL_DETAILS" |  grep -m1 'all.deb' | cut -d '"' -f 2)
-  - export KVER_BUILD=$(echo $ALL_DEB | cut -d '_' -f 1 | cut -c15-)
-  - wget ${KERNEL_URL}v${KVER}/$(echo "$KERNEL_URL_DETAILS" | grep -m1 'amd64.deb' | cut -d '"' -f 2)
-  - wget ${KERNEL_URL}v${KVER}/$ALL_DEB
+  - export KVER=$(echo $ALL_DEB | cut -d '_' -f 1 | cut -c15-)-generic
+  - wget ${KERNEL_URL}v${KVER_BUILD}/$(echo "$KERNEL_URL_DETAILS" | grep -m1 "${TRAVIS_CPU_ARCH}.deb" | cut -d '"' -f 2)
+  - wget ${KERNEL_URL}v${KVER_BUILD}/$ALL_DEB
   - sudo dpkg -i *.deb
 
-script:
-  - make CC=$COMPILER KVER=$KVER_BUILD-generic
+script: make CC=$CC KVER=$KVER
+
+addons:
+  apt:
+    packages:
+      #Force update to GCC-7.5 in order to compile Kernels >= 5.4.
+      - gcc-7
 env:
   global:
     - KERNEL_URL=https://kernel.ubuntu.com/~kernel-ppa/mainline/
+    - KERNEL_MAINLINE=$(curl -s https://www.kernel.org/releases.json | grep -B1 'mainline' | head -1 | cut -d'"' -f4)
+    - KERNEL_STABLE=$(curl -s https://www.kernel.org/releases.json | grep -A1 'latest_stable' | tail -1 | cut -d'"' -f4)
+  jobs:
+    - KVER_BUILD=$KERNEL_MAINLINE
+    - KVER_BUILD=$KERNEL_STABLE
+    - KVER_BUILD=5.5.19 #EOL
+ #Kernels 5.4 with minor versions > 28 are failing on amd64. Not upgrade the minor version without check https://kernel.ubuntu.com/~kernel-ppa/mainline/ 
+    - KVER_BUILD=5.4.28
+    - KVER_BUILD=4.19.116
+    - KVER_BUILD=4.9.219
+    - KVER_BUILD=4.4.219
+    - KVER_BUILD=3.16.82
+cache:
+  - ccache: true
 
 jobs:
+#Mainline kernel is also compiled on GCC 8 & 9. Jobs are added to the build matrix expansion
   include:
-    - compiler: gcc
-      addons:
+    - addons:
         apt:
           sources:
             - sourceline: "ppa:ubuntu-toolchain-r/test"
           packages:
             - gcc-9
-      env: COMPILER=gcc-9 KVER="$(curl -s https://www.kernel.org/ | grep -A1 'mainline:' | grep -oP '(?<=strong>).*(?=</strong.*)')"
-    - compiler: gcc
-      addons:
+      env: CC=gcc-9 KVER_BUILD=$KERNEL_MAINLINE
+    - addons:
         apt:
           packages:
             - gcc-8
-      env: COMPILER=gcc-8 KVER="$(curl -s https://www.kernel.org/ | grep -A1 'mainline:' | grep -oP '(?<=strong>).*(?=</strong.*)')"
- #Kernels >= 5.4 No longer builds on gcc-7.4 should be fixed by gcc-7.5
-    - compiler: gcc
-      addons:
-        apt:
-          packages:
-            - gcc-8
-      env: COMPILER=gcc-8 KVER=5.6.5
-    - compiler: gcc
-      addons:
-        apt:
-          packages:
-            - gcc-8
-      env: COMPILER=gcc-8 KVER=5.5.18
-    - compiler: gcc
-      addons:
-        apt:
-          packages:
-            - gcc-8
- #Kernels 5.4 with minor versions > 24 are failing on amd64. Not upgrade the minot version without check https://kernel.ubuntu.com/~kernel-ppa/mainline/ 
-      env: COMPILER=gcc-8 KVER=5.4.27
-    - compiler: gcc
-      env: COMPILER=gcc-7 KVER=4.19.116
-    - compiler: gcc
-      env: COMPILER=gcc-7 KVER=4.14.176
-    - compiler: gcc
-      env: COMPILER=gcc-7 KVER=4.9.219
-    - compiler: gcc
-      env: COMPILER=gcc-7 KVER=4.4.219
-    - compiler: gcc
-      env: COMPILER=gcc-7 KVER=3.16.82
+      env: CC=gcc-8 KVER_BUILD=$KERNEL_MAINLINE
