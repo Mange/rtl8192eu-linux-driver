@@ -1,23 +1,15 @@
 EXTRA_CFLAGS += $(USER_EXTRA_CFLAGS)
 
 ##################### Optimization Flags ##########################
-#EXTRA_CFLAGS += -O1
 EXTRA_CFLAGS += -O2
-#EXTRA_CFLAGS += -O3
 ##################### Compile-time Warnings #######################
-#EXTRA_CFLAGS += -Wall
-#EXTRA_CFLAGS += -Wextra
-#EXTRA_CFLAGS += -Werror
-#EXTRA_CFLAGS += -pedantic
-#EXTRA_CFLAGS += -Wshadow -Wpointer-arith -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes
-#EXTRA_CFLAGS += -Wno-uninitialized
 EXTRA_CFLAGS += -Wno-unused-variable
 EXTRA_CFLAGS += -Wno-unused-value
 EXTRA_CFLAGS += -Wno-unused-label
 EXTRA_CFLAGS += -Wno-unused-parameter
 EXTRA_CFLAGS += -Wno-unused-function
 EXTRA_CFLAGS += -Wno-unused
-EXTRA_CFLAGS += -Wno-incompatible-pointer-types
+#EXTRA_CFLAGS += -Wno-incompatible-pointer-types
 EXTRA_CFLAGS += -Wno-date-time
 
 GCC_VER_49 := $(shell echo `$(CC) -dumpversion | cut -f1-2 -d.` \>= 4.9 | bc )
