@@ -53,3 +53,14 @@ jobs:
           packages:
             - gcc-8
       env: CC=gcc-8 KVER_BUILD=$KERNEL_MAINLINE
+    - if: type != cron
+      addons:
+        apt:
+          packages:
+            - gcc-7
+            - bc
+            - linux-headers-$(uname -r)
+      arch: arm64
+      env: KVER_BUILD=$(uname -r)
+      before_install: true
+      script: make CONFIG_PLATFORM_ARM_AARCH64=y CONFIG_PLATFORM_I386_PC=n CONFIG_MP_VHT_HW_TX_MODE=n
