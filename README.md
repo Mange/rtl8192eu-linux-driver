@@ -21,7 +21,7 @@ In addition, you can find the contents of this version in the initial commit of 
 
 ### Using as AP
 
-Reference: Intelbras IWA 3001 USB WiFi Adapter
+Reference: Intelbras IWA 3001 USB WiFi Adapter  
 Devices using the 8192eu chip can serve as decent access points, with speeds up to ~50Mbps.  
  
 Using hostapd to manage your AP, set the proper ht-capab field for this device, which is:  
@@ -38,6 +38,7 @@ It may also make the device work better with repeaters repeating its signal.
 ## Changing transmit power
 
 Currently there is no way to change transmit power in the driver with iw or iwconfig tools, as you would with other wireless devices.  
+The values returned by these tools are purely fictional on this driver.
 However, you can still manually change the transmit power at compile time
 by editing the file `hal/rl8192e/rtl8192e_phycfg.c` and changing the lines below:
 
