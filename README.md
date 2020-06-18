@@ -19,6 +19,59 @@ Official drivers were downloaded from D-Link Australia. D-Link USA and the europ
 
 In addition, you can find the contents of this version in the initial commit of this repo: [1387cf623d54bc2caec533e72ee18ef3b6a1db29][initial-commit]
 
+### Using as AP
+
+Reference: Intelbras IWA 3001 USB WiFi Adapter
+Devices using the 8192eu chip can serve as decent access points, with speeds up to ~50Mbps.  
+ 
+Using hostapd to manage your AP, set the proper ht-capab field for this device, which is:  
+
+`HT_CAPAB=[RX-STBC1][SHORT-GI-40][SHORT-GI-20][DSSS_CCK-40][MAX-AMSDU-7935]`
+
+Optionally enable wideband, if you don't have neighbours:  
+Note that while this will result in a increase in network throughput it may cause clients further away to fail connecting.  
+It may also make the device work better with repeaters repeating its signal.  
+
+`HT_CAPAB=[HT40+][RX-STBC1][SHORT-GI-40][SHORT-GI-20][DSSS_CCK-40][MAX-AMSDU-7935]` (for channels 1-7), or  
+`HT_CAPAB=[HT40-][RX-STBC1][SHORT-GI-40][SHORT-GI-20][DSSS_CCK-40][MAX-AMSDU-7935]` (for channels 5-13)
+
+## Changing transmit power
+
+Currently there is no way to change transmit power in the driver with iw or iwconfig tools, as you would with other wireless devices.  
+However, you can still manually change the transmit power at compile time
+by editing the file `hal/rl8192e/rtl8192e_phycfg.c` and changing the lines below:
+
+```
+/* Manual Transmit Power Control 
+   The following options take values from 0 to 63, where:
+   0 - disable
+   1 - lowest transmit power the device can do
+   2 - highest transmit power the device can do
+   Note that these options may override your country's regulations about transmit power.
+   Setting the device to work at higher transmit powers most of the time may cause premature 
+   failure or damage by overheating. Make sure the device has enough airflow before you increase this.
+   It is currently unknown what these values translate to in dBm.
+*/
+
+
+// Transmit Power Boost
+// This value is added to the device's calculation of transmit power index.
+// Useful if you want to keep power usage low while still boosting/decreasing transmit power.
+// Can take a negative value as well to reduce power.
+// Zero disables it. Default: 2, for a tiny boost.
+int transmit_power_boost = 2;
+// (ADVANCED) To know what transmit powers this device decides to use dynamically, see:
+// https://github.com/lwfinger/rtl8192ee/blob/42ad92dcc71cb15a62f8c39e50debe3a28566b5f/hal/phydm/rtl8192e/halhwimg8192e_rf.c#L1310
+
+
+// Transmit Power Override
+// This value completely overrides the driver's calculations and uses only one value for all transmissions.
+// Zero disables it. Default: 0
+int transmit_power_override = 0;
+
+
+/* Manual Transmit Power Control */
+```
 ## Patches
 
 You can see the applied patches, their sources and/or motivation by looking at the commits. The `master` branch will mostly be kept clean with a single commit per patch, except for Pull Requests. You can review commit by commit and then record the SHA in order to get a safe reference to use. As long as the SHA stays the same you know that what you get has been reviewed by you.
