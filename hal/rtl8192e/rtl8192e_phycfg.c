@@ -13,18 +13,34 @@
  *
  *****************************************************************************/
 #define _RTL8192E_PHYCFG_C_
-
-/* #include <drv_types.h> */
-
 #include <rtl8192e_hal.h>
 
-/*---------------------Define local function prototype-----------------------*/
+/* Manual Transmit Power Control 
+   The following options take values from 0 to 63, where:
+   0 - disable
+   1 - lowest transmit power the device can do
+   2 - highest transmit power the device can do
+   Note that these options may override your country's regulations about transmit power.
+   Setting the device to work at higher transmit powers most of the time may cause premature 
+   failure or damage by overheating. Make sure the device has enough airflow before you increase this.
+   It is currently unknown what these values translate to in dBm.
+*/
 
-/*----------------------------Function Body----------------------------------*/
+// Transmit Power Boost
+// This value is added to the device's calculation of transmit power index.
+// Useful if you want to keep power usage low while still boosting/decreasing transmit power.
+// Can take a negative value as well to reduce power.
+// Zero disables it. Default: 2, for a tiny boost.
+int transmit_power_boost = 2;
+// (ADVANCED) To know what transmit powers this device decides to use dynamically, see:
+// https://github.com/lwfinger/rtl8192ee/blob/42ad92dcc71cb15a62f8c39e50debe3a28566b5f/hal/phydm/rtl8192e/halhwimg8192e_rf.c#L1310
 
-/*
- * 1. BB register R/W API
- *   */
+// Transmit Power Override
+// This value completely overrides the driver's calculations and uses only one value for all transmissions.
+// Zero disables it. Default: 0
+int transmit_power_override = 0;
+
+/* Manual Transmit Power Control */
 
 u32
 PHY_QueryBBReg8192E(
@@ -715,13 +731,18 @@ PHY_GetTxPowerIndex_8192E(
 	}
 
 	by_rate_diff = by_rate_diff > limit ? limit : by_rate_diff;
-	power_idx = base_idx + by_rate_diff + tpt_offset + extra_bias;
+	power_idx = base_idx + by_rate_diff + tpt_offset + extra_bias + transmit_power_boost;
 
 	if (power_idx < 0)
 		power_idx = 0;
-	else if (power_idx > hal_spec->txgi_max)
-		power_idx = hal_spec->txgi_max;
 
+        if (transmit_power_override != 0)
+		power_idx = transmit_power_override;
+
+	if (power_idx > hal_spec->txgi_max)
+		power_idx = hal_spec->txgi_max;
+	
+	
 	return power_idx;
 }
 
