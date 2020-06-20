@@ -19,7 +19,7 @@
    The following options take values from 0 to 63, where:
    0 - disable
    1 - lowest transmit power the device can do
-   2 - highest transmit power the device can do
+   63 - highest transmit power the device can do
    Note that these options may override your country's regulations about transmit power.
    Setting the device to work at higher transmit powers most of the time may cause premature 
    failure or damage by overheating. Make sure the device has enough airflow before you increase this.
