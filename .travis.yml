@@ -28,13 +28,12 @@ env:
   jobs:
     - KVER_BUILD=$KERNEL_MAINLINE
     - KVER_BUILD=$KERNEL_STABLE
-    - KVER_BUILD=5.5.19 #EOL
- #Kernels 5.4 with minor versions > 28 are failing on amd64. Not upgrade the minor version without check https://kernel.ubuntu.com/~kernel-ppa/mainline/ 
-    - KVER_BUILD=5.4.28
-    - KVER_BUILD=4.19.116
-    - KVER_BUILD=4.9.219
-    - KVER_BUILD=4.4.219
-    - KVER_BUILD=3.16.82
+    - KVER_BUILD=5.8.17
+    - KVER_BUILD=5.4.73
+    - KVER_BUILD=4.19.154
+    - KVER_BUILD=4.14.203
+    - KVER_BUILD=4.9.241
+    - KVER_BUILD=4.4.241
 cache:
   - ccache: true
 
