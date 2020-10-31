@@ -9,7 +9,7 @@ EXTRA_CFLAGS += -Wno-unused-label
 EXTRA_CFLAGS += -Wno-unused-parameter
 EXTRA_CFLAGS += -Wno-unused-function
 EXTRA_CFLAGS += -Wno-unused
-EXTRA_CFLAGS += -Wno-vla
+#EXTRA_CFLAGS += -Wno-vla
 EXTRA_CFLAGS += -Wno-date-time
 
 GCC_VER_49 := $(shell echo `$(CC) -dumpversion | cut -f1-2 -d.` \>= 4.9 | bc )
