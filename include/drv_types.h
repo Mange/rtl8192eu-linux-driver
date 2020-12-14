@@ -91,7 +91,7 @@ typedef struct _ADAPTER _adapter, ADAPTER, *PADAPTER;
 #include <rtw_sreset.h>
 #include <hal_intf.h>
 #include <hal_com.h>
-#include<hal_com_h2c.h>
+#include <hal_com_h2c.h>
 #include <hal_com_led.h>
 #include "../hal/hal_dm.h"
 #include <rtw_qos.h>
@@ -105,7 +105,7 @@ typedef struct _ADAPTER _adapter, ADAPTER, *PADAPTER;
 #include <rtw_ioctl_rtl.h>
 #include <osdep_intf.h>
 #include <rtw_eeprom.h>
-#include <sta_info.h>
+#include "sta_info.h"
 #include <rtw_event.h>
 #include <rtw_mlme_ext.h>
 #include <rtw_mi.h>
