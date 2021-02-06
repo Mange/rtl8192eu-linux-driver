@@ -2418,6 +2418,7 @@ u32 mp_query_psd(PADAPTER pAdapter, u8 *data)
 	u32 psd_data = 0;
 	struct psd_init_regs regs = {};
 	int psd_analysis = 0;
+	u8 *pdata = data;
 
 #ifdef PLATFORM_LINUX
 	if (!netif_running(pAdapter->pnetdev)) {
@@ -2449,7 +2450,7 @@ u32 mp_query_psd(PADAPTER pAdapter, u8 *data)
 			psd_data = rtw_GetPSDData(pAdapter, i - psd_pts);
 		else
 			psd_data = rtw_GetPSDData(pAdapter, i);
-		sprintf(data, "%s%x ", data, psd_data);
+		pdata += sprintf(pdata, "%x ", psd_data);
 		i++;
 	}
 
