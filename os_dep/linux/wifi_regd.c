@@ -400,25 +400,10 @@ static struct country_code_to_enum_rd *_rtw_regd_find_country(u16 countrycode)
 	return NULL;
 }
 
-int rtw_regd_init(struct wiphy *wiphy)
+void rtw_regd_init(struct wiphy *wiphy)
 {
-#if 0
-	if (rtw_regd == NULL) {
-		rtw_regd = (struct rtw_regulatory *)
-			   rtw_malloc(sizeof(struct rtw_regulatory));
-
-		rtw_regd->alpha2[0] = '9';
-		rtw_regd->alpha2[1] = '9';
-
-		rtw_regd->country_code = COUNTRY_CODE_USER;
-	}
-
-	RTW_INFO("%s: Country alpha2 being used: %c%c\n",
-		 __func__, rtw_regd->alpha2[0], rtw_regd->alpha2[1]);
-#endif
 
 	_rtw_regd_init_wiphy(NULL, wiphy);
 
-	return 0;
 }
 #endif /* CONFIG_IOCTL_CFG80211 */

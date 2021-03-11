@@ -10000,6 +10000,8 @@ struct wiphy *rtw_wiphy_alloc(_adapter *padapter, struct device *dev)
 #endif
 
 	rtw_cfg80211_preinit_wiphy(padapter, wiphy);
+	/* init regulary domain */
+	rtw_regd_init(wiphy);
 
 	RTW_INFO(FUNC_WIPHY_FMT"\n", FUNC_WIPHY_ARG(wiphy));
 
@@ -10033,8 +10035,6 @@ int rtw_wiphy_register(struct wiphy *wiphy)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0)) || defined(RTW_VENDOR_EXT_SUPPORT)
 	rtw_cfgvendor_attach(wiphy);
 #endif
-
-	rtw_regd_init(wiphy);
 
 	return wiphy_register(wiphy);
 }
