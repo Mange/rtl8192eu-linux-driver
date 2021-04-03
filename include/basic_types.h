@@ -85,6 +85,11 @@
 
 	typedef	signed int sint;
 
+	#ifndef RHEL_RELEASE_CODE
+        #define RHEL_RELEASE_VERSION(a,b) (((a) << 8) + (b))
+        #define RHEL_RELEASE_CODE 0
+	#endif
+
 	#ifndef	PVOID
 		typedef void *PVOID;
 		/* #define PVOID	(void *) */
