@@ -42,10 +42,6 @@
 	#include <drv_types_ce.h>
 #endif
 
-#ifdef PLATFORM_LINUX
-	#include <drv_types_linux.h>
-#endif
-
 enum _NIC_VERSION {
 
 	RTL8711_NIC,
