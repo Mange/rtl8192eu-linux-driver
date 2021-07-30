@@ -288,7 +288,6 @@ void _rtw_usb_buffer_free(struct usb_device *dev, size_t size, void *addr, dma_a
 #endif /* DBG_MEM_ALLOC */
 
 extern void	*rtw_malloc2d(int h, int w, size_t size);
-extern void	rtw_mfree2d(void *pbuf, int h, int w, int size);
 
 void rtw_os_pkt_free(_pkt *pkt);
 _pkt *rtw_os_pkt_copy(_pkt *pkt);

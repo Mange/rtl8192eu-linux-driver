@@ -1178,7 +1178,7 @@ Hal_EfusePowerSwitch8192E(
 		if (bWrite == _TRUE) {
 			/* Enable LDO 2.5V before read/write action */
 			tempval = rtw_read8(pAdapter, EFUSE_TEST + 3);
-			tempval &= 0x07; /* 0x34[30:27] = 4¡¦1110 => LDOE25 voltage select to 2.25V Suggested by SD1 Jackie & DD -Tm_lin */
+			tempval &= 0x07; /* 0x34[30:27] = 4ï¿½ï¿½1110 => LDOE25 voltage select to 2.25V Suggested by SD1 Jackie & DD -Tm_lin */
 			/* tempval |= (VOLTAGE_V25 << 4); */
 			tempval |= 0x70;
 			rtw_write8(pAdapter, EFUSE_TEST + 3, (tempval | 0x80));
@@ -1429,8 +1429,7 @@ exit:
 	if (efuseTbl)
 		rtw_mfree(efuseTbl, EFUSE_MAP_LEN_8192E);
 
-	if (eFuseWord)
-		rtw_mfree2d((void *)eFuseWord, EFUSE_MAX_SECTION_8192E, EFUSE_MAX_WORD_UNIT, sizeof(u16));
+	kfree(eFuseWord);
 }
 
 static VOID

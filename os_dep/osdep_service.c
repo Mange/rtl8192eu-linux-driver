@@ -873,11 +873,6 @@ void *rtw_malloc2d(int h, int w, size_t size)
 	return a;
 }
 
-void rtw_mfree2d(void *pbuf, int h, int w, int size)
-{
-	rtw_mfree((u8 *)pbuf, h * sizeof(void *) + w * h * size);
-}
-
 inline void rtw_os_pkt_free(_pkt *pkt)
 {
 #if defined(PLATFORM_LINUX)
