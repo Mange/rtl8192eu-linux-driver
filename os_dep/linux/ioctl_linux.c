@@ -6225,7 +6225,7 @@ static int rtw_dbg_port(struct net_device *dev,
 				pxmitpriv->free_xmit_extbuf_cnt, pxmitpriv->free_xframe_ext_cnt,
 				 precvpriv->free_recvframe_cnt);
 #ifdef CONFIG_USB_HCI
-			RTW_INFO("rx_urb_pending_cn=%d\n", ATOMIC_READ(&(precvpriv->rx_pending_cnt)));
+			RTW_INFO("rx_urb_pending_cn=%d\n", atomic_read(&(precvpriv->rx_pending_cnt)));
 #endif
 		}
 			break;
@@ -11042,7 +11042,7 @@ static int rtw_wfd_tdls_status(struct net_device *dev,
 #ifdef CONFIG_TDLS_CH_SW
 		,
 		ptdlsinfo->chsw_info.ch_sw_state,
-		ATOMIC_READ(&padapter->tdlsinfo.chsw_info.chsw_on),
+		atomic_read(&padapter->tdlsinfo.chsw_info.chsw_on),
 		ptdlsinfo->chsw_info.off_ch_num,
 		ptdlsinfo->chsw_info.cur_time,
 		ptdlsinfo->chsw_info.ch_offset,

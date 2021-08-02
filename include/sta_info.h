@@ -357,7 +357,7 @@ struct sta_info {
 
 	/* for A-MPDU Rx reordering buffer control */
 	struct recv_reorder_ctrl recvreorder_ctrl[TID_NUM];
-	ATOMIC_T continual_no_rx_packet[TID_NUM];
+	atomic_t continual_no_rx_packet[TID_NUM];
 	/* for A-MPDU Tx */
 	/* unsigned char		ampdu_txen_bitmap; */
 	u16	BA_starting_seqctrl[16];

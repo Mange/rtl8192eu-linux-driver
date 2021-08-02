@@ -140,7 +140,7 @@ struct rtw_mesh_table {
 	rtw_hlist_head known_gates;
 	_lock gates_lock;
 	rtw_rhashtable rhead;
-	ATOMIC_T entries;
+	atomic_t entries;
 };
 
 #define RTW_MESH_PATH_EXPIRE (600 * HZ)

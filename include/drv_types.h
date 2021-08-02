@@ -942,7 +942,7 @@ struct rf_ctl_t {
 struct mbid_cam_ctl_t {
 	_lock lock;
 	u8 bitmap;
-	ATOMIC_T mbid_entry_num;
+	atomic_t mbid_entry_num;
 };
 struct mbid_cam_cache {
 	u8 iface_id;
@@ -995,8 +995,8 @@ struct dvobj_priv {
 	u8	HardwareType;
 	u8	interface_type;/*USB,SDIO,SPI,PCI*/
 
-	ATOMIC_T	bSurpriseRemoved;
-	ATOMIC_T	bDriverStopped;
+	atomic_t	bSurpriseRemoved;
+	atomic_t	bDriverStopped;
 
 	s32	processing_dev_remove;
 
@@ -1076,9 +1076,9 @@ struct dvobj_priv {
 	u8	Queue2Pipe[HW_QUEUE_ENTRY];/* for out pipe mapping */
 
 	u8	irq_alloc;
-	ATOMIC_T continual_io_error;
+	atomic_t continual_io_error;
 
-	ATOMIC_T disable_func;
+	atomic_t disable_func;
 
 	u8 xmit_block;
 	_lock xmit_block_lock;
@@ -1248,7 +1248,6 @@ struct dvobj_priv {
 #endif 
 	/* also for RTK T/P Testing Mode */ 
 	u8 scan_deny;
-
 };
 
 #define DEV_STA_NUM(_dvobj)			MSTATE_STA_NUM(&((_dvobj)->iface_state))
@@ -1286,22 +1285,22 @@ struct dvobj_priv {
 
 static inline void dev_set_surprise_removed(struct dvobj_priv *dvobj)
 {
-	ATOMIC_SET(&dvobj->bSurpriseRemoved, _TRUE);
+	atomic_set(&dvobj->bSurpriseRemoved, _TRUE);
 }
 static inline void dev_clr_surprise_removed(struct dvobj_priv *dvobj)
 {
-	ATOMIC_SET(&dvobj->bSurpriseRemoved, _FALSE);
+	atomic_set(&dvobj->bSurpriseRemoved, _FALSE);
 }
 static inline void dev_set_drv_stopped(struct dvobj_priv *dvobj)
 {
-	ATOMIC_SET(&dvobj->bDriverStopped, _TRUE);
+	atomic_set(&dvobj->bDriverStopped, _TRUE);
 }
 static inline void dev_clr_drv_stopped(struct dvobj_priv *dvobj)
 {
-	ATOMIC_SET(&dvobj->bDriverStopped, _FALSE);
+	atomic_set(&dvobj->bDriverStopped, _FALSE);
 }
-#define dev_is_surprise_removed(dvobj)	(ATOMIC_READ(&dvobj->bSurpriseRemoved) == _TRUE)
-#define dev_is_drv_stopped(dvobj)		(ATOMIC_READ(&dvobj->bDriverStopped) == _TRUE)
+#define dev_is_surprise_removed(dvobj)	(atomic_read(&dvobj->bSurpriseRemoved) == _TRUE)
+#define dev_is_drv_stopped(dvobj)		(atomic_read(&dvobj->bDriverStopped) == _TRUE)
 
 #ifdef PLATFORM_LINUX
 static inline struct device *dvobj_to_dev(struct dvobj_priv *dvobj)
@@ -1448,7 +1447,7 @@ struct _ADAPTER {
 #endif /* CONFIG_P2P */
 #endif /* CONFIG_IOCTL_CFG80211 */
 	u32	setband;
-	ATOMIC_T bandskip;
+	atomic_t bandskip;
 
 #ifdef CONFIG_P2P
 	struct wifidirect_info	wdinfo;
@@ -1741,27 +1740,27 @@ static inline void rtw_clr_drv_stopped(_adapter *padapter)
 #define DF_RX_BIT		BIT1			/*read_port_cancel*/
 #define DF_IO_BIT		BIT2
 
-/* #define RTW_DISABLE_FUNC(padapter, func) (ATOMIC_ADD(&adapter_to_dvobj(padapter)->disable_func, (func))) */
-/* #define RTW_ENABLE_FUNC(padapter, func) (ATOMIC_SUB(&adapter_to_dvobj(padapter)->disable_func, (func))) */
+/* #define RTW_DISABLE_FUNC(padapter, func) (atomic_add(&adapter_to_dvobj(padapter)->disable_func, (func))) */
+/* #define RTW_ENABLE_FUNC(padapter, func) (atomic_sub(&adapter_to_dvobj(padapter)->disable_func, (func))) */
 __inline static void RTW_DISABLE_FUNC(_adapter *padapter, int func_bit)
 {
-	int	df = ATOMIC_READ(&adapter_to_dvobj(padapter)->disable_func);
+	int	df = atomic_read(&adapter_to_dvobj(padapter)->disable_func);
 	df |= func_bit;
-	ATOMIC_SET(&adapter_to_dvobj(padapter)->disable_func, df);
+	atomic_set(&adapter_to_dvobj(padapter)->disable_func, df);
 }
 
 __inline static void RTW_ENABLE_FUNC(_adapter *padapter, int func_bit)
 {
-	int	df = ATOMIC_READ(&adapter_to_dvobj(padapter)->disable_func);
+	int	df = atomic_read(&adapter_to_dvobj(padapter)->disable_func);
 	df &= ~(func_bit);
-	ATOMIC_SET(&adapter_to_dvobj(padapter)->disable_func, df);
+	atomic_set(&adapter_to_dvobj(padapter)->disable_func, df);
 }
 
 #define RTW_CANNOT_RUN(padapter) \
 	(rtw_is_surprise_removed(padapter) || \
 	 rtw_is_drv_stopped(padapter))
 
-#define RTW_IS_FUNC_DISABLED(padapter, func_bit) (ATOMIC_READ(&adapter_to_dvobj(padapter)->disable_func) & (func_bit))
+#define RTW_IS_FUNC_DISABLED(padapter, func_bit) (atomic_read(&adapter_to_dvobj(padapter)->disable_func) & (func_bit))
 
 #define RTW_CANNOT_IO(padapter) \
 	(rtw_is_surprise_removed(padapter) || \

@@ -610,18 +610,6 @@ extern void rtw_set_bit(int nr, unsigned long *addr);
 extern void rtw_clear_bit(int nr, unsigned long *addr);
 extern int rtw_test_and_clear_bit(int nr, unsigned long *addr);
 
-extern void ATOMIC_SET(ATOMIC_T *v, int i);
-extern int ATOMIC_READ(ATOMIC_T *v);
-extern void ATOMIC_ADD(ATOMIC_T *v, int i);
-extern void ATOMIC_SUB(ATOMIC_T *v, int i);
-extern void ATOMIC_INC(ATOMIC_T *v);
-extern void ATOMIC_DEC(ATOMIC_T *v);
-extern int ATOMIC_ADD_RETURN(ATOMIC_T *v, int i);
-extern int ATOMIC_SUB_RETURN(ATOMIC_T *v, int i);
-extern int ATOMIC_INC_RETURN(ATOMIC_T *v);
-extern int ATOMIC_DEC_RETURN(ATOMIC_T *v);
-extern bool ATOMIC_INC_UNLESS(ATOMIC_T *v, int u);
-
 /* File operation APIs, just for linux now */
 extern int rtw_is_file_readable(const char *path);
 extern int rtw_is_file_readable_with_size(const char *path, u32 *sz);

@@ -3363,14 +3363,14 @@ static int ro_ch_handler(_adapter *adapter, u8 *buf)
 		if ((remain_ch != rtw_mi_get_union_chan(adapter)) && !check_fwstate(&adapter->mlmepriv, _FW_LINKED)) {
 			if (remain_ch != pmlmeext->cur_channel
 				#ifdef RTW_ROCH_BACK_OP
-				|| ATOMIC_READ(&pwdev_priv->switch_ch_to) == 1
+				|| atomic_read(&pwdev_priv->switch_ch_to) == 1
 				#endif
 			) {
 				rtw_leave_opch(adapter);
 
 				#ifdef RTW_ROCH_BACK_OP
 				RTW_INFO("%s, set switch ch timer, duration=%d\n", __func__, duration - pwdinfo->ext_listen_interval);
-				ATOMIC_SET(&pwdev_priv->switch_ch_to, 0);
+				atomic_set(&pwdev_priv->switch_ch_to, 0);
 				_set_timer(&pwdinfo->ap_p2p_switch_timer, duration - pwdinfo->ext_listen_interval);
 				#endif
 			}
@@ -3442,7 +3442,7 @@ static int cancel_ro_ch_handler(_adapter *padapter, u8 *buf)
 
 #if defined(RTW_ROCH_BACK_OP) && defined(CONFIG_CONCURRENT_MODE)
 	_cancel_timer_ex(&pwdinfo->ap_p2p_switch_timer);
-	ATOMIC_SET(&pwdev_priv->switch_ch_to, 1);
+	atomic_set(&pwdev_priv->switch_ch_to, 1);
 #endif
 
 	if (rtw_mi_get_ch_setting_union(padapter, &ch, &bw, &offset) != 0) {
@@ -4779,7 +4779,7 @@ void ap_p2p_switch_timer_process(void *FunctionContext)
 		return;
 
 #ifdef CONFIG_IOCTL_CFG80211
-	ATOMIC_SET(&pwdev_priv->switch_ch_to, 1);
+	atomic_set(&pwdev_priv->switch_ch_to, 1);
 #endif
 
 	p2p_protocol_wk_cmd(adapter, P2P_AP_P2P_CH_SWITCH_PROCESS_WK);

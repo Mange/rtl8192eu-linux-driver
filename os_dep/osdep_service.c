@@ -20,14 +20,6 @@
 
 #define RT_TAG	'1178'
 
-#ifdef DBG_MEMORY_LEAK
-#ifdef PLATFORM_LINUX
-atomic_t _malloc_cnt = ATOMIC_INIT(0);
-atomic_t _malloc_size = ATOMIC_INIT(0);
-#endif
-#endif /* DBG_MEMORY_LEAK */
-
-
 #if defined(PLATFORM_LINUX)
 /*
 * Translate the OS dependent @param error_code to OS independent RTW_STATUS_CODE
@@ -407,10 +399,10 @@ inline void _rtw_usb_buffer_free(struct usb_device *dev, size_t size, void *addr
 #if defined(DBG_MEM_ALLOC)
 
 struct rtw_mem_stat {
-	ATOMIC_T alloc; /* the memory bytes we allocate currently */
-	ATOMIC_T peak; /* the peak memory bytes we allocate */
-	ATOMIC_T alloc_cnt; /* the alloc count for alloc currently */
-	ATOMIC_T alloc_err_cnt; /* the error times we fail to allocate memory */
+	atomic_t alloc; /* the memory bytes we allocate currently */
+	atomic_t peak; /* the peak memory bytes we allocate */
+	atomic_t alloc_cnt; /* the alloc count for alloc currently */
+	atomic_t alloc_err_cnt; /* the error times we fail to allocate memory */
 };
 
 struct rtw_mem_stat rtw_mem_type_stat[mstat_tf_idx(MSTAT_TYPE_MAX)];
@@ -448,18 +440,18 @@ void rtw_mstat_dump(void *sel)
 	int tx_alloc, tx_peak, tx_alloc_err, rx_alloc, rx_peak, rx_alloc_err;
 
 	for (i = 0; i < mstat_tf_idx(MSTAT_TYPE_MAX); i++) {
-		value_t[0][i] = ATOMIC_READ(&(rtw_mem_type_stat[i].alloc));
-		value_t[1][i] = ATOMIC_READ(&(rtw_mem_type_stat[i].peak));
-		value_t[2][i] = ATOMIC_READ(&(rtw_mem_type_stat[i].alloc_cnt));
-		value_t[3][i] = ATOMIC_READ(&(rtw_mem_type_stat[i].alloc_err_cnt));
+		value_t[0][i] = atomic_read(&(rtw_mem_type_stat[i].alloc));
+		value_t[1][i] = atomic_read(&(rtw_mem_type_stat[i].peak));
+		value_t[2][i] = atomic_read(&(rtw_mem_type_stat[i].alloc_cnt));
+		value_t[3][i] = atomic_read(&(rtw_mem_type_stat[i].alloc_err_cnt));
 	}
 
 #ifdef RTW_MEM_FUNC_STAT
 	for (i = 0; i < mstat_ff_idx(MSTAT_FUNC_MAX); i++) {
-		value_f[0][i] = ATOMIC_READ(&(rtw_mem_func_stat[i].alloc));
-		value_f[1][i] = ATOMIC_READ(&(rtw_mem_func_stat[i].peak));
-		value_f[2][i] = ATOMIC_READ(&(rtw_mem_func_stat[i].alloc_cnt));
-		value_f[3][i] = ATOMIC_READ(&(rtw_mem_func_stat[i].alloc_err_cnt));
+		value_f[0][i] = atomic_read(&(rtw_mem_func_stat[i].alloc));
+		value_f[1][i] = atomic_read(&(rtw_mem_func_stat[i].peak));
+		value_f[2][i] = atomic_read(&(rtw_mem_func_stat[i].alloc_cnt));
+		value_f[3][i] = atomic_read(&(rtw_mem_func_stat[i].alloc_err_cnt));
 	}
 #endif
 
@@ -484,51 +476,51 @@ void rtw_mstat_update(const enum mstat_f flags, const MSTAT_STATUS status, u32 s
 	/* initialization */
 	if (!update_time) {
 		for (i = 0; i < mstat_tf_idx(MSTAT_TYPE_MAX); i++) {
-			ATOMIC_SET(&(rtw_mem_type_stat[i].alloc), 0);
-			ATOMIC_SET(&(rtw_mem_type_stat[i].peak), 0);
-			ATOMIC_SET(&(rtw_mem_type_stat[i].alloc_cnt), 0);
-			ATOMIC_SET(&(rtw_mem_type_stat[i].alloc_err_cnt), 0);
+			atomic_set(&(rtw_mem_type_stat[i].alloc), 0);
+			atomic_set(&(rtw_mem_type_stat[i].peak), 0);
+			atomic_set(&(rtw_mem_type_stat[i].alloc_cnt), 0);
+			atomic_set(&(rtw_mem_type_stat[i].alloc_err_cnt), 0);
 		}
 		#ifdef RTW_MEM_FUNC_STAT
 		for (i = 0; i < mstat_ff_idx(MSTAT_FUNC_MAX); i++) {
-			ATOMIC_SET(&(rtw_mem_func_stat[i].alloc), 0);
-			ATOMIC_SET(&(rtw_mem_func_stat[i].peak), 0);
-			ATOMIC_SET(&(rtw_mem_func_stat[i].alloc_cnt), 0);
-			ATOMIC_SET(&(rtw_mem_func_stat[i].alloc_err_cnt), 0);
+			atomic_set(&(rtw_mem_func_stat[i].alloc), 0);
+			atomic_set(&(rtw_mem_func_stat[i].peak), 0);
+			atomic_set(&(rtw_mem_func_stat[i].alloc_cnt), 0);
+			atomic_set(&(rtw_mem_func_stat[i].alloc_err_cnt), 0);
 		}
 		#endif
 	}
 
 	switch (status) {
 	case MSTAT_ALLOC_SUCCESS:
-		ATOMIC_INC(&(rtw_mem_type_stat[mstat_tf_idx(flags)].alloc_cnt));
-		alloc = ATOMIC_ADD_RETURN(&(rtw_mem_type_stat[mstat_tf_idx(flags)].alloc), sz);
-		peak = ATOMIC_READ(&(rtw_mem_type_stat[mstat_tf_idx(flags)].peak));
+		atomic_inc(&(rtw_mem_type_stat[mstat_tf_idx(flags)].alloc_cnt));
+		alloc = atomic_add_RETURN(&(rtw_mem_type_stat[mstat_tf_idx(flags)].alloc), sz);
+		peak = atomic_read(&(rtw_mem_type_stat[mstat_tf_idx(flags)].peak));
 		if (peak < alloc)
-			ATOMIC_SET(&(rtw_mem_type_stat[mstat_tf_idx(flags)].peak), alloc);
+			atomic_set(&(rtw_mem_type_stat[mstat_tf_idx(flags)].peak), alloc);
 
 		#ifdef RTW_MEM_FUNC_STAT
-		ATOMIC_INC(&(rtw_mem_func_stat[mstat_ff_idx(flags)].alloc_cnt));
-		alloc = ATOMIC_ADD_RETURN(&(rtw_mem_func_stat[mstat_ff_idx(flags)].alloc), sz);
-		peak = ATOMIC_READ(&(rtw_mem_func_stat[mstat_ff_idx(flags)].peak));
+		atomic_inc(&(rtw_mem_func_stat[mstat_ff_idx(flags)].alloc_cnt));
+		alloc = atomic_add_RETURN(&(rtw_mem_func_stat[mstat_ff_idx(flags)].alloc), sz);
+		peak = atomic_read(&(rtw_mem_func_stat[mstat_ff_idx(flags)].peak));
 		if (peak < alloc)
-			ATOMIC_SET(&(rtw_mem_func_stat[mstat_ff_idx(flags)].peak), alloc);
+			atomic_set(&(rtw_mem_func_stat[mstat_ff_idx(flags)].peak), alloc);
 		#endif
 		break;
 
 	case MSTAT_ALLOC_FAIL:
-		ATOMIC_INC(&(rtw_mem_type_stat[mstat_tf_idx(flags)].alloc_err_cnt));
+		atomic_inc(&(rtw_mem_type_stat[mstat_tf_idx(flags)].alloc_err_cnt));
 		#ifdef RTW_MEM_FUNC_STAT
-		ATOMIC_INC(&(rtw_mem_func_stat[mstat_ff_idx(flags)].alloc_err_cnt));
+		atomic_inc(&(rtw_mem_func_stat[mstat_ff_idx(flags)].alloc_err_cnt));
 		#endif
 		break;
 
 	case MSTAT_FREE:
-		ATOMIC_DEC(&(rtw_mem_type_stat[mstat_tf_idx(flags)].alloc_cnt));
-		ATOMIC_SUB(&(rtw_mem_type_stat[mstat_tf_idx(flags)].alloc), sz);
+		atomic_dec(&(rtw_mem_type_stat[mstat_tf_idx(flags)].alloc_cnt));
+		atomic_sub(&(rtw_mem_type_stat[mstat_tf_idx(flags)].alloc), sz);
 		#ifdef RTW_MEM_FUNC_STAT
-		ATOMIC_DEC(&(rtw_mem_func_stat[mstat_ff_idx(flags)].alloc_cnt));
-		ATOMIC_SUB(&(rtw_mem_func_stat[mstat_ff_idx(flags)].alloc), sz);
+		atomic_dec(&(rtw_mem_func_stat[mstat_ff_idx(flags)].alloc_cnt));
+		atomic_sub(&(rtw_mem_func_stat[mstat_ff_idx(flags)].alloc), sz);
 		#endif
 		break;
 	};
@@ -1958,137 +1950,6 @@ inline int rtw_test_and_clear_bit(int nr, unsigned long *addr)
 	return test_and_clear_bit(nr, addr);
 #else
 	#error "TBD\n";
-#endif
-}
-
-inline void ATOMIC_SET(ATOMIC_T *v, int i)
-{
-#ifdef PLATFORM_LINUX
-	atomic_set(v, i);
-#elif defined(PLATFORM_WINDOWS)
-	*v = i; /* other choice???? */
-#elif defined(PLATFORM_FREEBSD)
-	atomic_set_int(v, i);
-#endif
-}
-
-inline int ATOMIC_READ(ATOMIC_T *v)
-{
-#ifdef PLATFORM_LINUX
-	return atomic_read(v);
-#elif defined(PLATFORM_WINDOWS)
-	return *v; /* other choice???? */
-#elif defined(PLATFORM_FREEBSD)
-	return atomic_load_acq_32(v);
-#endif
-}
-
-inline void ATOMIC_ADD(ATOMIC_T *v, int i)
-{
-#ifdef PLATFORM_LINUX
-	atomic_add(i, v);
-#elif defined(PLATFORM_WINDOWS)
-	InterlockedAdd(v, i);
-#elif defined(PLATFORM_FREEBSD)
-	atomic_add_int(v, i);
-#endif
-}
-inline void ATOMIC_SUB(ATOMIC_T *v, int i)
-{
-#ifdef PLATFORM_LINUX
-	atomic_sub(i, v);
-#elif defined(PLATFORM_WINDOWS)
-	InterlockedAdd(v, -i);
-#elif defined(PLATFORM_FREEBSD)
-	atomic_subtract_int(v, i);
-#endif
-}
-
-inline void ATOMIC_INC(ATOMIC_T *v)
-{
-#ifdef PLATFORM_LINUX
-	atomic_inc(v);
-#elif defined(PLATFORM_WINDOWS)
-	InterlockedIncrement(v);
-#elif defined(PLATFORM_FREEBSD)
-	atomic_add_int(v, 1);
-#endif
-}
-
-inline void ATOMIC_DEC(ATOMIC_T *v)
-{
-#ifdef PLATFORM_LINUX
-	atomic_dec(v);
-#elif defined(PLATFORM_WINDOWS)
-	InterlockedDecrement(v);
-#elif defined(PLATFORM_FREEBSD)
-	atomic_subtract_int(v, 1);
-#endif
-}
-
-inline int ATOMIC_ADD_RETURN(ATOMIC_T *v, int i)
-{
-#ifdef PLATFORM_LINUX
-	return atomic_add_return(i, v);
-#elif defined(PLATFORM_WINDOWS)
-	return InterlockedAdd(v, i);
-#elif defined(PLATFORM_FREEBSD)
-	atomic_add_int(v, i);
-	return atomic_load_acq_32(v);
-#endif
-}
-
-inline int ATOMIC_SUB_RETURN(ATOMIC_T *v, int i)
-{
-#ifdef PLATFORM_LINUX
-	return atomic_sub_return(i, v);
-#elif defined(PLATFORM_WINDOWS)
-	return InterlockedAdd(v, -i);
-#elif defined(PLATFORM_FREEBSD)
-	atomic_subtract_int(v, i);
-	return atomic_load_acq_32(v);
-#endif
-}
-
-inline int ATOMIC_INC_RETURN(ATOMIC_T *v)
-{
-#ifdef PLATFORM_LINUX
-	return atomic_inc_return(v);
-#elif defined(PLATFORM_WINDOWS)
-	return InterlockedIncrement(v);
-#elif defined(PLATFORM_FREEBSD)
-	atomic_add_int(v, 1);
-	return atomic_load_acq_32(v);
-#endif
-}
-
-inline int ATOMIC_DEC_RETURN(ATOMIC_T *v)
-{
-#ifdef PLATFORM_LINUX
-	return atomic_dec_return(v);
-#elif defined(PLATFORM_WINDOWS)
-	return InterlockedDecrement(v);
-#elif defined(PLATFORM_FREEBSD)
-	atomic_subtract_int(v, 1);
-	return atomic_load_acq_32(v);
-#endif
-}
-
-inline bool ATOMIC_INC_UNLESS(ATOMIC_T *v, int u)
-{
-#ifdef PLATFORM_LINUX
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 15))
-	return atomic_add_unless(v, 1, u);
-#else
-	/* only make sure not exceed after this function */
-	if (ATOMIC_INC_RETURN(v) > u) {
-		ATOMIC_DEC(v);
-		return 0;
-	}
-	return 1;
-#endif
-#else
-	#error "TBD\n"
 #endif
 }
 

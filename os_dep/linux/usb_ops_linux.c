@@ -753,7 +753,7 @@ void usb_read_port_complete(struct urb *purb, struct pt_regs *regs)
 	_adapter			*padapter = (_adapter *)precvbuf->adapter;
 	struct recv_priv	*precvpriv = &padapter->recvpriv;
 
-	ATOMIC_DEC(&(precvpriv->rx_pending_cnt));
+	atomic_dec(&(precvpriv->rx_pending_cnt));
 
 	if (RTW_CANNOT_RX(padapter)) {
 		RTW_INFO("%s() RX Warning! bDriverStopped(%s) OR bSurpriseRemoved(%s)\n"
@@ -837,7 +837,7 @@ u32 usb_read_port(struct intf_hdl *pintfhdl, u32 addr, u32 cnt, u8 *rmem)
 	usb_init_recvbuf(adapter, precvbuf);
 
 	if (precvbuf->pbuf) {
-		ATOMIC_INC(&(precvpriv->rx_pending_cnt));
+		atomic_inc(&(precvpriv->rx_pending_cnt));
 		purb = precvbuf->purb;
 
 		/* translate DMA FIFO addr to pipehandle */
@@ -906,7 +906,7 @@ void usb_read_port_complete(struct urb *purb, struct pt_regs *regs)
 	_adapter			*padapter = (_adapter *)precvbuf->adapter;
 	struct recv_priv	*precvpriv = &padapter->recvpriv;
 
-	ATOMIC_DEC(&(precvpriv->rx_pending_cnt));
+	atomic_dec(&(precvpriv->rx_pending_cnt));
 
 	if (RTW_CANNOT_RX(padapter)) {
 		RTW_INFO("%s() RX Warning! bDriverStopped(%s) OR bSurpriseRemoved(%s)\n"
@@ -1046,7 +1046,7 @@ recv_buf_hook:
 		goto exit;
 	}
 
-	ATOMIC_INC(&(precvpriv->rx_pending_cnt));
+	atomic_inc(&(precvpriv->rx_pending_cnt));
 	ret = _SUCCESS;
 
 exit:

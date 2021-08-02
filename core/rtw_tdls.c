@@ -47,7 +47,7 @@ void rtw_reset_tdls_info(_adapter *padapter)
 
 #ifdef CONFIG_TDLS_CH_SW
 	ptdlsinfo->chsw_info.ch_sw_state = TDLS_STATE_NONE;
-	ATOMIC_SET(&ptdlsinfo->chsw_info.chsw_on, _FALSE);
+	atomic_set(&ptdlsinfo->chsw_info.chsw_on, _FALSE);
 	ptdlsinfo->chsw_info.off_ch_num = 0;
 	ptdlsinfo->chsw_info.ch_offset = HAL_PRIME_CHNL_OFFSET_DONT_CARE;
 	ptdlsinfo->chsw_info.cur_time = 0;
@@ -945,8 +945,8 @@ void rtw_tdls_set_ch_sw_oper_control(_adapter *padapter, u8 enable)
 	else
 		pHalData->ch_switch_offload = _FALSE;
 	
-	if (ATOMIC_READ(&padapter->tdlsinfo.chsw_info.chsw_on) != enable)
-		ATOMIC_SET(&padapter->tdlsinfo.chsw_info.chsw_on, enable);
+	if (atomic_read(&padapter->tdlsinfo.chsw_info.chsw_on) != enable)
+		atomic_set(&padapter->tdlsinfo.chsw_info.chsw_on, enable);
 
 	rtw_hal_set_hwreg(padapter, HW_VAR_TDLS_BCN_EARLY_C2H_RPT, &enable);
 	RTW_INFO("[TDLS] %s Bcn Early C2H Report\n", (enable == _TRUE) ? "Start" : "Stop");
@@ -959,7 +959,7 @@ void rtw_tdls_ch_sw_back_to_base_chnl(_adapter *padapter)
 
 	pmlmepriv = &padapter->mlmepriv;
 
-	if ((ATOMIC_READ(&pchsw_info->chsw_on) == _TRUE) &&
+	if ((atomic_read(&pchsw_info->chsw_on) == _TRUE) &&
 	    (padapter->mlmeextpriv.cur_channel != rtw_get_oper_ch(padapter)))
 		rtw_tdls_cmd(padapter, pchsw_info->addr, TDLS_CH_SW_TO_BASE_CHNL_UNSOLICITED);
 }
@@ -2614,7 +2614,7 @@ sint On_TDLS_Ch_Switch_Req(_adapter *padapter, union recv_frame *precv_frame, st
 	if (_rtw_memcmp(pchsw_info->addr, zaddr, ETH_ALEN) == _TRUE)
 		_rtw_memcpy(pchsw_info->addr, ptdls_sta->cmn.mac_addr, ETH_ALEN);
 
-	if (ATOMIC_READ(&pchsw_info->chsw_on) == _FALSE)
+	if (atomic_read(&pchsw_info->chsw_on) == _FALSE)
 		rtw_tdls_cmd(padapter, ptdls_sta->cmn.mac_addr, TDLS_CH_SW_START);
 
 	rtw_tdls_cmd(padapter, ptdls_sta->cmn.mac_addr, TDLS_CH_SW_RESP);
@@ -2642,7 +2642,7 @@ sint On_TDLS_Ch_Switch_Rsp(_adapter *padapter, union recv_frame *precv_frame, st
 
 	/* If we receive Unsolicited TDLS Channel Switch Response when channel switch is running, */
 	/* we will go back to base channel and terminate this channel switch procedure */
-	if (ATOMIC_READ(&pchsw_info->chsw_on) == _TRUE) {
+	if (atomic_read(&pchsw_info->chsw_on) == _TRUE) {
 		if (pmlmeext->cur_channel != rtw_get_oper_ch(padapter)) {
 			RTW_INFO("[TDLS] Rx unsolicited channel switch response\n");
 			rtw_tdls_cmd(padapter, ptdls_sta->cmn.mac_addr, TDLS_CH_SW_TO_BASE_CHNL);
@@ -2694,7 +2694,7 @@ sint On_TDLS_Ch_Switch_Rsp(_adapter *padapter, union recv_frame *precv_frame, st
 
 	if ((pmlmeext->cur_channel == rtw_get_oper_ch(padapter)) &&
 	    (pchsw_info->ch_sw_state & TDLS_WAIT_CH_RSP_STATE)) {
-		if (ATOMIC_READ(&pchsw_info->chsw_on) == _TRUE)
+		if (atomic_read(&pchsw_info->chsw_on) == _TRUE)
 			rtw_tdls_cmd(padapter, ptdls_sta->cmn.mac_addr, TDLS_CH_SW_TO_OFF_CHNL);
 	}
 

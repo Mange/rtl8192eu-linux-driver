@@ -3527,13 +3527,13 @@ exit:
 inline bool rtw_is_scan_deny(_adapter *adapter)
 {
 	struct mlme_priv *mlmepriv = &adapter->mlmepriv;
-	return (ATOMIC_READ(&mlmepriv->set_scan_deny) != 0) ? _TRUE : _FALSE;
+	return (atomic_read(&mlmepriv->set_scan_deny) != 0) ? _TRUE : _FALSE;
 }
 
 inline void rtw_clear_scan_deny(_adapter *adapter)
 {
 	struct mlme_priv *mlmepriv = &adapter->mlmepriv;
-	ATOMIC_SET(&mlmepriv->set_scan_deny, 0);
+	atomic_set(&mlmepriv->set_scan_deny, 0);
 	if (0)
 		RTW_INFO(FUNC_ADPT_FMT"\n", FUNC_ADPT_ARG(adapter));
 }
@@ -3549,7 +3549,7 @@ void rtw_set_scan_deny(_adapter *adapter, u32 ms)
 	struct mlme_priv *mlmepriv = &adapter->mlmepriv;
 	if (0)
 		RTW_INFO(FUNC_ADPT_FMT"\n", FUNC_ADPT_ARG(adapter));
-	ATOMIC_SET(&mlmepriv->set_scan_deny, 1);
+	atomic_set(&mlmepriv->set_scan_deny, 1);
 	_set_timer(&mlmepriv->set_scan_deny_timer, ms);
 }
 #endif

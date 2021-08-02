@@ -192,7 +192,7 @@ __inline static void _set_workitem(_workitem *pwork)
 #define PATH_LENGTH_MAX MAX_PATH
 
 //Atomic integer operations
-#define ATOMIC_T LONG
+#define atomic_t LONG
 
 
 #define NDEV_FMT "%s"

@@ -732,9 +732,6 @@ __inline static void _set_workitem(_workitem *pwork)
 
 static __inline void thread_enter(char *name);
 
-//Atomic integer operations
-typedef uint32_t ATOMIC_T ;
-
 #define rtw_netdev_priv(netdev) (((struct ifnet *)netdev)->if_softc)
 
 #define rtw_free_netdev(netdev) if_free((netdev))

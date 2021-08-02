@@ -359,7 +359,7 @@ struct cfg80211_wifidirect_info {
 	u8						restore_channel;
 	struct ieee80211_channel	remain_on_ch_channel;
 	enum nl80211_channel_type	remain_on_ch_type;
-	ATOMIC_T ro_ch_cookie_gen;
+	atomic_t ro_ch_cookie_gen;
 	u64 remain_on_ch_cookie;
 	bool is_ro_ch;
 	struct wireless_dev *ro_ch_wdev;
@@ -504,7 +504,7 @@ struct tdls_temp_mgmt {
 #ifdef CONFIG_TDLS_CH_SW
 struct tdls_ch_switch {
 	u32	ch_sw_state;
-	ATOMIC_T	chsw_on;
+	atomic_t	chsw_on;
 	u8	addr[ETH_ALEN];
 	u8	off_ch_num;
 	u8	ch_offset;
@@ -731,7 +731,7 @@ struct nb_rpt_hdr {
 	u8 phy_type;	
 };
 
-/*IEEE Std 80211v, Figure 7-95e2¡XBSS Termination Duration subelement field format */
+/*IEEE Std 80211v, Figure 7-95e2ï¿½XBSS Termination Duration subelement field format */
 struct btm_term_duration {
 	u8 id;
 	u8 len;
@@ -739,7 +739,7 @@ struct btm_term_duration {
 	u16 duration;
 };
 
-/*IEEE Std 80211v, Figure 7-101n8¡XBSS Transition Management Request frame body format */
+/*IEEE Std 80211v, Figure 7-101n8ï¿½XBSS Transition Management Request frame body format */
 struct btm_req_hdr {
 	u8 req_mode;
 	u16 disassoc_timer;
@@ -843,7 +843,7 @@ struct mlme_priv {
 
 #ifdef CONFIG_SET_SCAN_DENY_TIMER
 	_timer set_scan_deny_timer;
-	ATOMIC_T set_scan_deny; /* 0: allowed, 1: deny */
+	atomic_t set_scan_deny; /* 0: allowed, 1: deny */
 #endif
 	u8 wpa_phase;/*wpa_phase after wps finished*/
 
@@ -914,7 +914,7 @@ struct mlme_priv {
 	/* Number of associated stations that do not support Short Preamble */
 	int num_sta_no_short_preamble;
 
-	ATOMIC_T olbc; /* Overlapping Legacy BSS Condition (Legacy b/g)*/
+	atomic_t olbc; /* Overlapping Legacy BSS Condition (Legacy b/g)*/
 
 	/* Number of HT associated stations that do not support greenfield */
 	int num_sta_ht_no_gf;
@@ -929,7 +929,7 @@ struct mlme_priv {
 	int num_sta_40mhz_intolerant;
 
 	/* Overlapping BSS information */
-	ATOMIC_T olbc_ht;
+	atomic_t olbc_ht;
 
 #ifdef CONFIG_80211N_HT
 	int ht_20mhz_width_req;
@@ -1019,7 +1019,7 @@ struct mlme_priv {
 	int	widi_state;
 	int	listen_state;
 	_timer	listen_timer;
-	ATOMIC_T	rx_probe_rsp; /* 1:receive probe respone from RDS source. */
+	atomic_t	rx_probe_rsp; /* 1:receive probe respone from RDS source. */
 	u8	*l2sdTaBuffer;
 	u8	channel_idx;
 	u8	group_cnt;	/* In WiDi 3.5, they specified another scan algo. for WFD/RDS co-existed */

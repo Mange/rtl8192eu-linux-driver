@@ -6687,7 +6687,7 @@ static s32 cfg80211_rtw_remain_on_channel(struct wiphy *wiphy,
 	is_p2p_find = (duration < (pwdinfo->ext_listen_interval)) ? _TRUE : _FALSE;
 #endif
 
-	*cookie = ATOMIC_INC_RETURN(&pcfg80211_wdinfo->ro_ch_cookie_gen);
+	*cookie = atomic_inc_return(&pcfg80211_wdinfo->ro_ch_cookie_gen);
 
 	RTW_INFO(FUNC_ADPT_FMT"%s ch:%u duration:%d, cookie:0x%llx\n"
 		, FUNC_ADPT_ARG(padapter), wdev == wiphy_to_pd_wdev(wiphy) ? " PD" : ""
@@ -7079,7 +7079,7 @@ static int _cfg80211_rtw_mgmt_tx(_adapter *padapter, u8 tx_ch, u8 no_cck, const 
 
 		#if defined(RTW_ROCH_BACK_OP) && defined(CONFIG_P2P) && defined(CONFIG_CONCURRENT_MODE)
 		if (rtw_cfg80211_get_is_roch(padapter)
-			&& ATOMIC_READ(&pwdev_priv->switch_ch_to) == 1
+			&& atomic_read(&pwdev_priv->switch_ch_to) == 1
 		) {
 			u16 ext_listen_period;
 
@@ -7087,7 +7087,7 @@ static int _cfg80211_rtw_mgmt_tx(_adapter *padapter, u8 tx_ch, u8 no_cck, const 
 				ext_listen_period = 500;
 			else
 				ext_listen_period = pwdinfo->ext_listen_period;
-			ATOMIC_SET(&pwdev_priv->switch_ch_to, 0);
+			atomic_set(&pwdev_priv->switch_ch_to, 0);
 			_set_timer(&pwdinfo->ap_p2p_switch_timer, ext_listen_period);
 			RTW_INFO("%s, set switch ch timer, period=%d\n", __func__, ext_listen_period);
 		}
@@ -9362,7 +9362,7 @@ void rtw_cfg80211_init_wdev_data(_adapter *padapter)
 #ifdef CONFIG_CONCURRENT_MODE
 	struct rtw_wdev_priv *pwdev_priv = adapter_wdev_data(padapter);
 
-	ATOMIC_SET(&pwdev_priv->switch_ch_to, 1);
+	atomic_set(&pwdev_priv->switch_ch_to, 1);
 #endif
 }
 
@@ -10103,7 +10103,7 @@ int rtw_wdev_alloc(_adapter *padapter, struct wiphy *wiphy)
 	_rtw_mutex_init(&pwdev_priv->roch_mutex);
 
 #ifdef CONFIG_CONCURRENT_MODE
-	ATOMIC_SET(&pwdev_priv->switch_ch_to, 1);
+	atomic_set(&pwdev_priv->switch_ch_to, 1);
 #endif
 
 #ifdef CONFIG_RTW_CFGVEDNOR_RSSIMONITOR

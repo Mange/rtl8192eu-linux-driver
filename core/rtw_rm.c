@@ -2374,7 +2374,7 @@ static void rm_dbg_show_meas(struct rm_obj *prm, char *s)
 			psta->cmn.aid, MAC_ARG(psta->cmn.mac_addr));
 
 	sprintf(pstr(s), "clock=%d, state=%s, rpt=%u/%u\n",
-		(int)ATOMIC_READ(&prm->pclock->counter),
+		(int)atomic_read(&prm->pclock->counter),
 		rm_state_name(prm->state), prm->p.rpt, prm->q.rpt);
 }
 

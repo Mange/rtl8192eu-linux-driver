@@ -3087,7 +3087,7 @@ void rtw_mesh_init_mesh_info(_adapter *adapter)
 	/* minfo->last_sn_update = rtw_get_current_time(); */
 	minfo->next_perr = rtw_get_current_time();
 	
-	ATOMIC_SET(&minfo->mpaths, 0);
+	atomic_set(&minfo->mpaths, 0);
 	rtw_mesh_pathtbl_init(adapter);
 
 	_rtw_init_queue(&minfo->mpath_tx_queue);

@@ -79,7 +79,7 @@ static void rtw_dev_shutdown(struct device *dev)
 					}
 				}
 			}
-			ATOMIC_SET(&dvobj->continual_io_error, MAX_CONTINUAL_IO_ERR + 1);
+			atomic_set(&dvobj->continual_io_error, MAX_CONTINUAL_IO_ERR + 1);
 		}
 	}
 }
@@ -686,7 +686,7 @@ static void usb_dvobj_deinit(struct usb_interface *usb_intf)
 		devobj_deinit(dvobj);
 	}
 
-	/* RTW_INFO("%s %d\n", __func__, ATOMIC_READ(&usb_intf->dev.kobj.kref.refcount)); */
+	/* RTW_INFO("%s %d\n", __func__, atomic_read(&usb_intf->dev.kobj.kref.refcount)); */
 	usb_put_dev(interface_to_usbdev(usb_intf));
 
 }

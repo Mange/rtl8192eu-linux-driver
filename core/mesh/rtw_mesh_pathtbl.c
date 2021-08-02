@@ -82,7 +82,7 @@ static struct rtw_mesh_table *rtw_mesh_table_alloc(void)
 		return NULL;
 
 	rtw_hlist_head_init(&newtbl->known_gates);
-	ATOMIC_SET(&newtbl->entries,  0);
+	atomic_set(&newtbl->entries,  0);
 	_rtw_spinlock_init(&newtbl->gates_lock);
 
 	return newtbl;
@@ -584,7 +584,7 @@ struct rtw_mesh_path *rtw_mesh_path_add(_adapter *adapter,
 	if (is_multicast_mac_addr(dst))
 		return ERR_PTR(-ENOTSUPP);
 
-	if (ATOMIC_INC_UNLESS(&adapter->mesh_info.mpaths, RTW_MESH_MAX_MPATHS) == 0)
+	if (atomic_inc_unless(&adapter->mesh_info.mpaths, RTW_MESH_MAX_MPATHS) == 0)
 		return ERR_PTR(-ENOSPC);
 
 	new_mpath = rtw_mesh_path_new(adapter, dst);
@@ -739,8 +739,8 @@ static void rtw_mesh_path_free_rcu(struct rtw_mesh_table *tbl,
 	rtw_mesh_gate_del(tbl, mpath);
 	exit_critical_bh(&mpath->state_lock);
 	_cancel_timer_ex(&mpath->timer);
-	ATOMIC_DEC(&adapter->mesh_info.mpaths);
-	ATOMIC_DEC(&tbl->entries);
+	atomic_dec(&adapter->mesh_info.mpaths);
+	atomic_dec(&tbl->entries);
 	_rtw_spinlock_free(&mpath->state_lock);
 
 	rtw_mesh_path_flush_pending(mpath);

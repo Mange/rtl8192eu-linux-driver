@@ -177,7 +177,7 @@ struct rtw_wdev_priv {
 	_mutex roch_mutex;
 
 #ifdef CONFIG_CONCURRENT_MODE
-	ATOMIC_T switch_ch_to;
+	atomic_t switch_ch_to;
 #endif
 
 #ifdef CONFIG_RTW_CFGVENDOR_RANDOM_MAC_OUI
