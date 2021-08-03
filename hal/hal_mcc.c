@@ -753,11 +753,11 @@ static u8 rtw_hal_mcc_update_timing_parameters(PADAPTER padapter, u8 force_updat
 		/* selecet policy table according TSF diff */
 		tsf0 = tsf[0];
 		beaconperiod_0 = pmccobjpriv->iface[0]->mlmepriv.cur_network.network.Configuration.BeaconPeriod;
-		tsf0 = rtw_modular64(tsf0, (beaconperiod_0 * TU));
+		tsf0 = do_div(tsf0, (beaconperiod_0 * TU));
 
 		tsf1 = tsf[1];
 		beaconperiod_1 = pmccobjpriv->iface[1]->mlmepriv.cur_network.network.Configuration.BeaconPeriod;
-		tsf1 = rtw_modular64(tsf1, (beaconperiod_1 * TU));
+		tsf1 = do_div(tsf1, (beaconperiod_1 * TU));
 
 		if (tsf0 > tsf1)
 			tsfdiff = tsf0- tsf1;

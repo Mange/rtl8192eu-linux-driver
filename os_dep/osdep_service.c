@@ -2433,25 +2433,6 @@ void module_init_exit_wrapper(void *arg)
 }
 
 #endif /* PLATFORM_FREEBSD */
-
-#ifdef CONFIG_PLATFORM_SPRD
-	#ifdef do_div
-		#undef do_div
-	#endif
-	#include <asm-generic/div64.h>
-#endif
-
-u64 rtw_modular64(u64 x, u64 y)
-{
-#ifdef PLATFORM_LINUX
-	return do_div(x, y);
-#elif defined(PLATFORM_WINDOWS)
-	return x % y;
-#elif defined(PLATFORM_FREEBSD)
-	return x % y;
-#endif
-}
-
 u64 rtw_division64(u64 x, u64 y)
 {
 #ifdef PLATFORM_LINUX

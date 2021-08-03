@@ -2428,7 +2428,7 @@ void rtw_debug_rx_bcn(_adapter *adapter, u8 *pframe, u32 packet_len)
 
 	update_TSF(pmlmeext, pframe, packet_len);
 	tsf = pmlmeext->TSFValue;
-	tsf_offset = rtw_modular64(pmlmeext->TSFValue, (mlmeinfo->bcn_interval * 1024));
+	tsf_offset = do_div(pmlmeext->TSFValue, (mlmeinfo->bcn_interval * 1024));
 
 	/*get TIM IE*/
 	/*DTIM Count*/
