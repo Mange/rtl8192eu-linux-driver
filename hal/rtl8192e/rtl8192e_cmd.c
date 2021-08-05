@@ -354,7 +354,7 @@ void rtl8192e_download_rsvd_page(PADAPTER padapter, u8 mstatus)
 			DLBcnCount++;
 			do {
 				yield();
-				/* rtw_mdelay_os(10); */
+				/* mdelay(10); */
 				/* check rsvd page download OK. */
 				rtw_hal_get_hwreg(padapter, HW_VAR_BCN_VALID, (u8 *)(&bcn_valid));
 				poll++;

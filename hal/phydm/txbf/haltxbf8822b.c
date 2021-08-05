@@ -600,7 +600,7 @@ void hal_txbf_8822b_enter(
 		hal_txbf_8822b_rf_mode(dm, beamforming_info, bfee_idx);
 #if (SUPPORT_MU_BF == 1)
 		/*Special for plugfest*/
-		delay_ms(50); /* wait for 4-way handshake ending*/
+		mdelay(50); /* wait for 4-way handshake ending*/
 		send_sw_vht_gid_mgnt_frame(dm, p_beamformee_entry->mac_addr, bfee_idx);
 #endif
 

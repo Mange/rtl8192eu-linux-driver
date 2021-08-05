@@ -1606,32 +1606,7 @@ void rtw_usleep_os(int us)
 
 }
 
-
 #ifdef DBG_DELAY_OS
-void _rtw_mdelay_os(int ms, const char *func, const int line)
-{
-#if 0
-	if (ms > 10)
-		RTW_INFO("%s:%d %s(%d)\n", func, line, __FUNCTION__, ms);
-	msleep(ms);
-	return;
-#endif
-
-
-	RTW_INFO("%s:%d %s(%d)\n", func, line, __FUNCTION__, ms);
-
-#if defined(PLATFORM_LINUX)
-
-	mdelay((unsigned long)ms);
-
-#elif defined(PLATFORM_WINDOWS)
-
-	NdisStallExecution(ms * 1000); /* (us)*1000=(ms) */
-
-#endif
-
-
-}
 void _rtw_udelay_os(int us, const char *func, const int line)
 {
 
@@ -1658,27 +1633,7 @@ void _rtw_udelay_os(int us, const char *func, const int line)
 #endif
 
 }
-#else
-void rtw_mdelay_os(int ms)
-{
 
-#ifdef PLATFORM_LINUX
-
-	mdelay((unsigned long)ms);
-
-#endif
-#ifdef PLATFORM_FREEBSD
-	DELAY(ms * 1000);
-	return ;
-#endif
-#ifdef PLATFORM_WINDOWS
-
-	NdisStallExecution(ms * 1000); /* (us)*1000=(ms) */
-
-#endif
-
-
-}
 void rtw_udelay_os(int us)
 {
 

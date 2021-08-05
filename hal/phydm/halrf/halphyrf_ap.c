@@ -300,7 +300,7 @@ odm_txpowertracking_callback_thermal_meter_92e(
 			reg0x18 = phy_query_rf_reg(priv, RF_PATH_A, 0x18, MASK20BITS, 1);
 			phy_set_rf_reg(priv, RF_PATH_A, 0xB4, BIT(14), 1);
 			phy_set_rf_reg(priv, RF_PATH_A, 0x18, BIT(15), 1);
-			delay_ms(1);
+			mdelay(1);
 			phy_set_rf_reg(priv, RF_PATH_A, 0xB4, BIT(14), 0);
 			phy_set_rf_reg(priv, RF_PATH_A, 0x18, MASK20BITS, reg0x18);
 			RTL_W8(0x522, 0x0);
@@ -1003,7 +1003,7 @@ odm_txpowertracking_callback_thermal_meter_jaguar_series(
 			reg0x18 = phy_query_rf_reg(priv, RF_PATH_A, 0x18, MASK20BITS, 1);
 			phy_set_rf_reg(priv, RF_PATH_A, 0xB4, BIT(14), 1);
 			phy_set_rf_reg(priv, RF_PATH_A, 0x18, BIT(15), 1);
-			delay_ms(200); /* frequency deviation */
+			mdelay(200); /* frequency deviation */
 			phy_set_rf_reg(priv, RF_PATH_A, 0xB4, BIT(14), 0);
 			phy_set_rf_reg(priv, RF_PATH_A, 0x18, MASK20BITS, reg0x18);
 #ifdef CONFIG_RTL_8812_SUPPORT

@@ -592,17 +592,17 @@ odm_is_work_item_scheduled(
 void ODM_delay_ms(u32 ms)
 {
 #if (DM_ODM_SUPPORT_TYPE & (ODM_AP))
-	delay_ms(ms);
+	mdelay(ms);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE) && defined(DM_ODM_CE_MAC80211)
 	mdelay(ms);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE) && defined(DM_ODM_CE_MAC80211_V2)
 	mdelay(ms);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE)
-	rtw_mdelay_os(ms);
+	mdelay(ms);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_WIN)
-	delay_ms(ms);
+	mdelay(ms);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_IOT)
-	rtw_mdelay_os(ms);
+	mdelay(ms);
 #endif
 }
 
@@ -626,7 +626,7 @@ void ODM_delay_us(u32 us)
 void ODM_sleep_ms(u32 ms)
 {
 #if (DM_ODM_SUPPORT_TYPE & (ODM_AP))
-	delay_ms(ms);
+	mdelay(ms);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE) && defined(DM_ODM_CE_MAC80211)
 	msleep(ms);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE) && defined(DM_ODM_CE_MAC80211_V2)
@@ -634,7 +634,7 @@ void ODM_sleep_ms(u32 ms)
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE)
 	msleep(ms);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_WIN)
-	delay_ms(ms);
+	mdelay(ms);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_IOT)
 	msleep(ms);
 #endif

@@ -2097,7 +2097,7 @@ efuse_OneByteRead(
 	rtw_write8(pAdapter, EFUSE_CTRL + 3, (readbyte & 0x7f));
 
 	while (!(0x80 & rtw_read8(pAdapter, EFUSE_CTRL + 3)) && (tmpidx < 1000)) {
-		rtw_mdelay_os(1);
+		mdelay(1);
 		tmpidx++;
 	}
 	if (tmpidx < 100) {
@@ -2158,10 +2158,10 @@ efuse_OneByteWrite(
 	} else
 		rtw_write32(pAdapter, EFUSE_CTRL, efuseValue);
 
-	rtw_mdelay_os(1);
+	mdelay(1);
 
 	while ((0x80 &  rtw_read8(pAdapter, EFUSE_CTRL + 3)) && (tmpidx < 100)) {
-		rtw_mdelay_os(1);
+		mdelay(1);
 		tmpidx++;
 	}
 

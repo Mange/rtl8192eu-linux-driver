@@ -4209,12 +4209,12 @@ phy_ConfigBBWithParaFile(
 #ifdef CONFIG_LONG_DELAY_ISSUE
 						msleep(50);
 #else
-						rtw_mdelay_os(50);
+						mdelay(50);
 #endif
 					} else if (u4bRegOffset == 0xfd)
-						rtw_mdelay_os(5);
+						mdelay(5);
 					else if (u4bRegOffset == 0xfc)
-						rtw_mdelay_os(1);
+						mdelay(1);
 					else if (u4bRegOffset == 0xfb)
 						rtw_udelay_os(50);
 					else if (u4bRegOffset == 0xfa)
@@ -4557,12 +4557,12 @@ phy_ConfigBBWithMpParaFile(
 #ifdef CONFIG_LONG_DELAY_ISSUE
 						msleep(50);
 #else
-						rtw_mdelay_os(50);
+						mdelay(50);
 #endif
 					} else if (u4bRegOffset == 0xfd)
-						rtw_mdelay_os(5);
+						mdelay(5);
 					else if (u4bRegOffset == 0xfc)
-						rtw_mdelay_os(1);
+						mdelay(1);
 					else if (u4bRegOffset == 0xfb)
 						rtw_udelay_os(50);
 					else if (u4bRegOffset == 0xfa)
@@ -4671,14 +4671,14 @@ PHY_ConfigRFWithParaFile(
 #ifdef CONFIG_LONG_DELAY_ISSUE
 						msleep(50);
 #else
-						rtw_mdelay_os(50);
+						mdelay(50);
 #endif
 					} else if (u4bRegOffset == 0xfd) {
-						/* delay_ms(5); */
+						/* mdelay(5); */
 						for (i = 0; i < 100; i++)
 							rtw_udelay_os(MAX_STALL_TIME);
 					} else if (u4bRegOffset == 0xfc) {
-						/* delay_ms(1); */
+						/* mdelay(1); */
 						for (i = 0; i < 20; i++)
 							rtw_udelay_os(MAX_STALL_TIME);
 					} else if (u4bRegOffset == 0xfb)

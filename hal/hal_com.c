@@ -8770,7 +8770,7 @@ static void rtw_hal_gate_bb(_adapter *adapter, bool stop)
 			} else {
 				RTW_WARN("%s: MGQ_CPU is busy(%d)!\n",
 					 __func__, i);
-				rtw_mdelay_os(10);
+				mdelay(10);
 			}
 		}
 
