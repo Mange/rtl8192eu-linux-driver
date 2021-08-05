@@ -260,7 +260,6 @@ void rtw_hlist_add_head_rcu(rtw_hlist_node *n, rtw_hlist_head *h);
 void rtw_hlist_del_rcu(rtw_hlist_node *n);
 
 extern void	_rtw_init_sema(_sema *sema, int init_val);
-extern void	_rtw_free_sema(_sema	*sema);
 extern void	_rtw_up_sema(_sema	*sema);
 extern u32	_rtw_down_sema(_sema *sema);
 extern void	_rtw_mutex_init(_mutex *pmutex);

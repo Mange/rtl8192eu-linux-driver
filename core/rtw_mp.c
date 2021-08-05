@@ -634,7 +634,6 @@ MPT_DeInitAdapter(
 
 	pMptCtx->bMptDrvUnload = _TRUE;
 #if defined(CONFIG_RTL8723B)
-	_rtw_free_sema(&(pMptCtx->MPh2c_Sema));
 	_cancel_timer_ex(&pMptCtx->MPh2c_timeout_timer);
 #endif
 #if	defined(CONFIG_RTL8723B)

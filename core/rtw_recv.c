@@ -158,11 +158,6 @@ exit:
 
 }
 
-void rtw_mfree_recv_priv_lock(struct recv_priv *precvpriv);
-void rtw_mfree_recv_priv_lock(struct recv_priv *precvpriv)
-{
-}
-
 void _rtw_free_recv_priv(struct recv_priv *precvpriv)
 {
 	_adapter	*padapter = precvpriv->adapter;

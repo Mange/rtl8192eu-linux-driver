@@ -847,11 +847,6 @@ void _rtw_init_sema(_sema	*sema, int init_val)
 
 }
 
-void _rtw_free_sema(_sema	*sema)
-{
-
-}
-
 void _rtw_up_sema(_sema	*sema)
 {
 

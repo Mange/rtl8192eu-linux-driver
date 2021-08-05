@@ -187,8 +187,6 @@ static void _rtw_free_evt_priv(struct evt_priv *pevtpriv)
 
 
 #ifdef CONFIG_EVENT_THREAD_MODE
-	_rtw_free_sema(&(pevtpriv->evt_notify));
-
 	if (pevtpriv->evt_allocated_buf)
 		rtw_mfree(pevtpriv->evt_allocated_buf, MAX_EVTSZ + 4);
 #endif
@@ -215,10 +213,6 @@ static void _rtw_free_cmd_priv(struct cmd_priv *pcmdpriv)
 {
 
 	if (pcmdpriv) {
-		_rtw_free_sema(&(pcmdpriv->cmd_queue_sema));
-		/* _rtw_free_sema(&(pcmdpriv->cmd_done_sema)); */
-		_rtw_free_sema(&(pcmdpriv->start_cmdthread_sema));
-
 		if (pcmdpriv->cmd_allocated_buf)
 			rtw_mfree(pcmdpriv->cmd_allocated_buf, MAX_CMDSZ + CMDBUFF_ALIGN_SZ);
 
