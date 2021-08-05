@@ -1113,7 +1113,7 @@ void count_rx_stats(_adapter *padapter, union recv_frame *prframe, struct sta_in
 
 	padapter->mlmepriv.LinkDetectInfo.NumRxOkInPeriod++;
 
-	if ((!MacAddr_isBcst(pattrib->dst)) && (!IS_MCAST(pattrib->dst)))
+	if (!is_broadcast_ether_addr(pattrib->dst) && !IS_MCAST(pattrib->dst))
 		padapter->mlmepriv.LinkDetectInfo.NumRxUnicastOkInPeriod++;
 
 	if (sta)

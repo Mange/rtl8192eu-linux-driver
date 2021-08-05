@@ -2376,7 +2376,7 @@ int On_TDLS_Dis_Req(_adapter *padapter, union recv_frame *precv_frame)
 			if (psta_ap == NULL)
 				goto exit;
 			dst = pIE->data + 12;
-			if (MacAddr_isBcst(dst) == _FALSE && (_rtw_memcmp(adapter_mac_addr(padapter), dst, ETH_ALEN) == _FALSE))
+			if (MacAddr_isMulticast(dst) == _FALSE && (_rtw_memcmp(adapter_mac_addr(padapter), dst, ETH_ALEN) == _FALSE))
 				goto exit;
 			break;
 		default:

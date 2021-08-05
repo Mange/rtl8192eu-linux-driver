@@ -20,13 +20,6 @@
 
 extern void indicate_wx_scan_complete_event(_adapter *padapter);
 
-#define IS_MAC_ADDRESS_BROADCAST(addr) \
-	(\
-	 ((addr[0] == 0xff) && (addr[1] == 0xff) && \
-	  (addr[2] == 0xff) && (addr[3] == 0xff) && \
-	  (addr[4] == 0xff) && (addr[5] == 0xff)) ? _TRUE : _FALSE \
-	)
-
 u8 rtw_validate_bssid(u8 *bssid)
 {
 	u8 ret = _TRUE;
