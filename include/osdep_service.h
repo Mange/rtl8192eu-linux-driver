@@ -364,7 +364,6 @@ extern bool _rtw_time_after(systime a, systime b);
 
 extern void	rtw_sleep_schedulable(int ms);
 
-extern void	rtw_msleep_os(int ms);
 extern void	rtw_usleep_os(int us);
 
 extern u32	rtw_atoi(u8 *s);
@@ -416,7 +415,7 @@ static inline void rtw_thread_wait_stop(void)
 #ifdef PLATFORM_LINUX
 	#if 0
 	while (!kthread_should_stop())
-		rtw_msleep_os(10);
+		msleep(10);
 	#else
 	set_current_state(TASK_INTERRUPTIBLE);
 	while (!kthread_should_stop()) {

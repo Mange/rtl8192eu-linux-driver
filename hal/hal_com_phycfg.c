@@ -4207,7 +4207,7 @@ phy_ConfigBBWithParaFile(
 						break;
 					} else if (u4bRegOffset == 0xfe || u4bRegOffset == 0xffe) {
 #ifdef CONFIG_LONG_DELAY_ISSUE
-						rtw_msleep_os(50);
+						msleep(50);
 #else
 						rtw_mdelay_os(50);
 #endif
@@ -4555,7 +4555,7 @@ phy_ConfigBBWithMpParaFile(
 						break;
 					} else if (u4bRegOffset == 0xfe || u4bRegOffset == 0xffe) {
 #ifdef CONFIG_LONG_DELAY_ISSUE
-						rtw_msleep_os(50);
+						msleep(50);
 #else
 						rtw_mdelay_os(50);
 #endif
@@ -4669,7 +4669,7 @@ PHY_ConfigRFWithParaFile(
 					if (u4bRegOffset == 0xfe || u4bRegOffset == 0xffe) {
 						/* Deay specific ms. Only RF configuration require delay.												 */
 #ifdef CONFIG_LONG_DELAY_ISSUE
-						rtw_msleep_os(50);
+						msleep(50);
 #else
 						rtw_mdelay_os(50);
 #endif

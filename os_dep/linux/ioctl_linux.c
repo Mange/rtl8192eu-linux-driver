@@ -2230,7 +2230,7 @@ static int rtw_wx_get_scan(struct net_device *dev, struct iw_request_info *a,
 		      ;
 
 	while (check_fwstate(pmlmepriv, wait_status) == _TRUE) {
-		rtw_msleep_os(30);
+		msleep(30);
 		cnt++;
 		if (cnt > wait_for_surveydone)
 			break;
@@ -3726,7 +3726,7 @@ static int rtw_get_ap_info(struct net_device *dev,
 	}
 
 	while ((check_fwstate(pmlmepriv, (_FW_UNDER_SURVEY | _FW_UNDER_LINKING))) == _TRUE) {
-		rtw_msleep_os(30);
+		msleep(30);
 		cnt++;
 		if (cnt > 100)
 			break;
@@ -6524,7 +6524,7 @@ static int rtw_dbg_port(struct net_device *dev,
 					d_data = rtw_read32(padapter, 0x04);
 					imr =  rtw_read32(padapter, 0x10250014);
 					rtw_write32(padapter, 0x10250014, 0);
-					rtw_msleep_os(50);
+					msleep(50);
 
 					i_data = rtw_sd_iread32(padapter, 0x04);
 
@@ -6541,13 +6541,13 @@ static int rtw_dbg_port(struct net_device *dev,
 						RTW_ERR("test_code :0x%02x, i_data : 0x%08x\n", test_code, i_data);
 					}
 					if ((j++) == 100) {
-						rtw_msleep_os(2000);
+						msleep(2000);
 						RTW_INFO(" Indirect access testing..........%d/%d\n", i, test_cnts);
 						j = 0;
 					}
 
 					test_code = ~test_code;
-					rtw_msleep_os(50);
+					msleep(50);
 				}
 				RTW_INFO("========Indirect access test=========\n");
 				RTW_INFO(" test_cnts = %d\n", test_cnts);
@@ -9221,11 +9221,11 @@ static int rtw_mp_efuse_set(struct net_device *dev,
 		/* unknown bug workaround, need to fix later */
 		addr = 0x1ff;
 		rtw_write8(padapter, EFUSE_CTRL + 1, (addr & 0xff));
-		rtw_msleep_os(10);
+		msleep(10);
 		rtw_write8(padapter, EFUSE_CTRL + 2, ((addr >> 8) & 0x03));
-		rtw_msleep_os(10);
+		msleep(10);
 		rtw_write8(padapter, EFUSE_CTRL + 3, 0x72);
-		rtw_msleep_os(10);
+		msleep(10);
 		rtw_read8(padapter, EFUSE_CTRL);
 #endif /* RTW_HALMAC */
 
@@ -9510,11 +9510,11 @@ static int rtw_mp_efuse_set(struct net_device *dev,
 		BTEfuse_PowerSwitch(padapter, 1, _TRUE);
 		addr = 0x1ff;
 		rtw_write8(padapter, EFUSE_CTRL + 1, (addr & 0xff));
-		rtw_msleep_os(10);
+		msleep(10);
 		rtw_write8(padapter, EFUSE_CTRL + 2, ((addr >> 8) & 0x03));
-		rtw_msleep_os(10);
+		msleep(10);
 		rtw_write8(padapter, EFUSE_CTRL + 3, 0x72);
-		rtw_msleep_os(10);
+		msleep(10);
 		rtw_read8(padapter, EFUSE_CTRL);
 		BTEfuse_PowerSwitch(padapter, 1, _FALSE);
 #endif /* RTW_HALMAC */
@@ -9612,11 +9612,11 @@ static int rtw_mp_efuse_set(struct net_device *dev,
 		BTEfuse_PowerSwitch(padapter, 1, _TRUE);
 		addr = 0x1ff;
 		rtw_write8(padapter, EFUSE_CTRL + 1, (addr & 0xff));
-		rtw_msleep_os(10);
+		msleep(10);
 		rtw_write8(padapter, EFUSE_CTRL + 2, ((addr >> 8) & 0x03));
-		rtw_msleep_os(10);
+		msleep(10);
 		rtw_write8(padapter, EFUSE_CTRL + 3, 0x72);
-		rtw_msleep_os(10);
+		msleep(10);
 		rtw_read8(padapter, EFUSE_CTRL);
 		BTEfuse_PowerSwitch(padapter, 1, _FALSE);
 #endif /* RTW_HALMAC */
@@ -10438,7 +10438,7 @@ static int rtw_priv_get(struct net_device *dev,
 		return -EIO;
 	}
 
-	rtw_msleep_os(10); /* delay 5ms for sending pkt before exit adb shell operation */
+	msleep(10); /* delay 5ms for sending pkt before exit adb shell operation */
 	return 0;
 }
 
@@ -11850,7 +11850,7 @@ static void loopbackTest(PADAPTER padapter, u32 cnt, u32 size, u8 *pmsg)
 			len = strlen(ploopback->msg);
 			if (len)
 				break;
-			rtw_msleep_os(1);
+			msleep(1);
 		} while (1);
 		_rtw_memcpy(pmsg, ploopback->msg, len + 1);
 		freeLoopback(padapter);

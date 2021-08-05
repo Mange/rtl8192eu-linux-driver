@@ -3882,7 +3882,7 @@ static int netdev_close(struct net_device *pnetdev)
 
 	RTW_INFO("netdev_close, bips_processing=%d\n", pwrctl->bips_processing);
 	while (pwrctl->bips_processing == _TRUE) /* waiting for ips_processing done before call rtw_dev_unload() */
-		rtw_msleep_os(1);
+		msleep(1);
 
 	rtw_dev_unload(padapter);
 	rtw_sdio_set_power(0);
@@ -4646,7 +4646,7 @@ int rtw_suspend_common(_adapter *padapter)
 	pwrpriv->bInSuspend = _TRUE;
 
 	while (pwrpriv->bips_processing == _TRUE)
-		rtw_msleep_os(1);
+		msleep(1);
 
 #ifdef CONFIG_IOL_READ_EFUSE_MAP
 	if (!padapter->bup) {

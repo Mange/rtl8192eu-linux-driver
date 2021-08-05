@@ -632,11 +632,11 @@ void ODM_sleep_ms(u32 ms)
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE) && defined(DM_ODM_CE_MAC80211_V2)
 	msleep(ms);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE)
-	rtw_msleep_os(ms);
+	msleep(ms);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_WIN)
 	delay_ms(ms);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_IOT)
-	rtw_msleep_os(ms);
+	msleep(ms);
 #endif
 }
 

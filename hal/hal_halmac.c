@@ -414,7 +414,7 @@ static void _halmac_udelay(void *p, u32 us)
 	else if (us <= 1000)
 		rtw_usleep_os(us);
 	else
-		rtw_msleep_os(RTW_DIV_ROUND_UP(us, 1000));
+		msleep(RTW_DIV_ROUND_UP(us, 1000));
 }
 
 static u8 _halmac_mutex_init(void *p, HALMAC_MUTEX *pMutex)
@@ -3088,7 +3088,7 @@ static void _debug_dlfw_fail(struct dvobj_priv *d)
 	}
 
 	/* read 0x80 after 10 secs */
-	rtw_msleep_os(10000);
+	msleep(10000);
 	addr = 0x80;
 	v32 = rtw_read16(a, addr);
 	RTW_PRINT("%s: 0x%X = 0x%04x (after 10 secs)\n",
@@ -3178,7 +3178,7 @@ static int _cpu_sleep(struct dvobj_priv *d, u32 timeout)
 			break;
 		}
 
-		rtw_msleep_os(1);
+		msleep(1);
 	} while (1);
 
 exit:
@@ -3668,7 +3668,7 @@ int rtw_halmac_txfifo_wait_empty(struct dvobj_priv *d, u32 timeout)
 			break;
 		}
 
-		rtw_msleep_os(2);
+		msleep(2);
 	} while (1);
 
 	if (empty == _FALSE) {
@@ -3919,7 +3919,7 @@ static u8 _is_fw_read_cmd_down(PADAPTER adapter, u8 msgbox_num)
 		if (0 == valid)
 			read_down = _TRUE;
 		else
-			rtw_msleep_os(1);
+			msleep(1);
 	} while ((!read_down) && (retry_cnts--));
 
 	if (_FALSE == read_down)
@@ -4631,7 +4631,7 @@ int rtw_halmac_iqk(struct dvobj_priv *d, u8 clear, u8 segment)
 		if (!retry)
 			break;
 		retry--;
-		rtw_msleep_os(delay);
+		msleep(delay);
 	} while (1);
 	if (status != HALMAC_RET_SUCCESS) {
 		free_halmac_event(d, id);

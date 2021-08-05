@@ -1667,7 +1667,7 @@ int rtw_mp_pretx_proc(PADAPTER padapter, u8 bStartTest, char *extra)
 
 		if (pmp_priv->tx.stop == 0) {
 			pmp_priv->tx.stop = 1;
-			rtw_msleep_os(5);
+			msleep(5);
 		}
 #ifdef CONFIG_80211N_HT
 		if(padapter->registrypriv.ht_enable &&
@@ -2460,10 +2460,10 @@ int rtw_mp_SetBT(struct net_device *dev,
 		MPT_PwrCtlDM(padapter, 0);
 		rtw_write32(padapter, 0xcc, (rtw_read32(padapter, 0xcc) | 0x00000004));
 		rtw_write32(padapter, 0x6b, (rtw_read32(padapter, 0x6b) & 0xFFFFFFEF));
-		rtw_msleep_os(600);
+		msleep(600);
 		rtw_write32(padapter, 0x6b, (rtw_read32(padapter, 0x6b) | 0x00000010));
 		rtw_write32(padapter, 0xcc, (rtw_read32(padapter, 0xcc) & 0xFFFFFFFB));
-		rtw_msleep_os(1200);
+		msleep(1200);
 		pBTFirmware = (PRT_MP_FIRMWARE)rtw_zmalloc(sizeof(RT_MP_FIRMWARE));
 		if (pBTFirmware == NULL)
 			goto exit;
@@ -2473,13 +2473,13 @@ int rtw_mp_SetBT(struct net_device *dev,
 			rtw_mfree((u8 *)pBTFirmware, sizeof(RT_MP_FIRMWARE));
 
 		RTW_INFO("Wait for FirmwareDownloadBT fw boot!\n");
-		rtw_msleep_os(2000);
+		msleep(2000);
 		_rtw_memset(extra, '\0', wrqu->data.length);
 		BtReq.opCodeVer = 1;
 		BtReq.OpCode = 0;
 		BtReq.paraLength = 0;
 		mptbt_BtControlProcess(padapter, &BtReq);
-		rtw_msleep_os(100);
+		msleep(100);
 
 		RTW_INFO("FirmwareDownloadBT ready = 0x%x 0x%x", pMptCtx->mptOutBuf[4], pMptCtx->mptOutBuf[5]);
 		if ((pMptCtx->mptOutBuf[4] == 0x00) && (pMptCtx->mptOutBuf[5] == 0x00)) {
@@ -2522,10 +2522,10 @@ int rtw_mp_SetBT(struct net_device *dev,
 		MPT_PwrCtlDM(padapter, 0);
 		rtw_write32(padapter, 0xcc, (rtw_read32(padapter, 0xcc) | 0x00000004));
 		rtw_write32(padapter, 0x6b, (rtw_read32(padapter, 0x6b) & 0xFFFFFFEF));
-		rtw_msleep_os(600);
+		msleep(600);
 		rtw_write32(padapter, 0x6b, (rtw_read32(padapter, 0x6b) | 0x00000010));
 		rtw_write32(padapter, 0xcc, (rtw_read32(padapter, 0xcc) & 0xFFFFFFFB));
-		rtw_msleep_os(1200);
+		msleep(1200);
 
 #if defined(CONFIG_PLATFORM_SPRD) && (MP_DRIVER == 1)
 		/* Pull up BT reset pin.*/
@@ -2538,7 +2538,7 @@ int rtw_mp_SetBT(struct net_device *dev,
 		status = rtl8723b_FirmwareDownload(padapter, _FALSE);
 #endif
 		RTW_INFO("Wait for FirmwareDownloadBT fw boot!\n");
-		rtw_msleep_os(1000);
+		msleep(1000);
 #ifdef CONFIG_BT_COEXIST
 		rtw_btcoex_HaltNotify(padapter);
 		RTW_INFO("SetBT btcoex HaltNotify !\n");
@@ -2550,7 +2550,7 @@ int rtw_mp_SetBT(struct net_device *dev,
 		BtReq.OpCode = 0;
 		BtReq.paraLength = 0;
 		mptbt_BtControlProcess(padapter, &BtReq);
-		rtw_msleep_os(200);
+		msleep(200);
 
 		RTW_INFO("FirmwareDownloadBT ready = 0x%x 0x%x", pMptCtx->mptOutBuf[4], pMptCtx->mptOutBuf[5]);
 		if ((pMptCtx->mptOutBuf[4] == 0x00) && (pMptCtx->mptOutBuf[5] == 0x00)) {
@@ -2562,7 +2562,7 @@ int rtw_mp_SetBT(struct net_device *dev,
 #ifdef CONFIG_BT_COEXIST
 			rtw_btcoex_SwitchBtTRxMask(padapter);
 #endif
-			rtw_msleep_os(200);
+			msleep(200);
 			sprintf(extra, "download FW OK.\n");
 			goto exit;
 		}
@@ -2583,23 +2583,23 @@ int rtw_mp_SetBT(struct net_device *dev,
 		MPT_PwrCtlDM(padapter, 0);
 		rtw_write32(padapter, 0xcc, (rtw_read32(padapter, 0xcc) | 0x00000004));
 		rtw_write32(padapter, 0x6b, (rtw_read32(padapter, 0x6b) & 0xFFFFFFEF));
-		rtw_msleep_os(600);
+		msleep(600);
 		/*rtw_write32(padapter, 0x6a, (rtw_read32(padapter, 0x6a)& 0xFFFFFFFE));*/
 		rtw_write32(padapter, 0x6b, (rtw_read32(padapter, 0x6b) | 0x00000010));
 		rtw_write32(padapter, 0xcc, (rtw_read32(padapter, 0xcc) & 0xFFFFFFFB));
-		rtw_msleep_os(1200);
+		msleep(1200);
 		goto exit;
 	}
 	if (strncmp(extra, "disable", 7) == 0) {
 		RTW_INFO("SetBT disable !\n");
 		rtw_write32(padapter, 0x6a, (rtw_read32(padapter, 0x6a) & 0xFFFFFFFB));
-		rtw_msleep_os(500);
+		msleep(500);
 		goto exit;
 	}
 	if (strncmp(extra, "enable", 6) == 0) {
 		RTW_INFO("SetBT enable !\n");
 		rtw_write32(padapter, 0x6a, (rtw_read32(padapter, 0x6a) | 0x00000004));
-		rtw_msleep_os(500);
+		msleep(500);
 		goto exit;
 	}
 	if (strncmp(extra, "h2c", 3) == 0) {

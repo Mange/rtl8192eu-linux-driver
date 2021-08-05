@@ -413,7 +413,7 @@ void halbtcoutsrc_LeaveLowPower(PBTC_COEXIST pBtCoexist)
 		if (utime > timeout)
 			break;
 
-		rtw_msleep_os(1);
+		msleep(1);
 	} while (1);
 
 	GLBtcBtCoexAliveRegistered = _TRUE;

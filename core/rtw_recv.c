@@ -5007,7 +5007,7 @@ thread_return rtw_recv_thread(thread_context context)
 		if (err == RTW_RFRAME_UNAVAIL
 			|| err == RTW_RFRAME_PKT_UNAVAIL
 		) {
-			rtw_msleep_os(1);
+			msleep(1);
 			_rtw_up_sema(&recvpriv->recv_sema);
 		}
 

@@ -2539,7 +2539,7 @@ u32 rtw_cfg80211_wait_scan_req_empty(_adapter *adapter, u32 timeout_ms)
 			break;
 		}
 
-		rtw_msleep_os(10);
+		msleep(10);
 	}
 
 	pass_ms = rtw_get_passing_time_ms(start);
@@ -6511,7 +6511,7 @@ void rtw_cfg80211_issue_p2p_provision_request(_adapter *padapter, const u8 *buf,
 	#if 0
 	if(wps_devicepassword_id == WPS_DPID_REGISTRAR_SPEC) {
 		RTW_INFO("waiting for p2p peer key-in PIN CODE\n");
-		rtw_msleep_os(15000); /* 15 sec for key in PIN CODE, workaround for GS2 before issuing Nego Req. */
+		msleep(15000); /* 15 sec for key in PIN CODE, workaround for GS2 before issuing Nego Req. */
 	}
 	#endif
 
@@ -7149,7 +7149,7 @@ issue_mgmt_frame:
 
 #ifdef CONFIG_XMIT_ACK
 			if (!MLME_IS_MESH(padapter)) /* TODO: remove this sleep for all mode */
-				rtw_msleep_os(50);
+				msleep(50);
 #endif
 #ifdef CONFIG_DEBUG_CFG80211
 			RTW_INFO("%s, ack=%d, ok!\n", __func__, ack);
@@ -7426,7 +7426,7 @@ dump:
 			break;
 
 		if (sleep_ms > 0)
-			rtw_msleep_os(sleep_ms);
+			msleep(sleep_ms);
 	}
 
 	if (tx_ret != _SUCCESS || dump_cnt > 1) {
@@ -8855,7 +8855,7 @@ int	cfg80211_rtw_resume(struct wiphy *wiphy) {
 		for (PNOWakeupScanWaitCnt = 0; PNOWakeupScanWaitCnt < 10; PNOWakeupScanWaitCnt++) {
 			if(check_fwstate(pmlmepriv, _FW_UNDER_SURVEY) == _FALSE)
 				break;
-			rtw_msleep_os(1000);
+			msleep(1000);
 		}
 		
 		_enter_critical_bh(&pmlmepriv->lock, &irqL);

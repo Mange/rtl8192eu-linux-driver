@@ -930,7 +930,7 @@ phy_SpurCalibration_8192E(
 		phy_set_bb_reg(Adapter, rFPGA0_TxInfo, bMaskByte0, 0x3);
 		phy_set_bb_reg(Adapter, rFPGA0_PSDFunction, bMaskDWord, 0xfccd);
 		phy_set_bb_reg(Adapter, rFPGA0_PSDFunction, bMaskDWord, 0x40fccd);
-		/* rtw_msleep_os(30); */
+		/* msleep(30); */
 		rtw_mdelay_os(30);
 		PSDReport = phy_query_bb_reg(Adapter, rFPGA0_PSDReport, bMaskDWord);
 		/* RTW_INFO(" Path A== PSDReport = 0x%x (%d)\n",PSDReport,PSDReport); */
@@ -945,7 +945,7 @@ phy_SpurCalibration_8192E(
 		phy_set_bb_reg(Adapter, rFPGA0_TxInfo, bMaskByte0, 0x13);
 		phy_set_bb_reg(Adapter, rFPGA0_PSDFunction, bMaskDWord, 0xfccd);
 		phy_set_bb_reg(Adapter, rFPGA0_PSDFunction, bMaskDWord, 0x40fccd);
-		/* rtw_msleep_os(30); */
+		/* msleep(30); */
 		rtw_mdelay_os(30);
 		PSDReport = phy_query_bb_reg(Adapter, rFPGA0_PSDReport, bMaskDWord);
 		/* RTW_INFO(" Path B== PSDReport = 0x%x (%d)\n",PSDReport,PSDReport); */

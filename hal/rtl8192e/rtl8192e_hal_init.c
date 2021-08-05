@@ -4047,7 +4047,7 @@ u8 SetHwReg8192E(PADAPTER Adapter, u8 variable, u8 *val)
 
 				i++;
 				/* wait MAC to flush out reserve pages */
-				rtw_msleep_os(10);
+				msleep(10);
 			}
 
 			pass_ms = rtw_get_passing_time_ms(start);
@@ -4423,7 +4423,7 @@ void hal_ra_info_dump(_adapter *padapter , void *sel)
 			_RTW_PRINT_SEL(sel , "============ RA status check  Mac_id:%d ===================\n", mac_id);
 			cmd = 0x40000100 | mac_id;
 			rtw_write32(padapter, REG_HMEBOX_E2_E3_8192E, cmd);
-			rtw_msleep_os(10);
+			msleep(10);
 			ra_info1 = rtw_read32(padapter, REG_RSVD5_8192E);
 			curr_tx_sgi = rtw_get_current_tx_sgi(padapter, macid_ctl->sta[mac_id]);
 			curr_tx_rate = rtw_get_current_tx_rate(padapter, macid_ctl->sta[mac_id]);
@@ -4433,7 +4433,7 @@ void hal_ra_info_dump(_adapter *padapter , void *sel)
 
 			cmd = 0x40000400 | mac_id;
 			rtw_write32(padapter, REG_HMEBOX_E2_E3_8192E, cmd);
-			rtw_msleep_os(10);
+			msleep(10);
 			ra_info1 = rtw_read32(padapter, REG_RSVD5_8192E);
 			ra_info2 = rtw_read32(padapter, REG_RSVD6_8192E);
 			rate_mask1 = rtw_read32(padapter, REG_RSVD7_8192E);

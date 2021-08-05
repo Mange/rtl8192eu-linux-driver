@@ -1597,32 +1597,6 @@ void rtw_sleep_schedulable(int ms)
 }
 
 
-void rtw_msleep_os(int ms)
-{
-
-#ifdef PLATFORM_LINUX
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 36))
-	if (ms < 20) {
-		unsigned long us = ms * 1000UL;
-		usleep_range(us, us + 1000UL);
-	} else
-#endif
-		msleep((unsigned int)ms);
-
-#endif
-#ifdef PLATFORM_FREEBSD
-	/* Delay for delay microseconds */
-	DELAY(ms * 1000);
-	return ;
-#endif
-#ifdef PLATFORM_WINDOWS
-
-	NdisMSleep(ms * 1000); /* (us)*1000=(ms) */
-
-#endif
-
-
-}
 void rtw_usleep_os(int us)
 {
 #ifdef PLATFORM_LINUX
@@ -1660,7 +1634,7 @@ void _rtw_mdelay_os(int ms, const char *func, const int line)
 #if 0
 	if (ms > 10)
 		RTW_INFO("%s:%d %s(%d)\n", func, line, __FUNCTION__, ms);
-	rtw_msleep_os(ms);
+	msleep(ms);
 	return;
 #endif
 

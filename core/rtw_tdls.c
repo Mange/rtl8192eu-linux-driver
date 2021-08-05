@@ -382,7 +382,7 @@ int issue_nulldata_to_TDLS_peer_STA(_adapter *padapter, unsigned char *da, unsig
 			break;
 
 		if (i < try_cnt && wait_ms > 0 && ret == _FAIL)
-			rtw_msleep_os(wait_ms);
+			msleep(wait_ms);
 
 	} while ((i < try_cnt) && (ret == _FAIL || wait_ms == 0));
 
@@ -1051,7 +1051,7 @@ s32 rtw_tdls_do_ch_sw(_adapter *padapter, struct sta_info *ptdls_sta, u8 chnl_ty
 				wait_time = 0;
 
 			if (wait_time > 0)
-				rtw_msleep_os(wait_time);
+				msleep(wait_time);
 		}
 	}
 
