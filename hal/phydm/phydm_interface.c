@@ -615,11 +615,11 @@ void ODM_delay_us(u32 us)
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE) && defined(DM_ODM_CE_MAC80211_V2)
 	udelay(us);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE)
-	rtw_udelay_os(us);
+	udelay(us);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_WIN)
 	PlatformStallExecution(us);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_IOT)
-	rtw_udelay_os(us);
+	udelay(us);
 #endif
 }
 

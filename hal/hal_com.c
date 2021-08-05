@@ -9016,7 +9016,7 @@ bool rtw_read_from_frame_mask(_adapter *adapter, u8 idx)
 
 		do {
 			tmp = rtw_read8(adapter, REG_RXPKTBUF_CTRL);
-			rtw_udelay_os(2);
+			udelay(2);
 			count++;
 		} while (!tmp && count < 100);
 
@@ -9127,7 +9127,7 @@ bool rtw_write_to_frame_mask(_adapter *adapter, u8 idx,
 		count = 0;
 		do {
 			tmp = rtw_read8(adapter, REG_RXPKTBUF_CTRL);
-			rtw_udelay_os(2);
+			udelay(2);
 			count++;
 		} while (tmp && count < 100);
 

@@ -4418,7 +4418,7 @@ s32 rtw_monitor_xmit_entry(struct sk_buff *skb, struct net_device *ndev)
 #endif
 	pmgntframe = alloc_mgtxmitframe(pxmitpriv);
 	if (pmgntframe == NULL) {
-		rtw_udelay_os(500);
+		udelay(500);
 		goto fail;
 	}
 

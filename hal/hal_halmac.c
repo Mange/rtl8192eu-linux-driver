@@ -410,7 +410,7 @@ static void _halmac_udelay(void *p, u32 us)
 {
 	/* Most hardware polling wait time < 50us) */
 	if (us <= 50)
-		rtw_udelay_os(us);
+		udelay(us);
 	else if (us <= 1000)
 		rtw_usleep_os(us);
 	else

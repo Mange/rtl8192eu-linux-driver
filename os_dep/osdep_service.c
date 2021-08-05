@@ -1606,55 +1606,6 @@ void rtw_usleep_os(int us)
 
 }
 
-#ifdef DBG_DELAY_OS
-void _rtw_udelay_os(int us, const char *func, const int line)
-{
-
-#if 0
-	if (us > 1000) {
-		RTW_INFO("%s:%d %s(%d)\n", func, line, __FUNCTION__, us);
-		rtw_usleep_os(us);
-		return;
-	}
-#endif
-
-
-	RTW_INFO("%s:%d %s(%d)\n", func, line, __FUNCTION__, us);
-
-
-#if defined(PLATFORM_LINUX)
-
-	udelay((unsigned long)us);
-
-#elif defined(PLATFORM_WINDOWS)
-
-	NdisStallExecution(us); /* (us) */
-
-#endif
-
-}
-
-void rtw_udelay_os(int us)
-{
-
-#ifdef PLATFORM_LINUX
-
-	udelay((unsigned long)us);
-
-#endif
-#ifdef PLATFORM_FREEBSD
-	/* Delay for delay microseconds */
-	DELAY(us);
-	return ;
-#endif
-#ifdef PLATFORM_WINDOWS
-
-	NdisStallExecution(us); /* (us) */
-
-#endif
-
-}
-#endif
 
 bool rtw_macaddr_is_larger(const u8 *a, const u8 *b)
 {
