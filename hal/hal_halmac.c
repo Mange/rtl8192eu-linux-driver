@@ -4414,7 +4414,7 @@ int rtw_halmac_dump_fifo(struct dvobj_priv *d, u8 fifo_sel, u32 addr, u32 size, 
 
 _exit:
 	if ((mem_created == _TRUE) && pfifo_map)
-		rtw_vmfree(pfifo_map, fifo_size);
+		vfree(pfifo_map);
 
 	return ret;
 }

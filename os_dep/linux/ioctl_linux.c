@@ -7875,7 +7875,7 @@ static int rtw_wx_set_priv(struct net_device *dev,
 		return -ENOMEM;
 
 	if (copy_from_user(ext, dwrq->pointer, len)) {
-		rtw_vmfree(ext, len);
+		vfree(ext);
 		return -EFAULT;
 	}
 
@@ -7884,7 +7884,7 @@ static int rtw_wx_set_priv(struct net_device *dev,
 #ifdef CONFIG_DEBUG_RTW_WX_SET_PRIV
 	ext_dbg = rtw_vmalloc(len);
 	if (!ext_dbg) {
-		rtw_vmfree(ext, len);
+		vfree(ext);
 		return -ENOMEM;
 	}
 
@@ -8004,9 +8004,9 @@ static int rtw_wx_set_priv(struct net_device *dev,
 
 FREE_EXT:
 
-	rtw_vmfree(ext, len);
+	vfree(ext);
 	#ifdef CONFIG_DEBUG_RTW_WX_SET_PRIV
-	rtw_vmfree(ext_dbg, len);
+	vfree(ext_dbg);
 	#endif
 
 	/* RTW_INFO("rtw_wx_set_priv: (SIOCSIWPRIV) %s ret=%d\n",  */

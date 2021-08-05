@@ -1178,7 +1178,7 @@ void rtw_txpwr_lmt_list_free(struct rf_ctl_t *rfctl)
 		if (ent->regd_name == rfctl->regd_name)
 			rfctl->regd_name = regd_str(TXPWR_LMT_NONE);
 		rtw_list_delete(&ent->list);
-		rtw_vmfree((u8 *)ent, sizeof(struct txpwr_lmt_ent) + strlen(ent->regd_name) + 1);
+		vfree(ent);
 	}
 	rfctl->txpwr_regd_num = 0;
 

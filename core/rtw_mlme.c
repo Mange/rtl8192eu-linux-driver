@@ -307,8 +307,7 @@ void _rtw_free_mlme_priv(struct mlme_priv *pmlmepriv)
 	if (pmlmepriv) {
 		rtw_mfree_mlme_priv_lock(pmlmepriv);
 
-		if (pmlmepriv->free_bss_buf)
-			rtw_vmfree(pmlmepriv->free_bss_buf, pmlmepriv->max_bss_cnt * sizeof(struct wlan_network));
+		vfree(pmlmepriv->free_bss_buf);
 	}
 exit:
 	return;

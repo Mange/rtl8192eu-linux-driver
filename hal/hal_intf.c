@@ -164,7 +164,7 @@ void rtw_hal_data_deinit(_adapter *padapter)
 #ifdef CONFIG_LOAD_PHY_PARA_FROM_FILE
 			phy_free_filebuf(padapter);
 #endif
-			rtw_vmfree(padapter->HalData, padapter->hal_data_sz);
+			vfree(padapter->HalData);
 			padapter->HalData = NULL;
 			padapter->hal_data_sz = 0;
 		}

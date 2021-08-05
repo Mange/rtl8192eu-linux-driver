@@ -5359,43 +5359,43 @@ void phy_free_filebuf_mask(_adapter *padapter, u8 mask)
 	HAL_DATA_TYPE *pHalData = GET_HAL_DATA(padapter);
 
 	if (pHalData->mac_reg && (mask & LOAD_MAC_PARA_FILE)) {
-		rtw_vmfree(pHalData->mac_reg, pHalData->mac_reg_len);
+		vfree(pHalData->mac_reg);
 		pHalData->mac_reg = NULL;
 	}
 	if (mask & LOAD_BB_PARA_FILE) {
 		if (pHalData->bb_phy_reg) {
-			rtw_vmfree(pHalData->bb_phy_reg, pHalData->bb_phy_reg_len);
+			vfree(pHalData->bb_phy_reg);
 			pHalData->bb_phy_reg = NULL;
 		}
 		if (pHalData->bb_agc_tab) {
-			rtw_vmfree(pHalData->bb_agc_tab, pHalData->bb_agc_tab_len);
+			vfree(pHalData->bb_agc_tab);
 			pHalData->bb_agc_tab = NULL;
 		}
 	}
 	if (pHalData->bb_phy_reg_pg && (mask & LOAD_BB_PG_PARA_FILE)) {
-		rtw_vmfree(pHalData->bb_phy_reg_pg, pHalData->bb_phy_reg_pg_len);
+		vfree(pHalData->bb_phy_reg_pg);
 		pHalData->bb_phy_reg_pg = NULL;
 	}
 	if (pHalData->bb_phy_reg_mp && (mask & LOAD_BB_MP_PARA_FILE)) {
-		rtw_vmfree(pHalData->bb_phy_reg_mp, pHalData->bb_phy_reg_mp_len);
+		vfree(pHalData->bb_phy_reg_mp);
 		pHalData->bb_phy_reg_mp = NULL;
 	}
 	if (mask & LOAD_RF_PARA_FILE) {
 		if (pHalData->rf_radio_a) {
-			rtw_vmfree(pHalData->rf_radio_a, pHalData->rf_radio_a_len);
+			vfree(pHalData->rf_radio_a);
 			pHalData->rf_radio_a = NULL;
 		}
 		if (pHalData->rf_radio_b) {
-			rtw_vmfree(pHalData->rf_radio_b, pHalData->rf_radio_b_len);
+			vfree(pHalData->rf_radio_b);
 			pHalData->rf_radio_b = NULL;
 		}
 	}
 	if (pHalData->rf_tx_pwr_track && (mask & LOAD_RF_TXPWR_TRACK_PARA_FILE)) {
-		rtw_vmfree(pHalData->rf_tx_pwr_track, pHalData->rf_tx_pwr_track_len);
+		vfree(pHalData->rf_tx_pwr_track);
 		pHalData->rf_tx_pwr_track = NULL;
 	}
 	if (pHalData->rf_tx_pwr_lmt && (mask & LOAD_RF_TXPWR_LMT_PARA_FILE)) {
-		rtw_vmfree(pHalData->rf_tx_pwr_lmt, pHalData->rf_tx_pwr_lmt_len);
+		vfree(pHalData->rf_tx_pwr_lmt);
 		pHalData->rf_tx_pwr_lmt = NULL;
 	}
 }

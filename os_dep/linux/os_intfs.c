@@ -2898,7 +2898,7 @@ free_drv_sw:
 		rtw_free_drv_sw(padapter);
 free_adapter:
 	if (res != _SUCCESS && padapter) {
-		rtw_vmfree((u8 *)padapter, sizeof(*padapter));
+		vfree((u8 *)padapter);
 		padapter = NULL;
 	}
 exit:
@@ -2958,7 +2958,7 @@ void rtw_drv_free_vir_if(_adapter *padapter)
 	/* TODO: use rtw_os_ndevs_deinit instead at the first stage of driver's dev deinit function */
 	rtw_os_ndev_free(padapter);
 
-	rtw_vmfree((u8 *)padapter, sizeof(_adapter));
+	vfree(padapter);
 }
 
 

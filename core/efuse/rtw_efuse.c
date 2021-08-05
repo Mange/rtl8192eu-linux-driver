@@ -3213,9 +3213,9 @@ u32 rtw_read_efuse_from_file(const char *path, u8 *buf, int map_size)
 
 exit:
 	if (file_data)
-		rtw_vmfree(file_data, file_size);
+		vfree(file_data);
 	if (map)
-		rtw_vmfree(map, map_size);
+		vfree(map);
 
 	return ret;
 }

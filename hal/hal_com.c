@@ -4702,7 +4702,7 @@ void rtw_dump_rsvd_page(void *sel, _adapter *adapter, u8 page_offset, u8 page_nu
 		if (buffer) {
 			rtw_hal_get_rsvd_page(adapter, page_offset, page_num, buffer, buf_size);
 			RTW_DUMP_SEL(sel, buffer, buf_size);
-			rtw_vmfree(buffer, buf_size);
+			vfree(buffer);
 		} else
 			RTW_PRINT_SEL(sel, "ERROR - rsvd_buf mem allocate failed\n");
 	} else
@@ -4739,7 +4739,7 @@ void rtw_dump_fifo(void *sel, _adapter *adapter, u8 fifo_sel, u32 fifo_addr, u32
 
 	if (buffer) {
 		RTW_DUMP_SEL(sel, buffer, fifo_size);
-		rtw_vmfree(buffer, buff_size);
+		vfree(buffer);
 	}
 
 	RTW_PRINT_SEL(sel, "==========================\n");
@@ -5224,7 +5224,7 @@ static void rtw_hal_get_aoac_rpt(_adapter *adapter)
 
 _exit:
 	if (buffer)
-		rtw_vmfree(buffer, buf_size);
+		vfree(buffer);
 }
 
 static void rtw_hal_update_tx_iv(_adapter *adapter)

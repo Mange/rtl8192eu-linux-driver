@@ -111,26 +111,6 @@ inline void *_rtw_zvmalloc(u32 sz)
 	return pbuf;
 }
 
-inline void _rtw_vmfree(void *pbuf, u32 sz)
-{
-#ifdef PLATFORM_LINUX
-	vfree(pbuf);
-#endif
-#ifdef PLATFORM_FREEBSD
-	free(pbuf, M_DEVBUF);
-#endif
-#ifdef PLATFORM_WINDOWS
-	NdisFreeMemory(pbuf, sz, 0);
-#endif
-
-#ifdef DBG_MEMORY_LEAK
-#ifdef PLATFORM_LINUX
-	atomic_dec(&_malloc_cnt);
-	atomic_sub(sz, &_malloc_size);
-#endif
-#endif /* DBG_MEMORY_LEAK */
-}
-
 void *_rtw_malloc(u32 sz)
 {
 	void *pbuf = NULL;
@@ -602,7 +582,7 @@ inline void dbg_rtw_vmfree(void *pbuf, u32 sz, const enum mstat_f flags, const c
 	if (match_mstat_sniff_rules(flags, sz))
 		RTW_INFO("DBG_MEM_ALLOC %s:%d %s(%d)\n", func, line, __FUNCTION__, (sz));
 
-	_rtw_vmfree((pbuf), (sz));
+	vfree((pbuf));
 
 	rtw_mstat_update(
 		flags
