@@ -1435,7 +1435,7 @@ void LPS_Leave_check(
 	bReady = _FALSE;
 	start_time = rtw_get_current_time();
 
-	rtw_yield_os();
+	yield();
 
 	while (1) {
 		_enter_pwrlock(&pwrpriv->lock);

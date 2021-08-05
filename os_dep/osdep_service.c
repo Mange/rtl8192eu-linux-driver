@@ -1748,19 +1748,6 @@ void rtw_udelay_os(int us)
 }
 #endif
 
-void rtw_yield_os(void)
-{
-#ifdef PLATFORM_LINUX
-	yield();
-#endif
-#ifdef PLATFORM_FREEBSD
-	yield();
-#endif
-#ifdef PLATFORM_WINDOWS
-	SwitchToThread();
-#endif
-}
-
 bool rtw_macaddr_is_larger(const u8 *a, const u8 *b)
 {
 	u32 va, vb;

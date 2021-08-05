@@ -10838,7 +10838,7 @@ unsigned int send_beacon(_adapter *padapter)
 				#if defined(CONFIG_PCI_BCN_POLLING)
 				rtw_msleep_os(1);
 				#else
-				rtw_yield_os();
+				yield();
 				#endif
 				rtw_hal_get_hwreg(padapter, HW_VAR_BCN_VALID, (u8 *)(&bxmitok));
 				poll++;
