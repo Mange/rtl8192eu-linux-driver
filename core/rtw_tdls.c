@@ -88,8 +88,6 @@ int rtw_init_tdls_info(_adapter *padapter)
 
 void rtw_free_tdls_info(struct tdls_info *ptdlsinfo)
 {
-	_rtw_spinlock_free(&ptdlsinfo->cmd_lock);
-	_rtw_spinlock_free(&ptdlsinfo->hdl_lock);
 
 	_rtw_memset(ptdlsinfo, 0, sizeof(struct tdls_info));
 

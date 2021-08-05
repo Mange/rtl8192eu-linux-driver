@@ -1165,7 +1165,7 @@ void dump_mesh_networks(void *sel, _adapter *adapter)
 		);
 	}
 
-	rtw_vmfree(mesh_networks, mlme->max_bss_cnt * sizeof(struct wlan_network *));
+	vfree(mesh_networks);
 }
 
 void rtw_mesh_adjust_chbw(u8 req_ch, u8 *req_bw, u8 *req_offset)
@@ -2283,8 +2283,6 @@ void rtw_mesh_plink_ctl_deinit(_adapter *adapter)
 			rtw_mfree(ent->rx_conf_ies, ent->rx_conf_ies_len);
 	}
 	_exit_critical_bh(&(plink_ctl->lock), &irqL);
-
-	_rtw_spinlock_free(&plink_ctl->lock);
 
 #if CONFIG_RTW_MESH_PEER_BLACKLIST
 	rtw_mesh_peer_blacklist_flush(adapter);

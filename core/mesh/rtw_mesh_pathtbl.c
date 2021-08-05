@@ -741,7 +741,6 @@ static void rtw_mesh_path_free_rcu(struct rtw_mesh_table *tbl,
 	_cancel_timer_ex(&mpath->timer);
 	atomic_dec(&adapter->mesh_info.mpaths);
 	atomic_dec(&tbl->entries);
-	_rtw_spinlock_free(&mpath->state_lock);
 
 	rtw_mesh_path_flush_pending(mpath);
 

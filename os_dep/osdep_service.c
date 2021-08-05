@@ -1365,19 +1365,6 @@ void	_rtw_spinlock_init(_lock *plock)
 
 }
 
-void	_rtw_spinlock_free(_lock *plock)
-{
-#ifdef PLATFORM_FREEBSD
-	mtx_destroy(plock);
-#endif
-
-#ifdef PLATFORM_WINDOWS
-
-	NdisFreeSpinLock(plock);
-
-#endif
-
-}
 #ifdef PLATFORM_FREEBSD
 extern PADAPTER prtw_lock;
 
@@ -1484,7 +1471,6 @@ void _rtw_init_queue(_queue *pqueue)
 
 void _rtw_deinit_queue(_queue *pqueue)
 {
-	_rtw_spinlock_free(&(pqueue->lock));
 }
 
 u32	  _rtw_queue_empty(_queue	*pqueue)

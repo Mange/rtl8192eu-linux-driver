@@ -321,7 +321,6 @@ extern void	_rtw_mutex_free(_mutex *pmutex);
 #ifndef PLATFORM_FREEBSD
 extern void	_rtw_spinlock_init(_lock *plock);
 #endif /* PLATFORM_FREEBSD */
-extern void	_rtw_spinlock_free(_lock *plock);
 extern void	_rtw_spinlock(_lock	*plock);
 extern void	_rtw_spinunlock(_lock	*plock);
 extern void	_rtw_spinlock_ex(_lock	*plock);

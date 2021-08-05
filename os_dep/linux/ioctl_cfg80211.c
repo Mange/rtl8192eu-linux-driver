@@ -10129,12 +10129,9 @@ void rtw_wdev_free(struct wireless_dev *wdev)
 		struct rtw_wdev_priv *wdev_priv = adapter_wdev_data(adapter);
 		_irqL irqL;
 
-		_rtw_spinlock_free(&wdev_priv->scan_req_lock);
-
 		_enter_critical_bh(&wdev_priv->connect_req_lock, &irqL);
 		rtw_wdev_free_connect_req(wdev_priv);
 		_exit_critical_bh(&wdev_priv->connect_req_lock, &irqL);
-		_rtw_spinlock_free(&wdev_priv->connect_req_lock);
 
 		_rtw_mutex_free(&wdev_priv->roch_mutex);
 	}

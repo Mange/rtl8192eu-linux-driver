@@ -2497,7 +2497,6 @@ void rtw_mbid_cam_deinit(struct dvobj_priv *dvobj)
 {
 	struct mbid_cam_ctl_t *mbid_cam_ctl = &dvobj->mbid_cam_ctl;
 
-	_rtw_spinlock_free(&mbid_cam_ctl->lock);
 }
 
 void rtw_mbid_cam_reset(_adapter *adapter)
@@ -14180,10 +14179,7 @@ void rtw_clt_port_init(struct clt_port_t  *cltp)
 	cltp->num = 0;
 	_rtw_spinlock_init(&cltp->lock);
 }
-void rtw_clt_port_deinit(struct clt_port_t *cltp)
-{
-	_rtw_spinlock_free(&cltp->lock);
-}
+
 static void _hw_client_port_alloc(_adapter *adapter)
 {
 	struct dvobj_priv *dvobj = adapter_to_dvobj(adapter);

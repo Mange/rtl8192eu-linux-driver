@@ -4091,11 +4091,6 @@ inline void rtw_macid_ctl_init(struct macid_ctl_t *macid_ctl)
 	_rtw_spinlock_init(&macid_ctl->lock);
 }
 
-inline void rtw_macid_ctl_deinit(struct macid_ctl_t *macid_ctl)
-{
-	_rtw_spinlock_free(&macid_ctl->lock);
-}
-
 inline bool rtw_bmp_is_set(const u8 *bmp, u8 bmp_len, u8 id)
 {
 	if (id / 8 >= bmp_len)
