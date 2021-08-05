@@ -1545,37 +1545,6 @@ inline bool _rtw_time_after(systime a, systime b)
 #endif
 }
 
-void rtw_sleep_schedulable(int ms)
-{
-
-#ifdef PLATFORM_LINUX
-
-	u32 delta;
-
-	delta = (ms * HZ) / 1000; /* (ms) */
-	if (delta == 0) {
-		delta = 1;/* 1 ms */
-	}
-	set_current_state(TASK_INTERRUPTIBLE);
-	if (schedule_timeout(delta) != 0)
-		return ;
-	return;
-
-#endif
-#ifdef PLATFORM_FREEBSD
-	DELAY(ms * 1000);
-	return ;
-#endif
-
-#ifdef PLATFORM_WINDOWS
-
-	NdisMSleep(ms * 1000); /* (us)*1000=(ms) */
-
-#endif
-
-}
-
-
 void rtw_usleep_os(int us)
 {
 #ifdef PLATFORM_LINUX

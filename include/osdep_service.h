@@ -362,8 +362,6 @@ extern bool _rtw_time_after(systime a, systime b);
 #define rtw_time_before(a,b) _rtw_time_after(b,a)
 #endif
 
-extern void	rtw_sleep_schedulable(int ms);
-
 extern void	rtw_usleep_os(int us);
 
 extern u32	rtw_atoi(u8 *s);
