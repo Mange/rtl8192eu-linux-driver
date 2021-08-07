@@ -784,7 +784,6 @@ odm_txpowertracking_check_mp(
 		return;
 
 	if (odm_check_power_status(dm) == false) {
-		RT_TRACE(COMP_POWER_TRACKING, DBG_LOUD, ("check_pow_status return false\n"));
 		return;
 	}
 
@@ -831,11 +830,8 @@ odm_txpowertracking_thermal_meter_check(
 	struct dm_struct	*dm = &(pHalData->DM_OutSrc);
 	struct _hal_rf_			*rf = &(dm->rf_table);
 
-	if (!(rf->rf_supportability & HAL_RF_TX_PWR_TRACK)) {
-		RT_TRACE(COMP_POWER_TRACKING, DBG_LOUD,
-			("===>odm_txpowertracking_thermal_meter_check(),mgnt_info->is_txpowertracking is false, return!!\n"));
+	if (!(rf->rf_supportability & HAL_RF_TX_PWR_TRACK))
 		return;
-	}
 
 	if (!tm_trigger) {
 		if (IS_HARDWARE_TYPE_8188E(adapter) || IS_HARDWARE_TYPE_JAGUAR(adapter) || IS_HARDWARE_TYPE_8192E(adapter) || IS_HARDWARE_TYPE_8192F(adapter)
@@ -845,14 +841,11 @@ odm_txpowertracking_thermal_meter_check(
 		else
 			PHY_SetRFReg(adapter, RF_PATH_A, RF_T_METER, RFREGOFFSETMASK, 0x60);
 
-		RT_TRACE(COMP_POWER_TRACKING, DBG_LOUD, ("Trigger Thermal Meter!!\n"));
-
 		tm_trigger = 1;
 		return;
 	} else if (IS_HARDWARE_TYPE_8822C(adapter) || IS_HARDWARE_TYPE_8814B(adapter))
 		return;
 	else {
-		RT_TRACE(COMP_POWER_TRACKING, DBG_LOUD, ("Schedule TxPowerTracking direct call!!\n"));
 		odm_txpowertracking_direct_call(adapter);
 		tm_trigger = 0;
 	}

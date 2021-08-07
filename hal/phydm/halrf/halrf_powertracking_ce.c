@@ -848,8 +848,6 @@ void odm_txpowertracking_check_mp(void *dm_void)
 	void *adapter = dm->adapter;
 
 	if (odm_check_power_status(adapter) == false) {
-		RT_TRACE(COMP_POWER_TRACKING, DBG_LOUD,
-			 ("check_pow_status, return false\n"));
 		return;
 	}
 

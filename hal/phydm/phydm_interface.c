@@ -1023,7 +1023,6 @@ u8 phydm_c2H_content_parsing(void *dm_void, u8 c2h_cmd_id, u8 c2h_cmd_len,
 #if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
 
 		if (dm->support_ic_type & (ODM_RTL8812 | ODM_RTL8821)) {
-			RT_TRACE(COMP_MP, DBG_LOUD, ("== FW IQK Finish ==\n"));
 			odm_acquire_spin_lock(dm, RT_IQK_SPINLOCK);
 			dm->rf_calibrate_info.is_iqk_in_progress = false;
 			odm_release_spin_lock(dm, RT_IQK_SPINLOCK);

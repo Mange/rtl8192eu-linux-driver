@@ -2315,7 +2315,6 @@ void phydm_dfs_ap_reset_radar_detect_counter_and_flag(void *dm_void)
 	odm_set_bb_reg(dm, R_0xa40, BIT(15), 0);
 	odm_set_bb_reg(dm, R_0xa40, BIT(15), 1);
 
-	/* RT_TRACE(COMP_DFS, DBG_LOUD, ("[DFS], After reset radar counter, 0xcf8 = 0x%x, 0xcf4 = 0x%x\n", */
 	/* PHY_QueryBBReg(Adapter, 0xcf8, bMaskDWord), */
 	/* PHY_QueryBBReg(Adapter, 0xcf4, bMaskDWord))); */
 }

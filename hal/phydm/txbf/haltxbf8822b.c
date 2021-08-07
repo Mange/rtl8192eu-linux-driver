@@ -185,7 +185,6 @@ hal_txbf_8822b_download_ndpa(
 	platform_efio_write_1byte(adapter, REG_FWHW_TXQ_CTRL_8814A + 2,  tmp_reg422 & (~BIT(6)));
 
 	if (tmp_reg422 & BIT(6)) {
-		RT_TRACE(COMP_INIT, DBG_LOUD, ("SetBeamformDownloadNDPA_8814A(): There is an adapter is sending beacon.\n"));
 		is_send_beacon = true;
 	}
 
