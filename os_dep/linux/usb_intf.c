@@ -1471,7 +1471,6 @@ static void rtw_usb_primary_adapter_deinit(_adapter *padapter)
 static int rtw_drv_init(struct usb_interface *pusb_intf, const struct usb_device_id *pdid)
 {
 	_adapter *padapter = NULL;
-	int status = _FAIL;
 	struct dvobj_priv *dvobj;
 #ifdef CONFIG_CONCURRENT_MODE
 	int i;
@@ -1484,8 +1483,8 @@ static int rtw_drv_init(struct usb_interface *pusb_intf, const struct usb_device
 
 	/* Initialize dvobj_priv */
 	dvobj = usb_dvobj_init(pusb_intf, pdid);
-	if (dvobj == NULL) {
-		goto exit;
+	if (!dvobj) {
+		goto err;
 	}
 
 	padapter = rtw_usb_primary_adapter_init(dvobj, pusb_intf);
@@ -1534,30 +1533,21 @@ static int rtw_drv_init(struct usb_interface *pusb_intf, const struct usb_device
 #endif
 
 
-	status = _SUCCESS;
+	return 0;
 
-#if 0 /* not used now */
-os_ndevs_deinit:
-	if (status != _SUCCESS)
-		rtw_os_ndevs_deinit(dvobj);
-#endif
 free_if_vir:
-	if (status != _SUCCESS) {
-		#ifdef CONFIG_CONCURRENT_MODE
-		rtw_drv_stop_vir_ifaces(dvobj);
-		rtw_drv_free_vir_ifaces(dvobj);
-		#endif
-	}
+	#ifdef CONFIG_CONCURRENT_MODE
+	rtw_drv_stop_vir_ifaces(dvobj);
+	rtw_drv_free_vir_ifaces(dvobj);
+	#endif
 
 free_if_prim:
-	if (status != _SUCCESS && padapter)
-		rtw_usb_primary_adapter_deinit(padapter);
+	rtw_usb_primary_adapter_deinit(padapter);
 
 free_dvobj:
-	if (status != _SUCCESS)
-		usb_dvobj_deinit(pusb_intf);
-exit:
-	return status == _SUCCESS ? 0 : -ENODEV;
+	usb_dvobj_deinit(pusb_intf);
+err:
+	return -ENODEV;
 }
 
 /*
