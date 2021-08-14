@@ -463,7 +463,7 @@ static inline char *iwe_stream_rate_process(_adapter *padapter,
 			ht_cap = _TRUE;
 			pht_capie = (struct rtw_ieee80211_ht_cap *)(p + 2);
 			_rtw_memcpy(&mcs_rate , pht_capie->supp_mcs_set, 2);
-			bw_40MHz = (pht_capie->cap_info & IEEE80211_HT_CAP_SUP_WIDTH) ? 1 : 0;
+			bw_40MHz = (pht_capie->cap_info & IEEE80211_HT_CAP_SUP_WIDTH_20_40) ? 1 : 0;
 			short_GI = (pht_capie->cap_info & (IEEE80211_HT_CAP_SGI_20 | IEEE80211_HT_CAP_SGI_40)) ? 1 : 0;
 		}
 	}
