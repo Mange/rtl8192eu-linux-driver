@@ -370,12 +370,12 @@ void odm_allocate_memory(struct dm_struct *dm, void **ptr, u32 length)
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE) && defined(DM_ODM_CE_MAC80211_V2)
 	*ptr = kmalloc(length, GFP_ATOMIC);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE)
-	*ptr = rtw_zvmalloc(length);
+	*ptr = vzalloc(length);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_WIN)
 	void *adapter = dm->adapter;
 	PlatformAllocateMemory(adapter, ptr, length);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_IOT)
-	*ptr = rtw_zvmalloc(length);
+	*ptr = vzalloc(length);
 #endif
 }
 

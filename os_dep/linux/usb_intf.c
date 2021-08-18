@@ -1270,7 +1270,7 @@ _adapter *rtw_usb_primary_adapter_init(struct dvobj_priv *dvobj,
 	_adapter *padapter = NULL;
 	int status = _FAIL;
 
-	padapter = (_adapter *)rtw_zvmalloc(sizeof(*padapter));
+	padapter = (_adapter *)vzalloc(sizeof(*padapter));
 	if (padapter == NULL)
 		goto exit;
 

@@ -4388,7 +4388,7 @@ int rtw_halmac_dump_fifo(struct dvobj_priv *d, u8 fifo_sel, u32 addr, u32 size, 
 		fifo_size = api->halmac_get_fifo_size(mac, halmac_fifo_sel);
 
 		if (fifo_size)
-			pfifo_map = rtw_zvmalloc(fifo_size);
+			pfifo_map = vzalloc(fifo_size);
 		if (pfifo_map == NULL)
 			return -1;
 		mem_created = _TRUE;

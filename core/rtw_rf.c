@@ -1056,7 +1056,7 @@ void rtw_txpwr_lmt_add_with_nlen(struct rf_ctl_t *rfctl, const char *regd_name, 
 	}
 
 	/* alloc new one */
-	ent = (struct txpwr_lmt_ent *)rtw_zvmalloc(sizeof(struct txpwr_lmt_ent) + nlen + 1);
+	ent = (struct txpwr_lmt_ent *)vzalloc(sizeof(struct txpwr_lmt_ent) + nlen + 1);
 	if (!ent)
 		goto release_lock;
 

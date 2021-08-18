@@ -1077,7 +1077,7 @@ void dump_mesh_networks(void *sel, _adapter *adapter)
 	u8 mesh_network_cnt = 0;
 	int i;
 
-	mesh_networks = rtw_zvmalloc(mlme->max_bss_cnt * sizeof(struct wlan_network *));
+	mesh_networks = vzalloc(mlme->max_bss_cnt * sizeof(struct wlan_network *));
 	if (!mesh_networks)
 		return;
 

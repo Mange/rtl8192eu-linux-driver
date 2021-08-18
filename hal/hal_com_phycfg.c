@@ -4092,7 +4092,7 @@ phy_ConfigMACWithParaFile(
 			rlen = rtw_retrieve_from_file(rtw_phy_para_file_path, pHalData->para_file_buf, MAX_PARA_FILE_BUF_LEN);
 			if (rlen > 0) {
 				rtStatus = _SUCCESS;
-				pHalData->mac_reg = rtw_zvmalloc(rlen);
+				pHalData->mac_reg = vzalloc(rlen);
 				if (pHalData->mac_reg) {
 					_rtw_memcpy(pHalData->mac_reg, pHalData->para_file_buf, rlen);
 					pHalData->mac_reg_len = rlen;
@@ -4171,7 +4171,7 @@ phy_ConfigBBWithParaFile(
 			rlen = rtw_retrieve_from_file(rtw_phy_para_file_path, pHalData->para_file_buf, MAX_PARA_FILE_BUF_LEN);
 			if (rlen > 0) {
 				rtStatus = _SUCCESS;
-				pBuf = rtw_zvmalloc(rlen);
+				pBuf = vzalloc(rlen);
 				if (pBuf) {
 					_rtw_memcpy(pBuf, pHalData->para_file_buf, rlen);
 					*pBufLen = rlen;
@@ -4477,7 +4477,7 @@ phy_ConfigBBWithPgParaFile(
 			rlen = rtw_retrieve_from_file(rtw_phy_para_file_path, pHalData->para_file_buf, MAX_PARA_FILE_BUF_LEN);
 			if (rlen > 0) {
 				rtStatus = _SUCCESS;
-				pHalData->bb_phy_reg_pg = rtw_zvmalloc(rlen);
+				pHalData->bb_phy_reg_pg = vzalloc(rlen);
 				if (pHalData->bb_phy_reg_pg) {
 					_rtw_memcpy(pHalData->bb_phy_reg_pg, pHalData->para_file_buf, rlen);
 					pHalData->bb_phy_reg_pg_len = rlen;
@@ -4526,7 +4526,7 @@ phy_ConfigBBWithMpParaFile(
 			rlen = rtw_retrieve_from_file(rtw_phy_para_file_path, pHalData->para_file_buf, MAX_PARA_FILE_BUF_LEN);
 			if (rlen > 0) {
 				rtStatus = _SUCCESS;
-				pHalData->bb_phy_reg_mp = rtw_zvmalloc(rlen);
+				pHalData->bb_phy_reg_mp = vzalloc(rlen);
 				if (pHalData->bb_phy_reg_mp) {
 					_rtw_memcpy(pHalData->bb_phy_reg_mp, pHalData->para_file_buf, rlen);
 					pHalData->bb_phy_reg_mp_len = rlen;
@@ -4630,7 +4630,7 @@ PHY_ConfigRFWithParaFile(
 			rlen = rtw_retrieve_from_file(rtw_phy_para_file_path, pHalData->para_file_buf, MAX_PARA_FILE_BUF_LEN);
 			if (rlen > 0) {
 				rtStatus = _SUCCESS;
-				pBuf = rtw_zvmalloc(rlen);
+				pBuf = vzalloc(rlen);
 				if (pBuf) {
 					_rtw_memcpy(pBuf, pHalData->para_file_buf, rlen);
 					*pBufLen = rlen;
@@ -4829,7 +4829,7 @@ PHY_ConfigRFWithTxPwrTrackParaFile(
 			rlen = rtw_retrieve_from_file(rtw_phy_para_file_path, pHalData->para_file_buf, MAX_PARA_FILE_BUF_LEN);
 			if (rlen > 0) {
 				rtStatus = _SUCCESS;
-				pHalData->rf_tx_pwr_track = rtw_zvmalloc(rlen);
+				pHalData->rf_tx_pwr_track = vzalloc(rlen);
 				if (pHalData->rf_tx_pwr_track) {
 					_rtw_memcpy(pHalData->rf_tx_pwr_track, pHalData->para_file_buf, rlen);
 					pHalData->rf_tx_pwr_track_len = rlen;
@@ -5328,7 +5328,7 @@ PHY_ConfigRFWithPowerLimitTableParaFile(
 			rlen = rtw_retrieve_from_file(rtw_phy_para_file_path, pHalData->para_file_buf, MAX_PARA_FILE_BUF_LEN);
 			if (rlen > 0) {
 				rtStatus = _SUCCESS;
-				pHalData->rf_tx_pwr_lmt = rtw_zvmalloc(rlen);
+				pHalData->rf_tx_pwr_lmt = vzalloc(rlen);
 				if (pHalData->rf_tx_pwr_lmt) {
 					_rtw_memcpy(pHalData->rf_tx_pwr_lmt, pHalData->para_file_buf, rlen);
 					pHalData->rf_tx_pwr_lmt_len = rlen;

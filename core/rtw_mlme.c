@@ -47,7 +47,7 @@ sint	_rtw_init_mlme_priv(_adapter *padapter)
 	sint	res = _SUCCESS;
 
 
-	/* We don't need to memset padapter->XXX to zero, because adapter is allocated by rtw_zvmalloc(). */
+	/* We don't need to memset padapter->XXX to zero, because adapter is allocated by vzalloc(). */
 	/* memset((u8 *)pmlmepriv, 0, sizeof(struct mlme_priv)); */
 
 
@@ -82,7 +82,7 @@ sint	_rtw_init_mlme_priv(_adapter *padapter)
 		pmlmepriv->max_bss_cnt = MAX_BSS_CNT + MAX_BSS_CNT;
 
 
-	pbuf = rtw_zvmalloc(pmlmepriv->max_bss_cnt * (sizeof(struct wlan_network)));
+	pbuf = vzalloc(pmlmepriv->max_bss_cnt * (sizeof(struct wlan_network)));
 
 	if (pbuf == NULL) {
 		res = _FAIL;

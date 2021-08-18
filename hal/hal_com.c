@@ -4696,7 +4696,7 @@ void rtw_dump_rsvd_page(void *sel, _adapter *adapter, u8 page_offset, u8 page_nu
 	rtw_hal_get_def_var(adapter, HAL_DEF_TX_PAGE_SIZE, &page_size);
 	if (page_size) {
 		buf_size = page_size * page_num;
-		buffer = rtw_zvmalloc(buf_size);
+		buffer = vzalloc(buf_size);
 
 		if (buffer) {
 			rtw_hal_get_rsvd_page(adapter, page_offset, page_num, buffer, buf_size);
@@ -4729,7 +4729,7 @@ void rtw_dump_fifo(void *sel, _adapter *adapter, u8 fifo_sel, u32 fifo_addr, u32
 
 	if (fifo_size) {
 		buff_size = RND4(fifo_size);
-		buffer = rtw_zvmalloc(buff_size);
+		buffer = vzalloc(buff_size);
 		if (buffer == NULL)
 			buff_size = 0;
 	}
@@ -5190,7 +5190,7 @@ static void rtw_hal_get_aoac_rpt(_adapter *adapter)
 	rtw_hal_get_def_var(adapter, HAL_DEF_TX_PAGE_SIZE, &page_size);
 	buf_size = page_size * page_number;
 
-	buffer = rtw_zvmalloc(buf_size);
+	buffer = vzalloc(buf_size);
 
 	if (buffer == NULL) {
 		RTW_ERR("%s buffer allocate failed size(%d)\n",

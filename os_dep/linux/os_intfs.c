@@ -2396,7 +2396,7 @@ u8 rtw_init_drv_sw(_adapter *padapter)
 	/* add for CONFIG_IEEE80211W, none 11w also can use */
 	_rtw_spinlock_init(&padapter->security_key_mutex);
 
-	/* We don't need to memset padapter->XXX to zero, because adapter is allocated by rtw_zvmalloc(). */
+	/* We don't need to memset padapter->XXX to zero, because adapter is allocated by vzalloc(). */
 	/* memset((unsigned char *)&padapter->securitypriv, 0, sizeof (struct security_priv)); */
 
 	if (_rtw_init_sta_priv(&padapter->stapriv) == _FAIL) {
@@ -2805,7 +2805,7 @@ _adapter *rtw_drv_add_vir_if(_adapter *primary_padapter,
 	u8 mac[ETH_ALEN];
 
 	/****** init adapter ******/
-	padapter = (_adapter *)rtw_zvmalloc(sizeof(*padapter));
+	padapter = (_adapter *)vzalloc(sizeof(*padapter));
 	if (padapter == NULL)
 		goto exit;
 
