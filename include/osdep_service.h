@@ -168,12 +168,10 @@ void dbg_rtw_usb_buffer_free(struct usb_device *dev, size_t size, void *addr, dm
 #endif /* CONFIG_USB_HCI */
 
 #ifdef CONFIG_USE_VMALLOC
-#define rtw_zvmalloc(sz)			dbg_rtw_zvmalloc((sz), MSTAT_TYPE_VIR, __FUNCTION__, __LINE__)
 #define rtw_vmalloc_f(sz, mstat_f)			dbg_rtw_vmalloc((sz), ((mstat_f) & 0xff00) | MSTAT_TYPE_VIR, __FUNCTION__, __LINE__)
 #define rtw_zvmalloc_f(sz, mstat_f)		dbg_rtw_zvmalloc((sz), ((mstat_f) & 0xff00) | MSTAT_TYPE_VIR, __FUNCTION__, __LINE__)
 #define rtw_vmfree_f(pbuf, sz, mstat_f)	dbg_rtw_vmfree((pbuf), (sz), ((mstat_f) & 0xff00) | MSTAT_TYPE_VIR, __FUNCTION__, __LINE__)
 #else /* CONFIG_USE_VMALLOC */
-#define rtw_zvmalloc(sz)			dbg_rtw_zmalloc((sz), MSTAT_TYPE_PHY, __FUNCTION__, __LINE__)
 #define rtw_vmalloc_f(sz, mstat_f)			dbg_rtw_malloc((sz), ((mstat_f) & 0xff00) | MSTAT_TYPE_PHY, __FUNCTION__, __LINE__)
 #define rtw_zvmalloc_f(sz, mstat_f)		dbg_rtw_zmalloc((sz), ((mstat_f) & 0xff00) | MSTAT_TYPE_PHY, __FUNCTION__, __LINE__)
 #define rtw_vmfree_f(pbuf, sz, mstat_f)	dbg_rtw_mfree((pbuf), (sz), ((mstat_f) & 0xff00) | MSTAT_TYPE_PHY, __FUNCTION__, __LINE__)
@@ -236,12 +234,10 @@ void _rtw_usb_buffer_free(struct usb_device *dev, size_t size, void *addr, dma_a
 #endif /* CONFIG_USB_HCI */
 
 #ifdef CONFIG_USE_VMALLOC
-#define rtw_zvmalloc(sz)			_rtw_zvmalloc((sz))
 #define rtw_vmalloc_f(sz, mstat_f)			vmalloc((sz))
 #define rtw_zvmalloc_f(sz, mstat_f)		_rtw_zvmalloc((sz))
 #define rtw_vmfree_f(pbuf, sz, mstat_f)	_rtw_vmfree((pbuf), (sz))
 #else /* CONFIG_USE_VMALLOC */
-#define rtw_zvmalloc(sz)			_rtw_zmalloc((sz))
 #define rtw_vmalloc_f(sz, mstat_f)			_rtw_malloc((sz))
 #define rtw_zvmalloc_f(sz, mstat_f)		_rtw_zmalloc((sz))
 #define rtw_vmfree_f(pbuf, sz, mstat_f)	_rtw_mfree((pbuf), (sz))
