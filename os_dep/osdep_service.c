@@ -65,37 +65,11 @@ u32 rtw_atoi(u8 *s)
 
 }
 
-inline void *_rtw_vmalloc(u32 sz)
-{
-	void *pbuf;
-#ifdef PLATFORM_LINUX
-	pbuf = vmalloc(sz);
-#endif
-#ifdef PLATFORM_FREEBSD
-	pbuf = malloc(sz, M_DEVBUF, M_NOWAIT);
-#endif
-
-#ifdef PLATFORM_WINDOWS
-	NdisAllocateMemoryWithTag(&pbuf, sz, RT_TAG);
-#endif
-
-#ifdef DBG_MEMORY_LEAK
-#ifdef PLATFORM_LINUX
-	if (pbuf != NULL) {
-		atomic_inc(&_malloc_cnt);
-		atomic_add(sz, &_malloc_size);
-	}
-#endif
-#endif /* DBG_MEMORY_LEAK */
-
-	return pbuf;
-}
-
 inline void *_rtw_zvmalloc(u32 sz)
 {
 	void *pbuf;
 #ifdef PLATFORM_LINUX
-	pbuf = _rtw_vmalloc(sz);
+	pbuf = vmalloc(sz);
 	if (pbuf != NULL)
 		memset(pbuf, 0, sz);
 #endif
@@ -547,7 +521,7 @@ inline void *dbg_rtw_vmalloc(u32 sz, const enum mstat_f flags, const char *func,
 	if (match_mstat_sniff_rules(flags, sz))
 		RTW_INFO("DBG_MEM_ALLOC %s:%d %s(%d)\n", func, line, __FUNCTION__, (sz));
 
-	p = _rtw_vmalloc((sz));
+	p = vmalloc(sz);
 
 	rtw_mstat_update(
 		flags

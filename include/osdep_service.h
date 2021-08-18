@@ -212,7 +212,6 @@ void dbg_rtw_usb_buffer_free(struct usb_device *dev, size_t size, void *addr, dm
 #define rtw_mstat_update(flag, status, sz) do {} while (0)
 #define rtw_mstat_dump(sel) do {} while (0)
 #define match_mstat_sniff_rules(flags, size) _FALSE
-void *_rtw_vmalloc(u32 sz);
 void *_rtw_zvmalloc(u32 sz);
 void *_rtw_zmalloc(u32 sz);
 void *_rtw_malloc(u32 sz);
@@ -238,7 +237,7 @@ void _rtw_usb_buffer_free(struct usb_device *dev, size_t size, void *addr, dma_a
 
 #ifdef CONFIG_USE_VMALLOC
 #define rtw_zvmalloc(sz)			_rtw_zvmalloc((sz))
-#define rtw_vmalloc_f(sz, mstat_f)			_rtw_vmalloc((sz))
+#define rtw_vmalloc_f(sz, mstat_f)			vmalloc((sz))
 #define rtw_zvmalloc_f(sz, mstat_f)		_rtw_zvmalloc((sz))
 #define rtw_vmfree_f(pbuf, sz, mstat_f)	_rtw_vmfree((pbuf), (sz))
 #else /* CONFIG_USE_VMALLOC */
