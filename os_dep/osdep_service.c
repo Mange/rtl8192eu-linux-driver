@@ -65,26 +65,6 @@ u32 rtw_atoi(u8 *s)
 
 }
 
-inline void *_rtw_zvmalloc(u32 sz)
-{
-	void *pbuf;
-#ifdef PLATFORM_LINUX
-	pbuf = vmalloc(sz);
-	if (pbuf != NULL)
-		memset(pbuf, 0, sz);
-#endif
-#ifdef PLATFORM_FREEBSD
-	pbuf = malloc(sz, M_DEVBUF, M_ZERO | M_NOWAIT);
-#endif
-#ifdef PLATFORM_WINDOWS
-	NdisAllocateMemoryWithTag(&pbuf, sz, RT_TAG);
-	if (pbuf != NULL)
-		NdisFillMemory(pbuf, sz, 0);
-#endif
-
-	return pbuf;
-}
-
 void *_rtw_malloc(u32 sz)
 {
 	void *pbuf = NULL;
@@ -512,42 +492,6 @@ bool match_mstat_sniff_rules(const enum mstat_f flags, const size_t size)
 	}
 
 	return _FALSE;
-}
-
-inline void *dbg_rtw_vmalloc(u32 sz, const enum mstat_f flags, const char *func, const int line)
-{
-	void *p;
-
-	if (match_mstat_sniff_rules(flags, sz))
-		RTW_INFO("DBG_MEM_ALLOC %s:%d %s(%d)\n", func, line, __FUNCTION__, (sz));
-
-	p = vmalloc(sz);
-
-	rtw_mstat_update(
-		flags
-		, p ? MSTAT_ALLOC_SUCCESS : MSTAT_ALLOC_FAIL
-		, sz
-	);
-
-	return p;
-}
-
-inline void *dbg_rtw_zvmalloc(u32 sz, const enum mstat_f flags, const char *func, const int line)
-{
-	void *p;
-
-	if (match_mstat_sniff_rules(flags, sz))
-		RTW_INFO("DBG_MEM_ALLOC %s:%d %s(%d)\n", func, line, __FUNCTION__, (sz));
-
-	p = _rtw_zvmalloc((sz));
-
-	rtw_mstat_update(
-		flags
-		, p ? MSTAT_ALLOC_SUCCESS : MSTAT_ALLOC_FAIL
-		, sz
-	);
-
-	return p;
 }
 
 inline void dbg_rtw_vmfree(void *pbuf, u32 sz, const enum mstat_f flags, const char *func, const int line)
