@@ -262,15 +262,13 @@ int usb_write_async(struct usb_device *udev, u32 addr, void *pdata, u16 len)
 {
 	u8 request;
 	u16 wvalue;
-	u16 index;
 	int ret;
 
 	request = REALTEK_USB_VENQT_CMD_REQ;
-	index = REALTEK_USB_VENQT_CMD_IDX;/* n/a */
 
 	wvalue = (u16)(addr & 0x0000ffff);
 
-	ret = _usbctrl_vendorreq_async_write(udev, request, wvalue, index, pdata, len, REALTEK_USB_VENQT_WRITE);
+	ret = _usbctrl_vendorreq_async_write(udev, request, wvalue, pdata, len, REALTEK_USB_VENQT_WRITE);
 
 	return ret;
 }
@@ -327,7 +325,7 @@ u8 usb_read8(struct intf_hdl *pintfhdl, u32 addr)
 		wvalue |= 0x8000;
 #endif
 
-	usbctrl_vendorreq(pintfhdl, wvalue, 0, &data, 1, REALTEK_USB_VENQT_READ);
+	usbctrl_vendorreq(pintfhdl, wvalue, &data, 1, REALTEK_USB_VENQT_READ);
 
 
 	return data;
@@ -344,7 +342,7 @@ u16 usb_read16(struct intf_hdl *pintfhdl, u32 addr)
 		wvalue |= 0x8000;
 #endif
 
-	usbctrl_vendorreq(pintfhdl, wvalue, 0, &data, 2, REALTEK_USB_VENQT_READ);
+	usbctrl_vendorreq(pintfhdl, wvalue, &data, 2, REALTEK_USB_VENQT_READ);
 
 
 	return data;
@@ -362,7 +360,7 @@ u32 usb_read32(struct intf_hdl *pintfhdl, u32 addr)
 		wvalue |= 0x8000;
 #endif
 
-	usbctrl_vendorreq(pintfhdl, wvalue, 0, &data, 4, REALTEK_USB_VENQT_READ);
+	usbctrl_vendorreq(pintfhdl, wvalue, &data, 4, REALTEK_USB_VENQT_READ);
 
 
 	return data;
@@ -378,7 +376,7 @@ int usb_write8(struct intf_hdl *pintfhdl, u32 addr, u8 val)
 		wvalue |= 0x8000;
 #endif
 
-	return usbctrl_vendorreq(pintfhdl, wvalue, 0, &val, 1, REALTEK_USB_VENQT_WRITE);
+	return usbctrl_vendorreq(pintfhdl, wvalue, &val, 1, REALTEK_USB_VENQT_WRITE);
 
 }
 
@@ -392,7 +390,7 @@ int usb_write16(struct intf_hdl *pintfhdl, u32 addr, u16 val)
 		wvalue |= 0x8000;
 #endif
 
-	return usbctrl_vendorreq(pintfhdl, wvalue, 0, &val, 2, REALTEK_USB_VENQT_WRITE);
+	return usbctrl_vendorreq(pintfhdl, wvalue, &val, 2, REALTEK_USB_VENQT_WRITE);
 
 }
 
@@ -406,7 +404,7 @@ int usb_write32(struct intf_hdl *pintfhdl, u32 addr, u32 val)
 		wvalue |= 0x8000;
 #endif
 
-	return usbctrl_vendorreq(pintfhdl, wvalue, 0, &val, 4, REALTEK_USB_VENQT_WRITE);
+	return usbctrl_vendorreq(pintfhdl, wvalue, &val, 4, REALTEK_USB_VENQT_WRITE);
 
 }
 
@@ -419,7 +417,7 @@ int usb_writeN(struct intf_hdl *pintfhdl, u32 addr, u32 length, u8 *pdata)
 		return -EINVAL;
 
 	memcpy(buf, pdata, length);
-	return usbctrl_vendorreq(pintfhdl, wvalue, 0, buf, (length & 0xffff), REALTEK_USB_VENQT_WRITE);
+	return usbctrl_vendorreq(pintfhdl, wvalue, buf, (length & 0xffff), REALTEK_USB_VENQT_WRITE);
 
 }
 

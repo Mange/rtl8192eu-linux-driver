@@ -23,7 +23,7 @@ struct rtw_async_write_data {
 	struct usb_ctrlrequest dr;
 };
 
-int usbctrl_vendorreq(struct intf_hdl *pintfhdl, u16 value, u16 index, void *pdata, u16 len, u8 requesttype)
+int usbctrl_vendorreq(struct intf_hdl *pintfhdl, u16 value, void *pdata, u16 len, u8 requesttype)
 {
 	_adapter	*padapter = pintfhdl->padapter;
 	struct dvobj_priv  *pdvobjpriv = adapter_to_dvobj(padapter);
@@ -106,7 +106,7 @@ int usbctrl_vendorreq(struct intf_hdl *pintfhdl, u16 value, u16 index, void *pda
 			memcpy(pIo_buf, pdata, len);
 		}
 
-		status = usb_control_msg(udev, pipe, REALTEK_USB_VENQT_CMD_REQ, requesttype, value, index, pIo_buf, len, RTW_USB_CONTROL_MSG_TIMEOUT);
+		status = usb_control_msg(udev, pipe, REALTEK_USB_VENQT_CMD_REQ, requesttype, value, REALTEK_USB_VENQT_CMD_IDX, pIo_buf, len, RTW_USB_CONTROL_MSG_TIMEOUT);
 
 		if (status == len) {  /* Success this control transfer. */
 			rtw_reset_continual_io_error(pdvobjpriv);
@@ -166,13 +166,10 @@ int usbctrl_vendorreq(struct intf_hdl *pintfhdl, u16 value, u16 index, void *pda
 	if (current_reg_sec == REG_ON_SEC) {
 		unsigned int t_pipe = usb_sndctrlpipe(udev, 0);/* write_out */
 		u8 t_len = 1;
-		u8 t_req = 0x05;
 		u16 t_reg = 0;
-		u16 t_index = 0;
-
 		t_reg = 0x4e0;
 
-		status = usb_control_msg(udev, t_pipe, t_req, REALTEK_USB_VENQT_WRITE, t_reg, t_index, pIo_buf, t_len, RTW_USB_CONTROL_MSG_TIMEOUT);
+		status = usb_control_msg(udev, t_pipe, REALTEK_USB_VENQT_CMD_REQ, REALTEK_USB_VENQT_WRITE, t_reg, REALTEK_USB_VENQT_CMD_IDX, pIo_buf, t_len, RTW_USB_CONTROL_MSG_TIMEOUT);
 
 		if (status == t_len)
 			rtw_reset_continual_io_error(pdvobjpriv);
@@ -207,7 +204,7 @@ static void _usbctrl_vendorreq_async_callback(struct urb *urb, struct pt_regs *r
 }
 
 int _usbctrl_vendorreq_async_write(struct usb_device *udev, u8 request,
-	u16 value, u16 index, void *pdata, u16 len, u8 requesttype)
+	u16 value, void *pdata, u16 len, u8 requesttype)
 {
 	int rc;
 	unsigned int pipe;
@@ -240,7 +237,7 @@ int _usbctrl_vendorreq_async_write(struct usb_device *udev, u8 request,
 	dr->bRequestType = requesttype;
 	dr->bRequest = request;
 	dr->wValue = cpu_to_le16(value);
-	dr->wIndex = cpu_to_le16(index);
+	dr->wIndex = cpu_to_le16(REALTEK_USB_VENQT_CMD_IDX);
 	dr->wLength = cpu_to_le16(len);
 
 	memcpy(buf, pdata, len);
