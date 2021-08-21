@@ -372,20 +372,7 @@ u32 usb_read32(struct intf_hdl *pintfhdl, u32 addr)
 
 int usb_write8(struct intf_hdl *pintfhdl, u32 addr, u8 val)
 {
-	u8 requesttype;
-	u16 wvalue;
-	u16 index;
-	u16 len;
-	u8 data;
-	int ret;
-
-
-	requesttype = 0x00;/* write_out */
-	index = 0;/* n/a */
-
-	wvalue = (u16)(addr & 0x0000ffff);
-	len = 1;
-	data = val;
+	u16 wvalue = (u16)(addr & 0x0000ffff);
 	
 /* WLANON PAGE0_REG needs to add an offset 0x8000 */
 #if defined(CONFIG_RTL8710B)
@@ -393,28 +380,13 @@ int usb_write8(struct intf_hdl *pintfhdl, u32 addr, u8 val)
 		wvalue |= 0x8000;
 #endif
 
-	ret = usbctrl_vendorreq(pintfhdl, wvalue, index, &data, len, requesttype);
+	return usbctrl_vendorreq(pintfhdl, wvalue, 0, &val, 1, VENDOR_WRITE);
 
-
-	return ret;
 }
 
 int usb_write16(struct intf_hdl *pintfhdl, u32 addr, u16 val)
 {
-	u8 requesttype;
-	u16 wvalue;
-	u16 index;
-	u16 len;
-	u16 data;
-	int ret;
-
-
-	requesttype = 0x00;/* write_out */
-	index = 0;/* n/a */
-
-	wvalue = (u16)(addr & 0x0000ffff);
-	len = 2;
-	data = val;
+	u16 wvalue = (u16)(addr & 0x0000ffff);
 
 /* WLANON PAGE0_REG needs to add an offset 0x8000 */
 #if defined(CONFIG_RTL8710B)
@@ -422,29 +394,13 @@ int usb_write16(struct intf_hdl *pintfhdl, u32 addr, u16 val)
 		wvalue |= 0x8000;
 #endif
 
-	ret = usbctrl_vendorreq(pintfhdl, wvalue, index, &data, len, requesttype);
-
-
-	return ret;
+	return usbctrl_vendorreq(pintfhdl, wvalue, 0, &val, 2, VENDOR_WRITE);
 
 }
 
 int usb_write32(struct intf_hdl *pintfhdl, u32 addr, u32 val)
 {
-	u8 requesttype;
-	u16 wvalue;
-	u16 index;
-	u16 len;
-	u32 data;
-	int ret;
-
-
-	requesttype = 0x00;/* write_out */
-	index = 0;/* n/a */
-
-	wvalue = (u16)(addr & 0x0000ffff);
-	len = 4;
-	data = val;
+	u16 wvalue = (u16)(addr & 0x0000ffff);
 
 /* WLANON PAGE0_REG needs to add an offset 0x8000 */
 #if defined(CONFIG_RTL8710B)
@@ -452,10 +408,7 @@ int usb_write32(struct intf_hdl *pintfhdl, u32 addr, u32 val)
 		wvalue |= 0x8000;
 #endif
 
-	ret = usbctrl_vendorreq(pintfhdl, wvalue, index, &data, len, requesttype);
-
-
-	return ret;
+	return usbctrl_vendorreq(pintfhdl, wvalue, 0, &val, 4, VENDOR_WRITE);
 
 }
 
