@@ -62,7 +62,6 @@ typedef struct _ADAPTER _adapter, ADAPTER, *PADAPTER;
 #endif
 
 #include <rtw_cmd.h>
-#include <cmd_osdep.h>
 #include <rtw_security.h>
 #include <rtw_xmit.h>
 #include <xmit_osdep.h>
