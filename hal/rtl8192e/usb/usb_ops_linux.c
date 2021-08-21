@@ -12,7 +12,6 @@
  * more details.
  *
  *****************************************************************************/
-#define _HCI_OPS_OS_C_
 
 /* #include <drv_types.h> */
 #include <rtl8192e_hal.h>
