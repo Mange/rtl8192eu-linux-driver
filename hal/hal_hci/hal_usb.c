@@ -414,24 +414,15 @@ int usb_write32(struct intf_hdl *pintfhdl, u32 addr, u32 val)
 
 int usb_writeN(struct intf_hdl *pintfhdl, u32 addr, u32 length, u8 *pdata)
 {
-	u8 requesttype;
-	u16 wvalue;
-	u16 index;
-	u16 len;
+	u16 wvalue = (u16)(addr & 0x0000ffff);
 	u8 buf[VENDOR_CMD_MAX_DATA_LEN] = {0};
-	int ret;
 
+	if (length > VENDOR_CMD_MAX_DATA_LEN)
+		return -EINVAL;
 
-	requesttype = 0x00;/* write_out */
-	index = 0;/* n/a */
+	memcpy(buf, pdata, length);
+	return usbctrl_vendorreq(pintfhdl, wvalue, 0, buf, (length & 0xffff), VENDOR_WRITE);
 
-	wvalue = (u16)(addr & 0x0000ffff);
-	len = length;
-	_rtw_memcpy(buf, pdata, len);
-	ret = usbctrl_vendorreq(pintfhdl, wvalue, index, buf, len, requesttype);
-
-
-	return ret;
 }
 
 void usb_set_intf_ops(_adapter *padapter, struct _io_ops *pops)
