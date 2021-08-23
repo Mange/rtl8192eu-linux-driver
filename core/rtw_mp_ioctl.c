@@ -2418,7 +2418,7 @@ unsigned int mp_ioctl_xmit_packet_hdl(struct oid_par_priv *poid_par_priv)
 	pattrib->nr_frags = 1;
 	pattrib->priority = 0;
 #ifndef CONFIG_MP_LINUX
-	if (IS_MCAST(pethhdr->h_dest))
+	if (is_multicast_ether_addr(pethhdr->h_dest))
 		pattrib->mac_id = 4;
 	else
 		pattrib->mac_id = 5;

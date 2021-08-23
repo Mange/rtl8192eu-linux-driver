@@ -732,7 +732,7 @@ u32	rtw_tkip_encrypt(_adapter *padapter, u8 *pxmitframe)
 						}
 			*/
 
-			if (IS_MCAST(pattrib->ra))
+			if (is_multicast_ether_addr(pattrib->ra))
 				prwskey = psecuritypriv->dot118021XGrpKey[psecuritypriv->dot118021XGrpKeyid].skey;
 			else {
 				/* prwskey=&stainfo->dot118021x_UncstKey.skey[0]; */
@@ -820,7 +820,7 @@ u32 rtw_tkip_decrypt(_adapter *padapter, u8 *precvframe)
 		stainfo = rtw_get_stainfo(&padapter->stapriv , &prxattrib->ta[0]);
 		if (stainfo != NULL) {
 
-			if (IS_MCAST(prxattrib->ra)) {
+			if (is_multicast_ether_addr(prxattrib->ra)) {
 				static systime start = 0;
 				static u32 no_gkey_bc_cnt = 0;
 				static u32 no_gkey_mc_cnt = 0;
@@ -1597,7 +1597,7 @@ u32	rtw_aes_encrypt(_adapter *padapter, u8 *pxmitframe)
 						}
 			*/
 
-			if (IS_MCAST(pattrib->ra))
+			if (is_multicast_ether_addr(pattrib->ra))
 				prwskey = psecuritypriv->dot118021XGrpKey[psecuritypriv->dot118021XGrpKeyid].skey;
 			else {
 				/* prwskey=&stainfo->dot118021x_UncstKey.skey[0]; */
@@ -1935,7 +1935,7 @@ u32	rtw_aes_decrypt(_adapter *padapter, u8 *precvframe)
 		stainfo = rtw_get_stainfo(&padapter->stapriv , &prxattrib->ta[0]);
 		if (stainfo != NULL) {
 
-			if (IS_MCAST(prxattrib->ra)) {
+			if (is_multicast_ether_addr(prxattrib->ra)) {
 				static systime start = 0;
 				static u32 no_gkey_bc_cnt = 0;
 				static u32 no_gkey_mc_cnt = 0;

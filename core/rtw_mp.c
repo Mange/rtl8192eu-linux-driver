@@ -1474,12 +1474,13 @@ void fill_tx_desc_8188e(PADAPTER padapter)
 	struct tx_desc *desc   = (struct tx_desc *)&(pmp_priv->tx.desc);
 	struct pkt_attrib *pattrib = &(pmp_priv->tx.attrib);
 	u32	pkt_size = pattrib->last_txcmdsz;
-	s32 bmcast = IS_MCAST(pattrib->ra);
+	bool bmcast;
 	/* offset 0 */
 #if !defined(CONFIG_RTL8188E_SDIO) && !defined(CONFIG_PCI_HCI)
 	desc->txdw0 |= cpu_to_le32(OWN | FSG | LSG);
 	desc->txdw0 |= cpu_to_le32(pkt_size & 0x0000FFFF); /* packet size */
 	desc->txdw0 |= cpu_to_le32(((TXDESC_SIZE + OFFSET_SZ) << OFFSET_SHT) & 0x00FF0000); /* 32 bytes for TX Desc */
+	bmcast = is_multicast_ether_addr(pattrib->ra);
 	if (bmcast)
 		desc->txdw0 |= cpu_to_le32(BMC); /* broadcast packet */
 
@@ -1529,7 +1530,7 @@ void fill_tx_desc_8814a(PADAPTER padapter)
 	struct pkt_attrib *pattrib = &(pmp_priv->tx.attrib);
 
 	u32	pkt_size = pattrib->last_txcmdsz;
-	s32 bmcast = IS_MCAST(pattrib->ra);
+	bool bmcast;
 	u8 offset;
 
 	/* SET_TX_DESC_FIRST_SEG_8814A(pDesc, 1); */
@@ -1546,7 +1547,7 @@ void fill_tx_desc_8814a(PADAPTER padapter)
 #else
 	SET_TX_DESC_PKT_OFFSET_8814A(pDesc, 1);
 #endif
-
+	bmcast = is_multicast_ether_addr(pattrib->ra);
 	if (bmcast)
 		SET_TX_DESC_BMC_8814A(pDesc, 1);
 
@@ -1587,7 +1588,7 @@ void fill_tx_desc_8812a(PADAPTER padapter)
 	struct pkt_attrib *pattrib = &(pmp_priv->tx.attrib);
 
 	u32	pkt_size = pattrib->last_txcmdsz;
-	s32 bmcast = IS_MCAST(pattrib->ra);
+	bool bmcast;
 	u8 data_rate, pwr_status, offset;
 
 	SET_TX_DESC_FIRST_SEG_8812(pDesc, 1);
@@ -1605,6 +1606,7 @@ void fill_tx_desc_8812a(PADAPTER padapter)
 #else
 	SET_TX_DESC_PKT_OFFSET_8812(pDesc, 1);
 #endif
+ 	bmcast = is_multicast_ether_addr(pattrib->ra);
 	if (bmcast)
 		SET_TX_DESC_BMC_8812(pDesc, 1);
 
@@ -1641,7 +1643,7 @@ void fill_tx_desc_8192e(PADAPTER padapter)
 	struct pkt_attrib *pattrib = &(pmp_priv->tx.attrib);
 
 	u32 pkt_size = pattrib->last_txcmdsz;
-	s32 bmcast = IS_MCAST(pattrib->ra);
+	bool bmcast;
 	u8 data_rate, pwr_status, offset;
 
 
@@ -1656,7 +1658,7 @@ void fill_tx_desc_8192e(PADAPTER padapter)
 #else /* 8192EU 8192ES */
 	SET_TX_DESC_PKT_OFFSET_92E(pDesc, 1);
 #endif
-
+ 	bmcast = is_multicast_ether_addr(pattrib->ra);
 	if (bmcast)
 		SET_TX_DESC_BMC_92E(pDesc, 1);
 
@@ -1932,7 +1934,7 @@ void SetPacketTx(PADAPTER padapter)
 	u32 pkt_size, i;
 	struct rtw_ieee80211_hdr *hdr;
 	u8 payload;
-	s32 bmcast;
+	bool bmcast;
 	struct pkt_attrib *pattrib;
 	struct mp_priv *pmp_priv;
 
@@ -1949,7 +1951,7 @@ void SetPacketTx(PADAPTER padapter)
 	memcpy(pattrib->src, adapter_mac_addr(padapter), ETH_ALEN);
 	memcpy(pattrib->ta, pattrib->src, ETH_ALEN);
 	memcpy(pattrib->ra, pattrib->dst, ETH_ALEN);
-	bmcast = IS_MCAST(pattrib->ra);
+	bmcast = is_multicast_ether_addr(pattrib->ra);
 	if (bmcast)
 		pattrib->psta = rtw_get_bcmc_stainfo(padapter);
 	else

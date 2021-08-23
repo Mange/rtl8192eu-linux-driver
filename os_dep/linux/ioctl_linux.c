@@ -11447,7 +11447,7 @@ static struct xmit_frame *createloopbackpkt(PADAPTER padapter, u32 size)
 	struct tx_desc *desc;
 	u8 *pkt_start, *pkt_end, *ptr;
 	struct rtw_ieee80211_hdr *hdr;
-	s32 bmcast;
+	bool bmcast;
 	_irqL irqL;
 
 
@@ -11502,7 +11502,7 @@ static struct xmit_frame *createloopbackpkt(PADAPTER padapter, u32 size)
 	pattrib->bswenc = _FALSE;
 	pattrib->qos_en = _FALSE;
 
-	bmcast = IS_MCAST(pattrib->ra);
+	bmcast = is_multicast_ether_addr(pattrib->ra);
 	if (bmcast)
 		pattrib->psta = rtw_get_bcmc_stainfo(padapter);
 	else

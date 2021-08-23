@@ -364,15 +364,6 @@ enum WIFI_REG_DOMAIN {
 
 #define GetAddr4Ptr(pbuf)	((unsigned char *)((SIZE_PTR)(pbuf) + 24))
 
-
-__inline static int IS_MCAST(const u8 *da)
-{
-	if ((*da) & 0x01)
-		return _TRUE;
-	else
-		return _FALSE;
-}
-
 __inline static unsigned char *get_ra(unsigned char *pframe)
 {
 	unsigned char	*ra;

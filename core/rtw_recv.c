@@ -485,7 +485,7 @@ sint recvframe_chkmic(_adapter *adapter,  union recv_frame *precvframe)
 
 		/* calculate mic code */
 		if (stainfo != NULL) {
-			if (IS_MCAST(prxattrib->ra)) {
+			if (is_multicast_ether_addr(prxattrib->ra)) {
 				/* mickey=&psecuritypriv->dot118021XGrprxmickey.skey[0]; */
 				/* iv = precvframe->u.hdr.rx_data+prxattrib->hdrlen; */
 				/* rxdata_key_idx =( ((iv[3])>>6)&0x3) ; */
@@ -529,11 +529,11 @@ sint recvframe_chkmic(_adapter *adapter,  union recv_frame *precvframe)
 
 				/* double check key_index for some timing issue , */
 				/* cannot compare with psecuritypriv->dot118021XGrpKeyid also cause timing issue */
-				if ((IS_MCAST(prxattrib->ra) == _TRUE)  && (prxattrib->key_index != pmlmeinfo->key_index))
+				if ((is_multicast_ether_addr(prxattrib->ra) == _TRUE)  && (prxattrib->key_index != pmlmeinfo->key_index))
 					brpt_micerror = _FALSE;
 
 				if ((prxattrib->bdecrypted == _TRUE) && (brpt_micerror == _TRUE)) {
-					rtw_handle_tkip_mic_err(adapter, stainfo, (u8)IS_MCAST(prxattrib->ra));
+					rtw_handle_tkip_mic_err(adapter, stainfo, (u8)is_multicast_ether_addr(prxattrib->ra));
 					RTW_INFO(" mic error :prxattrib->bdecrypted=%d\n", prxattrib->bdecrypted);
 				} else {
 					RTW_INFO(" mic error :prxattrib->bdecrypted=%d\n", prxattrib->bdecrypted);
@@ -543,7 +543,7 @@ sint recvframe_chkmic(_adapter *adapter,  union recv_frame *precvframe)
 
 			} else {
 				/* mic checked ok */
-				if ((psecuritypriv->bcheck_grpkey == _FALSE) && (IS_MCAST(prxattrib->ra) == _TRUE)) {
+				if ((psecuritypriv->bcheck_grpkey == _FALSE) && (is_multicast_ether_addr(prxattrib->ra) == _TRUE)) {
 					psecuritypriv->bcheck_grpkey = _TRUE;
 				}
 			}
@@ -601,7 +601,7 @@ union recv_frame *decryptor(_adapter *padapter, union recv_frame *precv_frame)
 	if (prxattrib->encrypt && !prxattrib->bdecrypted) {
 		if (GetFrameType(get_recvframe_data(precv_frame)) == WIFI_DATA
 			#ifdef CONFIG_CONCURRENT_MODE
-			&& !IS_MCAST(prxattrib->ra) /* bc/mc packets may use sw decryption for concurrent mode */
+			&& !is_multicast_ether_addr(prxattrib->ra) /* bc/mc packets may use sw decryption for concurrent mode */
 			#endif
 		)
 			psecuritypriv->hw_decrypted = _FALSE;
@@ -859,12 +859,12 @@ sint recv_decache(union recv_frame *precv_frame)
 		return _FAIL;
 
 	if (pattrib->qos) {
-		if (IS_MCAST(pattrib->ra))
+		if (is_multicast_ether_addr(pattrib->ra))
 			prxseq = &psta->sta_recvpriv.bmc_tid_rxseq[tid];
 		else
 			prxseq = &psta->sta_recvpriv.rxcache.tid_rxseq[tid];
 	} else {
-		if (IS_MCAST(pattrib->ra)) {
+		if (is_multicast_ether_addr(pattrib->ra)) {
 			prxseq = &psta->sta_recvpriv.nonqos_bmc_rxseq;
 			#ifdef DBG_RX_SEQ
 			RTW_INFO("DBG_RX_SEQ "FUNC_ADPT_FMT" nonqos bmc seq_num:%d\n"
@@ -1113,7 +1113,7 @@ void count_rx_stats(_adapter *padapter, union recv_frame *prframe, struct sta_in
 
 	padapter->mlmepriv.LinkDetectInfo.NumRxOkInPeriod++;
 
-	if (!is_broadcast_ether_addr(pattrib->dst) && !IS_MCAST(pattrib->dst))
+	if (!is_broadcast_ether_addr(pattrib->dst) && !is_multicast_ether_addr(pattrib->dst))
 		padapter->mlmepriv.LinkDetectInfo.NumRxUnicastOkInPeriod++;
 
 	if (sta)
@@ -1122,7 +1122,7 @@ void count_rx_stats(_adapter *padapter, union recv_frame *prframe, struct sta_in
 		psta = prframe->u.hdr.psta;
 
 	if (psta) {
-		u8 is_ra_bmc = IS_MCAST(pattrib->ra);
+		u8 is_ra_bmc = is_multicast_ether_addr(pattrib->ra);
 
 		pstats = &psta->sta_stats;
 
@@ -1175,7 +1175,7 @@ sint sta2sta_data_frame(
 	u8 *mybssid  = get_bssid(pmlmepriv);
 	u8 *myhwaddr = adapter_mac_addr(adapter);
 	u8 *sta_addr = pattrib->ta;
-	sint bmcast = IS_MCAST(pattrib->dst);
+	sint bmcast = is_multicast_ether_addr(pattrib->dst);
 
 #ifdef CONFIG_TDLS
 	struct tdls_info *ptdlsinfo = &adapter->tdlsinfo;
@@ -1296,7 +1296,7 @@ sint sta2sta_data_frame(
 	} else if (check_fwstate(pmlmepriv, WIFI_AP_STATE) == _TRUE) {
 		if (bmcast) {
 			/* For AP mode, if DA == MCAST, then BSSID should be also MCAST */
-			if (!IS_MCAST(pattrib->bssid)) {
+			if (!is_multicast_ether_addr(pattrib->bssid)) {
 				ret = _FAIL;
 				goto exit;
 			}
@@ -1352,7 +1352,7 @@ sint ap2sta_data_frame(
 	struct	mlme_priv	*pmlmepriv = &adapter->mlmepriv;
 	u8 *mybssid  = get_bssid(pmlmepriv);
 	u8 *myhwaddr = adapter_mac_addr(adapter);
-	sint bmcast = IS_MCAST(pattrib->dst);
+	sint bmcast = is_multicast_ether_addr(pattrib->dst);
 
 
 	if ((check_fwstate(pmlmepriv, WIFI_STATION_STATE) == _TRUE)
@@ -1758,7 +1758,7 @@ static sint validate_mgmt_protect(_adapter *adapter, union recv_frame *precv_fra
 	ptr = precv_frame->u.hdr.rx_data;
 	type = GetFrameType(ptr);
 	subtype = get_frame_sub_type(ptr); /* bit(7)~bit(2) */
-	is_bmc = IS_MCAST(GetAddr1Ptr(ptr));
+	is_bmc = is_multicast_ether_addr(GetAddr1Ptr(ptr));
 
 #if DBG_VALIDATE_MGMT_PROTECT
 	if (subtype == WIFI_DEAUTH) {
@@ -2153,7 +2153,7 @@ pre_validate_status_chk:
 	if (ret  == _FAIL)
 		goto exit;
 
-	if (!IS_MCAST(pattrib->ra)) {
+	if (!is_multicast_ether_addr(pattrib->ra)) {
 
 		if (pattrib->qos)
 			precv_frame->u.hdr.preorder_ctrl = &psta->recvreorder_ctrl[pattrib->priority];
@@ -2183,7 +2183,7 @@ pre_validate_status_chk:
 			pattrib->encrypt = psta->dot118021XPrivacy;
 		else
 #endif /* CONFIG_TDLS */
-			GET_ENCRY_ALGO(psecuritypriv, psta, pattrib->encrypt, IS_MCAST(pattrib->ra));
+			GET_ENCRY_ALGO(psecuritypriv, psta, pattrib->encrypt, is_multicast_ether_addr(pattrib->ra));
 
 
 		SET_ICE_IV_LEN(pattrib->iv_len, pattrib->icv_len, pattrib->encrypt);
@@ -4341,7 +4341,7 @@ int recv_func_posthandle(_adapter *padapter, union recv_frame *prframe)
 	}
 
 #ifdef DBG_RX_BMC_FRAME
-	if (IS_MCAST(pattrib->ra))
+	if (is_multicast_ether_addr(pattrib->ra))
 		RTW_INFO("%s =>"ADPT_FMT" Rx BC/MC from "MAC_FMT"\n", __func__, ADPT_ARG(padapter), MAC_ARG(pattrib->ta));
 #endif
 
@@ -4478,7 +4478,7 @@ int recv_func(_adapter *padapter, union recv_frame *rframe)
 
 		/* check if need to enqueue into uc_swdec_pending_queue*/
 		if (check_fwstate(mlmepriv, WIFI_STATION_STATE) &&
-		    !IS_MCAST(prxattrib->ra) && prxattrib->encrypt > 0 &&
+		    !is_multicast_ether_addr(prxattrib->ra) && prxattrib->encrypt > 0 &&
 		    (prxattrib->bdecrypted == 0 || psecuritypriv->sw_decrypt == _TRUE) &&
 		    psecuritypriv->ndisauthtype == Ndis802_11AuthModeWPAPSK &&
 		    !psecuritypriv->busetkipkey) {
@@ -4787,7 +4787,7 @@ void rx_query_phy_status(
 
 	ta = get_ta(wlanhdr);
 	ra = get_ra(wlanhdr);
-	is_ra_bmc = IS_MCAST(ra);
+	is_ra_bmc = is_multicast_ether_addr(ra);
 
 	if (_rtw_memcmp(adapter_mac_addr(padapter), ta, ETH_ALEN) == _TRUE) {
 		static systime start_time = 0;
@@ -4927,7 +4927,7 @@ s32 pre_recv_entry(union recv_frame *precvframe, u8 *pphy_status)
 	s32 ret = _SUCCESS;
 	u8 *pbuf = precvframe->u.hdr.rx_data;
 	u8 *pda = get_ra(pbuf);
-	u8 ra_is_bmc = IS_MCAST(pda);
+	u8 ra_is_bmc = is_multicast_ether_addr(pda);
 	_adapter *primary_padapter = precvframe->u.hdr.adapter;
 #ifdef CONFIG_CONCURRENT_MODE
 	_adapter *iface = NULL;

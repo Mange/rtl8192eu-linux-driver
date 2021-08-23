@@ -1221,7 +1221,7 @@ int issue_tdls_setup_req(_adapter *padapter, struct tdls_txmgmt *ptxmgmt, int wa
 	if (rtw_tdls_is_setup_allowed(padapter) == _FALSE)
 		goto exit;
 
-	if (IS_MCAST(ptxmgmt->peer))
+	if (is_multicast_ether_addr(ptxmgmt->peer))
 		goto exit;
 
 	ptdls_sta = rtw_get_stainfo(pstapriv, ptxmgmt->peer);

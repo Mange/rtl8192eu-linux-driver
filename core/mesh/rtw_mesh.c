@@ -3326,7 +3326,7 @@ int rtw_mesh_addr_resolve(_adapter *adapter, struct xmit_frame *xframe, _pkt *pk
 	struct ethhdr etherhdr;
 	struct pkt_attrib *attrib;
 	struct rtw_mesh_path *mpath = NULL, *mppath = NULL;
-	u8 is_da_mcast;
+	bool is_da_mcast;
 	u8 ae_need;
 #if CONFIG_RTW_MESH_DATA_BMC_TO_UC
 	bool bmc_need = _TRUE;
@@ -3346,7 +3346,7 @@ int rtw_mesh_addr_resolve(_adapter *adapter, struct xmit_frame *xframe, _pkt *pk
 	_rtw_init_listhead(b2u_list);
 #endif
 
-	is_da_mcast = IS_MCAST(etherhdr.h_dest);
+	is_da_mcast = is_multicast_ether_addr(etherhdr.h_dest);
 	if (!is_da_mcast) {
 		struct sta_info *next_hop; 
 		bool mpp_lookup = 1;
@@ -3560,7 +3560,7 @@ int rtw_mesh_rx_data_validate_hdr(_adapter *adapter, union recv_frame *rframe, s
 
 	switch (rattrib->to_fr_ds) {
 	case 1:
-		if (!IS_MCAST(GetAddr1Ptr(whdr)))
+		if (!is_multicast_ether_addr(GetAddr1Ptr(whdr)))
 			goto exit;
 		*sta = rtw_get_stainfo(stapriv, get_addr2_ptr(whdr));
 		if (*sta == NULL) {
@@ -3577,7 +3577,7 @@ int rtw_mesh_rx_data_validate_hdr(_adapter *adapter, union recv_frame *rframe, s
 		is_ra_bmc = 1;
 		break;
 	case 3:
-		if (IS_MCAST(GetAddr1Ptr(whdr)))
+		if (is_multicast_ether_addr(GetAddr1Ptr(whdr)))
 			goto exit;
 		*sta = rtw_get_stainfo(stapriv, get_addr2_ptr(whdr));
 		if (*sta == NULL) {
@@ -3764,7 +3764,7 @@ int rtw_mesh_rx_msdu_act_check(union recv_frame *rframe
 	struct rtw_mesh_info *minfo = &adapter->mesh_info;
 	struct rx_pkt_attrib *rattrib = &rframe->u.hdr.attrib;
 	struct rtw_mesh_path *mppath;
-	u8 is_mda_bmc = IS_MCAST(mda); 
+	bool is_mda_bmc = is_multicast_ether_addr(mda); 
 	u8 is_mda_self = !is_mda_bmc && _rtw_memcmp(mda, adapter_mac_addr(adapter), ETH_ALEN);
 	struct xmit_frame *xframe;
 	struct pkt_attrib *xattrib;

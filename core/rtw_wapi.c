@@ -512,7 +512,7 @@ u8 rtw_wapi_check_for_drop(
 	WAPI_TRACE(WAPI_RX, "%s: bFind=%d prxb->WapiSrcAddr="MAC_FMT"\n", __FUNCTION__, bFind, MAC_ARG(precv_hdr->WapiSrcAddr));
 
 	if (bFind) {
-		if (IS_MCAST(precv_hdr->attrib.ra)) {
+		if (is_multicast_ether_addr(precv_hdr->attrib.ra)) {
 			WAPI_TRACE(WAPI_RX, "rtw_wapi_check_for_drop: multicast case\n");
 			pLastRecvPN = pWapiSta->lastRxMulticastPN;
 		} else {
@@ -542,7 +542,7 @@ u8 rtw_wapi_check_for_drop(
 
 		if (!WapiComparePN(precv_hdr->WapiTempPN, pLastRecvPN)) {
 			WAPI_TRACE(WAPI_RX, "%s: Equal PN!!\n", __FUNCTION__);
-			if (IS_MCAST(precv_hdr->attrib.ra))
+			if (is_multicast_ether_addr(precv_hdr->attrib.ra))
 				memcpy(pLastRecvPN, WapiAEMultiCastPNInitialValueSrc, 16);
 			else
 				memcpy(pLastRecvPN, WapiAEPNInitialValueSrc, 16);
@@ -1148,7 +1148,7 @@ void rtw_wapi_get_iv(_adapter *padapter, u8 *pRA, u8 *IV)
 
 	WAPI_DATA(WAPI_RX, "wapi_get_iv: pra", pRA, 6);
 
-	if (IS_MCAST(pRA)) {
+	if (is_multicast_ether_addr(pRA)) {
 		if (!pWapiInfo->wapiTxMsk.bTxEnable) {
 			WAPI_TRACE(WAPI_ERR, "%s: bTxEnable = 0!!\n", __FUNCTION__);
 			return;
@@ -1213,7 +1213,7 @@ bool rtw_wapi_drop_for_key_absent(_adapter *padapter, u8 *pRA)
 		if ((!padapter->WapiSupport) || (!pWapiInfo->bWapiEnable))
 			return true;
 
-		if (IS_MCAST(pRA)) {
+		if (is_multicast_ether_addr(pRA)) {
 			if (!pWapiInfo->wapiTxMsk.bTxEnable) {
 				bDrop = true;
 				WAPI_TRACE(WAPI_RX, "rtw_wapi_drop_for_key_absent: multicast key is absent\n");

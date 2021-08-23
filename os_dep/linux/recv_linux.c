@@ -442,7 +442,7 @@ void rtw_os_recv_indicate_pkt(_adapter *padapter, _pkt *pkt, union recv_frame *r
 			_pkt *pskb2 = NULL;
 			struct sta_info *psta = NULL;
 			struct sta_priv *pstapriv = &padapter->stapriv;
-			int bmcast = IS_MCAST(ehdr->h_dest);
+			bool bmcast = is_multicast_ether_addr(ehdr->h_dest);
 
 			/* RTW_INFO("bmcast=%d\n", bmcast); */
 
