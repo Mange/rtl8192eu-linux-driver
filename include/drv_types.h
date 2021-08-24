@@ -129,7 +129,6 @@ typedef struct _ADAPTER _adapter, ADAPTER, *PADAPTER;
 	#include <rtw_iol.h>
 #endif /* CONFIG_IOL */
 
-#include <ethernet.h>
 #include <circ_buf.h>
 
 #include <rtw_android.h>

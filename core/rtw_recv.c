@@ -2917,11 +2917,11 @@ static int rtw_recv_indicatepkt_check(union recv_frame *rframe, u8 *ehdr_pos, u3
 	if (ntohs(ehdr->h_proto) == ETH_P_ARP) {
 
 		if(check_fwstate(pmlmepriv, WIFI_ASOC_STATE) == _TRUE){
-			if(ehdr_pos[ETHERNET_HEADER_SIZE+LEN_ARP_OP_HDR] == 2) {
+			if(ehdr_pos[ETH_HLEN+LEN_ARP_OP_HDR] == 2) {
 				RTW_INFO("%s,[DBG_ARP] Rx ARP RSP Packet with Dst= "MAC_FMT" ;SeqNum = %d !\n",
 					__FUNCTION__, MAC_ARG(pattrib->dst), pattrib->seq_num);
-				for(i=0;i<(pkt_len -ETHERNET_HEADER_SIZE);i++)
-					RTW_INFO("0x%x ",ehdr_pos[i+ETHERNET_HEADER_SIZE]);
+				for(i=0;i<(pkt_len -ETH_HLEN);i++)
+					RTW_INFO("0x%x ",ehdr_pos[i+ETH_HLEN]);
 				RTW_INFO("\n");
 			}
 		}
@@ -3053,7 +3053,7 @@ int amsdu_to_msdu(_adapter *padapter, union recv_frame *prframe)
 	while (a_len > ETH_HLEN) {
 		/* Offset 12 denote 2 mac address */
 		nSubframe_Length = RTW_GET_BE16(pdata + 12);
-		if (a_len < (ETHERNET_HEADER_SIZE + nSubframe_Length)) {
+		if (a_len < (ETH_HLEN + nSubframe_Length)) {
 			RTW_INFO("nRemain_Length is %d and nSubframe_Length is : %d\n", a_len, nSubframe_Length);
 			break;
 		}
