@@ -55,7 +55,6 @@
 #include <netinet/in_systm.h>
 #include <netinet/in_var.h>
 #include <netinet/if_ether.h>
-#include <if_ether.h>
 
 #include <net80211/ieee80211_var.h>
 #include <net80211/ieee80211_regdomain.h>
