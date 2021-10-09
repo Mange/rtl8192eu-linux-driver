@@ -29,24 +29,27 @@ jobs:
     strategy:
       fail-fast: false
       matrix: 
-        version: ${{fromJson(needs.commontasks.outputs.matrix)}}
-        #version: [4.9.248, 4.4.248]
+        kernel_version: ${{fromJson(needs.commontasks.outputs.matrix)}}
+        gcc_version: [9, 10, 11]
+        #kernel_version: [5.15-rc3,5.14.10]
     steps:
+    - name: Set up GCC
+      uses: egor-tensin/setup-gcc@v1
+      with:
+        version: ${{matrix.gcc_version }}
     - name: install deb packages
-      env: 
-        VERSION: ${{matrix.version }}
       run: |
         KERNEL_URL=https://kernel.ubuntu.com/~kernel-ppa/mainline/
-        KERNEL_URL_DETAILS=$(wget --quiet -O - ${KERNEL_URL}v${VERSION}/ | grep -A8 "Build for amd64\|Test amd64")
+        KERNEL_URL_DETAILS=$(wget --quiet -O - ${KERNEL_URL}v${{matrix.kernel_version}}/ | grep -A8 "Build for amd64\|Test amd64")
         ALL_DEB=$(echo "$KERNEL_URL_DETAILS" |  grep -m1 'all.deb' | cut -d '"' -f 2)
         AMD64_DEB=$(echo "$KERNEL_URL_DETAILS" | grep -m1 "amd64.deb" | cut -d '"' -f 2)
         [  -z "$ALL_DEB" ] && exit 1
         [  -z "$AMD64_DEB" ] && exit 2
-        wget -nv ${KERNEL_URL}v${VERSION}/$AMD64_DEB
-        wget -nv ${KERNEL_URL}v${VERSION}/$ALL_DEB
-        wget -nv http://mirrors.kernel.org/ubuntu/pool/main/g/glibc/libc6_2.33-0ubuntu5_amd64.deb
+        wget -nv ${KERNEL_URL}v${{matrix.kernel_version}}/$AMD64_DEB
+        wget -nv ${KERNEL_URL}v${{matrix.kernel_version}}/$ALL_DEB
+        wget -nv http://mirrors.kernel.org/ubuntu/pool/main/g/glibc/libc6_2.34-0ubuntu2_amd64.deb
         sudo dpkg --force-all -i *.deb
         echo "KVER=$(echo $ALL_DEB | cut -d '_' -f 2 | rev | cut -c14- | rev)-generic" >> $GITHUB_ENV
     - uses: actions/checkout@v2
-    - name: build
-      run: make KVER=$KVER
+    - name: build kernel ${{ matrix.kernel_version }} - GCC ${{ matrix.gcc_version }}
+      run: make KVER=$KVER CC=cc
