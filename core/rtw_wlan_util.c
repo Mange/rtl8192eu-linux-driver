@@ -3224,9 +3224,10 @@ void rtw_parse_sta_vendor_ie_8812(_adapter *adapter, struct sta_info *sta, u8 *t
 		goto exit;
 	else {
 		if(*(p+1) > 6 ) {
-			for(i=0; i<9;i++)
+			for(i=0; i<9;i++) {
 				RTW_INFO("p[%d]=0x%x",i,*(p+i) );
 				RTW_INFO("\n");
+			}
 			if(*(p+6) != 2)
 				goto exit;
 			
