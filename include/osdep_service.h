@@ -139,7 +139,6 @@ typedef enum mstat_status {
 void rtw_mstat_update(const enum mstat_f flags, const MSTAT_STATUS status, u32 sz);
 void rtw_mstat_dump(void *sel);
 bool match_mstat_sniff_rules(const enum mstat_f flags, const size_t size);
-void dbg_rtw_vmfree(void *pbuf, const enum mstat_f flags, u32 sz, const char *func, const int line);
 void *dbg_rtw_malloc(u32 sz, const enum mstat_f flags, const char *func, const int line);
 void *dbg_rtw_zmalloc(u32 sz, const enum mstat_f flags, const char *func, const int line);
 void dbg_rtw_mfree(void *pbuf, const enum mstat_f flags, u32 sz, const char *func, const int line);

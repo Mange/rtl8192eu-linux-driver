@@ -494,21 +494,6 @@ bool match_mstat_sniff_rules(const enum mstat_f flags, const size_t size)
 	return _FALSE;
 }
 
-inline void dbg_rtw_vmfree(void *pbuf, u32 sz, const enum mstat_f flags, const char *func, const int line)
-{
-
-	if (match_mstat_sniff_rules(flags, sz))
-		RTW_INFO("DBG_MEM_ALLOC %s:%d %s(%d)\n", func, line, __FUNCTION__, (sz));
-
-	vfree((pbuf));
-
-	rtw_mstat_update(
-		flags
-		, MSTAT_FREE
-		, sz
-	);
-}
-
 inline void *dbg_rtw_malloc(u32 sz, const enum mstat_f flags, const char *func, const int line)
 {
 	void *p;
