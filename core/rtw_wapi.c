@@ -201,7 +201,7 @@ u8 WapiGetEntryForCamClear(_adapter *padapter, u8 *pPeerMac, u8 keyid, u8 IsMsk)
 		    && pWapiInfo->wapiCamEntry[i].type == IsMsk) {
 			pWapiInfo->wapiCamEntry[i].IsUsed = 0;
 			pWapiInfo->wapiCamEntry[i].keyidx = 2;
-			_rtw_memset(pWapiInfo->wapiCamEntry[i].PeerMacAddr, 0, ETH_ALEN);
+			memset(pWapiInfo->wapiCamEntry[i].PeerMacAddr, 0, ETH_ALEN);
 
 			WAPI_TRACE(WAPI_API, "<========== %s\n", __FUNCTION__);
 			return pWapiInfo->wapiCamEntry[i].entry_idx;
@@ -244,7 +244,7 @@ WapiResetAllCamEntry(_adapter *padapter)
 	pWapiInfo =  &padapter->wapiInfo;
 
 	for (i = 0; i < WAPI_CAM_ENTRY_NUM; i++) {
-		_rtw_memset(pWapiInfo->wapiCamEntry[i].PeerMacAddr, 0, ETH_ALEN);
+		memset(pWapiInfo->wapiCamEntry[i].PeerMacAddr, 0, ETH_ALEN);
 		pWapiInfo->wapiCamEntry[i].IsUsed = 0;
 		pWapiInfo->wapiCamEntry[i].keyidx = 2; /* invalid */
 		pWapiInfo->wapiCamEntry[i].entry_idx = 4 + i * 2;
@@ -687,7 +687,7 @@ void rtw_wapi_return_one_sta_info(_adapter *padapter, u8 *MacAddr)
 		while (!list_empty(&(pWapiInfo->wapiBKIDStoreList))) {
 			pWapiBkid = (PRT_WAPI_BKID)list_entry(pWapiInfo->wapiBKIDStoreList.next, RT_WAPI_BKID, list);
 			list_del_init(&pWapiBkid->list);
-			_rtw_memset(pWapiBkid->bkid, 0, 16);
+			memset(pWapiBkid->bkid, 0, 16);
 			list_add_tail(&pWapiBkid->list, &pWapiInfo->wapiBKIDIdleList);
 		}
 	}
@@ -732,7 +732,7 @@ void rtw_wapi_return_one_sta_info(_adapter *padapter, u8 *MacAddr)
 			if (_rtw_memcmp(pWapiStaInfo->PeerMacAddr, MacAddr, ETH_ALEN) == _TRUE) {
 				pWapiStaInfo->bAuthenticateInProgress = false;
 				pWapiStaInfo->bSetkeyOk = false;
-				_rtw_memset(pWapiStaInfo->PeerMacAddr, 0, ETH_ALEN);
+				memset(pWapiStaInfo->PeerMacAddr, 0, ETH_ALEN);
 				list_del_init(&pWapiStaInfo->list);
 				list_add_tail(&pWapiStaInfo->list, &pWapiInfo->wapiSTAIdleList);
 				break;
@@ -1163,7 +1163,7 @@ void rtw_wapi_get_iv(_adapter *padapter, u8 *pRA, u8 *IV)
 	} else {
 		if (list_empty(&pWapiInfo->wapiSTAUsedList)) {
 			WAPI_TRACE(WAPI_RX, "rtw_wapi_get_iv: list is empty\n");
-			_rtw_memset(IV, 10, 18);
+			memset(IV, 10, 18);
 			return;
 		} else {
 			list_for_each_entry(pWapiSta, &pWapiInfo->wapiSTAUsedList, list) {

@@ -424,7 +424,7 @@ void odm_memory_set(struct dm_struct *dm, void *pbuf, s8 value, u32 length)
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE) && defined(DM_ODM_CE_MAC80211_V2)
 	memset(pbuf, value, length);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE)
-	_rtw_memset(pbuf, value, length);
+	memset(pbuf, value, length);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_WIN)
 	PlatformFillMemory(pbuf, length, value);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_IOT)

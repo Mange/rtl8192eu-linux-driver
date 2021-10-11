@@ -741,7 +741,7 @@ u32	rtw_build_vht_operation_ie(_adapter *padapter, u8 *pbuf, u8 channel)
 	u32	len = 0;
 	u8	operation[5];
 
-	_rtw_memset(operation, 0, 5);
+	memset(operation, 0, 5);
 
 	bw_mode = REGSTY_BW_5G(pregistrypriv); /* TODO: control op bw with other info */
 
@@ -805,7 +805,7 @@ u32	rtw_build_vht_cap_ie(_adapter *padapter, u8 *pbuf)
 	struct mlme_ext_info	*pmlmeinfo = &(pmlmeext->mlmext_info);
 
 	pcap = pvhtpriv->vht_cap;
-	_rtw_memset(pcap, 0, 32);
+	memset(pcap, 0, 32);
 
 	/* B0 B1 Maximum MPDU Length */
 	rtw_hal_get_def_var(padapter, HAL_DEF_RX_PACKET_OFFSET, &rx_packet_offset);

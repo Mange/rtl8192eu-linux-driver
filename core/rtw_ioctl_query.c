@@ -77,7 +77,7 @@ u8 query_802_11_association_information(_adapter *padapter, PNDIS_802_11_ASSOCIA
 	unsigned char i, *auth_ie, *supp_ie;
 
 	/* NdisZeroMemory(pAssocInfo, sizeof(NDIS_802_11_ASSOCIATION_INFORMATION)); */
-	_rtw_memset(pAssocInfo, 0, sizeof(NDIS_802_11_ASSOCIATION_INFORMATION));
+	memset(pAssocInfo, 0, sizeof(NDIS_802_11_ASSOCIATION_INFORMATION));
 	/* pAssocInfo->Length = sizeof(NDIS_802_11_ASSOCIATION_INFORMATION); */
 
 	/* ------------------------------------------------------ */

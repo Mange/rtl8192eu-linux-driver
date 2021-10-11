@@ -457,7 +457,7 @@ exit:
 void rtw_set_supported_rate(u8 *SupportedRates, uint mode)
 {
 
-	_rtw_memset(SupportedRates, 0, NDIS_802_11_LENGTH_RATES_EX);
+	memset(SupportedRates, 0, NDIS_802_11_LENGTH_RATES_EX);
 
 	switch (mode) {
 	case WIRELESS_11B:
@@ -789,7 +789,7 @@ int rtw_rsne_info_parse(const u8 *ie, uint ie_len, struct rsne_info *info)
 	const u8 *pos = ie;
 	u16 cnt;
 
-	_rtw_memset(info, 0, sizeof(struct rsne_info));
+	memset(info, 0, sizeof(struct rsne_info));
 
 	if (ie + ie_len < pos + 4)
 		goto err;
@@ -1304,7 +1304,7 @@ ParseRes rtw_ieee802_11_parse_elems(u8 *start, uint len,
 	u8 *pos = start;
 	int unknown = 0;
 
-	_rtw_memset(elems, 0, sizeof(*elems));
+	memset(elems, 0, sizeof(*elems));
 
 	while (left >= 2) {
 		u8 id, elen;
@@ -2206,7 +2206,7 @@ uint rtw_del_p2p_ie(u8 *ies, uint ies_len_ori, const char *msg)
 			}
 
 			_rtw_memmove(target_ie, next_ie, remain_len);
-			_rtw_memset(target_ie + remain_len, 0, target_ie_len);
+			memset(target_ie + remain_len, 0, target_ie_len);
 			ies_len -= target_ie_len;
 
 			if (DBG_DEL_P2P_IE && msg) {
@@ -2247,7 +2247,7 @@ uint rtw_del_p2p_attr(u8 *ie, uint ielen_ori, u8 attr_id)
 			}
 
 			_rtw_memmove(target_attr, next_attr, remain_len);
-			_rtw_memset(target_attr + remain_len, 0, target_attr_len);
+			memset(target_attr + remain_len, 0, target_attr_len);
 			*(ie + 1) -= target_attr_len;
 			ielen -= target_attr_len;
 
@@ -2317,7 +2317,7 @@ void rtw_bss_ex_del_p2p_attr(WLAN_BSSID_EX *bss_ex, u8 attr_id)
 				u8 *next_ie = ie + ie_len;
 
 				_rtw_memmove(next_ie, next_ie_ori, remain_len);
-				_rtw_memset(next_ie + remain_len, 0, ie_len_ori - ie_len);
+				memset(next_ie + remain_len, 0, ie_len_ori - ie_len);
 				bss_ex->IELength -= ie_len_ori - ie_len;
 
 				ies = next_ie;
@@ -2533,7 +2533,7 @@ uint rtw_del_wfd_ie(u8 *ies, uint ies_len_ori, const char *msg)
 			}
 
 			_rtw_memmove(target_ie, next_ie, remain_len);
-			_rtw_memset(target_ie + remain_len, 0, target_ie_len);
+			memset(target_ie + remain_len, 0, target_ie_len);
 			ies_len -= target_ie_len;
 
 			if (DBG_DEL_WFD_IE && msg) {
@@ -2574,7 +2574,7 @@ uint rtw_del_wfd_attr(u8 *ie, uint ielen_ori, u8 attr_id)
 			}
 
 			_rtw_memmove(target_attr, next_attr, remain_len);
-			_rtw_memset(target_attr + remain_len, 0, target_attr_len);
+			memset(target_attr + remain_len, 0, target_attr_len);
 			*(ie + 1) -= target_attr_len;
 			ielen -= target_attr_len;
 
@@ -2643,7 +2643,7 @@ void rtw_bss_ex_del_wfd_attr(WLAN_BSSID_EX *bss_ex, u8 attr_id)
 				u8 *next_ie = ie + ie_len;
 
 				_rtw_memmove(next_ie, next_ie_ori, remain_len);
-				_rtw_memset(next_ie + remain_len, 0, ie_len_ori - ie_len);
+				memset(next_ie + remain_len, 0, ie_len_ori - ie_len);
 				bss_ex->IELength -= ie_len_ori - ie_len;
 
 				ies = next_ie;

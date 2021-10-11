@@ -1354,7 +1354,7 @@ void rtw_cfgvendor_rssi_monitor_evt(_adapter *padapter) {
 		goto exit;
 	}
 
-        _rtw_memset(&data, 0, sizeof(data));
+        memset(&data, 0, sizeof(data));
 
         data.version = RSSI_MONITOR_EVT_VERSION;
         data.cur_rssi = rssi;

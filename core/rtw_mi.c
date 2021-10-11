@@ -189,7 +189,7 @@ void rtw_mi_status_by_ifbmp(struct dvobj_priv *dvobj, u8 ifbmp, struct mi_state 
 	_adapter *iface;
 	int i;
 
-	_rtw_memset(mstate, 0, sizeof(struct mi_state));
+	memset(mstate, 0, sizeof(struct mi_state));
 
 	for (i = 0; i < dvobj->iface_nums; i++) {
 		iface = dvobj->padapters[i];
@@ -949,25 +949,25 @@ static void rtw_dbg_dump_fwstate(_adapter *padapter, sint state)
 	u8 buf[32] = {0};
 
 	if (state & WIFI_FW_NULL_STATE) {
-		_rtw_memset(buf, 0, 32);
+		memset(buf, 0, 32);
 		sprintf(buf, "WIFI_FW_NULL_STATE");
 		RTW_INFO(FUNC_ADPT_FMT"fwstate-%s\n", FUNC_ADPT_ARG(padapter), buf);
 	}
 
 	if (state & _FW_LINKED) {
-		_rtw_memset(buf, 0, 32);
+		memset(buf, 0, 32);
 		sprintf(buf, "_FW_LINKED");
 		RTW_INFO(FUNC_ADPT_FMT"fwstate-%s\n", FUNC_ADPT_ARG(padapter), buf);
 	}
 
 	if (state & _FW_UNDER_LINKING) {
-		_rtw_memset(buf, 0, 32);
+		memset(buf, 0, 32);
 		sprintf(buf, "_FW_UNDER_LINKING");
 		RTW_INFO(FUNC_ADPT_FMT"fwstate-%s\n", FUNC_ADPT_ARG(padapter), buf);
 	}
 
 	if (state & _FW_UNDER_SURVEY) {
-		_rtw_memset(buf, 0, 32);
+		memset(buf, 0, 32);
 		sprintf(buf, "_FW_UNDER_SURVEY");
 		RTW_INFO(FUNC_ADPT_FMT"fwstate-%s\n", FUNC_ADPT_ARG(padapter), buf);
 	}

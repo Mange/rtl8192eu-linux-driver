@@ -1522,7 +1522,7 @@ mptbt_BtControlProcess(
 		/* RTW_INFO("[MPT], parameters(hex):0x%x %d\n",&pBtReq->pParamStart[0], pBtReq->paraLength); */
 	}
 
-	_rtw_memset((void *)pMptCtx->mptOutBuf, 0, 100);
+	memset((void *)pMptCtx->mptOutBuf, 0, 100);
 	pMptCtx->mptOutLen = 4; /* length of (BT_RSP_CMD.status+BT_RSP_CMD.paraLength) */
 
 	pBtRsp = (PBT_RSP_CMD)pMptCtx->mptOutBuf;

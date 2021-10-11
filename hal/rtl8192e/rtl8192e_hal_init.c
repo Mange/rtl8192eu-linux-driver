@@ -1219,7 +1219,7 @@ static bool efuse_read_phymap(
 	/*  */
 	/* Refresh efuse init map as all 0xFF. */
 	/*  */
-	_rtw_memset(pbuf, 0xFF, limit);
+	memset(pbuf, 0xFF, limit);
 
 
 	/*  */
@@ -1638,7 +1638,7 @@ Hal_EfuseWordEnableDataWrite8192E(IN	PADAPTER	pAdapter,
 	u8	badworden = 0x0F;
 	u8	tmpdata[8];
 
-	_rtw_memset((PVOID)tmpdata, 0xff, PGPKT_DATA_SIZE);
+	memset((PVOID)tmpdata, 0xff, PGPKT_DATA_SIZE);
 
 	if (!(word_en & BIT0)) {
 		tmpaddr = start_addr;
@@ -1801,8 +1801,8 @@ hal_EfusePgPacketRead_8192E(
 	if (offset > EFUSE_MAX_SECTION_8192E)
 		return _FALSE;
 
-	_rtw_memset((PVOID)data, 0xff, sizeof(u8) * PGPKT_DATA_SIZE);
-	_rtw_memset((PVOID)tmpdata, 0xff, sizeof(u8) * PGPKT_DATA_SIZE);
+	memset((PVOID)data, 0xff, sizeof(u8) * PGPKT_DATA_SIZE);
+	memset((PVOID)tmpdata, 0xff, sizeof(u8) * PGPKT_DATA_SIZE);
 
 
 	/*  */
@@ -1936,7 +1936,7 @@ hal_EfusePgPacketWrite_8192E(IN	PADAPTER	pAdapter,
 
 	/* RTW_INFO("hal_EfusePgPacketWrite_8812A target offset 0x%x word_en 0x%x\n", target_pkt.offset, target_pkt.word_en); */
 
-	_rtw_memset((PVOID)target_pkt.data, 0xFF, sizeof(u8) * 8);
+	memset((PVOID)target_pkt.data, 0xFF, sizeof(u8) * 8);
 
 	efuse_WordEnableDataRead(word_en, data, target_pkt.data);
 	target_word_cnts = Efuse_CalculateWordCnts(target_pkt.word_en);
@@ -2179,7 +2179,7 @@ hal_EfusePgPacketWrite_8192E(IN	PADAPTER	pAdapter,
 					}
 
 					/* ************	s1-2-A :cover the exist data ******************* */
-					_rtw_memset(originaldata, 0xff, sizeof(u8) * 8);
+					memset(originaldata, 0xff, sizeof(u8) * 8);
 
 					if (Efuse_PgPacketRead(pAdapter, tmp_pkt.offset, originaldata, bPseudoTest)) {
 						/* check if data exist					 */
@@ -2281,7 +2281,7 @@ efuse_PgPacketConstruct(
 	IN OUT	PPGPKT_STRUCT	pTargetPkt
 )
 {
-	_rtw_memset((PVOID)pTargetPkt->data, 0xFF, sizeof(u8) * 8);
+	memset((PVOID)pTargetPkt->data, 0xFF, sizeof(u8) * 8);
 	pTargetPkt->offset = offset;
 	pTargetPkt->word_en = word_en;
 	efuse_WordEnableDataRead(word_en, pData, pTargetPkt->data);
@@ -2585,7 +2585,7 @@ hal_EfuseFixHeaderProcess(
 	u16	efuse_addr = *pAddr;
 	u32	PgWriteSuccess = 0;
 
-	_rtw_memset((PVOID)originaldata, 0xff, 8);
+	memset((PVOID)originaldata, 0xff, 8);
 
 	if (Efuse_PgPacketRead(pAdapter, pFixPkt->offset, originaldata, bPseudoTest)) {
 		/* check if data exist */
@@ -4761,9 +4761,9 @@ void rtl8192e_init_default_value(_adapter *padapter)
 #endif
 	pHalData->EfuseHal.fakeEfuseBank = 0;
 	pHalData->EfuseHal.fakeEfuseUsedBytes = 0;
-	_rtw_memset(pHalData->EfuseHal.fakeEfuseContent, 0xFF, EFUSE_MAX_HW_SIZE);
-	_rtw_memset(pHalData->EfuseHal.fakeEfuseInitMap, 0xFF, EFUSE_MAX_MAP_LEN);
-	_rtw_memset(pHalData->EfuseHal.fakeEfuseModifiedMap, 0xFF, EFUSE_MAX_MAP_LEN);
+	memset(pHalData->EfuseHal.fakeEfuseContent, 0xFF, EFUSE_MAX_HW_SIZE);
+	memset(pHalData->EfuseHal.fakeEfuseInitMap, 0xFF, EFUSE_MAX_MAP_LEN);
+	memset(pHalData->EfuseHal.fakeEfuseModifiedMap, 0xFF, EFUSE_MAX_MAP_LEN);
 }
 
 #ifdef CONFIG_BT_COEXIST

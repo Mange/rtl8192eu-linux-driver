@@ -145,7 +145,7 @@ u8 rtw_do_join(_adapter *padapter)
 
 				pibss = padapter->registrypriv.dev_network.MacAddress;
 
-				_rtw_memset(&pdev_network->Ssid, 0, sizeof(NDIS_802_11_SSID));
+				memset(&pdev_network->Ssid, 0, sizeof(NDIS_802_11_SSID));
 				_rtw_memcpy(&pdev_network->Ssid, &pmlmepriv->assoc_ssid, sizeof(NDIS_802_11_SSID));
 
 				rtw_update_registrypriv_dev_network(padapter);
@@ -327,7 +327,7 @@ handle_tkip_countermeasure:
 		goto release_mlme_lock;
 	}
 
-	_rtw_memset(&pmlmepriv->assoc_ssid, 0, sizeof(NDIS_802_11_SSID));
+	memset(&pmlmepriv->assoc_ssid, 0, sizeof(NDIS_802_11_SSID));
 	_rtw_memcpy(&pmlmepriv->assoc_bssid, bssid, ETH_ALEN);
 	pmlmepriv->assoc_by_bssid = _TRUE;
 
@@ -488,7 +488,7 @@ handle_tkip_countermeasure:
 	if (ssid && ssid_valid)
 		_rtw_memcpy(&pmlmepriv->assoc_ssid, ssid, sizeof(NDIS_802_11_SSID));
 	else
-		_rtw_memset(&pmlmepriv->assoc_ssid, 0, sizeof(NDIS_802_11_SSID));
+		memset(&pmlmepriv->assoc_ssid, 0, sizeof(NDIS_802_11_SSID));
 
 	if (bssid && bssid_valid) {
 		_rtw_memcpy(&pmlmepriv->assoc_bssid, bssid, ETH_ALEN);

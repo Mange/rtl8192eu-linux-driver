@@ -542,7 +542,7 @@ static inline void hal_init_pg_txpwr_info_2g(_adapter *adapter, TxPowerInfo24G *
 	if (pwr_info == NULL)
 		return;
 
-	_rtw_memset(pwr_info, 0, sizeof(TxPowerInfo24G));
+	memset(pwr_info, 0, sizeof(TxPowerInfo24G));
 
 	/* init with invalid value */
 	for (path = 0; path < MAX_RF_PATH; path++) {
@@ -580,7 +580,7 @@ static inline void hal_init_pg_txpwr_info_5g(_adapter *adapter, TxPowerInfo5G *p
 	if (pwr_info == NULL)
 		return;
 
-	_rtw_memset(pwr_info, 0, sizeof(TxPowerInfo5G));
+	memset(pwr_info, 0, sizeof(TxPowerInfo5G));
 
 	/* init with invalid value */
 	for (path = 0; path < MAX_RF_PATH; path++) {
@@ -3417,7 +3417,7 @@ void phy_txpwr_limit_bandwidth_chk(_adapter *adapter)
 							break;
 						}
 
-						_rtw_memset(cch_by_bw, 0, 3);
+						memset(cch_by_bw, 0, 3);
 						cch_by_bw[bw] = cch;
 						offset_by_bw = 0x01;
 
@@ -4084,7 +4084,7 @@ phy_ConfigMACWithParaFile(
 	if (!(Adapter->registrypriv.load_phy_file & LOAD_MAC_PARA_FILE))
 		return rtStatus;
 
-	_rtw_memset(pHalData->para_file_buf, 0, MAX_PARA_FILE_BUF_LEN);
+	memset(pHalData->para_file_buf, 0, MAX_PARA_FILE_BUF_LEN);
 
 	if ((pHalData->mac_reg_len == 0) && (pHalData->mac_reg == NULL)) {
 		rtw_get_phy_file_path(Adapter, pFileName);
@@ -4163,7 +4163,7 @@ phy_ConfigBBWithParaFile(
 		break;
 	}
 
-	_rtw_memset(pHalData->para_file_buf, 0, MAX_PARA_FILE_BUF_LEN);
+	memset(pHalData->para_file_buf, 0, MAX_PARA_FILE_BUF_LEN);
 
 	if ((pBufLen != NULL) && (*pBufLen == 0) && (pBuf == NULL)) {
 		rtw_get_phy_file_path(Adapter, pFileName);
@@ -4469,7 +4469,7 @@ phy_ConfigBBWithPgParaFile(
 	if (!(Adapter->registrypriv.load_phy_file & LOAD_BB_PG_PARA_FILE))
 		return rtStatus;
 
-	_rtw_memset(pHalData->para_file_buf, 0, MAX_PARA_FILE_BUF_LEN);
+	memset(pHalData->para_file_buf, 0, MAX_PARA_FILE_BUF_LEN);
 
 	if (pHalData->bb_phy_reg_pg == NULL) {
 		rtw_get_phy_file_path(Adapter, pFileName);
@@ -4518,7 +4518,7 @@ phy_ConfigBBWithMpParaFile(
 	if (!(Adapter->registrypriv.load_phy_file & LOAD_BB_MP_PARA_FILE))
 		return rtStatus;
 
-	_rtw_memset(pHalData->para_file_buf, 0, MAX_PARA_FILE_BUF_LEN);
+	memset(pHalData->para_file_buf, 0, MAX_PARA_FILE_BUF_LEN);
 
 	if ((pHalData->bb_phy_reg_mp_len == 0) && (pHalData->bb_phy_reg_mp == NULL)) {
 		rtw_get_phy_file_path(Adapter, pFileName);
@@ -4622,7 +4622,7 @@ PHY_ConfigRFWithParaFile(
 		break;
 	}
 
-	_rtw_memset(pHalData->para_file_buf, 0, MAX_PARA_FILE_BUF_LEN);
+	memset(pHalData->para_file_buf, 0, MAX_PARA_FILE_BUF_LEN);
 
 	if ((pBufLen != NULL) && (*pBufLen == 0) && (pBuf == NULL)) {
 		rtw_get_phy_file_path(Adapter, pFileName);
@@ -4821,7 +4821,7 @@ PHY_ConfigRFWithTxPwrTrackParaFile(
 	if (!(Adapter->registrypriv.load_phy_file & LOAD_RF_TXPWR_TRACK_PARA_FILE))
 		return rtStatus;
 
-	_rtw_memset(pHalData->para_file_buf, 0, MAX_PARA_FILE_BUF_LEN);
+	memset(pHalData->para_file_buf, 0, MAX_PARA_FILE_BUF_LEN);
 
 	if ((pHalData->rf_tx_pwr_track_len == 0) && (pHalData->rf_tx_pwr_track == NULL)) {
 		rtw_get_phy_file_path(Adapter, pFileName);
@@ -5076,10 +5076,10 @@ phy_ParsePowerLimitTableFile(
 			szLine[--i] = ' '; /* return the space in front of the regulation info */
 
 			/* Parse the label of the table */
-			_rtw_memset((PVOID) band, 0, 10);
-			_rtw_memset((PVOID) bandwidth, 0, 10);
-			_rtw_memset((PVOID) ntx, 0, 10);
-			_rtw_memset((PVOID) rateSection, 0, 10);
+			memset((PVOID) band, 0, 10);
+			memset((PVOID) bandwidth, 0, 10);
+			memset((PVOID) ntx, 0, 10);
+			memset((PVOID) rateSection, 0, 10);
 			if (!ParseQualifiedString(szLine, &i, band, ' ', ',')) {
 				RTW_ERR("Fail to parse band!\n");
 				goto exit;
@@ -5124,7 +5124,7 @@ phy_ParsePowerLimitTableFile(
 			while (szLine[i] == ' ' || szLine[i] == '\t')
 				++i;
 
-			_rtw_memset((PVOID) colNumBuf, 0, 10);
+			memset((PVOID) colNumBuf, 0, 10);
 			if (!ParseQualifiedString(szLine, &i, colNumBuf, '#', '#')) {
 				RTW_ERR("Fail to parse column number!\n");
 				goto exit;
@@ -5229,7 +5229,7 @@ phy_ParsePowerLimitTableFile(
 					++i;
 
 				/* load the power limit value */
-				_rtw_memset((PVOID) powerLimit, 0, 10);
+				memset((PVOID) powerLimit, 0, 10);
 
 				if (szLine[i] == 'W' && szLine[i + 1] == 'W') {
 					/*
@@ -5320,7 +5320,7 @@ PHY_ConfigRFWithPowerLimitTableParaFile(
 	if (!(Adapter->registrypriv.load_phy_file & LOAD_RF_TXPWR_LMT_PARA_FILE))
 		return rtStatus;
 
-	_rtw_memset(pHalData->para_file_buf, 0, MAX_PARA_FILE_BUF_LEN);
+	memset(pHalData->para_file_buf, 0, MAX_PARA_FILE_BUF_LEN);
 
 	if (pHalData->rf_tx_pwr_lmt == NULL) {
 		rtw_get_phy_file_path(Adapter, pFileName);

@@ -942,27 +942,6 @@ int	_rtw_memcmp(const void *dst, const void *src, u32 sz)
 
 }
 
-void _rtw_memset(void *pbuf, int c, u32 sz)
-{
-
-#if defined(PLATFORM_LINUX) || defined (PLATFORM_FREEBSD)
-
-	memset(pbuf, c, sz);
-
-#endif
-
-#ifdef PLATFORM_WINDOWS
-#if 0
-	NdisZeroMemory(pbuf, sz);
-	if (c != 0)
-		memset(pbuf, c, sz);
-#else
-	NdisFillMemory(pbuf, sz, c);
-#endif
-#endif
-
-}
-
 #ifdef PLATFORM_FREEBSD
 static inline void __list_add(_list *pnew, _list *pprev, _list *pnext)
 {
@@ -2560,7 +2539,7 @@ int map_readN(const struct map_t *map, u16 offset, u16 len, u8 *buf)
 		goto exit;
 	}
 
-	_rtw_memset(buf, map->init_value, len);
+	memset(buf, map->init_value, len);
 
 	for (i = 0; i < map->seg_num; i++) {
 		u8 *c_dst, *c_src;

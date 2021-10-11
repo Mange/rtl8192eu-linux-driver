@@ -851,7 +851,7 @@ void rtw_init_sitesurvey_parm(_adapter *padapter, struct sitesurvey_parm *pparm)
 	struct mlme_priv *pmlmepriv = &padapter->mlmepriv;
 
 
-	_rtw_memset(pparm, 0, sizeof(struct sitesurvey_parm));
+	memset(pparm, 0, sizeof(struct sitesurvey_parm));
 	pparm->scan_mode = pmlmepriv->scan_mode;
 }
 
@@ -1438,7 +1438,7 @@ u8 rtw_joinbss_cmd(_adapter  *padapter, struct wlan_network *pnetwork)
 		goto exit;
 	}
 
-	_rtw_memset(psecnetwork, 0, t_len);
+	memset(psecnetwork, 0, t_len);
 
 	_rtw_memcpy(psecnetwork, &pnetwork->network, get_WLAN_BSSID_EX_sz(&pnetwork->network));
 

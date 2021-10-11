@@ -32,7 +32,7 @@ static void _rtw_bss_nums_count(_adapter *adapter, u8 *pbss_nums)
 		RTW_ERR("%s pbss_nums is null pointer\n", __func__);
 		return;
 	}
-	_rtw_memset(pbss_nums, 0, MAX_CHANNEL_NUM);
+	memset(pbss_nums, 0, MAX_CHANNEL_NUM);
 
 	_enter_critical_bh(&(pmlmepriv->scanned_queue.lock), &irqL);
 	phead = get_list_head(queue);
@@ -94,7 +94,7 @@ void rtw_acs_reset(_adapter *adapter)
 	HAL_DATA_TYPE *hal_data = GET_HAL_DATA(adapter);
 	struct auto_chan_sel *pacs = &hal_data->acs;
 
-	_rtw_memset(pacs, 0, sizeof(struct auto_chan_sel));
+	memset(pacs, 0, sizeof(struct auto_chan_sel));
 	#ifdef CONFIG_RTW_ACS_DBG
 	rtw_acs_adv_reset(adapter);
 	#endif /*CONFIG_RTW_ACS_DBG*/

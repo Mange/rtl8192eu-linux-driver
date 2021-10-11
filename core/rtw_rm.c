@@ -328,7 +328,7 @@ static u8 *build_wlan_hdr(_adapter *padapter, struct xmit_frame *pmgntframe,
 	pattr = &pmgntframe->attrib;
 	update_mgntframe_attrib(padapter, pattr);
 
-	_rtw_memset(pmgntframe->buf_addr, 0, WLANHDR_OFFSET + TXDESC_OFFSET);
+	memset(pmgntframe->buf_addr, 0, WLANHDR_OFFSET + TXDESC_OFFSET);
 
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
@@ -455,7 +455,7 @@ int rm_sitesurvey(struct rm_obj *prm)
 
 	pch_set = &prm->q.ch_set[0];
 
-	_rtw_memset(pch_set, 0,
+	memset(pch_set, 0,
 		sizeof(struct rtw_ieee80211_channel) * MAX_OP_CHANNEL_SET_NUM);
 
 	if (prm->q.ch_num == 0) {
@@ -474,7 +474,7 @@ int rm_sitesurvey(struct rm_obj *prm)
 	meas_ch_num = rm_get_ch_set(pch_set, op_class, ch_num);
 	prm->q.ch_set_ch_amount = meas_ch_num;
 
-	_rtw_memset(&parm, 0, sizeof(struct sitesurvey_parm));
+	memset(&parm, 0, sizeof(struct sitesurvey_parm));
 	_rtw_memcpy(parm.ch, pch_set,
 		sizeof(struct rtw_ieee80211_channel) * MAX_OP_CHANNEL_SET_NUM);
 
@@ -1488,7 +1488,7 @@ static int retrieve_scan_result(struct rm_obj *prm)
 				MAC_ARG(pbss->MacAddress));
 
 			len = 0;
-			_rtw_memset(tmp_buf, 0, MAX_XMIT_EXTBUF_SZ);
+			memset(tmp_buf, 0, MAX_XMIT_EXTBUF_SZ);
 			rm_gen_bcn_rep_ie(prm, tmp_buf, pnetwork, &len);
 new_packet:
 			if (my_len == 0) {

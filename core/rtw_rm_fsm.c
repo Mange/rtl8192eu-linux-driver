@@ -245,7 +245,7 @@ struct rm_obj *rm_alloc_rmobj(_adapter *padapter)
 	if (prm == NULL)
 		return NULL;
 
-	_rtw_memset(prm, 0, sizeof(struct rm_obj));
+	memset(prm, 0, sizeof(struct rm_obj));
 
 	/* alloc timer */
 	if ((prm->pclock = rm_alloc_clock(padapter, prm)) == NULL) {

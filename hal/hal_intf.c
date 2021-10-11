@@ -249,7 +249,7 @@ void rtw_hal_power_off(_adapter *padapter)
 {
 	struct macid_ctl_t *macid_ctl = &padapter->dvobj->macid_ctl;
 
-	_rtw_memset(macid_ctl->h2c_msr, 0, MACID_NUM_SW_LIMIT);
+	memset(macid_ctl->h2c_msr, 0, MACID_NUM_SW_LIMIT);
 
 #ifdef CONFIG_BT_COEXIST
 	rtw_btcoex_PowerOffSetting(padapter);

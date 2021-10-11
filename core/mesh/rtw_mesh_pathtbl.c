@@ -544,7 +544,7 @@ struct rtw_mesh_path *rtw_mesh_path_new(_adapter *adapter,
 		return NULL;
 
 	_rtw_memcpy(new_mpath->dst, dst, ETH_ALEN);
-	_rtw_memset(new_mpath->rann_snd_addr, 0xFF, ETH_ALEN);
+	memset(new_mpath->rann_snd_addr, 0xFF, ETH_ALEN);
 	new_mpath->is_root = false;
 	new_mpath->adapter = adapter;
 	new_mpath->flags = 0;

@@ -89,7 +89,7 @@ int rtw_init_tdls_info(_adapter *padapter)
 void rtw_free_tdls_info(struct tdls_info *ptdlsinfo)
 {
 
-	_rtw_memset(ptdlsinfo, 0, sizeof(struct tdls_info));
+	memset(ptdlsinfo, 0, sizeof(struct tdls_info));
 
 }
 
@@ -104,7 +104,7 @@ void rtw_free_all_tdls_sta(_adapter *padapter, u8 enqueue_cmd)
 	struct sta_info *ptdls_sta[NUM_STA];
 	u8 empty_hwaddr[ETH_ALEN] = { 0x00 };
 
-	_rtw_memset(ptdls_sta, 0x00, sizeof(ptdls_sta));
+	memset(ptdls_sta, 0x00, sizeof(ptdls_sta));
 
 	_enter_critical_bh(&pstapriv->sta_hash_lock, &irqL);
 	for (index = 0; index < NUM_STA; index++) {
@@ -302,7 +302,7 @@ int _issue_nulldata_to_TDLS_peer_STA(_adapter *padapter, unsigned char *da, unsi
 	pattrib->mdata = 0;
 	pattrib->retry_ctrl = _FALSE;
 
-	_rtw_memset(pmgntframe->buf_addr, 0, WLANHDR_OFFSET + TXDESC_OFFSET);
+	memset(pmgntframe->buf_addr, 0, WLANHDR_OFFSET + TXDESC_OFFSET);
 
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
@@ -425,7 +425,7 @@ void rtw_tdls_process_ht_cap(_adapter *padapter, struct sta_info *ptdls_sta, u8 
 	u8	cur_ldpc_cap = 0, cur_stbc_cap = 0, cur_beamform_cap = 0;
 
 	/* Save HT capabilities in the sta object */
-	_rtw_memset(&ptdls_sta->htpriv.ht_cap, 0, sizeof(struct rtw_ieee80211_ht_cap));
+	memset(&ptdls_sta->htpriv.ht_cap, 0, sizeof(struct rtw_ieee80211_ht_cap));
 	if (data && Length >= sizeof(struct rtw_ieee80211_ht_cap)) {
 		ptdls_sta->flags |= WLAN_STA_HT;
 		ptdls_sta->flags |= WLAN_STA_WME;
@@ -537,7 +537,7 @@ void rtw_tdls_process_vht_cap(_adapter *padapter, struct sta_info *ptdls_sta, u8
 	u16 cur_beamform_cap = 0;
 	u8	*pcap_mcs;
 
-	_rtw_memset(&ptdls_sta->vhtpriv, 0, sizeof(struct vht_priv));
+	memset(&ptdls_sta->vhtpriv, 0, sizeof(struct vht_priv));
 	if (data && Length == 12) {
 		ptdls_sta->flags |= WLAN_STA_VHT;
 
@@ -1128,7 +1128,7 @@ int issue_tunneled_probe_req(_adapter *padapter)
 
 	RTW_INFO("[%s]\n", __FUNCTION__);
 
-	_rtw_memset(&txmgmt, 0x00, sizeof(struct tdls_txmgmt));
+	memset(&txmgmt, 0x00, sizeof(struct tdls_txmgmt));
 	txmgmt.action_code = TUNNELED_PROBE_REQ;
 
 	pmgntframe = alloc_mgtxmitframe(pxmitpriv);
@@ -1170,7 +1170,7 @@ int issue_tunneled_probe_rsp(_adapter *padapter, union recv_frame *precv_frame)
 
 	RTW_INFO("[%s]\n", __FUNCTION__);
 
-	_rtw_memset(&txmgmt, 0x00, sizeof(struct tdls_txmgmt));
+	memset(&txmgmt, 0x00, sizeof(struct tdls_txmgmt));
 	txmgmt.action_code = TUNNELED_PROBE_RSP;
 
 	pmgntframe = alloc_mgtxmitframe(pxmitpriv);
@@ -1520,7 +1520,7 @@ int issue_tdls_dis_rsp(_adapter *padapter, struct tdls_txmgmt *ptxmgmt, u8 priva
 	pattrib = &pmgntframe->attrib;
 	update_mgntframe_attrib(padapter, pattrib);
 
-	_rtw_memset(pmgntframe->buf_addr, 0, WLANHDR_OFFSET + TXDESC_OFFSET);
+	memset(pmgntframe->buf_addr, 0, WLANHDR_OFFSET + TXDESC_OFFSET);
 
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
@@ -1609,7 +1609,7 @@ int issue_tdls_peer_traffic_indication(_adapter *padapter, struct sta_info *ptdl
 
 	RTW_INFO("[TDLS] %s\n", __FUNCTION__);
 
-	_rtw_memset(&txmgmt, 0x00, sizeof(struct tdls_txmgmt));
+	memset(&txmgmt, 0x00, sizeof(struct tdls_txmgmt));
 	txmgmt.action_code = TDLS_PEER_TRAFFIC_INDICATION;
 
 	pmgntframe = alloc_mgtxmitframe(pxmitpriv);
@@ -1662,7 +1662,7 @@ int issue_tdls_ch_switch_req(_adapter *padapter, struct sta_info *ptdls_sta)
 		goto exit;
 	}
 
-	_rtw_memset(&txmgmt, 0x00, sizeof(struct tdls_txmgmt));
+	memset(&txmgmt, 0x00, sizeof(struct tdls_txmgmt));
 	txmgmt.action_code = TDLS_CHANNEL_SWITCH_REQUEST;
 
 	pmgntframe = alloc_mgtxmitframe(pxmitpriv);
@@ -1767,7 +1767,7 @@ int On_TDLS_Dis_Rsp(_adapter *padapter, union recv_frame *precv_frame)
 	if (psta)
 		rssi = psta->cmn.rssi_stat.rssi;
 
-	_rtw_memset(&txmgmt, 0x00, sizeof(struct tdls_txmgmt));
+	memset(&txmgmt, 0x00, sizeof(struct tdls_txmgmt));
 	/* WFDTDLS: for sigma test, not to setup direct link automatically */
 	ptdlsinfo->dev_discovered = _TRUE;
 
@@ -1847,7 +1847,7 @@ sint On_TDLS_Setup_Req(_adapter *padapter, union recv_frame *precv_frame, struct
 	if (rtw_tdls_is_setup_allowed(padapter) == _FALSE)
 		goto exit;
 
-	_rtw_memset(&txmgmt, 0x00, sizeof(struct tdls_txmgmt));
+	memset(&txmgmt, 0x00, sizeof(struct tdls_txmgmt));
 	psa = get_sa(ptr);
 
 	if (ptdlsinfo->sta_maximum == _TRUE) {
@@ -2063,7 +2063,7 @@ int On_TDLS_Setup_Rsp(_adapter *padapter, union recv_frame *precv_frame, struct 
 	int ret = _SUCCESS;
 	u32 timeout_interval = TDLS_TPK_RESEND_COUNT;
 
-	_rtw_memset(&txmgmt, 0x00, sizeof(struct tdls_txmgmt));
+	memset(&txmgmt, 0x00, sizeof(struct tdls_txmgmt));
 	psa = get_sa(ptr);
 
 	ptr += prx_pkt_attrib->hdrlen + prx_pkt_attrib->iv_len + LLC_HEADER_SIZE + ETH_TYPE_LEN + PAYLOAD_TYPE_LEN;
@@ -2352,7 +2352,7 @@ int On_TDLS_Dis_Req(_adapter *padapter, union recv_frame *precv_frame)
 	if (rtw_tdls_is_driver_setup(padapter) == _FALSE)
 		goto exit;
 
-	_rtw_memset(&txmgmt, 0x00, sizeof(struct tdls_txmgmt));
+	memset(&txmgmt, 0x00, sizeof(struct tdls_txmgmt));
 	ptr += prx_pkt_attrib->hdrlen + prx_pkt_attrib->iv_len + LLC_HEADER_SIZE + ETH_TYPE_LEN + PAYLOAD_TYPE_LEN;
 	txmgmt.dialog_token = *(ptr + 2);
 	_rtw_memcpy(&txmgmt.peer, precv_frame->u.hdr.attrib.src, ETH_ALEN);
@@ -2437,7 +2437,7 @@ int On_TDLS_Peer_Traffic_Indication(_adapter *padapter, union recv_frame *precv_
 	struct tdls_txmgmt txmgmt;
 
 	ptr += pattrib->hdrlen + pattrib->iv_len + LLC_HEADER_SIZE + ETH_TYPE_LEN + PAYLOAD_TYPE_LEN;
-	_rtw_memset(&txmgmt, 0x00, sizeof(struct tdls_txmgmt));
+	memset(&txmgmt, 0x00, sizeof(struct tdls_txmgmt));
 
 		txmgmt.dialog_token = *(ptr + 2);
 		issue_tdls_peer_traffic_rsp(padapter, ptdls_sta, &txmgmt);
@@ -2771,7 +2771,7 @@ void wfd_ie_tdls(_adapter *padapter, u8 *pframe, u32 *pktlen)
 	if (check_fwstate(pmlmepriv, _FW_LINKED) == _TRUE)
 		_rtw_memcpy(wfdie + wfdielen, &pmlmepriv->assoc_bssid[0], ETH_ALEN);
 	else
-		_rtw_memset(wfdie + wfdielen, 0x00, ETH_ALEN);
+		memset(wfdie + wfdielen, 0x00, ETH_ALEN);
 
 	/* Local IP Address ATTR */
 	wfdie[wfdielen++] = WFD_ATTR_LOCAL_IP_ADDR;
@@ -3289,7 +3289,7 @@ void _tdls_tpk_timer_hdl(void *FunctionContext)
 	struct sta_info *ptdls_sta = (struct sta_info *)FunctionContext;
 	struct tdls_txmgmt txmgmt;
 
-	_rtw_memset(&txmgmt, 0x00, sizeof(struct tdls_txmgmt));
+	memset(&txmgmt, 0x00, sizeof(struct tdls_txmgmt));
 	ptdls_sta->TPK_count++;
 	/* TPK_timer expired in a second */
 	/* Retry timer should set at least 301 sec. */
@@ -3355,7 +3355,7 @@ void _tdls_handshake_timer_hdl(void *FunctionContext)
 	_adapter *padapter = NULL;
 	struct tdls_txmgmt txmgmt;
 
-	_rtw_memset(&txmgmt, 0x00, sizeof(struct tdls_txmgmt));
+	memset(&txmgmt, 0x00, sizeof(struct tdls_txmgmt));
 	_rtw_memcpy(txmgmt.peer, ptdls_sta->cmn.mac_addr, ETH_ALEN);
 	txmgmt.status_code = _RSON_TDLS_TEAR_UN_RSN_;
 
@@ -3376,7 +3376,7 @@ void _tdls_pti_timer_hdl(void *FunctionContext)
 	_adapter *padapter = NULL;
 	struct tdls_txmgmt txmgmt;
 
-	_rtw_memset(&txmgmt, 0x00, sizeof(struct tdls_txmgmt));
+	memset(&txmgmt, 0x00, sizeof(struct tdls_txmgmt));
 	_rtw_memcpy(txmgmt.peer, ptdls_sta->cmn.mac_addr, ETH_ALEN);
 	txmgmt.status_code = _RSON_TDLS_TEAR_TOOFAR_;
 
@@ -3433,7 +3433,7 @@ void rtw_tdls_teardown_pre_hdl(_adapter *padapter, struct sta_info *psta)
 
 	if (ptdlsinfo->sta_cnt < MAX_ALLOWED_TDLS_STA_NUM) {
 		ptdlsinfo->sta_maximum = _FALSE;
-		_rtw_memset(&ptdlsinfo->ss_record, 0x00, sizeof(struct tdls_ss_record));
+		memset(&ptdlsinfo->ss_record, 0x00, sizeof(struct tdls_ss_record));
 	}
 
 	if (ptdlsinfo->sta_cnt == 0)
