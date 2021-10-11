@@ -1631,12 +1631,12 @@ void hal_mpt_GetThermalMeter(PADAPTER pAdapter, u8 *value)
 {
 #if 0
 	fw_cmd(pAdapter, IOCMD_GET_THERMAL_METER);
-	rtw_msleep_os(1000);
+	msleep(1000);
 	fw_cmd_data(pAdapter, value, 1);
 	*value &= 0xFF;
 #else
 	hal_mpt_TriggerRFThermalMeter(pAdapter);
-	rtw_msleep_os(1000);
+	msleep(1000);
 	*value = hal_mpt_ReadRFThermalMeter(pAdapter);
 #endif
 
@@ -1680,7 +1680,7 @@ void hal_mpt_SetSingleCarrierTx(PADAPTER pAdapter, u8 bStart)
 #endif /* CONFIG_RTL8812A || CONFIG_RTL8821A || CONFIG_RTL8814A || CONFIG_RTL8822B || CONFIG_RTL8821C */
 			phy_set_bb_reg(pAdapter, rOFDM1_LSTF, BIT30 | BIT29 | BIT28, OFDM_ALL_OFF);
 
-		rtw_msleep_os(10);
+		msleep(10);
 		/*/BB Reset*/
 		phy_set_bb_reg(pAdapter, rPMAC_Reset, bBBResetB, 0x0);
 		phy_set_bb_reg(pAdapter, rPMAC_Reset, bBBResetB, 0x1);

@@ -530,7 +530,7 @@ void dump_adapters_status(void *sel, struct dvobj_priv *dvobj)
 		iface = dvobj->padapters[i];
 		if (iface) {
 			#if (defined(CONFIG_SUPPORT_MULTI_BCN) && defined(CONFIG_FW_HANDLE_TXBCN)) || defined(CONFIG_CLIENT_PORT_CFG)
-			_rtw_memset(&str_val, '\0', sizeof(str_val));
+			memset(&str_val, '\0', sizeof(str_val));
 			#endif
 			#if defined(CONFIG_SUPPORT_MULTI_BCN) && defined(CONFIG_FW_HANDLE_TXBCN)
 			if (MLME_IS_AP(iface) || MLME_IS_MESH(iface)) {
@@ -541,7 +541,7 @@ void dump_adapters_status(void *sel, struct dvobj_priv *dvobj)
 				len = snprintf(tmp_str, sizeof(tmp_str), "%s", "ap_id:");
 				strncpy(p, tmp_str, len);
 				p += len;
-				_rtw_memset(&tmp_str, '\0', sizeof(tmp_str));
+				memset(&tmp_str, '\0', sizeof(tmp_str));
 				#ifdef DBG_HW_PORT
 				len = snprintf(tmp_str, sizeof(tmp_str), "%d (%d,%d)", iface->vap_id, iface->hw_port, iface->client_port);
 				#else
@@ -559,7 +559,7 @@ void dump_adapters_status(void *sel, struct dvobj_priv *dvobj)
 				len = snprintf(tmp_str, sizeof(tmp_str), "%s", "c_pid:");
 				strncpy(p, tmp_str, len);
 				p += len;
-				_rtw_memset(&tmp_str, '\0', sizeof(tmp_str));
+				memset(&tmp_str, '\0', sizeof(tmp_str));
 				#ifdef DBG_HW_PORT
 				len = snprintf(tmp_str, sizeof(tmp_str), "%d (%d,%d)", iface->client_port, iface->hw_port, iface->client_port);
 				#else
@@ -932,13 +932,13 @@ int proc_get_tx_stat(struct seq_file *m, void *v)
 		} else {
 			//to avoid c2h modify counters
 			pstapriv_primary->gotc2h = NULL;
-			_rtw_memset(pstapriv_primary->c2h_sta_mac, 0, ETH_ALEN);
+			memset(pstapriv_primary->c2h_sta_mac, 0, ETH_ALEN);
 			pstapriv_primary->c2h_adapter_id = CONFIG_IFACE_NUMBER;
 			RTW_PRINT_SEL(m, "Warming : Query timeout, operation abort!!\n");
 			break;
 		}
 		pstapriv_primary->gotc2h = NULL;
-		_rtw_memset(pstapriv_primary->c2h_sta_mac, 0, ETH_ALEN);
+		memset(pstapriv_primary->c2h_sta_mac, 0, ETH_ALEN);
 		pstapriv_primary->c2h_adapter_id = CONFIG_IFACE_NUMBER;
 	}
 	return 0;
@@ -1718,7 +1718,7 @@ int proc_get_trx_info(struct seq_file *m, void *v)
 	rtw_hal_get_hwreg(padapter, HW_VAR_DUMP_MAC_TXFIFO, (u8 *)m);
 
 #ifdef CONFIG_USB_HCI
-	RTW_PRINT_SEL(m, "rx_urb_pending_cn=%d\n", ATOMIC_READ(&(precvpriv->rx_pending_cnt)));
+	RTW_PRINT_SEL(m, "rx_urb_pending_cn=%d\n", atomic_read(&(precvpriv->rx_pending_cnt)));
 #endif
 
 	dump_rx_bh_tk(m, &GET_PRIMARY_ADAPTER(padapter)->recvpriv);
@@ -2273,7 +2273,7 @@ ssize_t proc_set_ps_dbg_info(struct file *file, const char __user *buffer, size_
 		int num = sscanf(tmp, "%hhx", &ps_dbg_cmd_id);
 
 		if (num == 1 && ps_dbg_cmd_id == 1) /*Clean all*/
-			_rtw_memset(pdbgpriv, 0, sizeof(struct debug_priv));
+			memset(pdbgpriv, 0, sizeof(struct debug_priv));
 
 	}
 
@@ -3924,9 +3924,9 @@ ssize_t proc_set_btcoex_dbg(struct file *file, const char __user *buffer, size_t
 	num = sscanf(tmp, "%x %x", module, module + 1);
 	if (1 == num) {
 		if (0 == module[0])
-			_rtw_memset(module, 0, sizeof(module));
+			memset(module, 0, sizeof(module));
 		else
-			_rtw_memset(module, 0xFF, sizeof(module));
+			memset(module, 0xFF, sizeof(module));
 	} else if (2 != num) {
 		RTW_INFO(FUNC_ADPT_FMT ": input(\"%s\") format incorrect!\n",
 			 FUNC_ADPT_ARG(padapter), tmp);
@@ -4552,7 +4552,7 @@ int proc_get_pattern_info(struct seq_file *m, void *v)
 		p_str = str_1;
 		max_len = sizeof(str_1);
 		for (i = 0 ; i < MAX_WKFM_PATTERN_SIZE / 8 ; i++) {
-			_rtw_memset(p_str, 0, max_len);
+			memset(p_str, 0, max_len);
 			len = 0;
 			for (j = 0 ; j < 8 ; j++) {
 				val8 = pwrpriv->patterns[k].content[i * 8 + j];
@@ -4563,7 +4563,7 @@ int proc_get_pattern_info(struct seq_file *m, void *v)
 		}
 		RTW_PRINT_SEL(m, "\npattern mask:\n");
 		for (i = 0 ; i < MAX_WKFM_SIZE / 8 ; i++) {
-			_rtw_memset(p_str, 0, max_len);
+			memset(p_str, 0, max_len);
 			len = 0;
 			for (j = 0 ; j < 8 ; j++) {
 				val8 = pwrpriv->patterns[k].mask[i * 8 + j];
@@ -5132,7 +5132,7 @@ static int proc_tdls_display_tdls_function_info(struct seq_file *m)
 		}
 	}
 
-	RTW_PRINT_SEL(m, "%-*s = %s\n", SpaceBtwnItemAndValue, "TDLS CH SW On", (ATOMIC_READ(&ptdlsinfo->chsw_info.chsw_on) == _TRUE) ? "_TRUE" : "_FALSE");
+	RTW_PRINT_SEL(m, "%-*s = %s\n", SpaceBtwnItemAndValue, "TDLS CH SW On", (atomic_read(&ptdlsinfo->chsw_info.chsw_on) == _TRUE) ? "_TRUE" : "_FALSE");
 	RTW_PRINT_SEL(m, "%-*s = %d\n", SpaceBtwnItemAndValue, "TDLS CH SW Off-Channel Num", ptdlsinfo->chsw_info.off_ch_num);
 	RTW_PRINT_SEL(m, "%-*s = %d\n", SpaceBtwnItemAndValue, "TDLS CH SW Channel Offset", ptdlsinfo->chsw_info.ch_offset);
 	RTW_PRINT_SEL(m, "%-*s = %d\n", SpaceBtwnItemAndValue, "TDLS CH SW Current Time", ptdlsinfo->chsw_info.cur_time);
@@ -6980,7 +6980,7 @@ inline void RTW_BUF_DUMP_SEL(uint _loglevel, void *sel, u8 *_titlestring,
 		}
 		if (p != &str_out[0]) {
 			_RTW_STR_DUMP_SEL(sel, str_out);
-			_rtw_memset(&str_out, '\0', sizeof(str_out));
+			memset(&str_out, '\0', sizeof(str_out));
 		}
 
 		/*dump buffer*/
@@ -7005,7 +7005,7 @@ inline void RTW_BUF_DUMP_SEL(uint _loglevel, void *sel, u8 *_titlestring,
 				p += len;
 			}
 			_RTW_STR_DUMP_SEL(sel, str_out);
-			_rtw_memset(&str_out, '\0', sizeof(str_out));
+			memset(&str_out, '\0', sizeof(str_out));
 		}
 
 		p = &str_out[0];

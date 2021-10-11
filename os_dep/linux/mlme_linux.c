@@ -112,13 +112,13 @@ void rtw_reset_securitypriv(_adapter *adapter)
 		/* Backup the btkip_countermeasure information. */
 		/* When the countermeasure is trigger, the driver have to disconnect with AP for 60 seconds. */
 
-		_rtw_memset(&backupPMKIDList[0], 0x00, sizeof(RT_PMKID_LIST) * NUM_PMKID_CACHE);
+		memset(&backupPMKIDList[0], 0x00, sizeof(RT_PMKID_LIST) * NUM_PMKID_CACHE);
 
 		_rtw_memcpy(&backupPMKIDList[0], &adapter->securitypriv.PMKIDList[0], sizeof(RT_PMKID_LIST) * NUM_PMKID_CACHE);
 		backupPMKIDIndex = adapter->securitypriv.PMKIDIndex;
 		backupTKIPCountermeasure = adapter->securitypriv.btkip_countermeasure;
 		backupTKIPcountermeasure_time = adapter->securitypriv.btkip_countermeasure_time;
-		_rtw_memset((unsigned char *)&adapter->securitypriv, 0, sizeof(struct security_priv));
+		memset((unsigned char *)&adapter->securitypriv, 0, sizeof(struct security_priv));
 
 		/* Added by Albert 2009/02/18 */
 		/* Restore the PMK information to securitypriv structure for the following connection. */
@@ -207,7 +207,7 @@ void rtw_report_sec_ie(_adapter *adapter, u8 authmode, u8 *sec_ie)
 
 		p += sprintf(p, ")");
 
-		_rtw_memset(&wrqu, 0, sizeof(wrqu));
+		memset(&wrqu, 0, sizeof(wrqu));
 
 		wrqu.data.length = p - buff;
 

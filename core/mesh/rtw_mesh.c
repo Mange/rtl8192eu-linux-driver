@@ -1165,7 +1165,7 @@ void dump_mesh_networks(void *sel, _adapter *adapter)
 		);
 	}
 
-	rtw_vmfree(mesh_networks, mlme->max_bss_cnt * sizeof(struct wlan_network *));
+	vfree(mesh_networks);
 }
 
 void rtw_mesh_adjust_chbw(u8 req_ch, u8 *req_bw, u8 *req_offset)
@@ -1512,7 +1512,7 @@ static int rtw_mpm_check_frames(_adapter *adapter, u8 action, const u8 **buf, si
 		goto exit;
 	}
 
-	_rtw_memset(&mpm_info, 0, sizeof(struct mpm_frame_info));
+	memset(&mpm_info, 0, sizeof(struct mpm_frame_info));
 
 	if (action == RTW_ACT_SELF_PROTECTED_MESH_CONF) {
 		mpm_info.aid = (u8 *)frame_body + 4;
@@ -2101,11 +2101,11 @@ int _rtw_mesh_plink_add(_adapter *adapter, const u8 *hwaddr)
 		#endif
 		ent->llid = 0;
 		ent->plid = 0;
-		_rtw_memset(ent->chosen_pmk, 0, 16);
+		memset(ent->chosen_pmk, 0, 16);
 		#ifdef CONFIG_RTW_MESH_AEK
-		_rtw_memset(ent->sel_pcs, 0, 4);
-		_rtw_memset(ent->l_nonce, 0, 32);
-		_rtw_memset(ent->p_nonce, 0, 32);
+		memset(ent->sel_pcs, 0, 4);
+		memset(ent->l_nonce, 0, 32);
+		memset(ent->p_nonce, 0, 32);
 		#endif
 		ent->plink_state = RTW_MESH_PLINK_LISTEN;
 		#ifndef CONFIG_RTW_MESH_DRIVER_AID
@@ -2283,8 +2283,6 @@ void rtw_mesh_plink_ctl_deinit(_adapter *adapter)
 			rtw_mfree(ent->rx_conf_ies, ent->rx_conf_ies_len);
 	}
 	_exit_critical_bh(&(plink_ctl->lock), &irqL);
-
-	_rtw_spinlock_free(&plink_ctl->lock);
 
 #if CONFIG_RTW_MESH_PEER_BLACKLIST
 	rtw_mesh_peer_blacklist_flush(adapter);
@@ -3079,7 +3077,7 @@ void rtw_mesh_init_mesh_info(_adapter *adapter)
 {
 	struct rtw_mesh_info *minfo = &adapter->mesh_info;
 
-	_rtw_memset(minfo, 0, sizeof(struct rtw_mesh_info));
+	memset(minfo, 0, sizeof(struct rtw_mesh_info));
 
 	rtw_mesh_plink_ctl_init(adapter);
 	
@@ -3087,7 +3085,7 @@ void rtw_mesh_init_mesh_info(_adapter *adapter)
 	/* minfo->last_sn_update = rtw_get_current_time(); */
 	minfo->next_perr = rtw_get_current_time();
 	
-	ATOMIC_SET(&minfo->mpaths, 0);
+	atomic_set(&minfo->mpaths, 0);
 	rtw_mesh_pathtbl_init(adapter);
 
 	_rtw_init_queue(&minfo->mpath_tx_queue);
@@ -3461,7 +3459,7 @@ void rtw_mesh_tx_build_mctrl(_adapter *adapter, struct pkt_attrib *attrib, u8 *b
 {
 	struct rtw_ieee80211s_hdr *mctrl = (struct rtw_ieee80211s_hdr *)buf;
 
-	_rtw_memset(mctrl, 0, XATTRIB_GET_MCTRL_LEN(attrib));
+	memset(mctrl, 0, XATTRIB_GET_MCTRL_LEN(attrib));
 
 	if (attrib->mfwd_ttl
 		#if CONFIG_RTW_MESH_DATA_BMC_TO_UC

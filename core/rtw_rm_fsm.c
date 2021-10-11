@@ -42,12 +42,12 @@ void rm_timer_callback(void *data)
 	for (i=0;i<RM_TIMER_NUM;i++) {
 		pclock = &prmpriv->clock[i];
 		if (pclock->prm == NULL
-			||(ATOMIC_READ(&(pclock->counter)) == 0))
+			||(atomic_read(&(pclock->counter)) == 0))
 			continue;
 
-		ATOMIC_DEC(&(pclock->counter));
+		atomic_dec(&(pclock->counter));
 
-		if (ATOMIC_READ(&(pclock->counter)) == 0)
+		if (atomic_read(&(pclock->counter)) == 0)
 			rm_post_event(pclock->prm->psta->padapter,
 				pclock->prm->rmid, prmpriv->clock[i].evid);
 	}
@@ -176,7 +176,7 @@ static int rm_enqueue_ev(_queue *queue, struct rm_event *obj, bool to_head)
 
 static void rm_set_clock(struct rm_obj *prm, u32 ms, enum RM_EV_ID evid)
 {
-	ATOMIC_SET(&(prm->pclock->counter), (ms/CLOCK_UNIT));
+	atomic_set(&(prm->pclock->counter), (ms/CLOCK_UNIT));
 	prm->pclock->evid = evid;
 }
 
@@ -192,7 +192,7 @@ static struct rm_clock *rm_alloc_clock(_adapter *padapter, struct rm_obj *prm)
 
 		if (pclock->prm == NULL) {
 			pclock->prm = prm;
-			ATOMIC_SET(&(pclock->counter), 0);
+			atomic_set(&(pclock->counter), 0);
 			pclock->evid = RM_EV_max;
 			break;
 		}
@@ -202,14 +202,14 @@ static struct rm_clock *rm_alloc_clock(_adapter *padapter, struct rm_obj *prm)
 
 static void rm_cancel_clock(struct rm_obj *prm)
 {
-	ATOMIC_SET(&(prm->pclock->counter), 0);
+	atomic_set(&(prm->pclock->counter), 0);
 	prm->pclock->evid = RM_EV_max;
 }
 
 static void rm_free_clock(struct rm_clock *pclock)
 {
 	pclock->prm = NULL;
-	ATOMIC_SET(&(pclock->counter), 0);
+	atomic_set(&(pclock->counter), 0);
 	pclock->evid = RM_EV_max;
 }
 
@@ -245,7 +245,7 @@ struct rm_obj *rm_alloc_rmobj(_adapter *padapter)
 	if (prm == NULL)
 		return NULL;
 
-	_rtw_memset(prm, 0, sizeof(struct rm_obj));
+	memset(prm, 0, sizeof(struct rm_obj));
 
 	/* alloc timer */
 	if ((prm->pclock = rm_alloc_clock(padapter, prm)) == NULL) {

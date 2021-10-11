@@ -389,12 +389,12 @@ void odm_free_memory(struct dm_struct *dm, void *ptr, u32 length)
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE) && defined(DM_ODM_CE_MAC80211_V2)
 	kfree(ptr);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE)
-	rtw_vmfree(ptr, length);
+	vfree(ptr);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_WIN)
 	/* struct void*    adapter = dm->adapter; */
 	PlatformFreeMemory(ptr, length);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_IOT)
-	rtw_vmfree(ptr, length);
+	vfree(ptr);
 #endif
 }
 
@@ -424,7 +424,7 @@ void odm_memory_set(struct dm_struct *dm, void *pbuf, s8 value, u32 length)
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE) && defined(DM_ODM_CE_MAC80211_V2)
 	memset(pbuf, value, length);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE)
-	_rtw_memset(pbuf, value, length);
+	memset(pbuf, value, length);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_WIN)
 	PlatformFillMemory(pbuf, length, value);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_IOT)
@@ -632,11 +632,11 @@ void ODM_sleep_ms(u32 ms)
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE) && defined(DM_ODM_CE_MAC80211_V2)
 	msleep(ms);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE)
-	rtw_msleep_os(ms);
+	msleep(ms);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_WIN)
 	delay_ms(ms);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_IOT)
-	rtw_msleep_os(ms);
+	msleep(ms);
 #endif
 }
 

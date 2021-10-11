@@ -40,7 +40,7 @@ static u8 _is_fw_read_cmd_down(_adapter *padapter, u8 msgbox_num)
 		if (0 == valid)
 			read_down = _TRUE;
 		else
-			rtw_msleep_os(1);
+			msleep(1);
 	} while ((!read_down) && (retry_cnts--));
 
 	return read_down;
@@ -353,7 +353,7 @@ void rtl8192e_download_rsvd_page(PADAPTER padapter, u8 mstatus)
 			rtw_hal_set_fw_rsvd_page(padapter, _FALSE);
 			DLBcnCount++;
 			do {
-				rtw_yield_os();
+				yield();
 				/* rtw_mdelay_os(10); */
 				/* check rsvd page download OK. */
 				rtw_hal_get_hwreg(padapter, HW_VAR_BCN_VALID, (u8 *)(&bcn_valid));
@@ -441,7 +441,7 @@ void rtl8192e_set_p2p_ps_offload_cmd(_adapter *padapter, u8 p2p_ps_state)
 	switch (p2p_ps_state) {
 	case P2P_PS_DISABLE:
 		RTW_INFO("P2P_PS_DISABLE\n");
-		_rtw_memset(p2p_ps_offload, 0, 1);
+		memset(p2p_ps_offload, 0, 1);
 		break;
 	case P2P_PS_ENABLE:
 		RTW_INFO("P2P_PS_ENABLE\n");

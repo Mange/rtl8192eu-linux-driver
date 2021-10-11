@@ -60,7 +60,7 @@ void _rtw_init_sta_recv_priv(struct sta_recv_priv *psta_recvpriv)
 
 
 
-	_rtw_memset((u8 *)psta_recvpriv, 0, sizeof(struct sta_recv_priv));
+	memset((u8 *)psta_recvpriv, 0, sizeof(struct sta_recv_priv));
 
 	_rtw_spinlock_init(&psta_recvpriv->lock);
 
@@ -81,7 +81,7 @@ sint _rtw_init_recv_priv(struct recv_priv *precvpriv, _adapter *padapter)
 
 
 	/* We don't need to memset padapter->XXX to zero, because adapter is allocated by rtw_zvmalloc(). */
-	/* _rtw_memset((unsigned char *)precvpriv, 0, sizeof (struct  recv_priv)); */
+	/* memset((unsigned char *)precvpriv, 0, sizeof (struct  recv_priv)); */
 
 	_rtw_spinlock_init(&precvpriv->lock);
 
@@ -116,7 +116,7 @@ sint _rtw_init_recv_priv(struct recv_priv *precvpriv, _adapter *padapter)
 		res = _FAIL;
 		goto exit;
 	}
-	/* _rtw_memset(precvpriv->pallocated_frame_buf, 0, NR_RECVFRAME * sizeof(union recv_frame) + RXFRAME_ALIGN_SZ); */
+	/* memset(precvpriv->pallocated_frame_buf, 0, NR_RECVFRAME * sizeof(union recv_frame) + RXFRAME_ALIGN_SZ); */
 
 	precvpriv->precv_frame_buf = (u8 *)N_BYTE_ALIGMENT((SIZE_PTR)(precvpriv->pallocated_frame_buf), RXFRAME_ALIGN_SZ);
 	/* precvpriv->precv_frame_buf = precvpriv->pallocated_frame_buf + RXFRAME_ALIGN_SZ - */
@@ -141,7 +141,7 @@ sint _rtw_init_recv_priv(struct recv_priv *precvpriv, _adapter *padapter)
 
 #ifdef CONFIG_USB_HCI
 
-	ATOMIC_SET(&(precvpriv->rx_pending_cnt), 1);
+	atomic_set(&(precvpriv->rx_pending_cnt), 1);
 
 	_rtw_init_sema(&precvpriv->allrxreturnevt, 0);
 
@@ -168,19 +168,9 @@ exit:
 void rtw_mfree_recv_priv_lock(struct recv_priv *precvpriv);
 void rtw_mfree_recv_priv_lock(struct recv_priv *precvpriv)
 {
-	_rtw_spinlock_free(&precvpriv->lock);
 #ifdef CONFIG_RECV_THREAD_MODE
 	_rtw_free_sema(&precvpriv->recv_sema);
 #endif
-
-	_rtw_spinlock_free(&precvpriv->free_recv_queue.lock);
-	_rtw_spinlock_free(&precvpriv->recv_pending_queue.lock);
-
-	_rtw_spinlock_free(&precvpriv->free_recv_buf_queue.lock);
-
-#ifdef CONFIG_USE_USB_BUFFER_ALLOC_RX
-	_rtw_spinlock_free(&precvpriv->recv_buf_pending_queue.lock);
-#endif /* CONFIG_USE_USB_BUFFER_ALLOC_RX */
 }
 
 void _rtw_free_recv_priv(struct recv_priv *precvpriv)
@@ -190,12 +180,9 @@ void _rtw_free_recv_priv(struct recv_priv *precvpriv)
 
 	rtw_free_uc_swdec_pending_queue(padapter);
 
-	rtw_mfree_recv_priv_lock(precvpriv);
-
 	rtw_os_recv_resource_free(precvpriv);
 
-	if (precvpriv->pallocated_frame_buf)
-		rtw_vmfree(precvpriv->pallocated_frame_buf, NR_RECVFRAME * sizeof(union recv_frame) + RXFRAME_ALIGN_SZ);
+	vfree(precvpriv->pallocated_frame_buf);
 
 	rtw_hal_free_recv_priv(padapter);
 
@@ -1254,7 +1241,7 @@ sint sta2sta_data_frame(
 				}
 
 #ifdef CONFIG_TDLS_CH_SW
-				if (ATOMIC_READ(&pchsw_info->chsw_on) == _TRUE) {
+				if (atomic_read(&pchsw_info->chsw_on) == _TRUE) {
 					if (adapter->mlmeextpriv.cur_channel != rtw_get_oper_ch(adapter)) {
 						pchsw_info->ch_sw_state |= TDLS_PEER_AT_OFF_STATE;
 						if (!(pchsw_info->ch_sw_state & TDLS_CH_SW_INITIATOR_STATE))
@@ -4905,7 +4892,7 @@ int rtw_inc_and_chk_continual_no_rx_packet(struct sta_info *sta, int tid_index)
 {
 
 	int ret = _FALSE;
-	int value = ATOMIC_INC_RETURN(&sta->continual_no_rx_packet[tid_index]);
+	int value = atomic_inc_return(&sta->continual_no_rx_packet[tid_index]);
 
 	if (value >= MAX_CONTINUAL_NORXPACKET_COUNT)
 		ret = _TRUE;
@@ -4918,7 +4905,7 @@ int rtw_inc_and_chk_continual_no_rx_packet(struct sta_info *sta, int tid_index)
 */
 void rtw_reset_continual_no_rx_packet(struct sta_info *sta, int tid_index)
 {
-	ATOMIC_SET(&sta->continual_no_rx_packet[tid_index], 0);
+	atomic_set(&sta->continual_no_rx_packet[tid_index], 0);
 }
 
 u8 adapter_allow_bmc_data_rx(_adapter *adapter)
@@ -5020,7 +5007,7 @@ thread_return rtw_recv_thread(thread_context context)
 		if (err == RTW_RFRAME_UNAVAIL
 			|| err == RTW_RFRAME_PKT_UNAVAIL
 		) {
-			rtw_msleep_os(1);
+			msleep(1);
 			_rtw_up_sema(&recvpriv->recv_sema);
 		}
 

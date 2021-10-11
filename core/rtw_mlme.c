@@ -48,7 +48,7 @@ sint	_rtw_init_mlme_priv(_adapter *padapter)
 
 
 	/* We don't need to memset padapter->XXX to zero, because adapter is allocated by rtw_zvmalloc(). */
-	/* _rtw_memset((u8 *)pmlmepriv, 0, sizeof(struct mlme_priv)); */
+	/* memset((u8 *)pmlmepriv, 0, sizeof(struct mlme_priv)); */
 
 
 	/*qos_priv*/
@@ -72,7 +72,7 @@ sint	_rtw_init_mlme_priv(_adapter *padapter)
 
 	set_scanned_network_val(pmlmepriv, 0);
 
-	_rtw_memset(&pmlmepriv->assoc_ssid, 0, sizeof(NDIS_802_11_SSID));
+	memset(&pmlmepriv->assoc_ssid, 0, sizeof(NDIS_802_11_SSID));
 
 	if (padapter->registrypriv.max_bss_cnt != 0)
 		pmlmepriv->max_bss_cnt = padapter->registrypriv.max_bss_cnt;
@@ -152,9 +152,6 @@ exit:
 void rtw_mfree_mlme_priv_lock(struct mlme_priv *pmlmepriv);
 void rtw_mfree_mlme_priv_lock(struct mlme_priv *pmlmepriv)
 {
-	_rtw_spinlock_free(&pmlmepriv->lock);
-	_rtw_spinlock_free(&(pmlmepriv->free_bss_pool.lock));
-	_rtw_spinlock_free(&(pmlmepriv->scanned_queue.lock));
 }
 
 static void rtw_free_mlme_ie_data(u8 **ppie, u32 *plen)
@@ -307,8 +304,7 @@ void _rtw_free_mlme_priv(struct mlme_priv *pmlmepriv)
 	if (pmlmepriv) {
 		rtw_mfree_mlme_priv_lock(pmlmepriv);
 
-		if (pmlmepriv->free_bss_buf)
-			rtw_vmfree(pmlmepriv->free_bss_buf, pmlmepriv->max_bss_cnt * sizeof(struct wlan_network));
+		vfree(pmlmepriv->free_bss_buf);
 	}
 exit:
 	return;
@@ -1350,7 +1346,7 @@ void rtw_surveydone_event_callback(_adapter	*adapter, u8 *pbuf)
 					_clr_fwstate_(pmlmepriv, _FW_UNDER_SURVEY);
 
 
-					_rtw_memset(&pdev_network->Ssid, 0, sizeof(NDIS_802_11_SSID));
+					memset(&pdev_network->Ssid, 0, sizeof(NDIS_802_11_SSID));
 					_rtw_memcpy(&pdev_network->Ssid, &pmlmepriv->assoc_ssid, sizeof(NDIS_802_11_SSID));
 
 					rtw_update_registrypriv_dev_network(adapter);
@@ -1392,7 +1388,7 @@ void rtw_surveydone_event_callback(_adapter	*adapter, u8 *pbuf)
 						rtw_set_to_roam(adapter, 0);
 #ifdef CONFIG_INTEL_WIDI
 						if (adapter->mlmepriv.widi_state == INTEL_WIDI_STATE_ROAMING) {
-							_rtw_memset(pmlmepriv->sa_ext, 0x00, L2SDTA_SERVICE_VE_LEN);
+							memset(pmlmepriv->sa_ext, 0x00, L2SDTA_SERVICE_VE_LEN);
 							intel_widi_wk_cmd(adapter, INTEL_WIDI_LISTEN_WK, NULL, 0);
 							RTW_INFO("change to widi listen\n");
 						}
@@ -1758,7 +1754,7 @@ void rtw_indicate_connect(_adapter *padapter)
 	rtw_set_to_roam(padapter, 0);
 #ifdef CONFIG_INTEL_WIDI
 	if (padapter->mlmepriv.widi_state == INTEL_WIDI_STATE_ROAMING) {
-		_rtw_memset(pmlmepriv->sa_ext, 0x00, L2SDTA_SERVICE_VE_LEN);
+		memset(pmlmepriv->sa_ext, 0x00, L2SDTA_SERVICE_VE_LEN);
 		intel_widi_wk_cmd(padapter, INTEL_WIDI_LISTEN_WK, NULL, 0);
 		RTW_INFO("change to widi listen\n");
 	}
@@ -1892,7 +1888,7 @@ static u32 _rtw_wait_scan_done(_adapter *adapter, u8 abort, u32 timeout_ms)
 			break;
 
 		RTW_INFO(FUNC_NDEV_FMT"fw_state=_FW_UNDER_SURVEY!\n", FUNC_NDEV_ARG(adapter->pnetdev));
-		rtw_msleep_os(20);
+		msleep(20);
 	}
 
 	if (_TRUE == abort) {
@@ -1966,7 +1962,7 @@ static u32 _rtw_wait_join_done(_adapter *adapter, u8 abort, u32 timeout_ms)
 			break;
 
 		RTW_INFO(FUNC_ADPT_FMT" linking...\n", FUNC_ADPT_ARG(adapter));
-		rtw_msleep_os(20);
+		msleep(20);
 	}
 
 	if (abort) {
@@ -2052,9 +2048,9 @@ static struct sta_info *rtw_joinbss_update_stainfo(_adapter *padapter, struct wl
 			psta->ieee8021x_blocked = _TRUE;
 			psta->dot118021XPrivacy = padapter->securitypriv.dot11PrivacyAlgrthm;
 
-			_rtw_memset((u8 *)&psta->dot118021x_UncstKey, 0, sizeof(union Keytype));
-			_rtw_memset((u8 *)&psta->dot11tkiprxmickey, 0, sizeof(union Keytype));
-			_rtw_memset((u8 *)&psta->dot11tkiptxmickey, 0, sizeof(union Keytype));
+			memset((u8 *)&psta->dot118021x_UncstKey, 0, sizeof(union Keytype));
+			memset((u8 *)&psta->dot11tkiprxmickey, 0, sizeof(union Keytype));
+			memset((u8 *)&psta->dot11tkiptxmickey, 0, sizeof(union Keytype));
 		}
 
 		/*	Commented by Albert 2012/07/21 */
@@ -2629,7 +2625,7 @@ void rtw_sta_timeout_event_callback(_adapter *adapter, u8 *pbuf)
 #ifdef CONFIG_RTW_80211R
 void rtw_ft_info_init(struct ft_roam_info *pft)
 {
-	_rtw_memset(pft, 0, sizeof(struct ft_roam_info));
+	memset(pft, 0, sizeof(struct ft_roam_info));
 	pft->ft_flags = 0
 		| RTW_FT_EN
 		| RTW_FT_OTD_EN
@@ -2684,9 +2680,9 @@ void rtw_ft_update_stainfo(_adapter *padapter, WLAN_BSSID_EX *pnetwork)
 		psta->ieee8021x_blocked = _TRUE;
 		psta->dot118021XPrivacy = padapter->securitypriv.dot11PrivacyAlgrthm;
 
-		_rtw_memset((u8 *)&psta->dot118021x_UncstKey, 0, sizeof(union Keytype));
-		_rtw_memset((u8 *)&psta->dot11tkiprxmickey, 0, sizeof(union Keytype));
-		_rtw_memset((u8 *)&psta->dot11tkiptxmickey, 0, sizeof(union Keytype));
+		memset((u8 *)&psta->dot118021x_UncstKey, 0, sizeof(union Keytype));
+		memset((u8 *)&psta->dot11tkiprxmickey, 0, sizeof(union Keytype));
+		memset((u8 *)&psta->dot11tkiptxmickey, 0, sizeof(union Keytype));
 	}
 
 }
@@ -2702,7 +2698,7 @@ void rtw_ft_reassoc_event_callback(_adapter *padapter, u8 *pbuf)
 	struct cfg80211_ft_event_params ft_evt_parms;
 	_irqL irqL;
 
-	_rtw_memset(&ft_evt_parms, 0, sizeof(ft_evt_parms));
+	memset(&ft_evt_parms, 0, sizeof(ft_evt_parms));
 	rtw_ft_update_stainfo(padapter, pnetwork);
 	ft_evt_parms.ies_len = pft_roam->ft_event.ies_len;
 	ft_evt_parms.ies =  rtw_zmalloc(ft_evt_parms.ies_len);
@@ -2737,9 +2733,9 @@ void rtw_roam_nb_info_init(_adapter *padapter)
 {
 	struct roam_nb_info *pnb = &(padapter->mlmepriv.nb_info);
 	
-	_rtw_memset(&pnb->nb_rpt, 0, sizeof(pnb->nb_rpt));
-	_rtw_memset(&pnb->nb_rpt_ch_list, 0, sizeof(pnb->nb_rpt_ch_list));
-	_rtw_memset(&pnb->roam_target_addr, 0, ETH_ALEN);
+	memset(&pnb->nb_rpt, 0, sizeof(pnb->nb_rpt));
+	memset(&pnb->nb_rpt_ch_list, 0, sizeof(pnb->nb_rpt_ch_list));
+	memset(&pnb->roam_target_addr, 0, ETH_ALEN);
 	pnb->nb_rpt_valid = _FALSE;
 	pnb->nb_rpt_ch_list_num = 0;
 	pnb->preference_en = _FALSE;
@@ -2972,7 +2968,7 @@ void rtw_stadel_event_callback(_adapter *adapter, u8 *pbuf)
 
 			_rtw_memcpy(pdev_network, &tgt_network->network, get_WLAN_BSSID_EX_sz(&tgt_network->network));
 
-			_rtw_memset(&pdev_network->Ssid, 0, sizeof(NDIS_802_11_SSID));
+			memset(&pdev_network->Ssid, 0, sizeof(NDIS_802_11_SSID));
 			_rtw_memcpy(&pdev_network->Ssid, &pmlmepriv->assoc_ssid, sizeof(NDIS_802_11_SSID));
 
 			rtw_update_registrypriv_dev_network(adapter);
@@ -3067,7 +3063,7 @@ void rtw_join_timeout_handler(void *ctx)
 			} else {
 #ifdef CONFIG_INTEL_WIDI
 				if (adapter->mlmepriv.widi_state == INTEL_WIDI_STATE_ROAMING) {
-					_rtw_memset(pmlmepriv->sa_ext, 0x00, L2SDTA_SERVICE_VE_LEN);
+					memset(pmlmepriv->sa_ext, 0x00, L2SDTA_SERVICE_VE_LEN);
 					intel_widi_wk_cmd(adapter, INTEL_WIDI_LISTEN_WK, NULL, 0);
 					RTW_INFO("change to widi listen\n");
 				}
@@ -3447,7 +3443,7 @@ static void collect_traffic_statistics(_adapter *padapter)
 {
 	struct dvobj_priv	*pdvobjpriv = adapter_to_dvobj(padapter);
 
-	/*_rtw_memset(&pdvobjpriv->traffic_stat, 0, sizeof(struct rtw_traffic_statistics));*/
+	/*memset(&pdvobjpriv->traffic_stat, 0, sizeof(struct rtw_traffic_statistics));*/
 
 	/* Tx bytes reset*/
 	pdvobjpriv->traffic_stat.tx_bytes = 0;
@@ -3527,13 +3523,13 @@ exit:
 inline bool rtw_is_scan_deny(_adapter *adapter)
 {
 	struct mlme_priv *mlmepriv = &adapter->mlmepriv;
-	return (ATOMIC_READ(&mlmepriv->set_scan_deny) != 0) ? _TRUE : _FALSE;
+	return (atomic_read(&mlmepriv->set_scan_deny) != 0) ? _TRUE : _FALSE;
 }
 
 inline void rtw_clear_scan_deny(_adapter *adapter)
 {
 	struct mlme_priv *mlmepriv = &adapter->mlmepriv;
-	ATOMIC_SET(&mlmepriv->set_scan_deny, 0);
+	atomic_set(&mlmepriv->set_scan_deny, 0);
 	if (0)
 		RTW_INFO(FUNC_ADPT_FMT"\n", FUNC_ADPT_ARG(adapter));
 }
@@ -3549,7 +3545,7 @@ void rtw_set_scan_deny(_adapter *adapter, u32 ms)
 	struct mlme_priv *mlmepriv = &adapter->mlmepriv;
 	if (0)
 		RTW_INFO(FUNC_ADPT_FMT"\n", FUNC_ADPT_ARG(adapter));
-	ATOMIC_SET(&mlmepriv->set_scan_deny, 1);
+	atomic_set(&mlmepriv->set_scan_deny, 1);
 	_set_timer(&mlmepriv->set_scan_deny_timer, ms);
 }
 #endif
@@ -3721,7 +3717,7 @@ int rtw_select_roaming_candidate(struct mlme_priv *mlme)
 		mlme->roam_network = candidate;
 
 		if (_rtw_memcmp(candidate->network.MacAddress, mlme->roam_tgt_addr, ETH_ALEN) == _TRUE)
-			_rtw_memset(mlme->roam_tgt_addr, 0, ETH_ALEN);
+			memset(mlme->roam_tgt_addr, 0, ETH_ALEN);
 	}
 
 	ret = _SUCCESS;
@@ -3959,7 +3955,7 @@ sint rtw_set_auth(_adapter *adapter, struct security_priv *psecuritypriv)
 		goto exit;
 	}
 
-	_rtw_memset(psetauthparm, 0, sizeof(struct setauth_parm));
+	memset(psetauthparm, 0, sizeof(struct setauth_parm));
 	psetauthparm->mode = (unsigned char)psecuritypriv->dot11AuthAlgrthm;
 
 	pcmd->cmdcode = _SetAuth_CMD_;
@@ -3996,7 +3992,7 @@ sint rtw_set_key(_adapter *adapter, struct security_priv *psecuritypriv, sint ke
 		res = _FAIL;
 		goto exit;
 	}
-	_rtw_memset(psetkeyparm, 0, sizeof(struct setkey_parm));
+	memset(psetkeyparm, 0, sizeof(struct setkey_parm));
 
 	if (psecuritypriv->dot11AuthAlgrthm == dot11AuthAlgrthm_8021X) {
 		psetkeyparm->algorithm = (unsigned char)psecuritypriv->dot118021XGrpPrivacy;
@@ -4641,7 +4637,7 @@ unsigned int rtw_restructure_ht_ie(_adapter *padapter, u8 *in_ie, u8 *out_ie, ui
 
 	out_len = *pout_len;
 
-	_rtw_memset(&ht_capie, 0, sizeof(struct rtw_ieee80211_ht_cap));
+	memset(&ht_capie, 0, sizeof(struct rtw_ieee80211_ht_cap));
 
 	ht_capie.cap_info = IEEE80211_HT_CAP_DSSSCCK40;
 

@@ -170,14 +170,12 @@ void dbg_rtw_usb_buffer_free(struct usb_device *dev, size_t size, void *addr, dm
 #ifdef CONFIG_USE_VMALLOC
 #define rtw_vmalloc(sz)			dbg_rtw_vmalloc((sz), MSTAT_TYPE_VIR, __FUNCTION__, __LINE__)
 #define rtw_zvmalloc(sz)			dbg_rtw_zvmalloc((sz), MSTAT_TYPE_VIR, __FUNCTION__, __LINE__)
-#define rtw_vmfree(pbuf, sz)		dbg_rtw_vmfree((pbuf), (sz), MSTAT_TYPE_VIR, __FUNCTION__, __LINE__)
 #define rtw_vmalloc_f(sz, mstat_f)			dbg_rtw_vmalloc((sz), ((mstat_f) & 0xff00) | MSTAT_TYPE_VIR, __FUNCTION__, __LINE__)
 #define rtw_zvmalloc_f(sz, mstat_f)		dbg_rtw_zvmalloc((sz), ((mstat_f) & 0xff00) | MSTAT_TYPE_VIR, __FUNCTION__, __LINE__)
 #define rtw_vmfree_f(pbuf, sz, mstat_f)	dbg_rtw_vmfree((pbuf), (sz), ((mstat_f) & 0xff00) | MSTAT_TYPE_VIR, __FUNCTION__, __LINE__)
 #else /* CONFIG_USE_VMALLOC */
 #define rtw_vmalloc(sz)			dbg_rtw_malloc((sz), MSTAT_TYPE_PHY, __FUNCTION__, __LINE__)
 #define rtw_zvmalloc(sz)			dbg_rtw_zmalloc((sz), MSTAT_TYPE_PHY, __FUNCTION__, __LINE__)
-#define rtw_vmfree(pbuf, sz)		dbg_rtw_mfree((pbuf), (sz), MSTAT_TYPE_PHY, __FUNCTION__, __LINE__)
 #define rtw_vmalloc_f(sz, mstat_f)			dbg_rtw_malloc((sz), ((mstat_f) & 0xff00) | MSTAT_TYPE_PHY, __FUNCTION__, __LINE__)
 #define rtw_zvmalloc_f(sz, mstat_f)		dbg_rtw_zmalloc((sz), ((mstat_f) & 0xff00) | MSTAT_TYPE_PHY, __FUNCTION__, __LINE__)
 #define rtw_vmfree_f(pbuf, sz, mstat_f)	dbg_rtw_mfree((pbuf), (sz), ((mstat_f) & 0xff00) | MSTAT_TYPE_PHY, __FUNCTION__, __LINE__)
@@ -218,7 +216,6 @@ void dbg_rtw_usb_buffer_free(struct usb_device *dev, size_t size, void *addr, dm
 #define match_mstat_sniff_rules(flags, size) _FALSE
 void *_rtw_vmalloc(u32 sz);
 void *_rtw_zvmalloc(u32 sz);
-void _rtw_vmfree(void *pbuf, u32 sz);
 void *_rtw_zmalloc(u32 sz);
 void *_rtw_malloc(u32 sz);
 void _rtw_mfree(void *pbuf, u32 sz);
@@ -244,14 +241,12 @@ void _rtw_usb_buffer_free(struct usb_device *dev, size_t size, void *addr, dma_a
 #ifdef CONFIG_USE_VMALLOC
 #define rtw_vmalloc(sz)			_rtw_vmalloc((sz))
 #define rtw_zvmalloc(sz)			_rtw_zvmalloc((sz))
-#define rtw_vmfree(pbuf, sz)		_rtw_vmfree((pbuf), (sz))
 #define rtw_vmalloc_f(sz, mstat_f)			_rtw_vmalloc((sz))
 #define rtw_zvmalloc_f(sz, mstat_f)		_rtw_zvmalloc((sz))
 #define rtw_vmfree_f(pbuf, sz, mstat_f)	_rtw_vmfree((pbuf), (sz))
 #else /* CONFIG_USE_VMALLOC */
 #define rtw_vmalloc(sz)			_rtw_malloc((sz))
 #define rtw_zvmalloc(sz)			_rtw_zmalloc((sz))
-#define rtw_vmfree(pbuf, sz)		_rtw_mfree((pbuf), (sz))
 #define rtw_vmalloc_f(sz, mstat_f)			_rtw_malloc((sz))
 #define rtw_zvmalloc_f(sz, mstat_f)		_rtw_zmalloc((sz))
 #define rtw_vmfree_f(pbuf, sz, mstat_f)	_rtw_mfree((pbuf), (sz))
@@ -288,7 +283,6 @@ void _rtw_usb_buffer_free(struct usb_device *dev, size_t size, void *addr, dma_a
 #endif /* DBG_MEM_ALLOC */
 
 extern void	*rtw_malloc2d(int h, int w, size_t size);
-extern void	rtw_mfree2d(void *pbuf, int h, int w, int size);
 
 void rtw_os_pkt_free(_pkt *pkt);
 _pkt *rtw_os_pkt_copy(_pkt *pkt);
@@ -327,7 +321,6 @@ extern void	_rtw_mutex_free(_mutex *pmutex);
 #ifndef PLATFORM_FREEBSD
 extern void	_rtw_spinlock_init(_lock *plock);
 #endif /* PLATFORM_FREEBSD */
-extern void	_rtw_spinlock_free(_lock *plock);
 extern void	_rtw_spinlock(_lock	*plock);
 extern void	_rtw_spinunlock(_lock	*plock);
 extern void	_rtw_spinlock_ex(_lock	*plock);
@@ -371,7 +364,6 @@ extern bool _rtw_time_after(systime a, systime b);
 
 extern void	rtw_sleep_schedulable(int ms);
 
-extern void	rtw_msleep_os(int ms);
 extern void	rtw_usleep_os(int us);
 
 extern u32	rtw_atoi(u8 *s);
@@ -385,9 +377,6 @@ extern void _rtw_udelay_os(int us, const char *func, const int line);
 extern void	rtw_mdelay_os(int ms);
 extern void	rtw_udelay_os(int us);
 #endif
-
-extern void rtw_yield_os(void);
-
 
 extern void rtw_init_timer(_timer *ptimer, void *padapter, void *pfunc, void *ctx);
 
@@ -426,7 +415,7 @@ static inline void rtw_thread_wait_stop(void)
 #ifdef PLATFORM_LINUX
 	#if 0
 	while (!kthread_should_stop())
-		rtw_msleep_os(10);
+		msleep(10);
 	#else
 	set_current_state(TASK_INTERRUPTIBLE);
 	while (!kthread_should_stop()) {
@@ -611,18 +600,6 @@ extern void rtw_set_bit(int nr, unsigned long *addr);
 extern void rtw_clear_bit(int nr, unsigned long *addr);
 extern int rtw_test_and_clear_bit(int nr, unsigned long *addr);
 
-extern void ATOMIC_SET(ATOMIC_T *v, int i);
-extern int ATOMIC_READ(ATOMIC_T *v);
-extern void ATOMIC_ADD(ATOMIC_T *v, int i);
-extern void ATOMIC_SUB(ATOMIC_T *v, int i);
-extern void ATOMIC_INC(ATOMIC_T *v);
-extern void ATOMIC_DEC(ATOMIC_T *v);
-extern int ATOMIC_ADD_RETURN(ATOMIC_T *v, int i);
-extern int ATOMIC_SUB_RETURN(ATOMIC_T *v, int i);
-extern int ATOMIC_INC_RETURN(ATOMIC_T *v);
-extern int ATOMIC_DEC_RETURN(ATOMIC_T *v);
-extern bool ATOMIC_INC_UNLESS(ATOMIC_T *v, int u);
-
 /* File operation APIs, just for linux now */
 extern int rtw_is_file_readable(const char *path);
 extern int rtw_is_file_readable_with_size(const char *path, u32 *sz);
@@ -635,7 +612,6 @@ extern void rtw_free_netdev(struct net_device *netdev);
 #endif /* PLATFORM_FREEBSD */
 
 
-extern u64 rtw_modular64(u64 x, u64 y);
 extern u64 rtw_division64(u64 x, u64 y);
 extern u32 rtw_random32(void);
 

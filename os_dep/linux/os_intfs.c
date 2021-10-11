@@ -1009,7 +1009,7 @@ uint loadparam(_adapter *padapter)
 	) {
 		if (rtw_country_code != rtw_country_unspecified)
 			RTW_ERR("%s discard rtw_country_code not in alpha2\n", __func__);
-		_rtw_memset(registry_par->alpha2, 0xFF, 2);
+		memset(registry_par->alpha2, 0xFF, 2);
 	} else
 		_rtw_memcpy(registry_par->alpha2, rtw_country_code, 2);
 
@@ -2129,12 +2129,12 @@ struct dvobj_priv *devobj_init(void)
 #endif
 #ifdef CONFIG_RTW_CUSTOMER_STR
 	_rtw_mutex_init(&pdvobj->customer_str_mutex);
-	_rtw_memset(pdvobj->customer_str, 0xFF, RTW_CUSTOMER_STR_LEN);
+	memset(pdvobj->customer_str, 0xFF, RTW_CUSTOMER_STR_LEN);
 #endif
 
 	pdvobj->processing_dev_remove = _FALSE;
 
-	ATOMIC_SET(&pdvobj->disable_func, 0);
+	atomic_set(&pdvobj->disable_func, 0);
 
 	rtw_macid_ctl_init(&pdvobj->macid_ctl);
 #ifdef CONFIG_CLIENT_PORT_CFG
@@ -2199,7 +2199,6 @@ void devobj_deinit(struct dvobj_priv *pdvobj)
 #ifdef CONFIG_MCC_MODE
 	_rtw_mutex_free(&(pdvobj->mcc_objpriv.mcc_mutex));
 	_rtw_mutex_free(&(pdvobj->mcc_objpriv.mcc_tsf_req_mutex));
-	_rtw_spinlock_free(&pdvobj->mcc_objpriv.mcc_lock);
 #endif /* CONFIG_MCC_MODE */
 
 	_rtw_mutex_free(&pdvobj->hw_init_mutex);
@@ -2219,22 +2218,10 @@ void devobj_deinit(struct dvobj_priv *pdvobj)
 	_rtw_mutex_free(&pdvobj->syson_indirect_access_mutex);
 #endif
 
-	rtw_macid_ctl_deinit(&pdvobj->macid_ctl);
-#ifdef CONFIG_CLIENT_PORT_CFG
-	rtw_clt_port_deinit(&pdvobj->clt_port);
-#endif
-
-	_rtw_spinlock_free(&pdvobj->cam_ctl.lock);
 	_rtw_mutex_free(&pdvobj->cam_ctl.sec_cam_access_mutex);
 
-#if defined(RTK_129X_PLATFORM) && defined(CONFIG_PCI_HCI)
-	_rtw_spinlock_free(&pdvobj->io_reg_lock);
-#endif
 #ifdef CONFIG_MBSSID_CAM
 	rtw_mbid_cam_deinit(pdvobj);
-#endif
-#ifdef CONFIG_SUPPORT_MULTI_BCN
-	_rtw_spinlock_free(&(pdvobj->ap_if_q.lock));
 #endif
 	rtw_mfree((u8 *)pdvobj, sizeof(*pdvobj));
 }
@@ -2410,7 +2397,7 @@ u8 rtw_init_drv_sw(_adapter *padapter)
 	_rtw_spinlock_init(&padapter->security_key_mutex);
 
 	/* We don't need to memset padapter->XXX to zero, because adapter is allocated by rtw_zvmalloc(). */
-	/* _rtw_memset((unsigned char *)&padapter->securitypriv, 0, sizeof (struct security_priv)); */
+	/* memset((unsigned char *)&padapter->securitypriv, 0, sizeof (struct security_priv)); */
 
 	if (_rtw_init_sta_priv(&padapter->stapriv) == _FAIL) {
 		RTW_INFO("Can't _rtw_init_sta_priv\n");
@@ -2437,7 +2424,7 @@ u8 rtw_init_drv_sw(_adapter *padapter)
 
 	rtw_init_pwrctrl_priv(padapter);
 
-	/* _rtw_memset((u8 *)&padapter->qospriv, 0, sizeof (struct qos_priv)); */ /* move to mlme_priv */
+	/* memset((u8 *)&padapter->qospriv, 0, sizeof (struct qos_priv)); */ /* move to mlme_priv */
 
 #ifdef CONFIG_MP_INCLUDED
 	if (init_mp_priv(padapter) == _FAIL)
@@ -2580,11 +2567,6 @@ u8 rtw_free_drv_sw(_adapter *padapter)
 	}
 	#endif
 	/* add for CONFIG_IEEE80211W, none 11w also can use */
-	_rtw_spinlock_free(&padapter->security_key_mutex);
-
-#ifdef CONFIG_BR_EXT
-	_rtw_spinlock_free(&padapter->br_ext_lock);
-#endif /* CONFIG_BR_EXT */
 
 #ifdef CONFIG_INTEL_WIDI
 	rtw_free_intel_widi(padapter);
@@ -2898,7 +2880,7 @@ free_drv_sw:
 		rtw_free_drv_sw(padapter);
 free_adapter:
 	if (res != _SUCCESS && padapter) {
-		rtw_vmfree((u8 *)padapter, sizeof(*padapter));
+		vfree((u8 *)padapter);
 		padapter = NULL;
 	}
 exit:
@@ -2958,7 +2940,7 @@ void rtw_drv_free_vir_if(_adapter *padapter)
 	/* TODO: use rtw_os_ndevs_deinit instead at the first stage of driver's dev deinit function */
 	rtw_os_ndev_free(padapter);
 
-	rtw_vmfree((u8 *)padapter, sizeof(_adapter));
+	vfree(padapter);
 }
 
 
@@ -3015,7 +2997,7 @@ static int rtw_inetaddr_notifier_call(struct notifier_block *nb,
 					ifa->ifa_label, pmlmeinfo->ip_addr);
 	break;
 	case NETDEV_DOWN:
-		_rtw_memset(pmlmeinfo->ip_addr, 0, RTW_IP_ADDR_LEN);
+		memset(pmlmeinfo->ip_addr, 0, RTW_IP_ADDR_LEN);
 		RTW_DBG("%s[%s]: down IP: %pI4\n", __func__,
 					ifa->ifa_label, pmlmeinfo->ip_addr);
 	break;
@@ -3071,7 +3053,7 @@ static int rtw_inet6addr_notifier_call(struct notifier_block *nb,
 #ifdef CONFIG_WOWLAN
 		pwrctl->wowlan_ns_offload_en = _FALSE;
 #endif
-		_rtw_memset(pmlmeinfo->ip6_addr, 0, RTW_IPv6_ADDR_LEN);
+		memset(pmlmeinfo->ip6_addr, 0, RTW_IPv6_ADDR_LEN);
 		RTW_DBG("%s: down IPv6 addrs: %pI6\n", __func__,
 					pmlmeinfo->ip6_addr);
 		break;
@@ -3900,7 +3882,7 @@ static int netdev_close(struct net_device *pnetdev)
 
 	RTW_INFO("netdev_close, bips_processing=%d\n", pwrctl->bips_processing);
 	while (pwrctl->bips_processing == _TRUE) /* waiting for ips_processing done before call rtw_dev_unload() */
-		rtw_msleep_os(1);
+		msleep(1);
 
 	rtw_dev_unload(padapter);
 	rtw_sdio_set_power(0);
@@ -4273,7 +4255,7 @@ void rtw_dev_unload(PADAPTER padapter)
 		{
 			rtw_stop_drv_threads(padapter);
 
-			if (ATOMIC_READ(&(pcmdpriv->cmdthd_running)) == _TRUE) {
+			if (atomic_read(&(pcmdpriv->cmdthd_running)) == _TRUE) {
 				RTW_ERR("cmd_thread not stop !!\n");
 				rtw_warn_on(1);
 			}
@@ -4664,7 +4646,7 @@ int rtw_suspend_common(_adapter *padapter)
 	pwrpriv->bInSuspend = _TRUE;
 
 	while (pwrpriv->bips_processing == _TRUE)
-		rtw_msleep_os(1);
+		msleep(1);
 
 #ifdef CONFIG_IOL_READ_EFUSE_MAP
 	if (!padapter->bup) {

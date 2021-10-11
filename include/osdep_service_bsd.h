@@ -545,8 +545,6 @@ void rtw_usb_set_intfdata(struct usb_interface *intf, void *data);
 void rtw_usb_fill_bulk_urb(struct urb *urb, struct usb_device *udev,
     struct usb_host_endpoint *uhe, void *buf,
     int length, usb_complete_t callback, void *arg);
-int rtw_usb_bulk_msg(struct usb_device *udev, struct usb_host_endpoint *uhe,
-    void *data, int len, uint16_t *pactlen, usb_timeout_t timeout);
 void *usb_get_intfdata(struct usb_interface *intf);
 int usb_linux_init_endpoints(struct usb_device *udev);
 
@@ -733,9 +731,6 @@ __inline static void _set_workitem(_workitem *pwork)
 #define ATOMIC_INIT(i)  { (i) }
 
 static __inline void thread_enter(char *name);
-
-//Atomic integer operations
-typedef uint32_t ATOMIC_T ;
 
 #define rtw_netdev_priv(netdev) (((struct ifnet *)netdev)->if_softc)
 

@@ -1721,10 +1721,10 @@ static int cfg80211_rtw_add_key(struct wiphy *wiphy, struct net_device *ndev
 	if (param == NULL)
 		return -1;
 
-	_rtw_memset(param, 0, param_len);
+	memset(param, 0, param_len);
 
 	param->cmd = IEEE_CMD_SET_ENCRYPTION;
-	_rtw_memset(param->sta_addr, 0xff, ETH_ALEN);
+	memset(param->sta_addr, 0xff, ETH_ALEN);
 
 	switch (params->cipher) {
 	case IW_AUTH_CIPHER_NONE:
@@ -1978,7 +1978,7 @@ exit:
 		RTW_INFO(FUNC_NDEV_FMT " seq:0x%llx\n", FUNC_NDEV_ARG(ndev), *pn);
 
 	if (ret == 0) {
-		_rtw_memset(&params, 0, sizeof(params));
+		memset(&params, 0, sizeof(params));
 
 		params.cipher = cipher;
 		params.key = key->skey;
@@ -2539,7 +2539,7 @@ u32 rtw_cfg80211_wait_scan_req_empty(_adapter *adapter, u32 timeout_ms)
 			break;
 		}
 
-		rtw_msleep_os(10);
+		msleep(10);
 	}
 
 	pass_ms = rtw_get_passing_time_ms(start);
@@ -3697,7 +3697,7 @@ static int cfg80211_rtw_join_ibss(struct wiphy *wiphy, struct net_device *ndev,
 #endif /*CONFIG_CONCURRENT_MODE*/
 
 
-	_rtw_memset(&ndis_ssid, 0, sizeof(NDIS_802_11_SSID));
+	memset(&ndis_ssid, 0, sizeof(NDIS_802_11_SSID));
 	ndis_ssid.SsidLength = params->ssid_len;
 	_rtw_memcpy(ndis_ssid.Ssid, (u8 *)params->ssid, params->ssid_len);
 
@@ -3928,7 +3928,7 @@ static int cfg80211_rtw_connect(struct wiphy *wiphy, struct net_device *ndev,
 	}
 #endif
 
-	_rtw_memset(&ndis_ssid, 0, sizeof(NDIS_802_11_SSID));
+	memset(&ndis_ssid, 0, sizeof(NDIS_802_11_SSID));
 	ndis_ssid.SsidLength = sme->ssid_len;
 	_rtw_memcpy(ndis_ssid.Ssid, (u8 *)sme->ssid, sme->ssid_len);
 
@@ -4010,7 +4010,7 @@ static int cfg80211_rtw_connect(struct wiphy *wiphy, struct net_device *ndev,
 				goto cancel_ps_deny;
 			}
 
-			_rtw_memset(pwep, 0, wep_total_len);
+			memset(pwep, 0, wep_total_len);
 
 			pwep->KeyLength = wep_key_len;
 			pwep->Length = wep_total_len;
@@ -4295,8 +4295,8 @@ static int cfg80211_rtw_del_pmksa(struct wiphy *wiphy,
 	for (index = 0 ; index < NUM_PMKID_CACHE; index++) {
 		if (_rtw_memcmp(psecuritypriv->PMKIDList[index].Bssid, (u8 *)pmksa->bssid, ETH_ALEN) == _TRUE) {
 			/* BSSID is matched, the same AP => Remove this PMKID information and reset it. */
-			_rtw_memset(psecuritypriv->PMKIDList[index].Bssid, 0x00, ETH_ALEN);
-			_rtw_memset(psecuritypriv->PMKIDList[index].PMKID, 0x00, WLAN_PMKID_LEN);
+			memset(psecuritypriv->PMKIDList[index].Bssid, 0x00, ETH_ALEN);
+			memset(psecuritypriv->PMKIDList[index].PMKID, 0x00, WLAN_PMKID_LEN);
 			psecuritypriv->PMKIDList[index].bUsed = _FALSE;
 			bMatched = _TRUE;
 			RTW_INFO(FUNC_NDEV_FMT" clear id:%hhu\n", FUNC_NDEV_ARG(ndev), index);
@@ -4321,7 +4321,7 @@ static int cfg80211_rtw_flush_pmksa(struct wiphy *wiphy,
 
 	RTW_INFO(FUNC_NDEV_FMT"\n", FUNC_NDEV_ARG(ndev));
 
-	_rtw_memset(&psecuritypriv->PMKIDList[0], 0x00, sizeof(RT_PMKID_LIST) * NUM_PMKID_CACHE);
+	memset(&psecuritypriv->PMKIDList[0], 0x00, sizeof(RT_PMKID_LIST) * NUM_PMKID_CACHE);
 	psecuritypriv->PMKIDIndex = 0;
 
 	return 0;
@@ -4578,7 +4578,7 @@ dump:
 		update_mgntframe_attrib(padapter, pattrib);
 		pattrib->retry_ctrl = _FALSE;
 
-		_rtw_memset(pmgntframe->buf_addr, 0, WLANHDR_OFFSET + TXDESC_OFFSET);
+		memset(pmgntframe->buf_addr, 0, WLANHDR_OFFSET + TXDESC_OFFSET);
 
 		pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 
@@ -5453,7 +5453,7 @@ release_plink_ctl:
 			#endif
 
 			/* indicate new sta */
-			_rtw_memset(&sinfo, 0, sizeof(sinfo));
+			memset(&sinfo, 0, sizeof(sinfo));
 			cfg80211_new_sta(ndev, mac, &sinfo, GFP_ATOMIC);
 		}
 		goto exit;
@@ -6373,8 +6373,8 @@ void rtw_cfg80211_issue_p2p_provision_request(_adapter *padapter, const u8 *buf,
 
 
 	/* start to build provision_request frame	 */
-	_rtw_memset(wpsie, 0, sizeof(wpsie));
-	_rtw_memset(p2p_ie, 0, sizeof(p2p_ie));
+	memset(wpsie, 0, sizeof(wpsie));
+	memset(p2p_ie, 0, sizeof(p2p_ie));
 	p2p_ielen = 0;
 
 	pmgntframe = alloc_mgtxmitframe(pxmitpriv);
@@ -6386,7 +6386,7 @@ void rtw_cfg80211_issue_p2p_provision_request(_adapter *padapter, const u8 *buf,
 	pattrib = &pmgntframe->attrib;
 	update_mgntframe_attrib(padapter, pattrib);
 
-	_rtw_memset(pmgntframe->buf_addr, 0, WLANHDR_OFFSET + TXDESC_OFFSET);
+	memset(pmgntframe->buf_addr, 0, WLANHDR_OFFSET + TXDESC_OFFSET);
 
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
@@ -6511,7 +6511,7 @@ void rtw_cfg80211_issue_p2p_provision_request(_adapter *padapter, const u8 *buf,
 	#if 0
 	if(wps_devicepassword_id == WPS_DPID_REGISTRAR_SPEC) {
 		RTW_INFO("waiting for p2p peer key-in PIN CODE\n");
-		rtw_msleep_os(15000); /* 15 sec for key in PIN CODE, workaround for GS2 before issuing Nego Req. */
+		msleep(15000); /* 15 sec for key in PIN CODE, workaround for GS2 before issuing Nego Req. */
 	}
 	#endif
 
@@ -6687,7 +6687,7 @@ static s32 cfg80211_rtw_remain_on_channel(struct wiphy *wiphy,
 	is_p2p_find = (duration < (pwdinfo->ext_listen_interval)) ? _TRUE : _FALSE;
 #endif
 
-	*cookie = ATOMIC_INC_RETURN(&pcfg80211_wdinfo->ro_ch_cookie_gen);
+	*cookie = atomic_inc_return(&pcfg80211_wdinfo->ro_ch_cookie_gen);
 
 	RTW_INFO(FUNC_ADPT_FMT"%s ch:%u duration:%d, cookie:0x%llx\n"
 		, FUNC_ADPT_ARG(padapter), wdev == wiphy_to_pd_wdev(wiphy) ? " PD" : ""
@@ -7079,7 +7079,7 @@ static int _cfg80211_rtw_mgmt_tx(_adapter *padapter, u8 tx_ch, u8 no_cck, const 
 
 		#if defined(RTW_ROCH_BACK_OP) && defined(CONFIG_P2P) && defined(CONFIG_CONCURRENT_MODE)
 		if (rtw_cfg80211_get_is_roch(padapter)
-			&& ATOMIC_READ(&pwdev_priv->switch_ch_to) == 1
+			&& atomic_read(&pwdev_priv->switch_ch_to) == 1
 		) {
 			u16 ext_listen_period;
 
@@ -7087,7 +7087,7 @@ static int _cfg80211_rtw_mgmt_tx(_adapter *padapter, u8 tx_ch, u8 no_cck, const 
 				ext_listen_period = 500;
 			else
 				ext_listen_period = pwdinfo->ext_listen_period;
-			ATOMIC_SET(&pwdev_priv->switch_ch_to, 0);
+			atomic_set(&pwdev_priv->switch_ch_to, 0);
 			_set_timer(&pwdinfo->ap_p2p_switch_timer, ext_listen_period);
 			RTW_INFO("%s, set switch ch timer, period=%d\n", __func__, ext_listen_period);
 		}
@@ -7118,7 +7118,7 @@ issue_mgmt_frame:
 
 	pattrib->retry_ctrl = _FALSE;
 
-	_rtw_memset(pmgntframe->buf_addr, 0, WLANHDR_OFFSET + TXDESC_OFFSET);
+	memset(pmgntframe->buf_addr, 0, WLANHDR_OFFSET + TXDESC_OFFSET);
 
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 
@@ -7149,7 +7149,7 @@ issue_mgmt_frame:
 
 #ifdef CONFIG_XMIT_ACK
 			if (!MLME_IS_MESH(padapter)) /* TODO: remove this sleep for all mode */
-				rtw_msleep_os(50);
+				msleep(50);
 #endif
 #ifdef CONFIG_DEBUG_CFG80211
 			RTW_INFO("%s, ack=%d, ok!\n", __func__, ack);
@@ -7426,7 +7426,7 @@ dump:
 			break;
 
 		if (sleep_ms > 0)
-			rtw_msleep_os(sleep_ms);
+			msleep(sleep_ms);
 	}
 
 	if (tx_ret != _SUCCESS || dump_cnt > 1) {
@@ -7611,7 +7611,7 @@ static int cfg80211_rtw_tdls_mgmt(struct wiphy *wiphy,
 		goto discard;
 	}
 
-	_rtw_memset(&txmgmt, 0x00, sizeof(struct tdls_txmgmt));
+	memset(&txmgmt, 0x00, sizeof(struct tdls_txmgmt));
 	_rtw_memcpy(txmgmt.peer, peer, ETH_ALEN);
 	txmgmt.action_code = action_code;
 	txmgmt.dialog_token = dialog_token;
@@ -7697,7 +7697,7 @@ static int cfg80211_rtw_tdls_oper(struct wiphy *wiphy,
 	rtw_lps_ctrl_wk_cmd(padapter, LPS_CTRL_LEAVE, 0);
 #endif /* CONFIG_LPS */
 
-	_rtw_memset(&txmgmt, 0x00, sizeof(struct tdls_txmgmt));
+	memset(&txmgmt, 0x00, sizeof(struct tdls_txmgmt));
 	if (peer)
 		_rtw_memcpy(txmgmt.peer, peer, ETH_ALEN);
 
@@ -8224,8 +8224,8 @@ u8 *rtw_cfg80211_construct_mesh_beacon_ies(struct wiphy *wiphy, _adapter *adapte
 		u8 ht_cap[HT_CAP_IE_LEN];
 		u8 ht_op[HT_OP_IE_LEN];
 
-		_rtw_memset(ht_cap, 0, HT_CAP_IE_LEN);
-		_rtw_memset(ht_op, 0, HT_OP_IE_LEN);
+		memset(ht_cap, 0, HT_CAP_IE_LEN);
+		memset(ht_op, 0, HT_OP_IE_LEN);
 
 		/* WLAN_EID_HT_CAP */
 		RTW_PUT_LE16(HT_CAP_ELE_CAP_INFO(ht_cap), sta_ht_cap->cap);
@@ -8263,7 +8263,7 @@ u8 *rtw_cfg80211_construct_mesh_beacon_ies(struct wiphy *wiphy, _adapter *adapte
 		u8 vht_op[VHT_OP_IE_LEN];
 		u8 cch = rtw_get_center_ch(ch, bw, offset);
 
-		_rtw_memset(vht_op, 0, VHT_OP_IE_LEN);
+		memset(vht_op, 0, VHT_OP_IE_LEN);
 
 		/* WLAN_EID_VHT_CAPABILITY */
 		_rtw_memcpy(vht_cap, &sta_vht_cap->cap, 4);
@@ -8599,9 +8599,9 @@ static void rtw_cfg80211_mpath_set_pinfo(struct rtw_mesh_path *mpath, u8 *next_h
 	if (next_hop_sta)
 		_rtw_memcpy(next_hop, next_hop_sta->cmn.mac_addr, ETH_ALEN);
 	else
-		_rtw_memset(next_hop, 0, ETH_ALEN);
+		memset(next_hop, 0, ETH_ALEN);
 
-	_rtw_memset(pinfo, 0, sizeof(*pinfo));
+	memset(pinfo, 0, sizeof(*pinfo));
 
 	pinfo->generation = mpath->adapter->mesh_info.mesh_paths_generation;
 
@@ -8684,7 +8684,7 @@ static void rtw_cfg80211_mpp_set_pinfo(struct rtw_mesh_path *mpath, u8 *mpp, str
 {
 	_rtw_memcpy(mpp, mpath->mpp, ETH_ALEN);
 
-	_rtw_memset(pinfo, 0, sizeof(*pinfo));
+	memset(pinfo, 0, sizeof(*pinfo));
 	pinfo->generation = mpath->adapter->mesh_info.mpp_paths_generation;
 }
 
@@ -8855,7 +8855,7 @@ int	cfg80211_rtw_resume(struct wiphy *wiphy) {
 		for (PNOWakeupScanWaitCnt = 0; PNOWakeupScanWaitCnt < 10; PNOWakeupScanWaitCnt++) {
 			if(check_fwstate(pmlmepriv, _FW_UNDER_SURVEY) == _FALSE)
 				break;
-			rtw_msleep_os(1000);
+			msleep(1000);
 		}
 		
 		_enter_critical_bh(&pmlmepriv->lock, &irqL);
@@ -9362,7 +9362,7 @@ void rtw_cfg80211_init_wdev_data(_adapter *padapter)
 #ifdef CONFIG_CONCURRENT_MODE
 	struct rtw_wdev_priv *pwdev_priv = adapter_wdev_data(padapter);
 
-	ATOMIC_SET(&pwdev_priv->switch_ch_to, 1);
+	atomic_set(&pwdev_priv->switch_ch_to, 1);
 #endif
 }
 
@@ -9734,7 +9734,7 @@ int rtw_hostapd_acs_dump_survey(struct wiphy *wiphy, struct net_device *netdev, 
 		return -EINVAL;
 	}
 
-	_rtw_memset(info, 0, sizeof(struct survey_info));
+	memset(info, 0, sizeof(struct survey_info));
 	if (padapter->bup == _FALSE) {
 		RTW_INFO("%s: net device is down.\n", __func__);
 		return -EIO;
@@ -10103,7 +10103,7 @@ int rtw_wdev_alloc(_adapter *padapter, struct wiphy *wiphy)
 	_rtw_mutex_init(&pwdev_priv->roch_mutex);
 
 #ifdef CONFIG_CONCURRENT_MODE
-	ATOMIC_SET(&pwdev_priv->switch_ch_to, 1);
+	atomic_set(&pwdev_priv->switch_ch_to, 1);
 #endif
 
 #ifdef CONFIG_RTW_CFGVEDNOR_RSSIMONITOR
@@ -10129,12 +10129,9 @@ void rtw_wdev_free(struct wireless_dev *wdev)
 		struct rtw_wdev_priv *wdev_priv = adapter_wdev_data(adapter);
 		_irqL irqL;
 
-		_rtw_spinlock_free(&wdev_priv->scan_req_lock);
-
 		_enter_critical_bh(&wdev_priv->connect_req_lock, &irqL);
 		rtw_wdev_free_connect_req(wdev_priv);
 		_exit_critical_bh(&wdev_priv->connect_req_lock, &irqL);
-		_rtw_spinlock_free(&wdev_priv->connect_req_lock);
 
 		_rtw_mutex_free(&wdev_priv->roch_mutex);
 	}

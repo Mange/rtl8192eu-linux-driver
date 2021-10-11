@@ -139,7 +139,7 @@ sint _rtw_init_evt_priv(struct evt_priv *pevtpriv)
 #endif
 
 	/* allocate DMA-able/Non-Page memory for cmd_buf and rsp_buf */
-	ATOMIC_SET(&pevtpriv->event_seq, 0);
+	atomic_set(&pevtpriv->event_seq, 0);
 	pevtpriv->evt_done_cnt = 0;
 
 #ifdef CONFIG_EVENT_THREAD_MODE
@@ -205,7 +205,7 @@ void _rtw_free_evt_priv(struct	evt_priv *pevtpriv)
 #ifdef CONFIG_C2H_WK
 	_cancel_workitem_sync(&pevtpriv->c2h_wk);
 	while (pevtpriv->c2h_wk_alive)
-		rtw_msleep_os(10);
+		msleep(10);
 
 	while (!rtw_cbuf_empty(pevtpriv->c2h_queue)) {
 		void *c2h;
@@ -224,7 +224,6 @@ void _rtw_free_cmd_priv(struct	cmd_priv *pcmdpriv)
 {
 
 	if (pcmdpriv) {
-		_rtw_spinlock_free(&(pcmdpriv->cmd_queue.lock));
 		_rtw_free_sema(&(pcmdpriv->cmd_queue_sema));
 		/* _rtw_free_sema(&(pcmdpriv->cmd_done_sema)); */
 		_rtw_free_sema(&(pcmdpriv->start_cmdthread_sema));
@@ -424,11 +423,11 @@ int rtw_cmd_filter(struct cmd_priv *pcmdpriv, struct cmd_obj *cmd_obj)
 		bAllow = _TRUE;
 
 	if ((!rtw_is_hw_init_completed(pcmdpriv->padapter) && (bAllow == _FALSE))
-	    || ATOMIC_READ(&(pcmdpriv->cmdthd_running)) == _FALSE	/* com_thread not running */
+	    || atomic_read(&(pcmdpriv->cmdthd_running)) == _FALSE	/* com_thread not running */
 	   ) {
 		if (DBG_CMD_EXECUTE)
 			RTW_INFO(ADPT_FMT" drop "CMD_FMT" hw_init_completed:%u, cmdthd_running:%u\n", ADPT_ARG(cmd_obj->padapter)
-				, CMD_ARG(cmd_obj), rtw_get_hw_init_completed(cmd_obj->padapter), ATOMIC_READ(&pcmdpriv->cmdthd_running));
+				, CMD_ARG(cmd_obj), rtw_get_hw_init_completed(cmd_obj->padapter), atomic_read(&pcmdpriv->cmdthd_running));
 		if (0)
 			rtw_warn_on(1);
 
@@ -545,7 +544,7 @@ thread_return rtw_cmd_thread(thread_context context)
 
 	pcmdbuf = pcmdpriv->cmd_buf;
 	prspbuf = pcmdpriv->rsp_buf;
-	ATOMIC_SET(&(pcmdpriv->cmdthd_running), _TRUE);
+	atomic_set(&(pcmdpriv->cmdthd_running), _TRUE);
 	_rtw_up_sema(&pcmdpriv->start_cmdthread_sema);
 
 
@@ -702,7 +701,7 @@ post_process:
 #endif
 
 	/* to avoid enqueue cmd after free all cmd_obj */
-	ATOMIC_SET(&(pcmdpriv->cmdthd_running), _FALSE);
+	atomic_set(&(pcmdpriv->cmdthd_running), _FALSE);
 
 	/* free all cmd_obj resources */
 	do {
@@ -852,7 +851,7 @@ void rtw_init_sitesurvey_parm(_adapter *padapter, struct sitesurvey_parm *pparm)
 	struct mlme_priv *pmlmepriv = &padapter->mlmepriv;
 
 
-	_rtw_memset(pparm, 0, sizeof(struct sitesurvey_parm));
+	memset(pparm, 0, sizeof(struct sitesurvey_parm));
 	pparm->scan_mode = pmlmepriv->scan_mode;
 }
 
@@ -1439,7 +1438,7 @@ u8 rtw_joinbss_cmd(_adapter  *padapter, struct wlan_network *pnetwork)
 		goto exit;
 	}
 
-	_rtw_memset(psecnetwork, 0, t_len);
+	memset(psecnetwork, 0, t_len);
 
 	_rtw_memcpy(psecnetwork, &pnetwork->network, get_WLAN_BSSID_EX_sz(&pnetwork->network));
 
@@ -3243,8 +3242,8 @@ static void dynamic_update_bcn_check(_adapter *padapter)
 		if (count % 10 == 0) {
 			count = 1;
 #ifdef CONFIG_80211N_HT
-			if (_FALSE == ATOMIC_READ(&pmlmepriv->olbc)
-				&& _FALSE == ATOMIC_READ(&pmlmepriv->olbc_ht)) {
+			if (_FALSE == atomic_read(&pmlmepriv->olbc)
+				&& _FALSE == atomic_read(&pmlmepriv->olbc_ht)) {
 
 				if (rtw_ht_operation_update(padapter) > 0) {
 					update_beacon(padapter, _HT_CAPABILITY_IE_, NULL, _FALSE);
@@ -3257,16 +3256,16 @@ static void dynamic_update_bcn_check(_adapter *padapter)
 #ifdef CONFIG_80211N_HT
 		/* In 2s, there are any legacy AP, update HT info, and then reset count  */
 
-		if (_FALSE != ATOMIC_READ(&pmlmepriv->olbc)
-			&& _FALSE != ATOMIC_READ(&pmlmepriv->olbc_ht)) {
+		if (_FALSE != atomic_read(&pmlmepriv->olbc)
+			&& _FALSE != atomic_read(&pmlmepriv->olbc_ht)) {
 					
 			if (rtw_ht_operation_update(padapter) > 0) {
 				update_beacon(padapter, _HT_CAPABILITY_IE_, NULL, _FALSE);
 				update_beacon(padapter, _HT_ADD_INFO_IE_, NULL, _TRUE);
 
 			}
-			ATOMIC_SET(&pmlmepriv->olbc, _FALSE);
-			ATOMIC_SET(&pmlmepriv->olbc_ht, _FALSE);
+			atomic_set(&pmlmepriv->olbc, _FALSE);
+			atomic_set(&pmlmepriv->olbc_ht, _FALSE);
 			count = 0;
 		}
 #endif /* CONFIG_80211N_HT */
@@ -4148,7 +4147,7 @@ static void rtw_chk_hi_queue_hdl(_adapter *padapter)
 	rtw_hal_get_hwreg(padapter, HW_VAR_CHK_HI_QUEUE_EMPTY, &empty);
 
 	while (_FALSE == empty && rtw_get_passing_time_ms(start) < rtw_get_wait_hiq_empty_ms()) {
-		rtw_msleep_os(100);
+		msleep(100);
 		rtw_hal_get_hwreg(padapter, HW_VAR_CHK_HI_QUEUE_EMPTY, &empty);
 	}
 

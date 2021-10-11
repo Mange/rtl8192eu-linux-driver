@@ -753,11 +753,11 @@ static u8 rtw_hal_mcc_update_timing_parameters(PADAPTER padapter, u8 force_updat
 		/* selecet policy table according TSF diff */
 		tsf0 = tsf[0];
 		beaconperiod_0 = pmccobjpriv->iface[0]->mlmepriv.cur_network.network.Configuration.BeaconPeriod;
-		tsf0 = rtw_modular64(tsf0, (beaconperiod_0 * TU));
+		tsf0 = do_div(tsf0, (beaconperiod_0 * TU));
 
 		tsf1 = tsf[1];
 		beaconperiod_1 = pmccobjpriv->iface[1]->mlmepriv.cur_network.network.Configuration.BeaconPeriod;
-		tsf1 = rtw_modular64(tsf1, (beaconperiod_1 * TU));
+		tsf1 = do_div(tsf1, (beaconperiod_1 * TU));
 
 		if (tsf0 > tsf1)
 			tsfdiff = tsf0- tsf1;
@@ -1174,7 +1174,7 @@ u8 rtw_hal_dl_mcc_fw_rsvd_page(_adapter *adapter, u8 *pframe, u16 *index,
 		rtw_hal_mcc_upadate_chnl_bw(iface, ch, bw_offset, bw, _TRUE);
 
 		start = &pframe[*index - tx_desc];
-		_rtw_memset(start, 0, page_size);
+		memset(start, 0, page_size);
 		pmccobjpriv->mcc_pwr_idx_rsvd_page[i] = *total_page_num;
 		RTW_INFO(ADPT_FMT" order:%d, pwr_idx_rsvd_page location[%d]: %d\n",
 			ADPT_ARG(iface), mccadapriv->order,
@@ -1609,7 +1609,7 @@ static void rtw_hal_set_mcc_IQK_offload_cmd(PADAPTER padapter)
 
 		for (rf_path_idx = 0; rf_path_idx < total_rf_path; rf_path_idx ++) {
 
-			_rtw_memset(cmd, 0, H2C_MCC_IQK_PARAM_LEN);
+			memset(cmd, 0, H2C_MCC_IQK_PARAM_LEN);
 			TX_X = pmccadapriv->mcc_iqk_arr[rf_path_idx].TX_X & 0x7ff;/* [10:0]  */
 			TX_Y = pmccadapriv->mcc_iqk_arr[rf_path_idx].TX_Y & 0x7ff;/* [10:0]  */
 			RX_X = pmccadapriv->mcc_iqk_arr[rf_path_idx].RX_X & 0x3ff;/* [9:0]  */

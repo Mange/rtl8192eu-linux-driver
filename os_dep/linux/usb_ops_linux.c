@@ -95,7 +95,7 @@ int usbctrl_vendorreq(struct intf_hdl *pintfhdl, u8 request, u16 value, u16 inde
 	}
 
 	while (++vendorreq_times <= MAX_USBCTRL_VENDORREQ_TIMES) {
-		_rtw_memset(pIo_buf, 0, len);
+		memset(pIo_buf, 0, len);
 
 		if (requesttype == 0x01) {
 			pipe = usb_rcvctrlpipe(udev, 0);/* read_in */
@@ -106,7 +106,7 @@ int usbctrl_vendorreq(struct intf_hdl *pintfhdl, u8 request, u16 value, u16 inde
 			_rtw_memcpy(pIo_buf, pdata, len);
 		}
 
-		status = rtw_usb_control_msg(udev, pipe, request, reqtype, value, index, pIo_buf, len, RTW_USB_CONTROL_MSG_TIMEOUT);
+		status = usb_control_msg(udev, pipe, request, reqtype, value, index, pIo_buf, len, RTW_USB_CONTROL_MSG_TIMEOUT);
 
 		if (status == len) {  /* Success this control transfer. */
 			rtw_reset_continual_io_error(pdvobjpriv);
@@ -173,7 +173,7 @@ int usbctrl_vendorreq(struct intf_hdl *pintfhdl, u8 request, u16 value, u16 inde
 
 		t_reg = 0x4e0;
 
-		status = rtw_usb_control_msg(udev, t_pipe, t_req, t_reqtype, t_reg, t_index, pIo_buf, t_len, RTW_USB_CONTROL_MSG_TIMEOUT);
+		status = usb_control_msg(udev, t_pipe, t_req, t_reqtype, t_reg, t_index, pIo_buf, t_len, RTW_USB_CONTROL_MSG_TIMEOUT);
 
 		if (status == t_len)
 			rtw_reset_continual_io_error(pdvobjpriv);
@@ -753,7 +753,7 @@ void usb_read_port_complete(struct urb *purb, struct pt_regs *regs)
 	_adapter			*padapter = (_adapter *)precvbuf->adapter;
 	struct recv_priv	*precvpriv = &padapter->recvpriv;
 
-	ATOMIC_DEC(&(precvpriv->rx_pending_cnt));
+	atomic_dec(&(precvpriv->rx_pending_cnt));
 
 	if (RTW_CANNOT_RX(padapter)) {
 		RTW_INFO("%s() RX Warning! bDriverStopped(%s) OR bSurpriseRemoved(%s)\n"
@@ -837,7 +837,7 @@ u32 usb_read_port(struct intf_hdl *pintfhdl, u32 addr, u32 cnt, u8 *rmem)
 	usb_init_recvbuf(adapter, precvbuf);
 
 	if (precvbuf->pbuf) {
-		ATOMIC_INC(&(precvpriv->rx_pending_cnt));
+		atomic_inc(&(precvpriv->rx_pending_cnt));
 		purb = precvbuf->purb;
 
 		/* translate DMA FIFO addr to pipehandle */
@@ -906,7 +906,7 @@ void usb_read_port_complete(struct urb *purb, struct pt_regs *regs)
 	_adapter			*padapter = (_adapter *)precvbuf->adapter;
 	struct recv_priv	*precvpriv = &padapter->recvpriv;
 
-	ATOMIC_DEC(&(precvpriv->rx_pending_cnt));
+	atomic_dec(&(precvpriv->rx_pending_cnt));
 
 	if (RTW_CANNOT_RX(padapter)) {
 		RTW_INFO("%s() RX Warning! bDriverStopped(%s) OR bSurpriseRemoved(%s)\n"
@@ -1046,7 +1046,7 @@ recv_buf_hook:
 		goto exit;
 	}
 
-	ATOMIC_INC(&(precvpriv->rx_pending_cnt));
+	atomic_inc(&(precvpriv->rx_pending_cnt));
 	ret = _SUCCESS;
 
 exit:

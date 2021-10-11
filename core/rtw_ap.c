@@ -38,7 +38,6 @@ void free_mlme_ap_info(_adapter *padapter)
 	struct mlme_priv *pmlmepriv = &(padapter->mlmepriv);
 
 	stop_ap_mode(padapter);
-	_rtw_spinlock_free(&pmlmepriv->bcn_update_lock);
 
 }
 
@@ -640,7 +639,7 @@ void	expire_timeout_chk(_adapter *padapter)
 #endif
 		char del_asoc_list[NUM_STA];
 
-		_rtw_memset(del_asoc_list, NUM_STA, NUM_STA);
+		memset(del_asoc_list, NUM_STA, NUM_STA);
 
 		#ifdef CONFIG_ACTIVE_KEEP_ALIVE_CHECK
 		if (pmlmeext->active_keep_alive_check) {
@@ -991,7 +990,7 @@ void update_bmc_sta(_adapter *padapter)
 
 		psta->ieee8021x_blocked = 0;
 
-		_rtw_memset((void *)&psta->sta_stats, 0, sizeof(struct stainfo_stats));
+		memset((void *)&psta->sta_stats, 0, sizeof(struct stainfo_stats));
 
 		/* psta->dot118021XPrivacy = _NO_PRIVACY_; */ /* !!! remove it, because it has been set before this. */
 
@@ -1171,7 +1170,7 @@ void update_sta_info_apmode(_adapter *padapter, struct sta_info *psta)
 
 	/* todo: init other variables */
 
-	_rtw_memset((void *)&psta->sta_stats, 0, sizeof(struct stainfo_stats));
+	memset((void *)&psta->sta_stats, 0, sizeof(struct stainfo_stats));
 
 
 	/* add ratid */
@@ -1510,11 +1509,11 @@ static void rtw_ap_check_scan(_adapter *padapter)
 				if (pbuf == NULL) {
 					/* HT CAP INFO IE don't exist, it is b/g mode bss.*/
 
-					if (_FALSE == ATOMIC_READ(&pmlmepriv->olbc))
-						ATOMIC_SET(&pmlmepriv->olbc, _TRUE);
+					if (_FALSE == atomic_read(&pmlmepriv->olbc))
+						atomic_set(&pmlmepriv->olbc, _TRUE);
 
-					if (_FALSE == ATOMIC_READ(&pmlmepriv->olbc_ht))
-						ATOMIC_SET(&pmlmepriv->olbc_ht, _TRUE);
+					if (_FALSE == atomic_read(&pmlmepriv->olbc_ht))
+						atomic_set(&pmlmepriv->olbc_ht, _TRUE);
 					
 					if (padapter->registrypriv.wifi_spec)
 						RTW_INFO("%s: %s is a/b/g ap\n", __func__, pnetwork->network.Ssid.Ssid);
@@ -1811,7 +1810,7 @@ update_beacon:
 		mlme = &(pdvobj->padapters[i]->mlmepriv);
 
 		#ifdef CONFIG_80211N_HT
-		if ((ATOMIC_READ(&mlme->olbc) == _TRUE) || (ATOMIC_READ(&mlme->olbc_ht) == _TRUE)) {
+		if ((atomic_read(&mlme->olbc) == _TRUE) || (atomic_read(&mlme->olbc_ht) == _TRUE)) {
 			/* AP is not starting a 40 MHz BSS in presence of an 802.11g BSS. */
 			mlme->ht_op_mode &= (~HT_INFO_OPERATION_MODE_OP_MODE_MASK);
 			mlme->ht_op_mode |= OP_MODE_MAY_BE_LEGACY_STAS;
@@ -1934,7 +1933,7 @@ int rtw_check_beacon_data(_adapter *padapter, u8 *pbuf,  int len)
 
 	pbss_network->IELength = len;
 
-	_rtw_memset(ie, 0, MAX_IE_SZ);
+	memset(ie, 0, MAX_IE_SZ);
 
 	_rtw_memcpy(ie, pbuf, pbss_network->IELength);
 
@@ -1967,7 +1966,7 @@ int rtw_check_beacon_data(_adapter *padapter, u8 *pbuf,  int len)
 	/* SSID */
 	p = rtw_get_ie(ie + _BEACON_IE_OFFSET_, _SSID_IE_, &ie_len, (pbss_network->IELength - _BEACON_IE_OFFSET_));
 	if (p && ie_len > 0) {
-		_rtw_memset(&pbss_network->Ssid, 0, sizeof(NDIS_802_11_SSID));
+		memset(&pbss_network->Ssid, 0, sizeof(NDIS_802_11_SSID));
 		_rtw_memcpy(pbss_network->Ssid.Ssid, (p + 2), ie_len);
 		pbss_network->Ssid.SsidLength = ie_len;
 #ifdef CONFIG_P2P
@@ -1981,7 +1980,7 @@ int rtw_check_beacon_data(_adapter *padapter, u8 *pbuf,  int len)
 	if (MLME_IS_MESH(padapter)) {
 		p = rtw_get_ie(ie + _BEACON_IE_OFFSET_, WLAN_EID_MESH_ID, &ie_len, (pbss_network->IELength - _BEACON_IE_OFFSET_));
 		if (p && ie_len > 0) {
-			_rtw_memset(&pbss_network->mesh_id, 0, sizeof(NDIS_802_11_SSID));
+			memset(&pbss_network->mesh_id, 0, sizeof(NDIS_802_11_SSID));
 			_rtw_memcpy(pbss_network->mesh_id.Ssid, (p + 2), ie_len);
 			pbss_network->mesh_id.SsidLength = ie_len;
 		}
@@ -1998,7 +1997,7 @@ int rtw_check_beacon_data(_adapter *padapter, u8 *pbuf,  int len)
 	pbss_network->Configuration.DSConfig = channel;
 
 
-	_rtw_memset(supportRate, 0, NDIS_802_11_LENGTH_RATES_EX);
+	memset(supportRate, 0, NDIS_802_11_LENGTH_RATES_EX);
 	/* get supported rates */
 	p = rtw_get_ie(ie + _BEACON_IE_OFFSET_, _SUPPORTEDRATES_IE_, &ie_len, (pbss_network->IELength - _BEACON_IE_OFFSET_));
 	if (p !=  NULL) {
@@ -2560,9 +2559,6 @@ static void _rtw_macaddr_acl_deinit(_adapter *adapter, u8 period, bool clear_onl
 	}
 	_exit_critical_bh(&(acl_node_q->lock), &irqL);
 
-	if (!clear_only)
-		_rtw_spinlock_free(&(acl_node_q->lock));
-
 	rtw_warn_on(acl->num);
 	acl->mode = RTW_ACL_MODE_DISABLED;
 }
@@ -2786,7 +2782,7 @@ static int rtw_ap_set_key(_adapter *padapter, u8 *key, u8 alg, int keyid, u8 set
 		goto exit;
 	}
 
-	_rtw_memset(psetkeyparm, 0, sizeof(struct setkey_parm));
+	memset(psetkeyparm, 0, sizeof(struct setkey_parm));
 
 	psetkeyparm->keyid = (u8)keyid;
 	if (is_wep_enc(alg))
@@ -2943,7 +2939,7 @@ u8 rtw_ap_bmc_frames_hdl(_adapter *padapter)
 	rtw_hal_get_hwreg(padapter, HW_VAR_CHK_HI_QUEUE_EMPTY, &empty);
 
 	while (_FALSE == empty && rtw_get_passing_time_ms(start) < 3000) {
-		rtw_msleep_os(100);
+		msleep(100);
 		rtw_hal_get_hwreg(padapter, HW_VAR_CHK_HI_QUEUE_EMPTY, &empty);
 	}
 
@@ -3086,7 +3082,7 @@ static void update_bcn_htinfo_ie(_adapter *padapter)
 		 __FUNCTION__, pmlmepriv->ht_op_mode);
 
 	RTW_INFO("num_sta_40mhz_intolerant(%d), 20mhz_width_req(%d), intolerant_ch_rpt(%d), olbc(%d)\n",
-		pmlmepriv->num_sta_40mhz_intolerant, pmlmepriv->ht_20mhz_width_req, pmlmepriv->ht_intolerant_ch_reported, ATOMIC_READ(&pmlmepriv->olbc));
+		pmlmepriv->num_sta_40mhz_intolerant, pmlmepriv->ht_20mhz_width_req, pmlmepriv->ht_intolerant_ch_reported, atomic_read(&pmlmepriv->olbc));
 
 	/*parsing HT_INFO_IE, currently only update ht_op_mode - pht_info->infos[1] & pht_info->infos[2] for wifi logo test*/
 	p = rtw_get_ie(ie + _BEACON_IE_OFFSET_, _HT_ADD_INFO_IE_, &len, (pnetwork->IELength - _BEACON_IE_OFFSET_));
@@ -3098,7 +3094,7 @@ static void update_bcn_htinfo_ie(_adapter *padapter)
 		/* for STA Channel Width/Secondary Channel Offset*/
 		if ((pmlmepriv->sw_to_20mhz == 0) && (pmlmeext->cur_channel <= 14)) {
 			if ((pmlmepriv->num_sta_40mhz_intolerant > 0) || (pmlmepriv->ht_20mhz_width_req == _TRUE)
-			    || (pmlmepriv->ht_intolerant_ch_reported == _TRUE) || (ATOMIC_READ(&pmlmepriv->olbc) == _TRUE)) {
+			    || (pmlmepriv->ht_intolerant_ch_reported == _TRUE) || (atomic_read(&pmlmepriv->olbc) == _TRUE)) {
 				SET_HT_OP_ELE_2ND_CHL_OFFSET(pht_info, 0);
 				SET_HT_OP_ELE_STA_CHL_WIDTH(pht_info, 0);
 
@@ -3115,7 +3111,7 @@ static void update_bcn_htinfo_ie(_adapter *padapter)
 		} else {
 
 			if ((pmlmepriv->num_sta_40mhz_intolerant == 0) && (pmlmepriv->ht_20mhz_width_req == _FALSE)
-			    && (pmlmepriv->ht_intolerant_ch_reported == _FALSE) && (ATOMIC_READ(&pmlmepriv->olbc) == _FALSE)) {
+			    && (pmlmepriv->ht_intolerant_ch_reported == _FALSE) && (atomic_read(&pmlmepriv->olbc) == _FALSE)) {
 
 				if (pmlmeext->cur_bwmode >= CHANNEL_WIDTH_40) {
 
@@ -3467,12 +3463,12 @@ int rtw_ht_operation_update(_adapter *padapter)
 	}
 
 	if (!(pmlmepriv->ht_op_mode & HT_INFO_OPERATION_MODE_NON_HT_STA_PRESENT) &&
-	    (pmlmepriv->num_sta_no_ht || ATOMIC_READ(&pmlmepriv->olbc_ht))) {
+	    (pmlmepriv->num_sta_no_ht || atomic_read(&pmlmepriv->olbc_ht))) {
 		pmlmepriv->ht_op_mode |= HT_INFO_OPERATION_MODE_NON_HT_STA_PRESENT;
 		op_mode_changes++;
 	} else if ((pmlmepriv->ht_op_mode &
 		    HT_INFO_OPERATION_MODE_NON_HT_STA_PRESENT) &&
-		   (pmlmepriv->num_sta_no_ht == 0 && !ATOMIC_READ(&pmlmepriv->olbc_ht))) {
+		   (pmlmepriv->num_sta_no_ht == 0 && !atomic_read(&pmlmepriv->olbc_ht))) {
 		pmlmepriv->ht_op_mode &=
 			~HT_INFO_OPERATION_MODE_NON_HT_STA_PRESENT;
 		op_mode_changes++;
@@ -3489,7 +3485,7 @@ int rtw_ht_operation_update(_adapter *padapter)
 	else if ((phtpriv_ap->ht_cap.cap_info & IEEE80211_HT_CAP_SUP_WIDTH)
 		 && pmlmepriv->num_sta_ht_20mhz)
 		new_op_mode = OP_MODE_20MHZ_HT_STA_ASSOCED;
-	else if (ATOMIC_READ(&pmlmepriv->olbc_ht))
+	else if (atomic_read(&pmlmepriv->olbc_ht))
 		new_op_mode = OP_MODE_MAY_BE_LEGACY_STAS;
 	else
 		new_op_mode = OP_MODE_PURE;
@@ -4148,8 +4144,8 @@ void start_ap_mode(_adapter *padapter)
 
 	pmlmepriv->num_sta_ht_20mhz = 0;
 	pmlmepriv->num_sta_40mhz_intolerant = 0;
-	ATOMIC_SET(&pmlmepriv->olbc, _FALSE);
-	ATOMIC_SET(&pmlmepriv->olbc_ht, _FALSE);
+	atomic_set(&pmlmepriv->olbc, _FALSE);
+	atomic_set(&pmlmepriv->olbc_ht, _FALSE);
 
 #ifdef CONFIG_80211N_HT
 	pmlmepriv->ht_20mhz_width_req = _FALSE;
@@ -4158,7 +4154,7 @@ void start_ap_mode(_adapter *padapter)
 	pmlmepriv->sw_to_20mhz = 0;
 #endif
 
-	_rtw_memset(pmlmepriv->ext_capab_ie_data, 0, sizeof(pmlmepriv->ext_capab_ie_data));
+	memset(pmlmepriv->ext_capab_ie_data, 0, sizeof(pmlmepriv->ext_capab_ie_data));
 	pmlmepriv->ext_capab_ie_len = 0;
 
 #ifdef CONFIG_CONCURRENT_MODE
@@ -4223,10 +4219,9 @@ void stop_ap_mode(_adapter *padapter)
 	pmlmepriv->update_bcn = _FALSE;
 	/*pmlmeext->bstart_bss = _FALSE;*/
 	padapter->netif_up = _FALSE;
-	/* _rtw_spinlock_free(&pmlmepriv->bcn_update_lock); */
 
 	/* reset and init security priv , this can refine with rtw_reset_securitypriv */
-	_rtw_memset((unsigned char *)&padapter->securitypriv, 0, sizeof(struct security_priv));
+	memset((unsigned char *)&padapter->securitypriv, 0, sizeof(struct security_priv));
 	padapter->securitypriv.ndisauthtype = Ndis802_11AuthModeOpen;
 	padapter->securitypriv.ndisencryptstatus = Ndis802_11WEPDisabled;
 
@@ -5202,7 +5197,7 @@ u16 rtw_ap_parse_sta_security_ie(_adapter *adapter, struct sta_info *sta, struct
 	sta->wpa2_group_cipher = 0;
 	sta->wpa_pairwise_cipher = 0;
 	sta->wpa2_pairwise_cipher = 0;
-	_rtw_memset(sta->wpa_ie, 0, sizeof(sta->wpa_ie));
+	memset(sta->wpa_ie, 0, sizeof(sta->wpa_ie));
 
 	if ((sec->wpa_psk & BIT(1)) && elems->rsn_ie) {
 		wpa_ie = elems->rsn_ie;
@@ -5427,7 +5422,7 @@ void rtw_ap_parse_sta_ht_ie(_adapter *adapter, struct sta_info *sta, struct rtw_
 		goto exit;
 
 	/* save HT capabilities in the sta object */
-	_rtw_memset(&sta->htpriv.ht_cap, 0, sizeof(struct rtw_ieee80211_ht_cap));
+	memset(&sta->htpriv.ht_cap, 0, sizeof(struct rtw_ieee80211_ht_cap));
 	if (elems->ht_capabilities && elems->ht_capabilities_len >= sizeof(struct rtw_ieee80211_ht_cap)) {
 		sta->flags |= WLAN_STA_HT;
 		sta->flags |= WLAN_STA_WME;
@@ -5454,7 +5449,7 @@ void rtw_ap_parse_sta_vht_ie(_adapter *adapter, struct sta_info *sta, struct rtw
 	if (mlme->vhtpriv.vht_option == _FALSE)
 		goto exit;
 
-	_rtw_memset(&sta->vhtpriv, 0, sizeof(struct vht_priv));
+	memset(&sta->vhtpriv, 0, sizeof(struct vht_priv));
 	if (elems->vht_capabilities && elems->vht_capabilities_len == VHT_CAP_IE_LEN) {
 		sta->flags |= WLAN_STA_VHT;
 		_rtw_memcpy(sta->vhtpriv.vht_cap, elems->vht_capabilities, VHT_CAP_IE_LEN);

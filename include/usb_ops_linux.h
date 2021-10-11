@@ -44,21 +44,6 @@
 #define usb_read_interrupt_complete(purb, regs)	usb_read_interrupt_complete(purb)
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 12))
-#define rtw_usb_control_msg(dev, pipe, request, requesttype, value, index, data, size, timeout_ms) \
-	usb_control_msg((dev), (pipe), (request), (requesttype), (value), (index), (data), (size), (timeout_ms))
-#define rtw_usb_bulk_msg(usb_dev, pipe, data, len, actual_length, timeout_ms) \
-	usb_bulk_msg((usb_dev), (pipe), (data), (len), (actual_length), (timeout_ms))
-#else
-#define rtw_usb_control_msg(dev, pipe, request, requesttype, value, index, data, size, timeout_ms) \
-	usb_control_msg((dev), (pipe), (request), (requesttype), (value), (index), (data), (size), \
-		((timeout_ms) == 0) || ((timeout_ms) * HZ / 1000 > 0) ? ((timeout_ms) * HZ / 1000) : 1)
-#define rtw_usb_bulk_msg(usb_dev, pipe, data, len, actual_length, timeout_ms) \
-	usb_bulk_msg((usb_dev), (pipe), (data), (len), (actual_length), \
-		((timeout_ms) == 0) || ((timeout_ms) * HZ / 1000 > 0) ? ((timeout_ms) * HZ / 1000) : 1)
-#endif
-
-
 #ifdef CONFIG_USB_SUPPORT_ASYNC_VDN_REQ
 int usb_async_write8(struct intf_hdl *pintfhdl, u32 addr, u8 val);
 int usb_async_write16(struct intf_hdl *pintfhdl, u32 addr, u16 val);

@@ -66,7 +66,7 @@ struct cmd_priv {
 	u32	cmd_issued_cnt;
 	u32	cmd_done_cnt;
 	u32	rsp_cnt;
-	ATOMIC_T cmdthd_running;
+	atomic_t cmdthd_running;
 	/* u8 cmdthd_running; */
 
 	_adapter *padapter;
@@ -107,7 +107,7 @@ struct	evt_priv {
 	u8	lbkevt_num;
 	u8	*cmdevt_parm;
 #endif
-	ATOMIC_T event_seq;
+	atomic_t event_seq;
 	u8	*evt_buf;	/* shall be non-paged, and 4 bytes aligned		 */
 	u8	*evt_allocated_buf;
 	u32	evt_done_cnt;

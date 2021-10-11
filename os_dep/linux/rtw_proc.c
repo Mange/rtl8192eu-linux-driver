@@ -2477,7 +2477,7 @@ ssize_t proc_set_btinfo_evt(struct file *file, const char __user *buffer, size_t
 	if (buffer && !copy_from_user(tmp, buffer, count)) {
 		int num = 0;
 
-		_rtw_memset(btinfo, 0, 8);
+		memset(btinfo, 0, 8);
 
 		num = sscanf(tmp, "%hhx %hhx %hhx %hhx %hhx %hhx %hhx %hhx"
 			, &btinfo[0], &btinfo[1], &btinfo[2], &btinfo[3]
@@ -4298,7 +4298,7 @@ ssize_t proc_set_phydm_cmd(struct file *file, const char __user *buffer, size_t 
 			if (NULL == phydm_msg)
 				return -ENOMEM;
 		} else
-			_rtw_memset(phydm_msg, 0, PHYDM_MSG_LEN);
+			memset(phydm_msg, 0, PHYDM_MSG_LEN);
 
 		phydm_cmd(phydm, tmp, count, 1, phydm_msg, PHYDM_MSG_LEN);
 

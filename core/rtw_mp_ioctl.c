@@ -628,7 +628,7 @@ NDIS_STATUS oid_rt_pro_set_continuous_tx_hdl(struct oid_par_priv *poid_par_priv)
 		if (pmp_priv->tx.stop == 0) {
 			pmp_priv->tx.stop = 1;
 			RTW_INFO("%s: pkt tx is running...\n", __func__);
-			rtw_msleep_os(5);
+			msleep(5);
 		}
 		pmp_priv->tx.stop = 0;
 		pmp_priv->tx.count = 1;
@@ -663,7 +663,7 @@ NDIS_STATUS oid_rt_pro_set_single_carrier_tx_hdl(struct oid_par_priv *poid_par_p
 		if (pmp_priv->tx.stop == 0) {
 			pmp_priv->tx.stop = 1;
 			RTW_INFO("%s: pkt tx is running...\n", __func__);
-			rtw_msleep_os(5);
+			msleep(5);
 		}
 		pmp_priv->tx.stop = 0;
 		pmp_priv->tx.count = 1;
@@ -698,7 +698,7 @@ NDIS_STATUS oid_rt_pro_set_carrier_suppression_tx_hdl(struct oid_par_priv *poid_
 		if (pmp_priv->tx.stop == 0) {
 			pmp_priv->tx.stop = 1;
 			RTW_INFO("%s: pkt tx is running...\n", __func__);
-			rtw_msleep_os(5);
+			msleep(5);
 		}
 		pmp_priv->tx.stop = 0;
 		pmp_priv->tx.count = 1;

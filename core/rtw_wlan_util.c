@@ -336,7 +336,7 @@ void get_rate_set(_adapter *padapter, unsigned char *pbssrate, int *bssrate_len)
 {
 	unsigned char supportedrates[NumRates];
 
-	_rtw_memset(supportedrates, 0, NumRates);
+	memset(supportedrates, 0, NumRates);
 	*bssrate_len = ratetbl2rateset(padapter, supportedrates);
 	_rtw_memcpy(pbssrate, supportedrates, *bssrate_len);
 }
@@ -757,7 +757,7 @@ void invalidate_cam_all(_adapter *padapter)
 
 	_enter_critical_bh(&cam_ctl->lock, &irqL);
 	rtw_sec_cam_map_clr_all(&cam_ctl->used);
-	_rtw_memset(dvobj->cam_cache, 0, sizeof(struct sec_cam_ent) * SEC_CAM_ENT_NUM_SW_LIMIT);
+	memset(dvobj->cam_cache, 0, sizeof(struct sec_cam_ent) * SEC_CAM_ENT_NUM_SW_LIMIT);
 	_exit_critical_bh(&cam_ctl->lock, &irqL);
 }
 
@@ -821,7 +821,7 @@ void clear_cam_cache(_adapter *adapter, u8 id)
 
 	_enter_critical_bh(&cam_ctl->lock, &irqL);
 
-	_rtw_memset(&(dvobj->cam_cache[id]), 0, sizeof(struct sec_cam_ent));
+	memset(&(dvobj->cam_cache[id]), 0, sizeof(struct sec_cam_ent));
 
 	_exit_critical_bh(&cam_ctl->lock, &irqL);
 }
@@ -2428,7 +2428,7 @@ void rtw_debug_rx_bcn(_adapter *adapter, u8 *pframe, u32 packet_len)
 
 	update_TSF(pmlmeext, pframe, packet_len);
 	tsf = pmlmeext->TSFValue;
-	tsf_offset = rtw_modular64(pmlmeext->TSFValue, (mlmeinfo->bcn_interval * 1024));
+	tsf_offset = do_div(pmlmeext->TSFValue, (mlmeinfo->bcn_interval * 1024));
 
 	/*get TIM IE*/
 	/*DTIM Count*/
@@ -2462,7 +2462,7 @@ int rtw_get_bcn_keys(ADAPTER *Adapter, u8 *pframe, u32 packet_len,
 	unsigned char *pos;
 	struct rtw_ieee802_11_elems elems;
 
-	_rtw_memset(recv_beacon, 0, sizeof(*recv_beacon));
+	memset(recv_beacon, 0, sizeof(*recv_beacon));
 
 	/* checking capabilities */
 	capability = le16_to_cpu(*(unsigned short *)(pframe + WLAN_HDR_A3_LEN + 10));
@@ -3068,7 +3068,7 @@ void update_tx_basic_rate(_adapter *padapter, u8 wirelessmode)
 		return;
 #endif /* CONFIG_INTEL_WIDI */
 
-	_rtw_memset(supported_rates, 0, NDIS_802_11_LENGTH_RATES_EX);
+	memset(supported_rates, 0, NDIS_802_11_LENGTH_RATES_EX);
 
 	/* clear B mod if current channel is in 5G band, avoid tx cck rate in 5G band. */
 	if (pmlmeext->cur_channel > 14)
@@ -4091,11 +4091,6 @@ inline void rtw_macid_ctl_init(struct macid_ctl_t *macid_ctl)
 	_rtw_spinlock_init(&macid_ctl->lock);
 }
 
-inline void rtw_macid_ctl_deinit(struct macid_ctl_t *macid_ctl)
-{
-	_rtw_spinlock_free(&macid_ctl->lock);
-}
-
 inline bool rtw_bmp_is_set(const u8 *bmp, u8 bmp_len, u8 id)
 {
 	if (id / 8 >= bmp_len)
@@ -4192,7 +4187,7 @@ unsigned int setup_beacon_frame(_adapter *padapter, unsigned char *beacon_frame)
 	WLAN_BSSID_EX		*cur_network = &(pmlmeinfo->network);
 	u8	bc_addr[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 
-	_rtw_memset(beacon_frame, 0, 256);
+	memset(beacon_frame, 0, 256);
 
 	pframe = beacon_frame + TXDESC_SIZE;
 
@@ -4413,8 +4408,8 @@ void rtw_wow_pattern_sw_reset(_adapter *adapter)
 		pwrctrlpriv->wowlan_pattern_idx = 0;
 
 	for (i = 0 ; i < MAX_WKFM_CAM_NUM; i++) {
-		_rtw_memset(pwrctrlpriv->patterns[i].content, '\0', sizeof(pwrctrlpriv->patterns[i].content));
-		_rtw_memset(pwrctrlpriv->patterns[i].mask, '\0', sizeof(pwrctrlpriv->patterns[i].mask));
+		memset(pwrctrlpriv->patterns[i].content, '\0', sizeof(pwrctrlpriv->patterns[i].content));
+		memset(pwrctrlpriv->patterns[i].mask, '\0', sizeof(pwrctrlpriv->patterns[i].mask));
 		pwrctrlpriv->patterns[i].len = 0;
 	}
 }
@@ -4441,9 +4436,9 @@ u8 rtw_set_default_pattern(_adapter *adapter)
 		return 0;
 
 	for (index = 0 ; index < DEFAULT_PATTERN_NUM ; index++) {
-		_rtw_memset(pwrpriv->patterns[index].content, 0,
+		memset(pwrpriv->patterns[index].content, 0,
 			    sizeof(pwrpriv->patterns[index].content));
-		_rtw_memset(pwrpriv->patterns[index].mask, 0,
+		memset(pwrpriv->patterns[index].mask, 0,
 			    sizeof(pwrpriv->patterns[index].mask));
 		pwrpriv->patterns[index].len = 0;
 	}
@@ -4462,7 +4457,7 @@ u8 rtw_set_default_pattern(_adapter *adapter)
 
 			/* TCP */
 			target += (PROTOCOL_OFFSET - ETH_TYPE_OFFSET);
-			_rtw_memset(target, 0x06, 1);
+			memset(target, 0x06, 1);
 
 			target += (IP_OFFSET - PROTOCOL_OFFSET);
 
@@ -4485,7 +4480,7 @@ u8 rtw_set_default_pattern(_adapter *adapter)
 
 			/* ICMP */
 			target += (PROTOCOL_OFFSET - ETH_TYPE_OFFSET);
-			_rtw_memset(target, 0x01, 1);
+			memset(target, 0x01, 1);
 
 			target += (IP_OFFSET - PROTOCOL_OFFSET);
 			_rtw_memcpy(target, pmlmeinfo->ip_addr,
@@ -4509,7 +4504,7 @@ u8 rtw_set_default_pattern(_adapter *adapter)
 				/* ICMPv6 */
 				target += (IPv6_PROTOCOL_OFFSET -
 					   ETH_TYPE_OFFSET);
-				_rtw_memset(target, 0x3a, 1);
+				memset(target, 0x3a, 1);
 
 				target += (IPv6_OFFSET - IPv6_PROTOCOL_OFFSET);
 				_rtw_memcpy(target, pmlmeinfo->ip6_addr,
@@ -4532,7 +4527,7 @@ u8 rtw_set_default_pattern(_adapter *adapter)
 
 			/* UDP */
 			target += (PROTOCOL_OFFSET - ETH_TYPE_OFFSET);
-			_rtw_memset(target, 0x11, 1);
+			memset(target, 0x11, 1);
 
 			target += (IP_OFFSET - PROTOCOL_OFFSET);
 			_rtw_memcpy(target, &multicast_ip,
@@ -4565,7 +4560,7 @@ void rtw_dump_priv_pattern(_adapter *adapter, u8 idx)
 	p_str = str_1;
 	max_len = sizeof(str_1);
 	for (i = 0 ; i < MAX_WKFM_PATTERN_SIZE / 8 ; i++) {
-		_rtw_memset(p_str, 0, max_len);
+		memset(p_str, 0, max_len);
 		len = 0;
 		for (j = 0 ; j < 8 ; j++) {
 			val8 = pwrctl->patterns[idx].content[i * 8 + j];
@@ -4577,7 +4572,7 @@ void rtw_dump_priv_pattern(_adapter *adapter, u8 idx)
 
 	RTW_INFO(">>>priv_pattern_mask:\n");
 	for (i = 0 ; i < MAX_WKFM_SIZE / 8 ; i++) {
-		_rtw_memset(p_str, 0, max_len);
+		memset(p_str, 0, max_len);
 		len = 0;
 		for (j = 0 ; j < 8 ; j++) {
 			val8 = pwrctl->patterns[idx].mask[i * 8 + j];
@@ -4605,7 +4600,7 @@ void rtw_get_sec_iv(PADAPTER padapter, u8 *pcur_dot11txpn, u8 *StaAddr)
 	struct sta_info		*psta;
 	struct security_priv *psecpriv = &padapter->securitypriv;
 
-	_rtw_memset(pcur_dot11txpn, 0, 8);
+	memset(pcur_dot11txpn, 0, 8);
 	if (NULL == StaAddr)
 		return;
 	psta = rtw_get_stainfo(&padapter->stapriv, StaAddr);

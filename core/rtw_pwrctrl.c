@@ -540,7 +540,7 @@ u8 rtw_cpwm_polling(_adapter *adapter, u8 rpwm, u8 cpwm_orig)
 	do {
 		start_time = rtw_get_current_time();
 		do {
-			rtw_msleep_os(1);
+			msleep(1);
 			rtw_hal_get_hwreg(adapter, HW_VAR_CPWM, &cpwm_now);
 
 			if ((cpwm_orig ^ cpwm_now) & 0x80) {
@@ -1435,7 +1435,7 @@ void LPS_Leave_check(
 	bReady = _FALSE;
 	start_time = rtw_get_current_time();
 
-	rtw_yield_os();
+	yield();
 
 	while (1) {
 		_enter_pwrlock(&pwrpriv->lock);
@@ -1458,7 +1458,7 @@ void LPS_Leave_check(
 			RTW_ERR("Wait for cpwm event  than 100 ms!!!\n");
 			break;
 		}
-		rtw_msleep_os(1);
+		msleep(1);
 	}
 
 }
@@ -2268,7 +2268,7 @@ void rtw_free_pwrctrl_priv(PADAPTER adapter)
 #endif
 
 
-	/* _rtw_memset((unsigned char *)pwrctrlpriv, 0, sizeof(struct pwrctrl_priv)); */
+	/* memset((unsigned char *)pwrctrlpriv, 0, sizeof(struct pwrctrl_priv)); */
 
 
 #ifdef CONFIG_RESUME_IN_WORKQUEUE
@@ -2512,7 +2512,7 @@ int _rtw_pwr_wakeup(_adapter *padapter, u32 ips_deffer_ms, const char *caller)
 	if (pwrpriv->ps_processing) {
 		RTW_INFO("%s wait ps_processing...\n", __func__);
 		while (pwrpriv->ps_processing && rtw_get_passing_time_ms(start) <= 3000)
-			rtw_msleep_os(10);
+			msleep(10);
 		if (pwrpriv->ps_processing)
 			RTW_INFO("%s wait ps_processing timeout\n", __func__);
 		else
@@ -2523,7 +2523,7 @@ int _rtw_pwr_wakeup(_adapter *padapter, u32 ips_deffer_ms, const char *caller)
 	if (rtw_hal_sreset_inprogress(padapter)) {
 		RTW_INFO("%s wait sreset_inprogress...\n", __func__);
 		while (rtw_hal_sreset_inprogress(padapter) && rtw_get_passing_time_ms(start) <= 4000)
-			rtw_msleep_os(10);
+			msleep(10);
 		if (rtw_hal_sreset_inprogress(padapter))
 			RTW_INFO("%s wait sreset_inprogress timeout\n", __func__);
 		else
@@ -2541,7 +2541,7 @@ int _rtw_pwr_wakeup(_adapter *padapter, u32 ips_deffer_ms, const char *caller)
 		       && ((rtw_get_passing_time_ms(start) <= 3000 && !rtw_is_do_late_resume(pwrpriv))
 			|| (rtw_get_passing_time_ms(start) <= 500 && rtw_is_do_late_resume(pwrpriv)))
 		      )
-			rtw_msleep_os(10);
+			msleep(10);
 		if (pwrpriv->bInSuspend)
 			RTW_INFO("%s wait bInSuspend timeout\n", __func__);
 		else
