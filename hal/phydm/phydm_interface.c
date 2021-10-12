@@ -370,12 +370,12 @@ void odm_allocate_memory(struct dm_struct *dm, void **ptr, u32 length)
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE) && defined(DM_ODM_CE_MAC80211_V2)
 	*ptr = kmalloc(length, GFP_ATOMIC);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE)
-	*ptr = rtw_zvmalloc(length);
+	*ptr = vzalloc(length);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_WIN)
 	void *adapter = dm->adapter;
 	PlatformAllocateMemory(adapter, ptr, length);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_IOT)
-	*ptr = rtw_zvmalloc(length);
+	*ptr = vzalloc(length);
 #endif
 }
 
@@ -592,17 +592,17 @@ odm_is_work_item_scheduled(
 void ODM_delay_ms(u32 ms)
 {
 #if (DM_ODM_SUPPORT_TYPE & (ODM_AP))
-	delay_ms(ms);
+	mdelay(ms);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE) && defined(DM_ODM_CE_MAC80211)
 	mdelay(ms);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE) && defined(DM_ODM_CE_MAC80211_V2)
 	mdelay(ms);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE)
-	rtw_mdelay_os(ms);
+	mdelay(ms);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_WIN)
-	delay_ms(ms);
+	mdelay(ms);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_IOT)
-	rtw_mdelay_os(ms);
+	mdelay(ms);
 #endif
 }
 
@@ -615,18 +615,18 @@ void ODM_delay_us(u32 us)
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE) && defined(DM_ODM_CE_MAC80211_V2)
 	udelay(us);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE)
-	rtw_udelay_os(us);
+	udelay(us);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_WIN)
 	PlatformStallExecution(us);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_IOT)
-	rtw_udelay_os(us);
+	udelay(us);
 #endif
 }
 
 void ODM_sleep_ms(u32 ms)
 {
 #if (DM_ODM_SUPPORT_TYPE & (ODM_AP))
-	delay_ms(ms);
+	mdelay(ms);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE) && defined(DM_ODM_CE_MAC80211)
 	msleep(ms);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE) && defined(DM_ODM_CE_MAC80211_V2)
@@ -634,7 +634,7 @@ void ODM_sleep_ms(u32 ms)
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE)
 	msleep(ms);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_WIN)
-	delay_ms(ms);
+	mdelay(ms);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_IOT)
 	msleep(ms);
 #endif
@@ -1023,7 +1023,6 @@ u8 phydm_c2H_content_parsing(void *dm_void, u8 c2h_cmd_id, u8 c2h_cmd_len,
 #if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
 
 		if (dm->support_ic_type & (ODM_RTL8812 | ODM_RTL8821)) {
-			RT_TRACE(COMP_MP, DBG_LOUD, ("== FW IQK Finish ==\n"));
 			odm_acquire_spin_lock(dm, RT_IQK_SPINLOCK);
 			dm->rf_calibrate_info.is_iqk_in_progress = false;
 			odm_release_spin_lock(dm, RT_IQK_SPINLOCK);

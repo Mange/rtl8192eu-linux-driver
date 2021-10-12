@@ -441,13 +441,6 @@ enum WIFI_REG_DOMAIN {
 #define GetAddr4Ptr(pbuf)	((unsigned char *)((SIZE_PTR)(pbuf) + 24))
 
 
-#define MacAddr_isBcst(addr) \
-	(\
-	 ((addr[0] == 0xff) && (addr[1] == 0xff) && \
-	  (addr[2] == 0xff) && (addr[3] == 0xff) && \
-	  (addr[4] == 0xff) && (addr[5] == 0xff)) ? _TRUE : _FALSE \
-	)
-
 __inline static int IS_MCAST(const u8 *da)
 {
 	if ((*da) & 0x01)
@@ -803,11 +796,6 @@ struct rtw_ieee80211_bar {
 } __attribute__((packed));
 #endif
 
-/* 802.11 BAR control masks */
-#define IEEE80211_BAR_CTRL_ACK_POLICY_NORMAL     0x0000
-#define IEEE80211_BAR_CTRL_CBMTID_COMPRESSED_BA  0x0004
-
-
 #if defined(PLATFORM_LINUX) || defined(CONFIG_RTL8712FW) || defined(PLATFORM_FREEBSD)
 
 
@@ -981,53 +969,7 @@ typedef enum _HT_CAP_AMPDU_DENSITY {
 } HT_CAP_AMPDU_DENSITY;
 
 /* 802.11n HT capabilities masks */
-#define IEEE80211_HT_CAP_LDPC_CODING		0x0001
-#define IEEE80211_HT_CAP_SUP_WIDTH		0x0002
-#define IEEE80211_HT_CAP_SM_PS			0x000C
-#define IEEE80211_HT_CAP_GRN_FLD		0x0010
-#define IEEE80211_HT_CAP_SGI_20			0x0020
-#define IEEE80211_HT_CAP_SGI_40			0x0040
-#define IEEE80211_HT_CAP_TX_STBC			0x0080
-#define IEEE80211_HT_CAP_RX_STBC_1R		0x0100
-#define IEEE80211_HT_CAP_RX_STBC_2R		0x0200
-#define IEEE80211_HT_CAP_RX_STBC_3R		0x0300
-#define IEEE80211_HT_CAP_DELAY_BA		0x0400
-#define IEEE80211_HT_CAP_MAX_AMSDU		0x0800
-#define IEEE80211_HT_CAP_DSSSCCK40		0x1000
-#define RTW_IEEE80211_HT_CAP_40MHZ_INTOLERANT	((u16) BIT(14))
-/* 802.11n HT capability AMPDU settings */
-#define IEEE80211_HT_CAP_AMPDU_FACTOR		0x03
-#define IEEE80211_HT_CAP_AMPDU_DENSITY		0x1C
-/* 802.11n HT capability MSC set */
-#define IEEE80211_SUPP_MCS_SET_UEQM		4
-#define IEEE80211_HT_CAP_MAX_STREAMS		4
-#define IEEE80211_SUPP_MCS_SET_LEN		10
-/* maximum streams the spec allows */
-#define IEEE80211_HT_CAP_MCS_TX_DEFINED		0x01
-#define IEEE80211_HT_CAP_MCS_TX_RX_DIFF		0x02
-#define IEEE80211_HT_CAP_MCS_TX_STREAMS		0x0C
-#define IEEE80211_HT_CAP_MCS_TX_UEQM		0x10
-/* 802.11n HT capability TXBF capability */
-#define IEEE80211_HT_CAP_TXBF_RX_NDP		0x00000008
-#define IEEE80211_HT_CAP_TXBF_TX_NDP		0x00000010
-#define IEEE80211_HT_CAP_TXBF_EXPLICIT_COMP_STEERING_CAP	0x00000400
-
-/* 802.11n HT IE masks */
-#define IEEE80211_HT_IE_CHA_SEC_OFFSET		0x03
-#define IEEE80211_HT_IE_CHA_SEC_NONE		0x00
-#define IEEE80211_HT_IE_CHA_SEC_ABOVE		0x01
-#define IEEE80211_HT_IE_CHA_SEC_BELOW		0x03
-#define IEEE80211_HT_IE_CHA_WIDTH		0x04
-#define IEEE80211_HT_IE_HT_PROTECTION		0x0003
-#define IEEE80211_HT_IE_NON_GF_STA_PRSNT	0x0004
-#define IEEE80211_HT_IE_NON_HT_STA_PRSNT	0x0010
-
-/* block-ack parameters */
-#define IEEE80211_ADDBA_PARAM_POLICY_MASK 0x0002
-#define IEEE80211_ADDBA_PARAM_TID_MASK 0x003C
-#define RTW_IEEE80211_ADDBA_PARAM_BUF_SIZE_MASK 0xFFC0
-#define IEEE80211_DELBA_PARAM_TID_MASK 0xF000
-#define IEEE80211_DELBA_PARAM_INITIATOR_MASK 0x0800
+#define IEEE80211_HT_CAP_RX_STBC_1R 0x0100
 
 /*
  * A-PMDU buffer sizes

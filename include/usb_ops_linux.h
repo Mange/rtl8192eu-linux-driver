@@ -60,7 +60,7 @@ void usb_read_port_cancel(struct intf_hdl *pintfhdl);
 u32 usb_write_port(struct intf_hdl *pintfhdl, u32 addr, u32 cnt, u8 *wmem);
 void usb_write_port_cancel(struct intf_hdl *pintfhdl);
 
-int usbctrl_vendorreq(struct intf_hdl *pintfhdl, u8 request, u16 value, u16 index, void *pdata, u16 len, u8 requesttype);
+int usbctrl_vendorreq(struct intf_hdl *pintfhdl, u16 value, u16 index, void *pdata, u16 len, u8 requesttype);
 #ifdef CONFIG_USB_SUPPORT_ASYNC_VDN_REQ
 int _usbctrl_vendorreq_async_write(struct usb_device *udev, u8 request,
 		u16 value, u16 index, void *pdata, u16 len, u8 requesttype);

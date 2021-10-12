@@ -2388,8 +2388,6 @@ u8 halbtcoutsrc_GetAntDetValFromBt(void *pBtcContext)
 
 	status = NDBG_GetAntDetValFromBt(Adapter, opcodeVer, &AntDetVal);
 
-	RT_TRACE(COMP_DBG, DBG_LOUD, ("$$$ halbtcoutsrc_GetAntDetValFromBt(): status = %d, feature = %x\n", status, AntDetVal));
-
 	return AntDetVal;
 #else
 	return 0;

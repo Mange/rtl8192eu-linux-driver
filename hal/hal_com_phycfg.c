@@ -4092,7 +4092,7 @@ phy_ConfigMACWithParaFile(
 			rlen = rtw_retrieve_from_file(rtw_phy_para_file_path, pHalData->para_file_buf, MAX_PARA_FILE_BUF_LEN);
 			if (rlen > 0) {
 				rtStatus = _SUCCESS;
-				pHalData->mac_reg = rtw_zvmalloc(rlen);
+				pHalData->mac_reg = vzalloc(rlen);
 				if (pHalData->mac_reg) {
 					_rtw_memcpy(pHalData->mac_reg, pHalData->para_file_buf, rlen);
 					pHalData->mac_reg_len = rlen;
@@ -4171,7 +4171,7 @@ phy_ConfigBBWithParaFile(
 			rlen = rtw_retrieve_from_file(rtw_phy_para_file_path, pHalData->para_file_buf, MAX_PARA_FILE_BUF_LEN);
 			if (rlen > 0) {
 				rtStatus = _SUCCESS;
-				pBuf = rtw_zvmalloc(rlen);
+				pBuf = vzalloc(rlen);
 				if (pBuf) {
 					_rtw_memcpy(pBuf, pHalData->para_file_buf, rlen);
 					*pBufLen = rlen;
@@ -4209,18 +4209,18 @@ phy_ConfigBBWithParaFile(
 #ifdef CONFIG_LONG_DELAY_ISSUE
 						msleep(50);
 #else
-						rtw_mdelay_os(50);
+						mdelay(50);
 #endif
 					} else if (u4bRegOffset == 0xfd)
-						rtw_mdelay_os(5);
+						mdelay(5);
 					else if (u4bRegOffset == 0xfc)
-						rtw_mdelay_os(1);
+						mdelay(1);
 					else if (u4bRegOffset == 0xfb)
-						rtw_udelay_os(50);
+						udelay(50);
 					else if (u4bRegOffset == 0xfa)
-						rtw_udelay_os(5);
+						udelay(5);
 					else if (u4bRegOffset == 0xf9)
-						rtw_udelay_os(1);
+						udelay(1);
 
 					/* Get 2nd hex value as register value. */
 					szLine += u4bMove;
@@ -4232,7 +4232,7 @@ phy_ConfigBBWithParaFile(
 							pHalData->odmpriv.rf_calibrate_info.rega24 = u4bRegValue;
 
 						/* Add 1us delay between BB/RF register setting. */
-						rtw_udelay_os(1);
+						udelay(1);
 					}
 				}
 			}
@@ -4477,7 +4477,7 @@ phy_ConfigBBWithPgParaFile(
 			rlen = rtw_retrieve_from_file(rtw_phy_para_file_path, pHalData->para_file_buf, MAX_PARA_FILE_BUF_LEN);
 			if (rlen > 0) {
 				rtStatus = _SUCCESS;
-				pHalData->bb_phy_reg_pg = rtw_zvmalloc(rlen);
+				pHalData->bb_phy_reg_pg = vzalloc(rlen);
 				if (pHalData->bb_phy_reg_pg) {
 					_rtw_memcpy(pHalData->bb_phy_reg_pg, pHalData->para_file_buf, rlen);
 					pHalData->bb_phy_reg_pg_len = rlen;
@@ -4526,7 +4526,7 @@ phy_ConfigBBWithMpParaFile(
 			rlen = rtw_retrieve_from_file(rtw_phy_para_file_path, pHalData->para_file_buf, MAX_PARA_FILE_BUF_LEN);
 			if (rlen > 0) {
 				rtStatus = _SUCCESS;
-				pHalData->bb_phy_reg_mp = rtw_zvmalloc(rlen);
+				pHalData->bb_phy_reg_mp = vzalloc(rlen);
 				if (pHalData->bb_phy_reg_mp) {
 					_rtw_memcpy(pHalData->bb_phy_reg_mp, pHalData->para_file_buf, rlen);
 					pHalData->bb_phy_reg_mp_len = rlen;
@@ -4557,18 +4557,18 @@ phy_ConfigBBWithMpParaFile(
 #ifdef CONFIG_LONG_DELAY_ISSUE
 						msleep(50);
 #else
-						rtw_mdelay_os(50);
+						mdelay(50);
 #endif
 					} else if (u4bRegOffset == 0xfd)
-						rtw_mdelay_os(5);
+						mdelay(5);
 					else if (u4bRegOffset == 0xfc)
-						rtw_mdelay_os(1);
+						mdelay(1);
 					else if (u4bRegOffset == 0xfb)
-						rtw_udelay_os(50);
+						udelay(50);
 					else if (u4bRegOffset == 0xfa)
-						rtw_udelay_os(5);
+						udelay(5);
 					else if (u4bRegOffset == 0xf9)
-						rtw_udelay_os(1);
+						udelay(1);
 
 					/* Get 2nd hex value as register value. */
 					szLine += u4bMove;
@@ -4577,7 +4577,7 @@ phy_ConfigBBWithMpParaFile(
 						phy_set_bb_reg(Adapter, u4bRegOffset, bMaskDWord, u4bRegValue);
 
 						/* Add 1us delay between BB/RF register setting. */
-						rtw_udelay_os(1);
+						udelay(1);
 					}
 				}
 			}
@@ -4630,7 +4630,7 @@ PHY_ConfigRFWithParaFile(
 			rlen = rtw_retrieve_from_file(rtw_phy_para_file_path, pHalData->para_file_buf, MAX_PARA_FILE_BUF_LEN);
 			if (rlen > 0) {
 				rtStatus = _SUCCESS;
-				pBuf = rtw_zvmalloc(rlen);
+				pBuf = vzalloc(rlen);
 				if (pBuf) {
 					_rtw_memcpy(pBuf, pHalData->para_file_buf, rlen);
 					*pBufLen = rlen;
@@ -4671,22 +4671,22 @@ PHY_ConfigRFWithParaFile(
 #ifdef CONFIG_LONG_DELAY_ISSUE
 						msleep(50);
 #else
-						rtw_mdelay_os(50);
+						mdelay(50);
 #endif
 					} else if (u4bRegOffset == 0xfd) {
-						/* delay_ms(5); */
+						/* mdelay(5); */
 						for (i = 0; i < 100; i++)
-							rtw_udelay_os(MAX_STALL_TIME);
+							udelay(MAX_STALL_TIME);
 					} else if (u4bRegOffset == 0xfc) {
-						/* delay_ms(1); */
+						/* mdelay(1); */
 						for (i = 0; i < 20; i++)
-							rtw_udelay_os(MAX_STALL_TIME);
+							udelay(MAX_STALL_TIME);
 					} else if (u4bRegOffset == 0xfb)
-						rtw_udelay_os(50);
+						udelay(50);
 					else if (u4bRegOffset == 0xfa)
-						rtw_udelay_os(5);
+						udelay(5);
 					else if (u4bRegOffset == 0xf9)
-						rtw_udelay_os(1);
+						udelay(1);
 					else if (u4bRegOffset == 0xffff)
 						break;
 
@@ -4703,7 +4703,7 @@ PHY_ConfigRFWithParaFile(
 						/* 0x2b 0x00808		frequency divider. */
 						/* 0x2b 0x53333 */
 						/* 0x2c 0x0000c */
-						rtw_udelay_os(1);
+						udelay(1);
 					}
 				}
 			}
@@ -4829,7 +4829,7 @@ PHY_ConfigRFWithTxPwrTrackParaFile(
 			rlen = rtw_retrieve_from_file(rtw_phy_para_file_path, pHalData->para_file_buf, MAX_PARA_FILE_BUF_LEN);
 			if (rlen > 0) {
 				rtStatus = _SUCCESS;
-				pHalData->rf_tx_pwr_track = rtw_zvmalloc(rlen);
+				pHalData->rf_tx_pwr_track = vzalloc(rlen);
 				if (pHalData->rf_tx_pwr_track) {
 					_rtw_memcpy(pHalData->rf_tx_pwr_track, pHalData->para_file_buf, rlen);
 					pHalData->rf_tx_pwr_track_len = rlen;
@@ -5328,7 +5328,7 @@ PHY_ConfigRFWithPowerLimitTableParaFile(
 			rlen = rtw_retrieve_from_file(rtw_phy_para_file_path, pHalData->para_file_buf, MAX_PARA_FILE_BUF_LEN);
 			if (rlen > 0) {
 				rtStatus = _SUCCESS;
-				pHalData->rf_tx_pwr_lmt = rtw_zvmalloc(rlen);
+				pHalData->rf_tx_pwr_lmt = vzalloc(rlen);
 				if (pHalData->rf_tx_pwr_lmt) {
 					_rtw_memcpy(pHalData->rf_tx_pwr_lmt, pHalData->para_file_buf, rlen);
 					pHalData->rf_tx_pwr_lmt_len = rlen;

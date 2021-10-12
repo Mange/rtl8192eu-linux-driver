@@ -2055,7 +2055,7 @@ static	VOID mpt_StopOfdmContTx(
 	else
 		phy_set_bb_reg(pAdapter, rOFDM1_LSTF, BIT30 | BIT29 | BIT28, OFDM_ALL_OFF);
 
-	rtw_mdelay_os(10);
+	mdelay(10);
 
 	if (!IS_HARDWARE_TYPE_JAGUAR(pAdapter) && !IS_HARDWARE_TYPE_JAGUAR2(pAdapter)) {
 		phy_set_bb_reg(pAdapter, 0xa14, 0x300, 0x0);			/* 0xa15[1:0] = 0*/

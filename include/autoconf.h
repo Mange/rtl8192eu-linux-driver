@@ -286,7 +286,6 @@
 
 /* #define DBG_CMD_QUEUE */
 /* #define DBG_IO */
-/* #define DBG_DELAY_OS */
 /* #define DBG_MEM_ALLOC */
 /* #define DBG_IOCTL */
 

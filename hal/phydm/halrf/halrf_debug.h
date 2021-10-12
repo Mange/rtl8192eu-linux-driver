@@ -85,8 +85,6 @@ static __inline void RF_DBG(PDM_ODM_T dm, int comp, char *fmt, ...)
 	do {                                                                   \
 		struct dm_struct *__dm = dm;                                   \
 		if ((comp) & __dm->rf_table.rf_dbg_comp) {                     \
-			RT_TRACE(((struct rtl_priv *)__dm->adapter),           \
-				 COMP_PHYDM, DBG_DMESG, "[RF] " fmt, ##args);  \
 		}                                                              \
 	} while (0)
 #endif

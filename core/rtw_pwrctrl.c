@@ -781,7 +781,7 @@ void rtw_set_fw_in_ips_mode(PADAPTER padapter, u8 enable)
 			cnt++;
 			RTW_INFO("%s  polling REG_HMETFR=0x%x, cnt=%d\n",
 				 __func__, val8, cnt);
-			rtw_mdelay_os(10);
+			mdelay(10);
 		} while (cnt < 100 && (val8 != 0));
 
 #ifdef CONFIG_LPS_LCLK
@@ -806,7 +806,7 @@ void rtw_set_fw_in_ips_mode(PADAPTER padapter, u8 enable)
 						 __func__,
 						 rtw_read8(padapter, 0x08),
 						 rtw_read8(padapter, 0x03));
-					rtw_mdelay_os(10);
+					mdelay(10);
 				} while (cnt < 20 && (val8 != 0xEA));
 			}
 		}
@@ -832,7 +832,7 @@ void rtw_set_fw_in_ips_mode(PADAPTER padapter, u8 enable)
 		start_time = rtw_get_current_time();
 		do {
 
-			rtw_mdelay_os(1);
+			mdelay(1);
 
 			rtw_hal_get_hwreg(padapter, HW_VAR_CPWM, &cpwm_now);
 			if ((cpwm_orig ^ cpwm_now) & 0x80)

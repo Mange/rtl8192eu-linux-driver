@@ -237,7 +237,7 @@ u32	_rtw_init_sta_priv(struct	sta_priv *pstapriv)
 
 	pstapriv->padapter = adapter;
 
-	pstapriv->pallocated_stainfo_buf = rtw_zvmalloc(sizeof(struct sta_info) * NUM_STA + 4);
+	pstapriv->pallocated_stainfo_buf = vzalloc(sizeof(struct sta_info) * NUM_STA + 4);
 	if (!pstapriv->pallocated_stainfo_buf)
 		goto exit;
 
@@ -713,7 +713,7 @@ u32	rtw_free_stainfo(_adapter *padapter , struct sta_info *psta)
 
 	}
 
-	if (!((psta->state & WIFI_AP_STATE) || MacAddr_isBcst(psta->cmn.mac_addr)) && is_pre_link_sta == _FALSE)
+	if (!((psta->state & WIFI_AP_STATE) || is_broadcast_ether_addr(psta->cmn.mac_addr)) && is_pre_link_sta == _FALSE)
 		rtw_hal_set_odm_var(padapter, HAL_ODM_STA_INFO, psta, _FALSE);
 
 

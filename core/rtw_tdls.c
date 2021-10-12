@@ -474,7 +474,7 @@ void rtw_tdls_process_ht_cap(_adapter *padapter, struct sta_info *ptdls_sta, u8 
 			ptdls_sta->htpriv.sgi_40m = _TRUE;
 
 		/* Bwmode would still followed AP's setting */
-		if (ptdls_sta->htpriv.ht_cap.cap_info & cpu_to_le16(IEEE80211_HT_CAP_SUP_WIDTH)) {
+		if (ptdls_sta->htpriv.ht_cap.cap_info & cpu_to_le16(IEEE80211_HT_CAP_SUP_WIDTH_20_40)) {
 			if (padapter->mlmeextpriv.cur_bwmode >= CHANNEL_WIDTH_40)
 				ptdls_sta->cmn.bw_mode = CHANNEL_WIDTH_40;
 			ptdls_sta->htpriv.ch_offset = padapter->mlmeextpriv.cur_ch_offset;
@@ -2376,7 +2376,7 @@ int On_TDLS_Dis_Req(_adapter *padapter, union recv_frame *precv_frame)
 			if (psta_ap == NULL)
 				goto exit;
 			dst = pIE->data + 12;
-			if (MacAddr_isBcst(dst) == _FALSE && (_rtw_memcmp(adapter_mac_addr(padapter), dst, ETH_ALEN) == _FALSE))
+			if (MacAddr_isMulticast(dst) == _FALSE && (_rtw_memcmp(adapter_mac_addr(padapter), dst, ETH_ALEN) == _FALSE))
 				goto exit;
 			break;
 		default:

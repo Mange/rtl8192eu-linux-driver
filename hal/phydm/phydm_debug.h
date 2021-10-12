@@ -90,8 +90,6 @@
 	#define pr_debug		printk
 	#define RT_PRINTK(fmt, args...)	pr_debug(fmt, ## args)
 	#define	RT_DISP(dbgtype, dbgflag, printstr)
-	#define RT_TRACE(adapter, comp, drv_level, fmt, args...)	\
-		RTW_INFO(fmt, ## args)
 	#define PHYDM_SNPRINTF		snprintf
 #elif (DM_ODM_SUPPORT_TYPE == ODM_IOT)
 	#define pr_debug(fmt, args...)		RTW_PRINT_MSG(fmt, ## args)
@@ -250,9 +248,6 @@ static __inline void PHYDM_DBG_F(PDM_ODM_T dm, int comp, char *fmt, ...)
 	do {							\
 		struct dm_struct *__dm = (dm);			\
 		if ((comp) & __dm->debug_components) {		\
-			RT_TRACE(((struct rtl_priv *)__dm->adapter),\
-				 COMP_PHYDM, DBG_DMESG,		\
-				 "[PHYDM] " fmt, ##args);	\
 		}						\
 	} while (0)
 
@@ -260,8 +255,6 @@ static __inline void PHYDM_DBG_F(PDM_ODM_T dm, int comp, char *fmt, ...)
 	do {							\
 		struct dm_struct *__dm = (dm);			\
 		if ((comp) & __dm->debug_components) {		\
-			RT_TRACE(((struct rtl_priv *)__dm->adapter),\
-				 COMP_PHYDM, DBG_DMESG, fmt, ##args);	\
 		}	\
 	} while (0)
 
@@ -269,9 +262,6 @@ static __inline void PHYDM_DBG_F(PDM_ODM_T dm, int comp, char *fmt, ...)
 	do {							\
 		struct dm_struct *__dm = (dm);			\
 		if ((comp) & __dm->debug_components) {		\
-			RT_TRACE(((struct rtl_priv *)__dm->adapter),\
-				 COMP_PHYDM, DBG_DMESG,		\
-				 "[PHYDM] " title_str "%pM\n", addr);\
 		}						\
 	} while (0)
 #endif
@@ -379,9 +369,7 @@ static __inline void PDM_SNPF(u32 out_len, u32 used, char *buff, int len,
 #elif (DM_ODM_SUPPORT_TYPE == ODM_CE) && defined(DM_ODM_CE_MAC80211_V2)
 #define	PDM_VAST_SNPF(out_len, used, buff, len, fmt, args...)
 #else
-#define	PDM_VAST_SNPF(out_len, used, buff, len, fmt, args...)	\
-		RT_TRACE(((struct rtl_priv *)dm->adapter), COMP_PHYDM, \
-			DBG_DMESG, fmt, ##args)
+#define	PDM_VAST_SNPF(out_len, used, buff, len, fmt, args...)
 #endif
 
 #if (PHYDM_DBGPRINT == 1)

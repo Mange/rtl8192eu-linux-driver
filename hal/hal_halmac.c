@@ -410,7 +410,7 @@ static void _halmac_udelay(void *p, u32 us)
 {
 	/* Most hardware polling wait time < 50us) */
 	if (us <= 50)
-		rtw_udelay_os(us);
+		udelay(us);
 	else if (us <= 1000)
 		rtw_usleep_os(us);
 	else
@@ -4388,7 +4388,7 @@ int rtw_halmac_dump_fifo(struct dvobj_priv *d, u8 fifo_sel, u32 addr, u32 size, 
 		fifo_size = api->halmac_get_fifo_size(mac, halmac_fifo_sel);
 
 		if (fifo_size)
-			pfifo_map = rtw_zvmalloc(fifo_size);
+			pfifo_map = vzalloc(fifo_size);
 		if (pfifo_map == NULL)
 			return -1;
 		mem_created = _TRUE;

@@ -65,52 +65,6 @@ u32 rtw_atoi(u8 *s)
 
 }
 
-inline void *_rtw_vmalloc(u32 sz)
-{
-	void *pbuf;
-#ifdef PLATFORM_LINUX
-	pbuf = vmalloc(sz);
-#endif
-#ifdef PLATFORM_FREEBSD
-	pbuf = malloc(sz, M_DEVBUF, M_NOWAIT);
-#endif
-
-#ifdef PLATFORM_WINDOWS
-	NdisAllocateMemoryWithTag(&pbuf, sz, RT_TAG);
-#endif
-
-#ifdef DBG_MEMORY_LEAK
-#ifdef PLATFORM_LINUX
-	if (pbuf != NULL) {
-		atomic_inc(&_malloc_cnt);
-		atomic_add(sz, &_malloc_size);
-	}
-#endif
-#endif /* DBG_MEMORY_LEAK */
-
-	return pbuf;
-}
-
-inline void *_rtw_zvmalloc(u32 sz)
-{
-	void *pbuf;
-#ifdef PLATFORM_LINUX
-	pbuf = _rtw_vmalloc(sz);
-	if (pbuf != NULL)
-		memset(pbuf, 0, sz);
-#endif
-#ifdef PLATFORM_FREEBSD
-	pbuf = malloc(sz, M_DEVBUF, M_ZERO | M_NOWAIT);
-#endif
-#ifdef PLATFORM_WINDOWS
-	NdisAllocateMemoryWithTag(&pbuf, sz, RT_TAG);
-	if (pbuf != NULL)
-		NdisFillMemory(pbuf, sz, 0);
-#endif
-
-	return pbuf;
-}
-
 void *_rtw_malloc(u32 sz)
 {
 	void *pbuf = NULL;
@@ -538,57 +492,6 @@ bool match_mstat_sniff_rules(const enum mstat_f flags, const size_t size)
 	}
 
 	return _FALSE;
-}
-
-inline void *dbg_rtw_vmalloc(u32 sz, const enum mstat_f flags, const char *func, const int line)
-{
-	void *p;
-
-	if (match_mstat_sniff_rules(flags, sz))
-		RTW_INFO("DBG_MEM_ALLOC %s:%d %s(%d)\n", func, line, __FUNCTION__, (sz));
-
-	p = _rtw_vmalloc((sz));
-
-	rtw_mstat_update(
-		flags
-		, p ? MSTAT_ALLOC_SUCCESS : MSTAT_ALLOC_FAIL
-		, sz
-	);
-
-	return p;
-}
-
-inline void *dbg_rtw_zvmalloc(u32 sz, const enum mstat_f flags, const char *func, const int line)
-{
-	void *p;
-
-	if (match_mstat_sniff_rules(flags, sz))
-		RTW_INFO("DBG_MEM_ALLOC %s:%d %s(%d)\n", func, line, __FUNCTION__, (sz));
-
-	p = _rtw_zvmalloc((sz));
-
-	rtw_mstat_update(
-		flags
-		, p ? MSTAT_ALLOC_SUCCESS : MSTAT_ALLOC_FAIL
-		, sz
-	);
-
-	return p;
-}
-
-inline void dbg_rtw_vmfree(void *pbuf, u32 sz, const enum mstat_f flags, const char *func, const int line)
-{
-
-	if (match_mstat_sniff_rules(flags, sz))
-		RTW_INFO("DBG_MEM_ALLOC %s:%d %s(%d)\n", func, line, __FUNCTION__, (sz));
-
-	vfree((pbuf));
-
-	rtw_mstat_update(
-		flags
-		, MSTAT_FREE
-		, sz
-	);
 }
 
 inline void *dbg_rtw_malloc(u32 sz, const enum mstat_f flags, const char *func, const int line)
@@ -1545,37 +1448,6 @@ inline bool _rtw_time_after(systime a, systime b)
 #endif
 }
 
-void rtw_sleep_schedulable(int ms)
-{
-
-#ifdef PLATFORM_LINUX
-
-	u32 delta;
-
-	delta = (ms * HZ) / 1000; /* (ms) */
-	if (delta == 0) {
-		delta = 1;/* 1 ms */
-	}
-	set_current_state(TASK_INTERRUPTIBLE);
-	if (schedule_timeout(delta) != 0)
-		return ;
-	return;
-
-#endif
-#ifdef PLATFORM_FREEBSD
-	DELAY(ms * 1000);
-	return ;
-#endif
-
-#ifdef PLATFORM_WINDOWS
-
-	NdisMSleep(ms * 1000); /* (us)*1000=(ms) */
-
-#endif
-
-}
-
-
 void rtw_usleep_os(int us)
 {
 #ifdef PLATFORM_LINUX
@@ -1606,100 +1478,6 @@ void rtw_usleep_os(int us)
 
 }
 
-
-#ifdef DBG_DELAY_OS
-void _rtw_mdelay_os(int ms, const char *func, const int line)
-{
-#if 0
-	if (ms > 10)
-		RTW_INFO("%s:%d %s(%d)\n", func, line, __FUNCTION__, ms);
-	msleep(ms);
-	return;
-#endif
-
-
-	RTW_INFO("%s:%d %s(%d)\n", func, line, __FUNCTION__, ms);
-
-#if defined(PLATFORM_LINUX)
-
-	mdelay((unsigned long)ms);
-
-#elif defined(PLATFORM_WINDOWS)
-
-	NdisStallExecution(ms * 1000); /* (us)*1000=(ms) */
-
-#endif
-
-
-}
-void _rtw_udelay_os(int us, const char *func, const int line)
-{
-
-#if 0
-	if (us > 1000) {
-		RTW_INFO("%s:%d %s(%d)\n", func, line, __FUNCTION__, us);
-		rtw_usleep_os(us);
-		return;
-	}
-#endif
-
-
-	RTW_INFO("%s:%d %s(%d)\n", func, line, __FUNCTION__, us);
-
-
-#if defined(PLATFORM_LINUX)
-
-	udelay((unsigned long)us);
-
-#elif defined(PLATFORM_WINDOWS)
-
-	NdisStallExecution(us); /* (us) */
-
-#endif
-
-}
-#else
-void rtw_mdelay_os(int ms)
-{
-
-#ifdef PLATFORM_LINUX
-
-	mdelay((unsigned long)ms);
-
-#endif
-#ifdef PLATFORM_FREEBSD
-	DELAY(ms * 1000);
-	return ;
-#endif
-#ifdef PLATFORM_WINDOWS
-
-	NdisStallExecution(ms * 1000); /* (us)*1000=(ms) */
-
-#endif
-
-
-}
-void rtw_udelay_os(int us)
-{
-
-#ifdef PLATFORM_LINUX
-
-	udelay((unsigned long)us);
-
-#endif
-#ifdef PLATFORM_FREEBSD
-	/* Delay for delay microseconds */
-	DELAY(us);
-	return ;
-#endif
-#ifdef PLATFORM_WINDOWS
-
-	NdisStallExecution(us); /* (us) */
-
-#endif
-
-}
-#endif
 
 bool rtw_macaddr_is_larger(const u8 *a, const u8 *b)
 {
@@ -2179,7 +1957,7 @@ struct net_device *rtw_alloc_etherdev(int sizeof_priv)
 
 	pnpi = netdev_priv(pnetdev);
 
-	pnpi->priv = rtw_zvmalloc(sizeof_priv);
+	pnpi->priv = vzalloc(sizeof_priv);
 	if (!pnpi->priv) {
 		free_netdev(pnetdev);
 		pnetdev = NULL;

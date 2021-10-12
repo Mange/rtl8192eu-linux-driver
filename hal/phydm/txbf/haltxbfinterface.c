@@ -54,7 +54,7 @@ void beamforming_gid_paid(
 
 		/* VHT SU PPDU carrying one or more group addressed MPDUs or */
 		/* Transmitting a VHT NDP intended for multiple recipients */
-		if (MacAddr_isBcst(RA) || MacAddr_isMulticast(RA) || tcb->macId == MAC_ID_STATIC_FOR_BROADCAST_MULTICAST) {
+		if (is_broadcast_ether_addr(RA) || MacAddr_isMulticast(RA) || tcb->macId == MAC_ID_STATIC_FOR_BROADCAST_MULTICAST) {
 			tcb->G_ID = 63;
 			tcb->P_AID = 0;
 		} else if (ACTING_AS_AP(adapter)) {

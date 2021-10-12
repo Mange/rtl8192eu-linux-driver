@@ -1985,7 +1985,7 @@ ReadEFuseByte(
 	/* This fix the problem that Efuse read error in high temperature condition. */
 	/* Designer says that there shall be some delay after ready bit is set, or the */
 	/* result will always stay on last data we read. */
-	rtw_udelay_os(50);
+	udelay(50);
 	value32 = rtw_read32(Adapter, EFUSE_CTRL);
 
 	*pbuf = (u8)(value32 & 0xff);
@@ -2097,7 +2097,7 @@ efuse_OneByteRead(
 	rtw_write8(pAdapter, EFUSE_CTRL + 3, (readbyte & 0x7f));
 
 	while (!(0x80 & rtw_read8(pAdapter, EFUSE_CTRL + 3)) && (tmpidx < 1000)) {
-		rtw_mdelay_os(1);
+		mdelay(1);
 		tmpidx++;
 	}
 	if (tmpidx < 100) {
@@ -2158,10 +2158,10 @@ efuse_OneByteWrite(
 	} else
 		rtw_write32(pAdapter, EFUSE_CTRL, efuseValue);
 
-	rtw_mdelay_os(1);
+	mdelay(1);
 
 	while ((0x80 &  rtw_read8(pAdapter, EFUSE_CTRL + 3)) && (tmpidx < 100)) {
-		rtw_mdelay_os(1);
+		mdelay(1);
 		tmpidx++;
 	}
 
@@ -3144,9 +3144,9 @@ u32 rtw_read_efuse_from_file(const char *path, u8 *buf, int map_size)
 		goto exit;
 	}
 
-	file_data = rtw_vmalloc(file_size);
+	file_data = vmalloc(file_size);
 	if (!file_data) {
-		RTW_ERR("%s rtw_vmalloc(%d) fail\n", __func__, file_size);
+		RTW_ERR("%s vmalloc(%d) fail\n", __func__, file_size);
 		goto exit;
 	}
 
@@ -3156,9 +3156,9 @@ u32 rtw_read_efuse_from_file(const char *path, u8 *buf, int map_size)
 		goto exit;
 	}
 
-	map = rtw_vmalloc(map_size);
+	map = vmalloc(map_size);
 	if (!map) {
-		RTW_ERR("%s rtw_vmalloc(%d) fail\n", __func__, map_size);
+		RTW_ERR("%s vmalloc(%d) fail\n", __func__, map_size);
 		goto exit;
 	}
 	memset(map, 0xff, map_size);

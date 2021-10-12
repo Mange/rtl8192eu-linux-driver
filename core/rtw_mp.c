@@ -2388,11 +2388,11 @@ static u32 rtw_GetPSDData(PADAPTER pAdapter, u32 point)
 	psd_val |= point;
 
 	rtw_write32(pAdapter, psd_reg, psd_val);
-	rtw_mdelay_os(1);
+	mdelay(1);
 	psd_val |= 0x00400000;
 
 	rtw_write32(pAdapter, psd_reg, psd_val);
-	rtw_mdelay_os(1);
+	mdelay(1);
 
 	psd_val = rtw_read32(pAdapter, psd_regL);
 #if defined(CONFIG_RTL8821C)
@@ -2457,7 +2457,7 @@ u32 mp_query_psd(PADAPTER pAdapter, u8 *data)
 #ifdef CONFIG_LONG_DELAY_ISSUE
 	msleep(100);
 #else
-	rtw_mdelay_os(100);
+	mdelay(100);
 #endif
 
 	if (psd_analysis)
@@ -2505,7 +2505,7 @@ void _rtw_mp_xmit_priv(struct xmit_priv *pxmitpriv)
 	/* Init xmit extension buff */
 	_rtw_init_queue(&pxmitpriv->free_xmit_extbuf_queue);
 
-	pxmitpriv->pallocated_xmit_extbuf = rtw_zvmalloc(num_xmit_extbuf * sizeof(struct xmit_buf) + 4);
+	pxmitpriv->pallocated_xmit_extbuf = vzalloc(num_xmit_extbuf * sizeof(struct xmit_buf) + 4);
 
 	if (pxmitpriv->pallocated_xmit_extbuf  == NULL) {
 		res = _FAIL;

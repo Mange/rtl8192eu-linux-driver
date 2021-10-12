@@ -1089,10 +1089,10 @@ void update_sta_info_apmode(_adapter *padapter, struct sta_info *psta)
 		/* check if sta supports rx ampdu */
 		phtpriv_sta->ampdu_enable = phtpriv_ap->ampdu_enable;
 
-		phtpriv_sta->rx_ampdu_min_spacing = (phtpriv_sta->ht_cap.ampdu_params_info & IEEE80211_HT_CAP_AMPDU_DENSITY) >> 2;
+		phtpriv_sta->rx_ampdu_min_spacing = (phtpriv_sta->ht_cap.ampdu_params_info & IEEE80211_HT_AMPDU_PARM_DENSITY) >> 2;
 
 		/* bwmode */
-		if ((phtpriv_sta->ht_cap.cap_info & phtpriv_ap->ht_cap.cap_info) & cpu_to_le16(IEEE80211_HT_CAP_SUP_WIDTH))
+		if ((phtpriv_sta->ht_cap.cap_info & phtpriv_ap->ht_cap.cap_info) & cpu_to_le16(IEEE80211_HT_CAP_SUP_WIDTH_20_40))
 			psta->cmn.bw_mode = CHANNEL_WIDTH_40;
 		else
 			psta->cmn.bw_mode = CHANNEL_WIDTH_20;
@@ -2271,20 +2271,20 @@ int rtw_check_beacon_data(_adapter *padapter, u8 *pbuf,  int len)
 				pht_cap->cap_info &= ~(IEEE80211_HT_CAP_TX_STBC);
 
 			if (!TEST_FLAG(pmlmepriv->htpriv.stbc_cap, STBC_HT_ENABLE_RX))
-				pht_cap->cap_info &= ~(IEEE80211_HT_CAP_RX_STBC_3R);
+				pht_cap->cap_info &= ~(IEEE80211_HT_CAP_RX_STBC);
 
 			/* Update A-MPDU Parameters field */
-			pht_cap->ampdu_params_info &= ~(IEEE80211_HT_CAP_AMPDU_FACTOR | IEEE80211_HT_CAP_AMPDU_DENSITY);
+			pht_cap->ampdu_params_info &= ~(IEEE80211_HT_AMPDU_PARM_FACTOR | IEEE80211_HT_AMPDU_PARM_DENSITY);
 
 			if ((psecuritypriv->wpa_pairwise_cipher & WPA_CIPHER_CCMP) ||
 				(psecuritypriv->wpa2_pairwise_cipher & WPA_CIPHER_CCMP)) {
 				rtw_hal_get_def_var(padapter, HW_VAR_BEST_AMPDU_DENSITY, &best_ampdu_density);
-				pht_cap->ampdu_params_info |= (IEEE80211_HT_CAP_AMPDU_DENSITY & (best_ampdu_density << 2));
+				pht_cap->ampdu_params_info |= (IEEE80211_HT_AMPDU_PARM_DENSITY & (best_ampdu_density << 2));
 			} else
-				pht_cap->ampdu_params_info |= (IEEE80211_HT_CAP_AMPDU_DENSITY & 0x00);
+				pht_cap->ampdu_params_info |= (IEEE80211_HT_AMPDU_PARM_DENSITY & 0x00);
 
 			rtw_hal_get_def_var(padapter, HW_VAR_MAX_RX_AMPDU_FACTOR, &max_rx_ampdu_factor);
-			pht_cap->ampdu_params_info |= (IEEE80211_HT_CAP_AMPDU_FACTOR & max_rx_ampdu_factor); /* set  Max Rx AMPDU size  to 64K */
+			pht_cap->ampdu_params_info |= (IEEE80211_HT_AMPDU_PARM_FACTOR & max_rx_ampdu_factor); /* set  Max Rx AMPDU size  to 64K */
 
 			_rtw_memcpy(&(pmlmeinfo->HT_caps), pht_cap, sizeof(struct HT_caps_element));
 
@@ -3482,7 +3482,7 @@ int rtw_ht_operation_update(_adapter *padapter)
 	if (pmlmepriv->num_sta_no_ht /*||
 	    (pmlmepriv->ht_op_mode & HT_INFO_OPERATION_MODE_NON_GF_DEVS_PRESENT)*/)
 		new_op_mode = OP_MODE_MIXED;
-	else if ((phtpriv_ap->ht_cap.cap_info & IEEE80211_HT_CAP_SUP_WIDTH)
+	else if ((phtpriv_ap->ht_cap.cap_info & IEEE80211_HT_CAP_SUP_WIDTH_20_40)
 		 && pmlmepriv->num_sta_ht_20mhz)
 		new_op_mode = OP_MODE_20MHZ_HT_STA_ASSOCED;
 	else if (atomic_read(&pmlmepriv->olbc_ht))
@@ -3671,7 +3671,7 @@ void bss_cap_update_on_sta_join(_adapter *padapter, struct sta_info *psta)
 					 pmlmepriv->num_sta_ht_no_gf);
 			}
 
-			if ((ht_capab & IEEE80211_HT_CAP_SUP_WIDTH) == 0) {
+			if ((ht_capab & IEEE80211_HT_CAP_SUP_WIDTH_20_40) == 0) {
 				if (!psta->ht_20mhz_set) {
 					psta->ht_20mhz_set = 1;
 					pmlmepriv->num_sta_ht_20mhz++;
@@ -3682,7 +3682,7 @@ void bss_cap_update_on_sta_join(_adapter *padapter, struct sta_info *psta)
 					 pmlmepriv->num_sta_ht_20mhz);
 			}
 
-			if (((ht_capab & RTW_IEEE80211_HT_CAP_40MHZ_INTOLERANT) != 0) &&
+			if (((ht_capab & IEEE80211_HT_CAP_40MHZ_INTOLERANT) != 0) &&
 				(psta->ht_40mhz_intolerant == 0)) {
 				psta->ht_40mhz_intolerant = 1;
 				pmlmepriv->num_sta_40mhz_intolerant++;

@@ -3867,8 +3867,8 @@ u8 SetHwReg8192E(PADAPTER Adapter, u8 variable, u8 *val)
 			ulCommand = CAM_CONTENT_COUNT * ucIndex + i;
 			ulCommand = ulCommand | CAM_POLLINIG | CAM_WRITE;
 			/* write content 0 is equall to mark invalid */
-			rtw_write32(Adapter, WCAMI, ulContent);  /* delay_ms(40); */
-			rtw_write32(Adapter, RWCAM, ulCommand);  /* delay_ms(40); */
+			rtw_write32(Adapter, WCAMI, ulContent);  /* mdelay(40); */
+			rtw_write32(Adapter, RWCAM, ulCommand);  /* mdelay(40); */
 		}
 	}
 	break;
@@ -3994,7 +3994,7 @@ u8 SetHwReg8192E(PADAPTER Adapter, u8 variable, u8 *val)
 			/* RQPN Load 0 */
 			rtw_write16(Adapter, REG_RQPN_NPQ, 0x0);
 			rtw_write32(Adapter, REG_RQPN, 0x80000000);
-			rtw_mdelay_os(10);
+			mdelay(10);
 		}
 	}
 	break;

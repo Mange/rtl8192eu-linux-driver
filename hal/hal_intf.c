@@ -147,7 +147,7 @@ u8 rtw_hal_data_init(_adapter *padapter)
 {
 	if (is_primary_adapter(padapter)) {
 		padapter->hal_data_sz = sizeof(HAL_DATA_TYPE);
-		padapter->HalData = rtw_zvmalloc(padapter->hal_data_sz);
+		padapter->HalData = vzalloc(padapter->hal_data_sz);
 		if (padapter->HalData == NULL) {
 			RTW_INFO("cant not alloc memory for HAL DATA\n");
 			return _FAIL;
@@ -739,7 +739,7 @@ void rtw_hal_write_rfreg(_adapter *padapter, enum rf_path eRFPath, u32 RegAddr, 
 
 #ifdef CONFIG_PCI_HCI
 		if (!IS_HARDWARE_TYPE_JAGUAR_AND_JAGUAR2(padapter)) /*For N-Series IC, suggest by Jenyu*/
-			rtw_udelay_os(2);
+			udelay(2);
 #endif
 	}
 }
