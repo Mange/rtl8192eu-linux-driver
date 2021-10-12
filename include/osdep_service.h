@@ -254,7 +254,6 @@ _pkt *rtw_os_pkt_copy(_pkt *pkt);
 void *rtw_os_pkt_data(_pkt *pkt);
 u32 rtw_os_pkt_len(_pkt *pkt);
 
-extern void _rtw_memmove(void *dst, const void *src, u32 sz);
 extern int	_rtw_memcmp(const void *dst, const void *src, u32 sz);
 
 extern void	_rtw_init_listhead(_list *list);

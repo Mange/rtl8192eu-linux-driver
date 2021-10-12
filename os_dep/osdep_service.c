@@ -792,15 +792,6 @@ inline u32 rtw_os_pkt_len(_pkt *pkt)
 #endif
 }
 
-inline void _rtw_memmove(void *dst, const void *src, u32 sz)
-{
-#if defined(PLATFORM_LINUX)
-	memmove(dst, src, sz);
-#else
-	#error "TBD\n"
-#endif
-}
-
 int	_rtw_memcmp(const void *dst, const void *src, u32 sz)
 {
 

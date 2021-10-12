@@ -395,7 +395,7 @@ int rtw_ies_remove_ie(u8 *ies, uint *ies_len, uint offset, u8 eid, u8 *oui, u8 o
 			u8 *remain_ies = target_ie + target_ielen;
 			uint remain_len = search_len - (remain_ies - start);
 
-			_rtw_memmove(target_ie, remain_ies, remain_len);
+			memmove(target_ie, remain_ies, remain_len);
 			*ies_len = *ies_len - target_ielen;
 			ret = _SUCCESS;
 
@@ -442,7 +442,7 @@ int rtw_remove_ie_g_rate(u8 *ie, uint *ie_len, uint offset, u8 eid)
 			*(tem_target_ie+1)=target_ielen;/*set new length to Supposrted Rates*/
 			target_ie=tem_target_ie+target_ielen + 2;/*set target ie to address of rate 6Mbps */
 	
-			_rtw_memmove(target_ie, remain_ies, remain_len);
+			memmove(target_ie, remain_ies, remain_len);
 			*ie_len = *ie_len - rm_size;
 			ret = rm_size;
 
@@ -2205,7 +2205,7 @@ uint rtw_del_p2p_ie(u8 *ies, uint ies_len_ori, const char *msg)
 				RTW_INFO("next_ie:%p, remain_len:%u\n", next_ie, remain_len);
 			}
 
-			_rtw_memmove(target_ie, next_ie, remain_len);
+			memmove(target_ie, next_ie, remain_len);
 			memset(target_ie + remain_len, 0, target_ie_len);
 			ies_len -= target_ie_len;
 
@@ -2246,7 +2246,7 @@ uint rtw_del_p2p_attr(u8 *ie, uint ielen_ori, u8 attr_id)
 				RTW_INFO("next_attr:%p, remain_len:%u\n", next_attr, remain_len);
 			}
 
-			_rtw_memmove(target_attr, next_attr, remain_len);
+			memmove(target_attr, next_attr, remain_len);
 			memset(target_attr + remain_len, 0, target_attr_len);
 			*(ie + 1) -= target_attr_len;
 			ielen -= target_attr_len;
@@ -2316,7 +2316,7 @@ void rtw_bss_ex_del_p2p_attr(WLAN_BSSID_EX *bss_ex, u8 attr_id)
 			if (ie_len != ie_len_ori) {
 				u8 *next_ie = ie + ie_len;
 
-				_rtw_memmove(next_ie, next_ie_ori, remain_len);
+				memmove(next_ie, next_ie_ori, remain_len);
 				memset(next_ie + remain_len, 0, ie_len_ori - ie_len);
 				bss_ex->IELength -= ie_len_ori - ie_len;
 
@@ -2532,7 +2532,7 @@ uint rtw_del_wfd_ie(u8 *ies, uint ies_len_ori, const char *msg)
 				RTW_INFO("next_ie:%p, remain_len:%u\n", next_ie, remain_len);
 			}
 
-			_rtw_memmove(target_ie, next_ie, remain_len);
+			memmove(target_ie, next_ie, remain_len);
 			memset(target_ie + remain_len, 0, target_ie_len);
 			ies_len -= target_ie_len;
 
@@ -2573,7 +2573,7 @@ uint rtw_del_wfd_attr(u8 *ie, uint ielen_ori, u8 attr_id)
 				RTW_INFO("next_attr:%p, remain_len:%u\n", next_attr, remain_len);
 			}
 
-			_rtw_memmove(target_attr, next_attr, remain_len);
+			memmove(target_attr, next_attr, remain_len);
 			memset(target_attr + remain_len, 0, target_attr_len);
 			*(ie + 1) -= target_attr_len;
 			ielen -= target_attr_len;
@@ -2642,7 +2642,7 @@ void rtw_bss_ex_del_wfd_attr(WLAN_BSSID_EX *bss_ex, u8 attr_id)
 			if (ie_len != ie_len_ori) {
 				u8 *next_ie = ie + ie_len;
 
-				_rtw_memmove(next_ie, next_ie_ori, remain_len);
+				memmove(next_ie, next_ie_ori, remain_len);
 				memset(next_ie + remain_len, 0, ie_len_ori - ie_len);
 				bss_ex->IELength -= ie_len_ori - ie_len;
 
