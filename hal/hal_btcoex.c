@@ -268,15 +268,6 @@ static void halbtcoutsrc_DbgInit(void)
 		GLBtcDbgType[i] = 0;
 }
 
-static u8 halbtcoutsrc_IsCsrBtCoex(PBTC_COEXIST pBtCoexist)
-{
-	if (pBtCoexist->board_info.bt_chip_type == BTC_CHIP_CSR_BC4
-	    || pBtCoexist->board_info.bt_chip_type == BTC_CHIP_CSR_BC8
-	   )
-		return _TRUE;
-	return _FALSE;
-}
-
 static void halbtcoutsrc_EnterPwrLock(PBTC_COEXIST pBtCoexist)
 {
 	struct dvobj_priv *dvobj = adapter_to_dvobj((PADAPTER)pBtCoexist->Adapter);
@@ -4870,53 +4861,6 @@ u8 EXhalbtcoutsrc_rate_id_to_btc_rate_id(u8 rate_id)
 	}
 	
 	return btc_rate_id;
-}
-
-static void halbt_init_hw_config92C(PADAPTER padapter)
-{
-	PHAL_DATA_TYPE pHalData;
-	u8 u1Tmp;
-
-
-	pHalData = GET_HAL_DATA(padapter);
-	if ((pHalData->bt_coexist.btChipType == BT_CSR_BC4) ||
-	    (pHalData->bt_coexist.btChipType == BT_CSR_BC8)) {
-		if (pHalData->rf_type == RF_1T1R) {
-			/* Config to 1T1R */
-			u1Tmp = rtw_read8(padapter, rOFDM0_TRxPathEnable);
-			u1Tmp &= ~BIT(1);
-			rtw_write8(padapter, rOFDM0_TRxPathEnable, u1Tmp);
-			RT_DISP(FBT, BT_TRACE, ("[BTCoex], BT write 0xC04 = 0x%x\n", u1Tmp));
-
-			u1Tmp = rtw_read8(padapter, rOFDM1_TRxPathEnable);
-			u1Tmp &= ~BIT(1);
-			rtw_write8(padapter, rOFDM1_TRxPathEnable, u1Tmp);
-			RT_DISP(FBT, BT_TRACE, ("[BTCoex], BT write 0xD04 = 0x%x\n", u1Tmp));
-		}
-	}
-}
-
-static void halbt_init_hw_config92D(PADAPTER padapter)
-{
-	PHAL_DATA_TYPE pHalData;
-	u8 u1Tmp;
-
-	pHalData = GET_HAL_DATA(padapter);
-	if ((pHalData->bt_coexist.btChipType == BT_CSR_BC4) ||
-	    (pHalData->bt_coexist.btChipType == BT_CSR_BC8)) {
-		if (pHalData->rf_type == RF_1T1R) {
-			/* Config to 1T1R */
-			u1Tmp = rtw_read8(padapter, rOFDM0_TRxPathEnable);
-			u1Tmp &= ~BIT(1);
-			rtw_write8(padapter, rOFDM0_TRxPathEnable, u1Tmp);
-			RT_DISP(FBT, BT_TRACE, ("[BTCoex], BT write 0xC04 = 0x%x\n", u1Tmp));
-
-			u1Tmp = rtw_read8(padapter, rOFDM1_TRxPathEnable);
-			u1Tmp &= ~BIT(1);
-			rtw_write8(padapter, rOFDM1_TRxPathEnable, u1Tmp);
-			RT_DISP(FBT, BT_TRACE, ("[BTCoex], BT write 0xD04 = 0x%x\n", u1Tmp));
-		}
-	}
 }
 
 /*

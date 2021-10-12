@@ -37,7 +37,6 @@
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2, 5, 0)) || (LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 18))
 #define _usbctrl_vendorreq_async_callback(urb, regs)	_usbctrl_vendorreq_async_callback(urb)
-#define usb_bulkout_zero_complete(purb, regs)	usb_bulkout_zero_complete(purb)
 #define usb_write_mem_complete(purb, regs)	usb_write_mem_complete(purb)
 #define usb_write_port_complete(purb, regs)	usb_write_port_complete(purb)
 #define usb_read_port_complete(purb, regs)	usb_read_port_complete(purb)

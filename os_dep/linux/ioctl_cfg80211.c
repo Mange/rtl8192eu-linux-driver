@@ -4613,11 +4613,6 @@ fail:
 
 }
 
-static void rtw_cfg80211_monitor_if_set_multicast_list(struct net_device *ndev)
-{
-	RTW_INFO("%s\n", __func__);
-}
-
 static int rtw_cfg80211_monitor_if_set_mac_address(struct net_device *ndev, void *addr)
 {
 	int ret = 0;
@@ -4633,7 +4628,7 @@ static const struct net_device_ops rtw_cfg80211_monitor_if_ops = {
 	.ndo_stop = rtw_cfg80211_monitor_if_close,
 	.ndo_start_xmit = rtw_cfg80211_monitor_if_xmit_entry,
 	#if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 2, 0))
-	.ndo_set_multicast_list = rtw_cfg80211_monitor_if_set_multicast_list,
+	.ndo_set_multicast_list = NULL,
 	#endif
 	.ndo_set_mac_address = rtw_cfg80211_monitor_if_set_mac_address,
 };
@@ -6058,21 +6053,6 @@ static int cfg80211_rtw_set_monitor_channel(struct wiphy *wiphy
 	return 0;
 }
 
-static int	cfg80211_rtw_auth(struct wiphy *wiphy, struct net_device *ndev,
-		struct cfg80211_auth_request *req)
-{
-	RTW_INFO(FUNC_NDEV_FMT"\n", FUNC_NDEV_ARG(ndev));
-
-	return 0;
-}
-
-static int	cfg80211_rtw_assoc(struct wiphy *wiphy, struct net_device *ndev,
-		struct cfg80211_assoc_request *req)
-{
-	RTW_INFO(FUNC_NDEV_FMT"\n", FUNC_NDEV_ARG(ndev));
-
-	return 0;
-}
 #endif /* CONFIG_AP_MODE */
 
 void rtw_cfg80211_rx_probe_request(_adapter *adapter, union recv_frame *rframe)

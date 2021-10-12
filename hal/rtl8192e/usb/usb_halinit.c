@@ -24,19 +24,6 @@
 
 #endif
 
-
-static void _dbg_dump_macreg(_adapter *padapter)
-{
-	u32 offset = 0;
-	u32 val32 = 0;
-	u32 index = 0 ;
-	for (index = 0; index < 64; index++) {
-		offset = index * 4;
-		val32 = rtw_read32(padapter, offset);
-		RTW_INFO("offset : 0x%02x ,val:0x%08x\n", offset, val32);
-	}
-}
-
 static VOID
 _ConfigChipOutEP_8192E(
 	IN	PADAPTER	pAdapter,
@@ -264,10 +251,10 @@ static u32 _InitPowerOn_8192EU(_adapter *padapter)
 		rtw_write8(padapter, REG_LDO_SWR_CTRL, 0xC3);
 	} else	{
 		/* SPS */
-		/* 0x7C [6] = 1¡¦b0 (IC default, 0x83) */
+		/* 0x7C [6] = 1ï¿½ï¿½b0 (IC default, 0x83) */
 
 
-		/* 0x14[23:20]=b¡¦0101 (raise 1.2V voltage)
+		/* 0x14[23:20]=bï¿½ï¿½0101 (raise 1.2V voltage)
 		   u1Byte	tmp1Byte = PlatformEFIORead1Byte(Adapter,0x16);
 		   PlatformEFIOWrite1Byte(Adapter,0x16,tmp1Byte |BIT4|BIT6); */
 		u32 voltage = rtw_read32(padapter , REG_SYS_SWR_CTRL2_8192E);
@@ -585,79 +572,10 @@ USB_AggModeSwitch(
 #endif
 }	/* USB_AggModeSwitch */
 
-static VOID _RfPowerSave(
-	IN	PADAPTER		Adapter
-)
-{
-#if 0
-	HAL_DATA_TYPE	*pHalData	= GET_HAL_DATA(Adapter);
-	PMGNT_INFO		pMgntInfo	= &(Adapter->MgntInfo);
-	enum rf_path			eRFPath;
-
-#if (DISABLE_BB_RF)
-	return;
-#endif
-
-	if (pMgntInfo->RegRfOff == TRUE) { /* User disable RF via registry. */
-		MgntActSet_RF_State(Adapter, eRfOff, RF_CHANGE_BY_SW);
-		/* Those action will be discard in MgntActSet_RF_State because off the same state */
-		for (eRFPath = 0; eRFPath < pHalData->NumTotalRFPath; eRFPath++)
-			phy_set_rf_reg(Adapter, eRFPath, 0x4, 0xC00, 0x0);
-	} else if (pMgntInfo->RfOffReason > RF_CHANGE_BY_PS) { /* H/W or S/W RF OFF before sleep. */
-		MgntActSet_RF_State(Adapter, eRfOff, pMgntInfo->RfOffReason);
-	} else {
-		pHalData->eRFPowerState = eRfOn;
-		pMgntInfo->RfOffReason = 0;
-		if (Adapter->bInSetPower || Adapter->bResetInProgress)
-			PlatformUsbEnableInPipes(Adapter);
-	}
-#endif
-}
-
 enum {
 	Antenna_Lfet = 1,
 	Antenna_Right = 2,
 };
-
-/*
- * 2010/08/26 MH Add for selective suspend mode check.
- * If Efuse 0x0e bit1 is not enabled, we can not support selective suspend for Minicard and
- * slim card.
- *   */
-static VOID
-HalDetectSelectiveSuspendMode(
-	IN PADAPTER				Adapter
-)
-{
-#if 0
-	u8	tmpvalue;
-	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(Adapter);
-	struct dvobj_priv	*pdvobjpriv = adapter_to_dvobj(Adapter);
-
-	/* If support HW radio detect, we need to enable WOL ability, otherwise, we */
-	/* can not use FW to notify host the power state switch. */
-
-	EFUSE_ShadowRead(Adapter, 1, EEPROM_USB_OPTIONAL1, (u32 *)&tmpvalue);
-
-	RTW_INFO("HalDetectSelectiveSuspendMode(): SS ");
-	if (tmpvalue & BIT1)
-		RTW_INFO("Enable\n");
-	else {
-		RTW_INFO("Disable\n");
-		pdvobjpriv->RegUsbSS = _FALSE;
-	}
-
-	/* 2010/09/01 MH According to Dongle Selective Suspend INF. We can switch SS mode. */
-	if (pdvobjpriv->RegUsbSS && !SUPPORT_HW_RADIO_DETECT(pHalData)) {
-		/* PMGNT_INFO				pMgntInfo = &(Adapter->MgntInfo); */
-
-		/* if (!pMgntInfo->bRegDongleSS)	 */
-		/* { */
-		pdvobjpriv->RegUsbSS = _FALSE;
-		/* } */
-	}
-#endif
-}	/* HalDetectSelectiveSuspendMode */
 
 #if 0
 /*-----------------------------------------------------------------------------
