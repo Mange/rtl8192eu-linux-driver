@@ -3226,11 +3226,6 @@ static void update_bcn_wps_ie(_adapter *padapter)
 #endif
 }
 
-static void update_bcn_p2p_ie(_adapter *padapter)
-{
-
-}
-
 static void update_bcn_vendor_spec_ie(_adapter *padapter, u8 *oui)
 {
 	RTW_INFO("%s\n", __FUNCTION__);
@@ -3241,9 +3236,9 @@ static void update_bcn_vendor_spec_ie(_adapter *padapter, u8 *oui)
 		update_bcn_wmm_ie(padapter);
 	else if (_rtw_memcmp(WPS_OUI, oui, 4))
 		update_bcn_wps_ie(padapter);
-	else if (_rtw_memcmp(P2P_OUI, oui, 4))
-		update_bcn_p2p_ie(padapter);
-	else
+	else if (_rtw_memcmp(P2P_OUI, oui, 4)) {
+		// update_bcn_p2p_ie(padapter);
+	} else
 		RTW_INFO("unknown OUI type!\n");
 
 
