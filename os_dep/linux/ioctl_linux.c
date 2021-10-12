@@ -93,40 +93,6 @@ static void indicate_wx_custom_event(_adapter *padapter, char *msg)
 
 }
 
-
-static void request_wps_pbc_event(_adapter *padapter)
-{
-	u8 *buff, *p;
-	union iwreq_data wrqu;
-
-
-	buff = rtw_malloc(IW_CUSTOM_MAX);
-	if (!buff)
-		return;
-
-	memset(buff, 0, IW_CUSTOM_MAX);
-
-	p = buff;
-
-	p += sprintf(p, "WPS_PBC_START.request=TRUE");
-
-	memset(&wrqu, 0, sizeof(wrqu));
-
-	wrqu.data.length = p - buff;
-
-	wrqu.data.length = (wrqu.data.length < IW_CUSTOM_MAX) ? wrqu.data.length : IW_CUSTOM_MAX;
-
-	RTW_INFO("%s\n", __FUNCTION__);
-
-#ifndef CONFIG_IOCTL_CFG80211
-	wireless_send_event(padapter->pnetdev, IWEVCUSTOM, &wrqu, buff);
-#endif
-
-	if (buff)
-		rtw_mfree(buff, IW_CUSTOM_MAX);
-
-}
-
 #ifdef CONFIG_SUPPORT_HW_WPS_PBC
 void rtw_request_wps_pbc_event(_adapter *padapter)
 {

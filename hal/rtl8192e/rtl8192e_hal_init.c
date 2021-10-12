@@ -290,25 +290,6 @@ _PageWrite_8192E(
 	return _BlockWrite_8192E(padapter, buffer, size);
 }
 
-static VOID
-_FillDummy_8192E(
-	u8		*pFwBuf,
-	u32	*pFwLen
-)
-{
-	u32	FwLen = *pFwLen;
-	u8	remain = (u8)(FwLen % 4);
-	remain = (remain == 0) ? 0 : (4 - remain);
-
-	while (remain > 0) {
-		pFwBuf[FwLen] = 0;
-		FwLen++;
-		remain--;
-	}
-
-	*pFwLen = FwLen;
-}
-
 static int
 _WriteFW_8192E(
 	IN		PADAPTER		padapter,
@@ -1203,46 +1184,6 @@ rtl8192E_EfusePowerSwitch(
 {
 	Hal_EfusePowerSwitch8192E(pAdapter, bWrite, PwrState);
 }
-
-
-static bool efuse_read_phymap(
-	PADAPTER	Adapter,
-	u8			*pbuf,	/* buffer to store efuse physical map */
-	u16			*size	/* the max byte to read. will update to byte read */
-)
-{
-	u8 *pos = pbuf;
-	u16 limit = *size;
-	u16 addr = 0;
-	bool reach_end = _FALSE;
-
-	/*  */
-	/* Refresh efuse init map as all 0xFF. */
-	/*  */
-	memset(pbuf, 0xFF, limit);
-
-
-	/*  */
-	/* Read physical efuse content. */
-	/*  */
-	while (addr < limit) {
-		ReadEFuseByte(Adapter, addr, pos, _FALSE);
-		if (*pos != 0xFF) {
-			pos++;
-			addr++;
-		} else {
-			reach_end = _TRUE;
-			break;
-		}
-	}
-
-	*size = addr;
-
-	return reach_end;
-
-}
-
-
 
 static VOID
 Hal_EfuseReadEFuse8192E(

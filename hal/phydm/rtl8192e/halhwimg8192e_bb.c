@@ -106,15 +106,6 @@ check_positive(struct dm_struct *dm,
 		return false;
 }
 
-static boolean
-check_negative(struct dm_struct *dm,
-	       const u32	condition1,
-	       const u32	condition2
-)
-{
-	return true;
-}
-
 /******************************************************************************
  *                           agc_tab.TXT
  ******************************************************************************/
