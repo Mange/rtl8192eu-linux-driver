@@ -2270,7 +2270,7 @@ void mpt_ProSetPMacTx(PADAPTER	Adapter)
 		u4bTmp = PMacTxInfo.VHT_SIG_A[3] | ((PMacTxInfo.VHT_SIG_A[4]) << 8) | ((PMacTxInfo.VHT_SIG_A[5]) << 16);
 		phy_set_bb_reg(Adapter, 0xb10, 0xffffff, u4bTmp);
 
-		_rtw_memcpy(&u4bTmp, PMacTxInfo.VHT_SIG_B, 4);
+		memcpy(&u4bTmp, PMacTxInfo.VHT_SIG_B, 4);
 		phy_set_bb_reg(Adapter, 0xb14, bMaskDWord, u4bTmp);
 	}
 
@@ -2278,7 +2278,7 @@ void mpt_ProSetPMacTx(PADAPTER	Adapter)
 		u4bTmp = (PMacTxInfo.VHT_SIG_B_CRC << 24) | PMacTxInfo.PacketPeriod;	/* for TX interval */
 		phy_set_bb_reg(Adapter, 0xb20, bMaskDWord, u4bTmp);
 
-		_rtw_memcpy(&u4bTmp, PMacTxInfo.VHT_Delimiter, 4);
+		memcpy(&u4bTmp, PMacTxInfo.VHT_Delimiter, 4);
 		phy_set_bb_reg(Adapter, 0xb24, bMaskDWord, u4bTmp);
 
 		/* 0xb28 - 0xb34 24 byte Probe Request MAC Header*/

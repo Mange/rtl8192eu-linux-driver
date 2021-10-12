@@ -244,7 +244,7 @@ void usb_c2h_hisr_hdl(_adapter *adapter, u8 *buf)
 	} else {
 		c2h_evt = rtw_malloc(C2H_REG_LEN);
 		if (c2h_evt != NULL) {
-			_rtw_memcpy(c2h_evt, buf, C2H_REG_LEN);
+			memcpy(c2h_evt, buf, C2H_REG_LEN);
 			if (rtw_cbuf_push(adapter->evtpriv.c2h_queue, (void*)c2h_evt) != _SUCCESS)
 				RTW_ERR("%s rtw_cbuf_push fail\n", __func__);
 		} else {

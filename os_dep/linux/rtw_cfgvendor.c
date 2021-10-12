@@ -1358,7 +1358,7 @@ void rtw_cfgvendor_rssi_monitor_evt(_adapter *padapter) {
 
         data.version = RSSI_MONITOR_EVT_VERSION;
         data.cur_rssi = rssi;
-        _rtw_memcpy(data.BSSID, pcur_network->network.MacAddress, sizeof(mac_addr));
+        memcpy(data.BSSID, pcur_network->network.MacAddress, sizeof(mac_addr));
 
         nla_append(skb, sizeof(data), &data);
 
@@ -1476,7 +1476,7 @@ static int rtw_cfgvendor_logger_get_ring_status(struct wiphy *wiphy,
 	wifi_ring_buffer_status ring_status;
 
 
-	_rtw_memcpy(ring_status.name, ring_buf_name, strlen(ring_buf_name)+1);
+	memcpy(ring_status.name, ring_buf_name, strlen(ring_buf_name)+1);
 	ring_status.ring_id = 1;
 	/* Alloc the SKB for vendor_event */
 	skb = cfg80211_vendor_cmd_alloc_reply_skb(wiphy,
@@ -1700,7 +1700,7 @@ static int rtw_cfgvendor_set_country(struct wiphy *wiphy,
 		type = nla_type(iter);
 		switch (type) {
 			case ANDR_WIFI_ATTRIBUTE_COUNTRY:
-				_rtw_memcpy(country_code, nla_data(iter),
+				memcpy(country_code, nla_data(iter),
 					MIN(nla_len(iter), CNTRY_BUF_SZ));
 				break;
 			default:

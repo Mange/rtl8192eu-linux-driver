@@ -90,7 +90,7 @@ static void rtw_hal_mcc_build_p2p_noa_attr(PADAPTER padapter, u8 *ie, u32 *ie_le
 	noa_interval = mcc_switch_channel_policy_table[mcc_policy_idx][MCC_INTERVAL_IDX] * TU;
 
 	/* P2P OUI(4 bytes) */
-	_rtw_memcpy(p2p_noa_attr_ie, P2P_OUI, 4);
+	memcpy(p2p_noa_attr_ie, P2P_OUI, 4);
 	p2p_noa_attr_len = p2p_noa_attr_len + 4;
 
 	/* attrute ID(1 byte) */
@@ -997,9 +997,9 @@ static void rtw_hal_construct_CTS(PADAPTER padapter, u8 *pframe, u32 *pLength)
 	*(pframe + 3) = 0x78;
 
 	/* frame recvaddr, length = 6 */
-	_rtw_memcpy((pframe + 4), broadcast_addr, ETH_ALEN);
-	_rtw_memcpy((pframe + 4 + ETH_ALEN), adapter_mac_addr(padapter), ETH_ALEN);
-	_rtw_memcpy((pframe + 4 + ETH_ALEN*2), adapter_mac_addr(padapter), ETH_ALEN);
+	memcpy((pframe + 4), broadcast_addr, ETH_ALEN);
+	memcpy((pframe + 4 + ETH_ALEN), adapter_mac_addr(padapter), ETH_ALEN);
+	memcpy((pframe + 4 + ETH_ALEN*2), adapter_mac_addr(padapter), ETH_ALEN);
 	*pLength = 22;
 }
 
@@ -3288,7 +3288,7 @@ u8 *rtw_hal_mcc_append_go_p2p_ie(PADAPTER padapter, u8 *pframe, u32 *len)
 	if (pmccadapriv->p2p_go_noa_ie_len == 0)
 		return pframe;
 
-	_rtw_memcpy(pframe, pmccadapriv->p2p_go_noa_ie, pmccadapriv->p2p_go_noa_ie_len);
+	memcpy(pframe, pmccadapriv->p2p_go_noa_ie, pmccadapriv->p2p_go_noa_ie_len);
 	*len = *len + pmccadapriv->p2p_go_noa_ie_len;
 
 	return pframe + pmccadapriv->p2p_go_noa_ie_len;
@@ -3476,7 +3476,7 @@ u8 rtw_set_mcc_duration_cmd(_adapter *adapter, u8 type, u8 val)
 	pdrvextra_cmd_parm->size = 1;
 	pdrvextra_cmd_parm->pbuf = mcc_duration;
 
-	_rtw_memcpy(mcc_duration, &val, 1);
+	memcpy(mcc_duration, &val, 1);
 
 	init_h2fwcmd_w_parm_no_rsp(cmdobj, pdrvextra_cmd_parm, GEN_CMD_CODE(_Set_Drv_Extra));
 	res = rtw_enqueue_cmd(pcmdpriv, cmdobj);

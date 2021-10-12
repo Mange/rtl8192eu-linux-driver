@@ -1419,15 +1419,15 @@ void rtw_proxim_send_packet(_adapter *padapter, u8 *pbuf, u16 len, u8 m_rate);
 #define ARP_TARGET_MAC_ADDR(_arp)	ARP_THA(_arp, ETH_ALEN, RTW_IP_ADDR_LEN)
 #define ARP_TARGET_IP_ADDR(_arp)	ARP_TPA(_arp, ETH_ALEN, RTW_IP_ADDR_LEN)
 
-#define GET_ARP_SENDER_MAC_ADDR(_arp, _val)	_rtw_memcpy(_val, ARP_SENDER_MAC_ADDR(_arp), ETH_ALEN)
-#define GET_ARP_SENDER_IP_ADDR(_arp, _val)	_rtw_memcpy(_val, ARP_SENDER_IP_ADDR(_arp), RTW_IP_ADDR_LEN)
-#define GET_ARP_TARGET_MAC_ADDR(_arp, _val)	_rtw_memcpy(_val, ARP_TARGET_MAC_ADDR(_arp), ETH_ALEN)
-#define GET_ARP_TARGET_IP_ADDR(_arp, _val)	_rtw_memcpy(_val, ARP_TARGET_IP_ADDR(_arp), RTW_IP_ADDR_LEN)
+#define GET_ARP_SENDER_MAC_ADDR(_arp, _val)	memcpy(_val, ARP_SENDER_MAC_ADDR(_arp), ETH_ALEN)
+#define GET_ARP_SENDER_IP_ADDR(_arp, _val)	memcpy(_val, ARP_SENDER_IP_ADDR(_arp), RTW_IP_ADDR_LEN)
+#define GET_ARP_TARGET_MAC_ADDR(_arp, _val)	memcpy(_val, ARP_TARGET_MAC_ADDR(_arp), ETH_ALEN)
+#define GET_ARP_TARGET_IP_ADDR(_arp, _val)	memcpy(_val, ARP_TARGET_IP_ADDR(_arp), RTW_IP_ADDR_LEN)
 
-#define SET_ARP_SENDER_MAC_ADDR(_arp, _val)	_rtw_memcpy(ARP_SENDER_MAC_ADDR(_arp), _val, ETH_ALEN)
-#define SET_ARP_SENDER_IP_ADDR(_arp, _val)	_rtw_memcpy(ARP_SENDER_IP_ADDR(_arp), _val, RTW_IP_ADDR_LEN)
-#define SET_ARP_TARGET_MAC_ADDR(_arp, _val)	_rtw_memcpy(ARP_TARGET_MAC_ADDR(_arp), _val, ETH_ALEN)
-#define SET_ARP_TARGET_IP_ADDR(_arp, _val)	_rtw_memcpy(ARP_TARGET_IP_ADDR(_arp), _val, RTW_IP_ADDR_LEN)
+#define SET_ARP_SENDER_MAC_ADDR(_arp, _val)	memcpy(ARP_SENDER_MAC_ADDR(_arp), _val, ETH_ALEN)
+#define SET_ARP_SENDER_IP_ADDR(_arp, _val)	memcpy(ARP_SENDER_IP_ADDR(_arp), _val, RTW_IP_ADDR_LEN)
+#define SET_ARP_TARGET_MAC_ADDR(_arp, _val)	memcpy(ARP_TARGET_MAC_ADDR(_arp), _val, ETH_ALEN)
+#define SET_ARP_TARGET_IP_ADDR(_arp, _val)	memcpy(ARP_TARGET_IP_ADDR(_arp), _val, RTW_IP_ADDR_LEN)
 
 void dump_arp_pkt(void *sel, u8 *da, u8 *sa, u8 *arp, bool tx);
 

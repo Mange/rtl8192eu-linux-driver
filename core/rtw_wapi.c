@@ -163,7 +163,7 @@ WapiGetEntryForCamWrite(_adapter *padapter, u8 *pMacAddr, u8 KID, BOOLEAN IsMsk)
 				pWapiInfo->wapiCamEntry[i].IsUsed = 1;
 				pWapiInfo->wapiCamEntry[i].type = IsMsk;
 				pWapiInfo->wapiCamEntry[i].keyidx = KID;
-				_rtw_memcpy(pWapiInfo->wapiCamEntry[i].PeerMacAddr, pMacAddr, ETH_ALEN);
+				memcpy(pWapiInfo->wapiCamEntry[i].PeerMacAddr, pMacAddr, ETH_ALEN);
 				ret = pWapiInfo->wapiCamEntry[i].entry_idx;
 				break;
 			}
@@ -438,9 +438,9 @@ void rtw_wapi_update_info(_adapter *padapter, union recv_frame *precv_frame)
 		precv_hdr->UserPriority = 0;
 
 	pTA = get_addr2_ptr(ptr);
-	_rtw_memcpy((u8 *)precv_hdr->WapiSrcAddr, pTA, 6);
+	memcpy((u8 *)precv_hdr->WapiSrcAddr, pTA, 6);
 	pRecvPN = ptr + precv_hdr->attrib.hdrlen + 2;
-	_rtw_memcpy((u8 *)precv_hdr->WapiTempPN, pRecvPN, 16);
+	memcpy((u8 *)precv_hdr->WapiTempPN, pRecvPN, 16);
 
 	WAPI_TRACE(WAPI_RX, "<========== %s\n", __FUNCTION__);
 }
@@ -543,12 +543,12 @@ u8 rtw_wapi_check_for_drop(
 		if (!WapiComparePN(precv_hdr->WapiTempPN, pLastRecvPN)) {
 			WAPI_TRACE(WAPI_RX, "%s: Equal PN!!\n", __FUNCTION__);
 			if (IS_MCAST(precv_hdr->attrib.ra))
-				_rtw_memcpy(pLastRecvPN, WapiAEMultiCastPNInitialValueSrc, 16);
+				memcpy(pLastRecvPN, WapiAEMultiCastPNInitialValueSrc, 16);
 			else
-				_rtw_memcpy(pLastRecvPN, WapiAEPNInitialValueSrc, 16);
+				memcpy(pLastRecvPN, WapiAEPNInitialValueSrc, 16);
 			bDrop = true;
 		} else
-			_rtw_memcpy(pLastRecvPN, precv_hdr->WapiTempPN, 16);
+			memcpy(pLastRecvPN, precv_hdr->WapiTempPN, 16);
 	}
 
 	WAPI_TRACE(WAPI_RX, "<========== %s\n", __FUNCTION__);
@@ -571,7 +571,7 @@ void rtw_build_probe_resp_wapi_ie(_adapter *padapter, unsigned char *pframe, str
 	WapiIELength = pWapiInfo->wapiIELength;
 	pframe[0] = _WAPI_IE_;
 	pframe[1] = WapiIELength;
-	_rtw_memcpy(pframe + 2, pWapiInfo->wapiIE, WapiIELength);
+	memcpy(pframe + 2, pWapiInfo->wapiIE, WapiIELength);
 	pframe += WapiIELength + 2;
 	pattrib->pktlen += WapiIELength + 2;
 
@@ -593,7 +593,7 @@ void rtw_build_beacon_wapi_ie(_adapter *padapter, unsigned char *pframe, struct 
 	WapiIELength = pWapiInfo->wapiIELength;
 	pframe[0] = _WAPI_IE_;
 	pframe[1] = WapiIELength;
-	_rtw_memcpy(pframe + 2, pWapiInfo->wapiIE, WapiIELength);
+	memcpy(pframe + 2, pWapiInfo->wapiIE, WapiIELength);
 	pframe += WapiIELength + 2;
 	pattrib->pktlen += WapiIELength + 2;
 
@@ -620,16 +620,16 @@ void rtw_build_assoc_req_wapi_ie(_adapter *padapter, unsigned char *pframe, stru
 	if (!list_empty(&(pWapiInfo->wapiBKIDStoreList))) {
 		list_for_each_entry(pWapiBKID, &pWapiInfo->wapiBKIDStoreList, list) {
 			bkidNum++;
-			_rtw_memcpy(pWapiInfo->wapiIE + WapiIELength + 2, pWapiBKID->bkid, 16);
+			memcpy(pWapiInfo->wapiIE + WapiIELength + 2, pWapiBKID->bkid, 16);
 			WapiIELength += 16;
 		}
 	}
-	_rtw_memcpy(pWapiInfo->wapiIE + WapiIELength, &bkidNum, 2);
+	memcpy(pWapiInfo->wapiIE + WapiIELength, &bkidNum, 2);
 	WapiIELength += 2;
 
 	pframe[0] = _WAPI_IE_;
 	pframe[1] = WapiIELength;
-	_rtw_memcpy(pframe + 2, pWapiInfo->wapiIE, WapiIELength);
+	memcpy(pframe + 2, pWapiInfo->wapiIE, WapiIELength);
 	pframe += WapiIELength + 2;
 	pattrib->pktlen += WapiIELength + 2;
 	WAPI_TRACE(WAPI_MLME, "<========== %s\n", __FUNCTION__);
@@ -653,15 +653,15 @@ void rtw_wapi_on_assoc_ok(_adapter *padapter, PNDIS_802_11_VARIABLE_IEs pIE)
 	pWapiSta = (PRT_WAPI_STA_INFO)list_entry(pWapiInfo->wapiSTAIdleList.next, RT_WAPI_STA_INFO, list);
 	list_del_init(&pWapiSta->list);
 	list_add_tail(&pWapiSta->list, &pWapiInfo->wapiSTAUsedList);
-	_rtw_memcpy(pWapiSta->PeerMacAddr, padapter->mlmeextpriv.mlmext_info.network.MacAddress, 6);
-	_rtw_memcpy(pWapiSta->lastRxMulticastPN, WapiAEMultiCastPNInitialValueSrc, 16);
-	_rtw_memcpy(pWapiSta->lastRxUnicastPN, WapiAEPNInitialValueSrc, 16);
+	memcpy(pWapiSta->PeerMacAddr, padapter->mlmeextpriv.mlmext_info.network.MacAddress, 6);
+	memcpy(pWapiSta->lastRxMulticastPN, WapiAEMultiCastPNInitialValueSrc, 16);
+	memcpy(pWapiSta->lastRxUnicastPN, WapiAEPNInitialValueSrc, 16);
 
 	/* For chenk PN error with Qos Data after s3: add by ylb 20111114 */
-	_rtw_memcpy(pWapiSta->lastRxUnicastPNBEQueue, WapiAEPNInitialValueSrc, 16);
-	_rtw_memcpy(pWapiSta->lastRxUnicastPNBKQueue, WapiAEPNInitialValueSrc, 16);
-	_rtw_memcpy(pWapiSta->lastRxUnicastPNVIQueue, WapiAEPNInitialValueSrc, 16);
-	_rtw_memcpy(pWapiSta->lastRxUnicastPNVOQueue, WapiAEPNInitialValueSrc, 16);
+	memcpy(pWapiSta->lastRxUnicastPNBEQueue, WapiAEPNInitialValueSrc, 16);
+	memcpy(pWapiSta->lastRxUnicastPNBKQueue, WapiAEPNInitialValueSrc, 16);
+	memcpy(pWapiSta->lastRxUnicastPNVIQueue, WapiAEPNInitialValueSrc, 16);
+	memcpy(pWapiSta->lastRxUnicastPNVOQueue, WapiAEPNInitialValueSrc, 16);
 
 	WAPI_TRACE(WAPI_MLME, "<========== %s\n", __FUNCTION__);
 }
@@ -1189,7 +1189,7 @@ void rtw_wapi_get_iv(_adapter *padapter, u8 *pRA, u8 *IV)
 
 					pWapiExt->Reserved = 0;
 					bPNOverflow = WapiIncreasePN(pWapiSta->lastTxUnicastPN, 2);
-					_rtw_memcpy(pWapiExt->PN, pWapiSta->lastTxUnicastPN, 16);
+					memcpy(pWapiExt->PN, pWapiSta->lastTxUnicastPN, 16);
 
 				}
 			}
@@ -1265,19 +1265,19 @@ void rtw_wapi_set_set_encryption(_adapter *padapter, struct ieee_param *param)
 	if (param->u.crypt.set_tx == 1) {
 		list_for_each_entry(pWapiSta, &pWapiInfo->wapiSTAUsedList, list) {
 			if (_rtw_memcmp(pWapiSta->PeerMacAddr, param->sta_addr, 6)) {
-				_rtw_memcpy(pWapiSta->lastTxUnicastPN, WapiASUEPNInitialValueSrc, 16);
+				memcpy(pWapiSta->lastTxUnicastPN, WapiASUEPNInitialValueSrc, 16);
 
 				pWapiSta->wapiUsk.bSet = true;
-				_rtw_memcpy(pWapiSta->wapiUsk.dataKey, param->u.crypt.key, 16);
-				_rtw_memcpy(pWapiSta->wapiUsk.micKey, param->u.crypt.key + 16, 16);
+				memcpy(pWapiSta->wapiUsk.dataKey, param->u.crypt.key, 16);
+				memcpy(pWapiSta->wapiUsk.micKey, param->u.crypt.key + 16, 16);
 				pWapiSta->wapiUsk.keyId = param->u.crypt.idx ;
 				pWapiSta->wapiUsk.bTxEnable = true;
 
-				_rtw_memcpy(pWapiSta->lastRxUnicastPNBEQueue, WapiAEPNInitialValueSrc, 16);
-				_rtw_memcpy(pWapiSta->lastRxUnicastPNBKQueue, WapiAEPNInitialValueSrc, 16);
-				_rtw_memcpy(pWapiSta->lastRxUnicastPNVIQueue, WapiAEPNInitialValueSrc, 16);
-				_rtw_memcpy(pWapiSta->lastRxUnicastPNVOQueue, WapiAEPNInitialValueSrc, 16);
-				_rtw_memcpy(pWapiSta->lastRxUnicastPN, WapiAEPNInitialValueSrc, 16);
+				memcpy(pWapiSta->lastRxUnicastPNBEQueue, WapiAEPNInitialValueSrc, 16);
+				memcpy(pWapiSta->lastRxUnicastPNBKQueue, WapiAEPNInitialValueSrc, 16);
+				memcpy(pWapiSta->lastRxUnicastPNVIQueue, WapiAEPNInitialValueSrc, 16);
+				memcpy(pWapiSta->lastRxUnicastPNVOQueue, WapiAEPNInitialValueSrc, 16);
+				memcpy(pWapiSta->lastRxUnicastPN, WapiAEPNInitialValueSrc, 16);
 				pWapiSta->wapiUskUpdate.bTxEnable = false;
 				pWapiSta->wapiUskUpdate.bSet = false;
 
@@ -1291,15 +1291,15 @@ void rtw_wapi_set_set_encryption(_adapter *padapter, struct ieee_param *param)
 		list_for_each_entry(pWapiSta, &pWapiInfo->wapiSTAUsedList, list) {
 			if (_rtw_memcmp(pWapiSta->PeerMacAddr, get_bssid(pmlmepriv), 6)) {
 				pWapiSta->wapiMsk.bSet = true;
-				_rtw_memcpy(pWapiSta->wapiMsk.dataKey, param->u.crypt.key, 16);
-				_rtw_memcpy(pWapiSta->wapiMsk.micKey, param->u.crypt.key + 16, 16);
+				memcpy(pWapiSta->wapiMsk.dataKey, param->u.crypt.key, 16);
+				memcpy(pWapiSta->wapiMsk.micKey, param->u.crypt.key + 16, 16);
 				pWapiSta->wapiMsk.keyId = param->u.crypt.idx ;
 				pWapiSta->wapiMsk.bTxEnable = false;
 				if (!pWapiSta->bSetkeyOk)
 					pWapiSta->bSetkeyOk = true;
 				pWapiSta->bAuthenticateInProgress = false;
 
-				_rtw_memcpy(pWapiSta->lastRxMulticastPN, WapiAEMultiCastPNInitialValueSrc, 16);
+				memcpy(pWapiSta->lastRxMulticastPN, WapiAEMultiCastPNInitialValueSrc, 16);
 
 				if (psecuritypriv->sw_decrypt == false) {
 					/* set rx broadcast key for ASUE */

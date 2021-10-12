@@ -1079,7 +1079,7 @@ NDIS_STATUS oid_rt_pro8711_wi_poll_hdl(struct oid_par_priv *poid_par_priv)
 
 	pwi_param = (struct mp_wiparam *)poid_par_priv->information_buf;
 
-	_rtw_memcpy(pwi_param, &Adapter->mppriv.workparam, sizeof(struct mp_wiparam));
+	memcpy(pwi_param, &Adapter->mppriv.workparam, sizeof(struct mp_wiparam));
 	Adapter->mppriv.act_in_progress = _FALSE;
 	*poid_par_priv->bytes_rw = poid_par_priv->information_buf_len;
 
@@ -1237,7 +1237,7 @@ NDIS_STATUS oid_rt_poll_rx_status_hdl(struct oid_par_priv *poid_par_priv)
 	if (poid_par_priv->type_of_oid != QUERY_OID)
 		return NDIS_STATUS_NOT_ACCEPTED;
 
-	_rtw_memcpy(poid_par_priv->information_buf, (unsigned char *)&Adapter->mppriv.rxstat, sizeof(struct recv_stat));
+	memcpy(poid_par_priv->information_buf, (unsigned char *)&Adapter->mppriv.rxstat, sizeof(struct recv_stat));
 	*poid_par_priv->bytes_rw = poid_par_priv->information_buf_len;
 
 
@@ -1465,7 +1465,7 @@ NDIS_STATUS oid_rt_pro_qry_pwrstate_hdl(struct oid_par_priv *poid_par_priv)
 		return NDIS_STATUS_INVALID_LENGTH;
 
 	*poid_par_priv->bytes_rw = 8;
-	_rtw_memcpy(poid_par_priv->information_buf, &(adapter_to_pwrctl(Adapter)->pwr_mode), 8);
+	memcpy(poid_par_priv->information_buf, &(adapter_to_pwrctl(Adapter)->pwr_mode), 8);
 	*poid_par_priv->bytes_rw = poid_par_priv->information_buf_len;
 
 
@@ -2369,7 +2369,7 @@ unsigned int mp_ioctl_xmit_packet_hdl(struct oid_par_priv *poid_par_priv)
 			pmp_priv->tx.payload = pparm->payload_type;
 			pattrib = &pmp_priv->tx.attrib;
 			pattrib->pktlen = pparm->length;
-			_rtw_memcpy(pattrib->dst, pparm->da, ETH_ALEN);
+			memcpy(pattrib->dst, pparm->da, ETH_ALEN);
 			SetPacketTx(padapter);
 		} else
 			return NDIS_STATUS_FAILURE;
@@ -2436,10 +2436,10 @@ unsigned int mp_ioctl_xmit_packet_hdl(struct oid_par_priv *poid_par_priv)
 	*(fctrl) = 0;
 	set_frame_sub_type(pframe, WIFI_DATA);
 
-	_rtw_memcpy(pwlanhdr->addr1, pethhdr->h_dest, ETH_ALEN);
-	_rtw_memcpy(pwlanhdr->addr2, pethhdr->h_source, ETH_ALEN);
+	memcpy(pwlanhdr->addr1, pethhdr->h_dest, ETH_ALEN);
+	memcpy(pwlanhdr->addr2, pethhdr->h_source, ETH_ALEN);
 
-	_rtw_memcpy(pwlanhdr->addr3, addr3, ETH_ALEN);
+	memcpy(pwlanhdr->addr3, addr3, ETH_ALEN);
 
 	pwlanhdr->seq_ctl = 0;
 	pframe += pattrib->hdrlen;
@@ -2447,7 +2447,7 @@ unsigned int mp_ioctl_xmit_packet_hdl(struct oid_par_priv *poid_par_priv)
 	llc_sz = rtw_put_snap(pframe, pattrib->ether_type);
 	pframe += llc_sz;
 
-	_rtw_memcpy(pframe, (void *)(pmp_pkt + 14),  payload_len);
+	memcpy(pframe, (void *)(pmp_pkt + 14),  payload_len);
 
 	pattrib->last_txcmdsz = pattrib->hdrlen + llc_sz + payload_len;
 

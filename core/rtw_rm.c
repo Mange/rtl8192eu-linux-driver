@@ -336,9 +336,9 @@ static u8 *build_wlan_hdr(_adapter *padapter, struct xmit_frame *pmgntframe,
 	fctrl = &(pwlanhdr->frame_ctl);
 	*(fctrl) = 0;
 
-	_rtw_memcpy(pwlanhdr->addr1, psta->cmn.mac_addr, ETH_ALEN);
-	_rtw_memcpy(pwlanhdr->addr2, adapter_mac_addr(padapter), ETH_ALEN);
-	_rtw_memcpy(pwlanhdr->addr3,
+	memcpy(pwlanhdr->addr1, psta->cmn.mac_addr, ETH_ALEN);
+	memcpy(pwlanhdr->addr2, adapter_mac_addr(padapter), ETH_ALEN);
+	memcpy(pwlanhdr->addr3,
 		get_my_bssid(&(pmlmeinfo->network)),ETH_ALEN);
 
 	RTW_INFO("RM: dst = " MAC_FMT "\n", MAC_ARG(pwlanhdr->addr1));
@@ -475,10 +475,10 @@ int rm_sitesurvey(struct rm_obj *prm)
 	prm->q.ch_set_ch_amount = meas_ch_num;
 
 	memset(&parm, 0, sizeof(struct sitesurvey_parm));
-	_rtw_memcpy(parm.ch, pch_set,
+	memcpy(parm.ch, pch_set,
 		sizeof(struct rtw_ieee80211_channel) * MAX_OP_CHANNEL_SET_NUM);
 
-	_rtw_memcpy(&parm.ssid[0], &prm->q.opt.bcn.ssid, IW_ESSID_MAX_SIZE);
+	memcpy(&parm.ssid[0], &prm->q.opt.bcn.ssid, IW_ESSID_MAX_SIZE);
 
 	parm.ssid_num = 1;
 	parm.scan_mode = prm->q.m_mode;
@@ -529,7 +529,7 @@ static int rm_parse_ch_load_s_elem(struct rm_obj *prm, u8 *pbody, int req_len)
 			/* check RM_EN */
 			rm_en_cap_chk_and_set(prm, RM_CH_LOAD_CAP_EN);
 
-			_rtw_memcpy(&(prm->q.opt.clm.rep_cond),
+			memcpy(&(prm->q.opt.clm.rep_cond),
 				&pbody[p+2], sizeof(prm->q.opt.clm.rep_cond));
 
 			RTW_INFO("RM: ch_load_rep_info=%u:%u\n",
@@ -569,7 +569,7 @@ static int rm_parse_noise_histo_s_elem(struct rm_obj *prm,
 			/* check RM_EN */
 			rm_en_cap_chk_and_set(prm, RM_NOISE_HISTO_CAP_EN);
 
-			_rtw_memcpy(&(prm->q.opt.nhm.rep_cond),
+			memcpy(&(prm->q.opt.nhm.rep_cond),
 				&pbody[p+2], sizeof(prm->q.opt.nhm.rep_cond));
 
 			RTW_INFO("RM: noise_histo_rep_info=%u:%u\n",
@@ -618,12 +618,12 @@ static int rm_parse_bcn_req_s_elem(struct rm_obj *prm, u8 *pbody, int req_len)
 			RTW_INFO("DBG set ssid to %s\n",DBG_BCN_REQ_SSID_NAME);
 			i = strlen(DBG_BCN_REQ_SSID_NAME);
 			prm->q.opt.bcn.ssid.SsidLength = i;
-			_rtw_memcpy(&(prm->q.opt.bcn.ssid.Ssid),
+			memcpy(&(prm->q.opt.bcn.ssid.Ssid),
 				DBG_BCN_REQ_SSID_NAME, i);
 
 #else /* original */
 			prm->q.opt.bcn.ssid.SsidLength = pbody[p+1];
-			_rtw_memcpy(&(prm->q.opt.bcn.ssid.Ssid),
+			memcpy(&(prm->q.opt.bcn.ssid.Ssid),
 				&pbody[p+2], pbody[p+1]);
 #endif
 #endif
@@ -638,7 +638,7 @@ static int rm_parse_bcn_req_s_elem(struct rm_obj *prm, u8 *pbody, int req_len)
 			/* check RM_EN */
 			rm_en_cap_chk_and_set(prm, RM_BCN_MEAS_REP_COND_CAP_EN);
 
-			_rtw_memcpy(&(prm->q.opt.bcn.rep_cond),
+			memcpy(&(prm->q.opt.bcn.rep_cond),
 				&pbody[p+2], sizeof(prm->q.opt.bcn.rep_cond));
 
 			RTW_INFO("bcn_req_rep_info=%u:%u\n",
@@ -726,7 +726,7 @@ static int rm_parse_meas_req(struct rm_obj *prm, u8 *pbody)
 		prm->q.m_mode = pbody[p++];
 
 		/* BSSID */
-		_rtw_memcpy(&(prm->q.bssid), &pbody[p], 6);
+		memcpy(&(prm->q.bssid), &pbody[p], 6);
 		p+=6;
 
 		/*
@@ -1617,7 +1617,7 @@ int issue_nb_req(struct rm_obj *prm)
 		sub_ie[0] = 0; /*SSID*/
 		sub_ie[1] = val8;
 
-		_rtw_memcpy(pie, prm->q.pssid, val8);
+		memcpy(pie, prm->q.pssid, val8);
 
 		pframe = rtw_set_fixed_ie(pframe, val8 + 2,
 			sub_ie, &pattr->pktlen);
@@ -1637,7 +1637,7 @@ int issue_nb_req(struct rm_obj *prm)
 			sub_ie[0] = 0; /*SSID*/
 			sub_ie[1] = pmlmepriv->cur_network.network.Ssid.SsidLength;
 
-			_rtw_memcpy(pie, pmlmepriv->cur_network.network.Ssid.Ssid,
+			memcpy(pie, pmlmepriv->cur_network.network.Ssid.Ssid,
 				pmlmepriv->cur_network.network.Ssid.SsidLength);
 
 			pframe = rtw_set_fixed_ie(pframe,
@@ -1978,7 +1978,7 @@ void rtw_ap_parse_sta_rm_en_cap(_adapter *padapter,
 	if (elem->rm_en_cap) {
 		RTW_INFO("assoc.rm_en_cap="RM_CAP_FMT"\n",
 			RM_CAP_ARG(elem->rm_en_cap));
-		_rtw_memcpy(psta->rm_en_cap,
+		memcpy(psta->rm_en_cap,
 			(elem->rm_en_cap), elem->rm_en_cap_len);
 	}
 }
@@ -1987,7 +1987,7 @@ void RM_IE_handler(_adapter *padapter, PNDIS_802_11_VARIABLE_IEs pIE)
 {
 	int i;
 
-	_rtw_memcpy(&padapter->rmpriv.rm_en_cap_assoc, pIE->data, pIE->Length);
+	memcpy(&padapter->rmpriv.rm_en_cap_assoc, pIE->data, pIE->Length);
 	RTW_INFO("assoc.rm_en_cap="RM_CAP_FMT"\n", RM_CAP_ARG(pIE->data));
 }
 

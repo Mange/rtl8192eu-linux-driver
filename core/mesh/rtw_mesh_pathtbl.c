@@ -117,7 +117,7 @@ void rtw_mesh_path_assign_nexthop(struct rtw_mesh_path *mpath, struct sta_info *
 	while (rtw_end_of_queue_search(head, list) == _FALSE) {
 		xframe = LIST_CONTAINOR(list, struct xmit_frame, list);
 		list = get_next(list);
-		_rtw_memcpy(xframe->attrib.ra, sta->cmn.mac_addr, ETH_ALEN);
+		memcpy(xframe->attrib.ra, sta->cmn.mac_addr, ETH_ALEN);
 	}
 
 	exit_critical_bh(&mpath->frame_queue.lock);
@@ -135,9 +135,9 @@ static void rtw_prepare_for_gate(struct xmit_frame *xframe, char *dst_addr,
 	/* update next hop */
 	rtw_rcu_read_lock();
 	next_hop = rtw_rcu_dereference(gate_mpath->next_hop)->cmn.mac_addr;
-	_rtw_memcpy(attrib->ra, next_hop, ETH_ALEN);
+	memcpy(attrib->ra, next_hop, ETH_ALEN);
 	rtw_rcu_read_unlock();
-	_rtw_memcpy(attrib->mda, dst_addr, ETH_ALEN);
+	memcpy(attrib->mda, dst_addr, ETH_ALEN);
 }
 
 /**
@@ -543,7 +543,7 @@ struct rtw_mesh_path *rtw_mesh_path_new(_adapter *adapter,
 	if (!new_mpath)
 		return NULL;
 
-	_rtw_memcpy(new_mpath->dst, dst, ETH_ALEN);
+	memcpy(new_mpath->dst, dst, ETH_ALEN);
 	memset(new_mpath->rann_snd_addr, 0xFF, ETH_ALEN);
 	new_mpath->is_root = false;
 	new_mpath->adapter = adapter;
@@ -640,7 +640,7 @@ int rtw_mpp_path_add(_adapter *adapter,
 	if (!new_mpath)
 		return -ENOMEM;
 
-	_rtw_memcpy(new_mpath->mpp, mpp, ETH_ALEN);
+	memcpy(new_mpath->mpp, mpp, ETH_ALEN);
 	ret = rtw_rhashtable_lookup_insert_fast(&tbl->rhead,
 					    &new_mpath->rhash,
 					    rtw_mesh_rht_params);
@@ -663,8 +663,8 @@ void dump_mpp(void *sel, _adapter *adapter)
 
 		mpath = rtw_mpp_path_lookup_by_idx(adapter, idx);
 		if (mpath) {
-			_rtw_memcpy(dst, mpath->dst, ETH_ALEN);
-			_rtw_memcpy(mpp, mpath->mpp, ETH_ALEN);
+			memcpy(dst, mpath->dst, ETH_ALEN);
+			memcpy(mpp, mpath->mpp, ETH_ALEN);
 		}
 
 		rtw_rcu_read_unlock();
