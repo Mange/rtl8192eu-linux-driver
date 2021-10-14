@@ -711,10 +711,6 @@ struct rtw_ieee80211_bar {
 } __attribute__((packed));
 #endif
 
-#if defined(PLATFORM_LINUX) || defined(CONFIG_RTL8712FW) || defined(PLATFORM_FREEBSD)
-
-
-
 /**
 * struct rtw_ieee80211_ht_cap - HT capabilities
 *
@@ -785,11 +781,6 @@ struct ADDBA_request {
 	unsigned short	BA_timeout_value;
 	unsigned short	BA_starting_seqctrl;
 }  __attribute__((packed));
-
-
-
-#endif
-
 
 typedef enum _HT_CAP_AMPDU_FACTOR {
 	MAX_AMPDU_FACTOR_8K		= 0,

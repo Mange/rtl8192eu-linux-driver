@@ -26,12 +26,6 @@ struct pkt_file {
 };
 
 
-#ifdef PLATFORM_FREEBSD
-#define NR_XMITFRAME	256
-extern int rtw_xmit_entry(_pkt *pkt, _nic_hdl pnetdev);
-extern void rtw_xmit_entry_wrap(struct ifnet *pifp);
-#endif /* PLATFORM_FREEBSD */
-
 #ifdef PLATFORM_LINUX
 
 #define NR_XMITFRAME	256
