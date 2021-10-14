@@ -523,7 +523,7 @@ int SecSMS4HeaderFillIV(_adapter *padapter, u8 *pxmitframe)
 	WAPI_DATA(WAPI_TX, "FillIV - Before Fill IV", pskb->data, pskb->len);
 
 	/* Address 1 is always receiver's address */
-	if (IS_MCAST(pRA)) {
+	if (is_multicast_ether_addr(pRA)) {
 		if (!pWapiInfo->wapiTxMsk.bTxEnable) {
 			WAPI_TRACE(WAPI_ERR, "%s: bTxEnable = 0!!\n", __FUNCTION__);
 			return -2;
@@ -610,7 +610,7 @@ void SecSWSMS4Encryption(
 	pRA = pframe + 4;
 
 
-	if (IS_MCAST(pRA)) {
+	if (is_multicast_ether_addr(pRA)) {
 		KeyIdx = pWapiInfo->wapiTxMsk.keyId;
 		pIV = pWapiInfo->lastTxMulticastPN;
 		pMicKey = pWapiInfo->wapiTxMsk.micKey;
@@ -728,7 +728,7 @@ u8 SecSWSMS4Decryption(
 		return false;
 	}
 
-	if (IS_MCAST(pRA)) {
+	if (is_multicast_ether_addr(pRA)) {
 		WAPI_TRACE(WAPI_RX, "%s: Multicast decryption !!!\n", __FUNCTION__);
 		if (pWapiSta->wapiMsk.keyId == KeyIdx && pWapiSta->wapiMsk.bSet) {
 			pLastRxPN = pWapiSta->lastRxMulticastPN;
@@ -821,7 +821,7 @@ u8 SecSWSMS4Decryption(
 		WAPI_TRACE(WAPI_RX, "%s: Check MIC OK!!\n", __FUNCTION__);
 		if (bUseUpdatedKey) {
 			/* delete the old key */
-			if (IS_MCAST(pRA)) {
+			if (is_multicast_ether_addr(pRA)) {
 				WAPI_TRACE(WAPI_API, "%s(): AE use new update MSK!!\n", __FUNCTION__);
 				pWapiSta->wapiMsk.keyId = pWapiSta->wapiMskUpdate.keyId;
 				memcpy(pWapiSta->wapiMsk.dataKey, pWapiSta->wapiMskUpdate.dataKey, 16);

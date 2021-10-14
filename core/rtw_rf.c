@@ -637,9 +637,9 @@ void rtw_regd_exc_add_with_nlen(struct rf_ctl_t *rfctl, const char *country, u8 
 
 	_rtw_init_listhead(&ent->list);
 	if (country)
-		_rtw_memcpy(ent->country, country, 2);
+		memcpy(ent->country, country, 2);
 	ent->domain = domain;
-	_rtw_memcpy(ent->regd_name, regd_name, nlen);
+	memcpy(ent->regd_name, regd_name, nlen);
 
 	_enter_critical_mutex(&rfctl->txpwr_lmt_mutex, &irqL);
 
@@ -1061,7 +1061,7 @@ void rtw_txpwr_lmt_add_with_nlen(struct rf_ctl_t *rfctl, const char *regd_name, 
 		goto release_lock;
 
 	_rtw_init_listhead(&ent->list);
-	_rtw_memcpy(ent->regd_name, regd_name, nlen);
+	memcpy(ent->regd_name, regd_name, nlen);
 	{
 		u8 j, k, l, m;
 

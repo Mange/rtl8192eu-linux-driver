@@ -55,7 +55,6 @@
 #include <netinet/in_systm.h>
 #include <netinet/in_var.h>
 #include <netinet/if_ether.h>
-#include <if_ether.h>
 
 #include <net80211/ieee80211_var.h>
 #include <net80211/ieee80211_regdomain.h>
@@ -523,10 +522,6 @@ usb_put_dev(struct usb_device *dev)
 int rtw_usb_submit_urb(struct urb *urb, uint16_t mem_flags);
 int rtw_usb_unlink_urb(struct urb *urb);
 int rtw_usb_clear_halt(struct usb_device *dev, struct usb_host_endpoint *uhe);
-int rtw_usb_control_msg(struct usb_device *dev, struct usb_host_endpoint *uhe,
-    uint8_t request, uint8_t requesttype,
-    uint16_t value, uint16_t index, void *data,
-    uint16_t size, usb_timeout_t timeout);
 int rtw_usb_set_interface(struct usb_device *dev, uint8_t iface_no, uint8_t alt_index);
 int rtw_usb_setup_endpoint(struct usb_device *dev,
     struct usb_host_endpoint *uhe, usb_size_t bufsize);

@@ -900,7 +900,7 @@ int proc_get_tx_stat(struct seq_file *m, void *v)
 			if ((_rtw_memcmp(psta->cmn.mac_addr, bc_addr, ETH_ALEN) !=  _TRUE)
 				&& (_rtw_memcmp(psta->cmn.mac_addr, null_addr, ETH_ALEN) != _TRUE)
 				&& (_rtw_memcmp(psta->cmn.mac_addr, adapter_mac_addr(adapter), ETH_ALEN) != _TRUE)) {
-				_rtw_memcpy(&sta_mac[macid_rec_idx][0], psta->cmn.mac_addr, ETH_ALEN);
+				memcpy(&sta_mac[macid_rec_idx][0], psta->cmn.mac_addr, ETH_ALEN);
 				mac_id[macid_rec_idx] = psta->cmn.mac_id;
 				macid_rec_idx++;
 			}
@@ -908,7 +908,7 @@ int proc_get_tx_stat(struct seq_file *m, void *v)
 	}
 	_exit_critical_bh(&pstapriv->sta_hash_lock, &irqL);
 	for (i = 0; i < macid_rec_idx; i++) {
-		_rtw_memcpy(pstapriv_primary->c2h_sta_mac, &sta_mac[i][0], ETH_ALEN);
+		memcpy(pstapriv_primary->c2h_sta_mac, &sta_mac[i][0], ETH_ALEN);
 		pstapriv_primary->c2h_adapter_id = adapter->iface_id;
 		rtw_sctx_init(&gotc2h, 60);
 		pstapriv_primary->gotc2h = &gotc2h;
@@ -1113,7 +1113,7 @@ ssize_t proc_set_roam_tgt_addr(struct file *file, const char __user *buffer, siz
 
 		int num = sscanf(tmp, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx", addr, addr + 1, addr + 2, addr + 3, addr + 4, addr + 5);
 		if (num == 6)
-			_rtw_memcpy(adapter->mlmepriv.roam_tgt_addr, addr, ETH_ALEN);
+			memcpy(adapter->mlmepriv.roam_tgt_addr, addr, ETH_ALEN);
 
 		RTW_INFO("set roam_tgt_addr to "MAC_FMT"\n", MAC_ARG(adapter->mlmepriv.roam_tgt_addr));
 	}
@@ -5725,7 +5725,7 @@ ssize_t proc_set_tx_sa_query(struct file *file, const char __user *buffer, size_
 			while ((rtw_end_of_queue_search(phead, plist)) == _FALSE) {
 				psta = LIST_CONTAINOR(plist, struct sta_info, hash_list);
 				plist = get_next(plist);
-				_rtw_memcpy(&mac_addr[psta->cmn.mac_id][0], psta->cmn.mac_addr, ETH_ALEN);
+				memcpy(&mac_addr[psta->cmn.mac_id][0], psta->cmn.mac_addr, ETH_ALEN);
 			}
 		}
 		_exit_critical_bh(&pstapriv->sta_hash_lock, &irqL);
@@ -5733,7 +5733,7 @@ ssize_t proc_set_tx_sa_query(struct file *file, const char __user *buffer, size_
 		for (index = 0; index < macid_ctl->num && index < NUM_STA; index++) {
 			if (rtw_macid_is_used(macid_ctl, index) && !rtw_macid_is_bmc(macid_ctl, index)) {
 				if (!_rtw_memcmp(get_my_bssid(&(pmlmeinfo->network)), &mac_addr[index][0], ETH_ALEN)
-				    && !IS_MCAST(&mac_addr[index][0])) {
+				    && !is_multicast_ether_addr(&mac_addr[index][0])) {
 					issue_action_SA_Query(padapter, &mac_addr[index][0], 0, 0, (u8)key_type);
 					RTW_INFO("STA[%u]:"MAC_FMT"\n", index , MAC_ARG(&mac_addr[index][0]));
 				}
@@ -5814,7 +5814,7 @@ ssize_t proc_set_tx_deauth(struct file *file, const char __user *buffer, size_t 
 			while ((rtw_end_of_queue_search(phead, plist)) == _FALSE) {
 				psta = LIST_CONTAINOR(plist, struct sta_info, hash_list);
 				plist = get_next(plist);
-				_rtw_memcpy(&mac_addr[psta->cmn.mac_id][0], psta->cmn.mac_addr, ETH_ALEN);
+				memcpy(&mac_addr[psta->cmn.mac_id][0], psta->cmn.mac_addr, ETH_ALEN);
 			}
 		}
 		_exit_critical_bh(&pstapriv->sta_hash_lock, &irqL);

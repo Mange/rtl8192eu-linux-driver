@@ -264,8 +264,8 @@ void rtw_wep_encrypt(_adapter *padapter, u8 *pxmitframe)
 
 		for (curfragnum = 0; curfragnum < pattrib->nr_frags; curfragnum++) {
 			iv = pframe + pattrib->hdrlen;
-			_rtw_memcpy(&wepkey[0], iv, 3);
-			_rtw_memcpy(&wepkey[3], &psecuritypriv->dot11DefKey[psecuritypriv->dot11PrivacyKeyIndex].skey[0], keylength);
+			memcpy(&wepkey[0], iv, 3);
+			memcpy(&wepkey[3], &psecuritypriv->dot11DefKey[psecuritypriv->dot11PrivacyKeyIndex].skey[0], keylength);
 			payload = pframe + pattrib->iv_len + pattrib->hdrlen;
 
 			if ((curfragnum + 1) == pattrib->nr_frags) {
@@ -320,9 +320,9 @@ void rtw_wep_decrypt(_adapter  *padapter, u8 *precvframe)
 		/* keyindex=(iv[3]&0x3); */
 		keyindex = prxattrib->key_index;
 		keylength = psecuritypriv->dot11DefKeylen[keyindex];
-		_rtw_memcpy(&wepkey[0], iv, 3);
-		/* _rtw_memcpy(&wepkey[3], &psecuritypriv->dot11DefKey[psecuritypriv->dot11PrivacyKeyIndex].skey[0],keylength); */
-		_rtw_memcpy(&wepkey[3], &psecuritypriv->dot11DefKey[keyindex].skey[0], keylength);
+		memcpy(&wepkey[0], iv, 3);
+		/* memcpy(&wepkey[3], &psecuritypriv->dot11DefKey[psecuritypriv->dot11PrivacyKeyIndex].skey[0],keylength); */
+		memcpy(&wepkey[3], &psecuritypriv->dot11DefKey[keyindex].skey[0], keylength);
 		length = ((union recv_frame *)precvframe)->u.hdr.len - prxattrib->hdrlen - prxattrib->iv_len;
 
 		payload = pframe + prxattrib->iv_len + prxattrib->hdrlen;
@@ -732,7 +732,7 @@ u32	rtw_tkip_encrypt(_adapter *padapter, u8 *pxmitframe)
 						}
 			*/
 
-			if (IS_MCAST(pattrib->ra))
+			if (is_multicast_ether_addr(pattrib->ra))
 				prwskey = psecuritypriv->dot118021XGrpKey[psecuritypriv->dot118021XGrpKeyid].skey;
 			else {
 				/* prwskey=&stainfo->dot118021x_UncstKey.skey[0]; */
@@ -820,7 +820,7 @@ u32 rtw_tkip_decrypt(_adapter *padapter, u8 *precvframe)
 		stainfo = rtw_get_stainfo(&padapter->stapriv , &prxattrib->ta[0]);
 		if (stainfo != NULL) {
 
-			if (IS_MCAST(prxattrib->ra)) {
+			if (is_multicast_ether_addr(prxattrib->ra)) {
 				static systime start = 0;
 				static u32 no_gkey_bc_cnt = 0;
 				static u32 no_gkey_mc_cnt = 0;
@@ -1597,7 +1597,7 @@ u32	rtw_aes_encrypt(_adapter *padapter, u8 *pxmitframe)
 						}
 			*/
 
-			if (IS_MCAST(pattrib->ra))
+			if (is_multicast_ether_addr(pattrib->ra))
 				prwskey = psecuritypriv->dot118021XGrpKey[psecuritypriv->dot118021XGrpKeyid].skey;
 			else {
 				/* prwskey=&stainfo->dot118021x_UncstKey.skey[0]; */
@@ -1767,7 +1767,7 @@ static sint aes_decipher(u8 *key, uint	hdrlen,
 
 	/* start to calculate the mic	 */
 	if ((hdrlen + plen + 8) <= MAX_MSG_SIZE)
-		_rtw_memcpy((void *)message, pframe, (hdrlen + plen + 8)); /* 8 is for ext iv len */
+		memcpy((void *)message, pframe, (hdrlen + plen + 8)); /* 8 is for ext iv len */
 
 
 	pn_vector[0] = pframe[hdrlen];
@@ -1935,7 +1935,7 @@ u32	rtw_aes_decrypt(_adapter *padapter, u8 *precvframe)
 		stainfo = rtw_get_stainfo(&padapter->stapriv , &prxattrib->ta[0]);
 		if (stainfo != NULL) {
 
-			if (IS_MCAST(prxattrib->ra)) {
+			if (is_multicast_ether_addr(prxattrib->ra)) {
 				static systime start = 0;
 				static u32 no_gkey_bc_cnt = 0;
 				static u32 no_gkey_mc_cnt = 0;
@@ -2049,7 +2049,7 @@ u32	rtw_BIP_verify(_adapter *padapter, u8 *whdr_pos, sint flen
 		return RTW_RX_HANDLED;
 
 	/* copy key index */
-	_rtw_memcpy(&pkt_keyid, mme + 2, 2);
+	memcpy(&pkt_keyid, mme + 2, 2);
 	pkt_keyid = le16_to_cpu(pkt_keyid);
 	if (pkt_keyid != keyid) {
 		RTW_INFO("BIP key index error!\n");
@@ -2057,7 +2057,7 @@ u32	rtw_BIP_verify(_adapter *padapter, u8 *whdr_pos, sint flen
 	}
 
 	/* save packet number */
-	_rtw_memcpy(&pkt_ipn, mme + 4, 6);
+	memcpy(&pkt_ipn, mme + 4, 6);
 	pkt_ipn = le64_to_cpu(pkt_ipn);
 	/* BIP packet number should bigger than previous BIP packet */
 	if (pkt_ipn <= *ipn) { /* wrap around? */
@@ -2076,7 +2076,7 @@ u32	rtw_BIP_verify(_adapter *padapter, u8 *whdr_pos, sint flen
 	pwlanhdr = (struct rtw_ieee80211_hdr *)whdr_pos;
 
 	/* save the frame body + MME */
-	_rtw_memcpy(BIP_AAD + BIP_AAD_SIZE, whdr_pos + WLAN_HDR_A3_LEN, flen - WLAN_HDR_A3_LEN);
+	memcpy(BIP_AAD + BIP_AAD_SIZE, whdr_pos + WLAN_HDR_A3_LEN, flen - WLAN_HDR_A3_LEN);
 
 	/* point mme to the copy */
 	mme = BIP_AAD + ori_len - 18;
@@ -2085,12 +2085,12 @@ u32	rtw_BIP_verify(_adapter *padapter, u8 *whdr_pos, sint flen
 	memset(mme + 10, 0, 8);
 
 	/* conscruct AAD, copy frame control field */
-	_rtw_memcpy(BIP_AAD, &pwlanhdr->frame_ctl, 2);
+	memcpy(BIP_AAD, &pwlanhdr->frame_ctl, 2);
 	ClearRetry(BIP_AAD);
 	ClearPwrMgt(BIP_AAD);
 	ClearMData(BIP_AAD);
 	/* conscruct AAD, copy address 1 to address 3 */
-	_rtw_memcpy(BIP_AAD + 2, pwlanhdr->addr1, 18);
+	memcpy(BIP_AAD + 2, pwlanhdr->addr1, 18);
 
 	if (omac1_aes_128(key, BIP_AAD, ori_len, mic))
 		goto BIP_exit;
@@ -2220,7 +2220,7 @@ static int sha256_process(struct sha256_state_rtk *md, unsigned char *in,
 			inlen -= block_size;
 		} else {
 			n = MIN(inlen, (block_size - md->curlen));
-			_rtw_memcpy(md->buf + md->curlen, in, n);
+			memcpy(md->buf + md->curlen, in, n);
 			md->curlen += n;
 			in += n;
 			inlen -= n;
@@ -2378,7 +2378,7 @@ static void hmac_sha256_vector(u8 *key, size_t key_len, size_t num_elem,
 
 	/* start out by storing key in ipad */
 	memset(k_pad, 0, sizeof(k_pad));
-	_rtw_memcpy(k_pad, key, key_len);
+	memcpy(k_pad, key, key_len);
 	/* XOR key with ipad values */
 	for (i = 0; i < 64; i++)
 		k_pad[i] ^= 0x36;
@@ -2393,7 +2393,7 @@ static void hmac_sha256_vector(u8 *key, size_t key_len, size_t num_elem,
 	sha256_vector(1 + num_elem, _addr, _len, mac);
 
 	memset(k_pad, 0, sizeof(k_pad));
-	_rtw_memcpy(k_pad, key, key_len);
+	memcpy(k_pad, key, key_len);
 	/* XOR key with opad values */
 	for (i = 0; i < 64; i++)
 		k_pad[i] ^= 0x5c;
@@ -2452,7 +2452,7 @@ static void sha256_prf(u8 *key, size_t key_len, char *label,
 			pos += SHA256_MAC_LEN;
 		} else {
 			hmac_sha256_vector(key, key_len, 4, addr, len, hash);
-			_rtw_memcpy(&buf[pos], hash, plen);
+			memcpy(&buf[pos], hash, plen);
 			break;
 		}
 		counter++;
@@ -2860,7 +2860,7 @@ int omac1_aes_128(const u8 *key, const u8 *data, size_t data_len, u8 *mac)
 #ifdef CONFIG_RTW_MESH_AEK
 /* for AES-SIV */
 #define os_memset memset
-#define os_memcpy _rtw_memcpy
+#define os_memcpy memcpy
 #define os_malloc rtw_malloc
 #define bin_clear_free(bin, len) \
 	do { \
@@ -3119,13 +3119,13 @@ void wpa_tdls_generate_tpk(_adapter *padapter, PVOID sta)
 	 */
 
 	if (os_memcmp(adapter_mac_addr(padapter), psta->cmn.mac_addr, ETH_ALEN) < 0) {
-		_rtw_memcpy(data, adapter_mac_addr(padapter), ETH_ALEN);
-		_rtw_memcpy(data + ETH_ALEN, psta->cmn.mac_addr, ETH_ALEN);
+		memcpy(data, adapter_mac_addr(padapter), ETH_ALEN);
+		memcpy(data + ETH_ALEN, psta->cmn.mac_addr, ETH_ALEN);
 	} else {
-		_rtw_memcpy(data, psta->cmn.mac_addr, ETH_ALEN);
-		_rtw_memcpy(data + ETH_ALEN, adapter_mac_addr(padapter), ETH_ALEN);
+		memcpy(data, psta->cmn.mac_addr, ETH_ALEN);
+		memcpy(data + ETH_ALEN, adapter_mac_addr(padapter), ETH_ALEN);
 	}
-	_rtw_memcpy(data + 2 * ETH_ALEN, get_bssid(pmlmepriv), ETH_ALEN);
+	memcpy(data + 2 * ETH_ALEN, get_bssid(pmlmepriv), ETH_ALEN);
 
 	sha256_prf(key_input, SHA256_MAC_LEN, "TDLS PMK", data, sizeof(data), (u8 *) &psta->tpk, sizeof(psta->tpk));
 
@@ -3162,24 +3162,24 @@ int wpa_tdls_ftie_mic(u8 *kck, u8 trans_seq,
 	pos = buf;
 	_lnkid = (struct wpa_tdls_lnkid *) lnkid;
 	/* 1) TDLS initiator STA MAC address */
-	_rtw_memcpy(pos, _lnkid->init_sta, ETH_ALEN);
+	memcpy(pos, _lnkid->init_sta, ETH_ALEN);
 	pos += ETH_ALEN;
 	/* 2) TDLS responder STA MAC address */
-	_rtw_memcpy(pos, _lnkid->resp_sta, ETH_ALEN);
+	memcpy(pos, _lnkid->resp_sta, ETH_ALEN);
 	pos += ETH_ALEN;
 	/* 3) Transaction Sequence number */
 	*pos++ = trans_seq;
 	/* 4) Link Identifier IE */
-	_rtw_memcpy(pos, lnkid, 2 + lnkid[1]);
+	memcpy(pos, lnkid, 2 + lnkid[1]);
 	pos += 2 + lnkid[1];
 	/* 5) RSN IE */
-	_rtw_memcpy(pos, rsnie, 2 + rsnie[1]);
+	memcpy(pos, rsnie, 2 + rsnie[1]);
 	pos += 2 + rsnie[1];
 	/* 6) Timeout Interval IE */
-	_rtw_memcpy(pos, timeoutie, 2 + timeoutie[1]);
+	memcpy(pos, timeoutie, 2 + timeoutie[1]);
 	pos += 2 + timeoutie[1];
 	/* 7) FTIE, with the MIC field of the FTIE set to 0 */
-	_rtw_memcpy(pos, ftie, 2 + ftie[1]);
+	memcpy(pos, ftie, 2 + ftie[1]);
 	_ftie = (struct wpa_tdls_ftie *) pos;
 	memset(_ftie->mic, 0, TDLS_MIC_LEN);
 	pos += 2 + ftie[1];
@@ -3218,17 +3218,17 @@ int wpa_tdls_teardown_ftie_mic(u8 *kck, u8 *lnkid, u16 reason,
 
 	pos = buf;
 	/* 1) Link Identifier IE */
-	_rtw_memcpy(pos, lnkid, 2 + lnkid[1]);
+	memcpy(pos, lnkid, 2 + lnkid[1]);
 	pos += 2 + lnkid[1];
 	/* 2) Reason Code */
-	_rtw_memcpy(pos, (u8 *)&reason, 2);
+	memcpy(pos, (u8 *)&reason, 2);
 	pos += 2;
 	/* 3) Dialog Token */
 	*pos++ = dialog_token;
 	/* 4) Transaction Sequence number */
 	*pos++ = trans_seq;
 	/* 5) FTIE, with the MIC field of the FTIE set to 0 */
-	_rtw_memcpy(pos, ftie, 2 + ftie[1]);
+	memcpy(pos, ftie, 2 + ftie[1]);
 	_ftie = (struct wpa_tdls_ftie *) pos;
 	memset(_ftie->mic, 0, TDLS_MIC_LEN);
 	pos += 2 + ftie[1];
@@ -3260,24 +3260,24 @@ int tdls_verify_mic(u8 *kck, u8 trans_seq,
 
 	pos = buf;
 	/* 1) TDLS initiator STA MAC address */
-	_rtw_memcpy(pos, lnkid + ETH_ALEN + 2, ETH_ALEN);
+	memcpy(pos, lnkid + ETH_ALEN + 2, ETH_ALEN);
 	pos += ETH_ALEN;
 	/* 2) TDLS responder STA MAC address */
-	_rtw_memcpy(pos, lnkid + 2 * ETH_ALEN + 2, ETH_ALEN);
+	memcpy(pos, lnkid + 2 * ETH_ALEN + 2, ETH_ALEN);
 	pos += ETH_ALEN;
 	/* 3) Transaction Sequence number */
 	*pos++ = trans_seq;
 	/* 4) Link Identifier IE */
-	_rtw_memcpy(pos, lnkid, 2 + 18);
+	memcpy(pos, lnkid, 2 + 18);
 	pos += 2 + 18;
 	/* 5) RSN IE */
-	_rtw_memcpy(pos, rsnie, 2 + *(rsnie + 1));
+	memcpy(pos, rsnie, 2 + *(rsnie + 1));
 	pos += 2 + *(rsnie + 1);
 	/* 6) Timeout Interval IE */
-	_rtw_memcpy(pos, timeoutie, 2 + *(timeoutie + 1));
+	memcpy(pos, timeoutie, 2 + *(timeoutie + 1));
 	pos += 2 + *(timeoutie + 1);
 	/* 7) FTIE, with the MIC field of the FTIE set to 0 */
-	_rtw_memcpy(pos, ftie, 2 + *(ftie + 1));
+	memcpy(pos, ftie, 2 + *(ftie + 1));
 	pos += 2;
 	tmp_ftie = (u8 *)(pos + 2);
 	memset(tmp_ftie, 0, 16);

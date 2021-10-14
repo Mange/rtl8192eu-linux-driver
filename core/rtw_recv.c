@@ -485,7 +485,7 @@ sint recvframe_chkmic(_adapter *adapter,  union recv_frame *precvframe)
 
 		/* calculate mic code */
 		if (stainfo != NULL) {
-			if (IS_MCAST(prxattrib->ra)) {
+			if (is_multicast_ether_addr(prxattrib->ra)) {
 				/* mickey=&psecuritypriv->dot118021XGrprxmickey.skey[0]; */
 				/* iv = precvframe->u.hdr.rx_data+prxattrib->hdrlen; */
 				/* rxdata_key_idx =( ((iv[3])>>6)&0x3) ; */
@@ -529,11 +529,11 @@ sint recvframe_chkmic(_adapter *adapter,  union recv_frame *precvframe)
 
 				/* double check key_index for some timing issue , */
 				/* cannot compare with psecuritypriv->dot118021XGrpKeyid also cause timing issue */
-				if ((IS_MCAST(prxattrib->ra) == _TRUE)  && (prxattrib->key_index != pmlmeinfo->key_index))
+				if ((is_multicast_ether_addr(prxattrib->ra) == _TRUE)  && (prxattrib->key_index != pmlmeinfo->key_index))
 					brpt_micerror = _FALSE;
 
 				if ((prxattrib->bdecrypted == _TRUE) && (brpt_micerror == _TRUE)) {
-					rtw_handle_tkip_mic_err(adapter, stainfo, (u8)IS_MCAST(prxattrib->ra));
+					rtw_handle_tkip_mic_err(adapter, stainfo, (u8)is_multicast_ether_addr(prxattrib->ra));
 					RTW_INFO(" mic error :prxattrib->bdecrypted=%d\n", prxattrib->bdecrypted);
 				} else {
 					RTW_INFO(" mic error :prxattrib->bdecrypted=%d\n", prxattrib->bdecrypted);
@@ -543,7 +543,7 @@ sint recvframe_chkmic(_adapter *adapter,  union recv_frame *precvframe)
 
 			} else {
 				/* mic checked ok */
-				if ((psecuritypriv->bcheck_grpkey == _FALSE) && (IS_MCAST(prxattrib->ra) == _TRUE)) {
+				if ((psecuritypriv->bcheck_grpkey == _FALSE) && (is_multicast_ether_addr(prxattrib->ra) == _TRUE)) {
 					psecuritypriv->bcheck_grpkey = _TRUE;
 				}
 			}
@@ -601,7 +601,7 @@ union recv_frame *decryptor(_adapter *padapter, union recv_frame *precv_frame)
 	if (prxattrib->encrypt && !prxattrib->bdecrypted) {
 		if (GetFrameType(get_recvframe_data(precv_frame)) == WIFI_DATA
 			#ifdef CONFIG_CONCURRENT_MODE
-			&& !IS_MCAST(prxattrib->ra) /* bc/mc packets may use sw decryption for concurrent mode */
+			&& !is_multicast_ether_addr(prxattrib->ra) /* bc/mc packets may use sw decryption for concurrent mode */
 			#endif
 		)
 			psecuritypriv->hw_decrypted = _FALSE;
@@ -741,7 +741,7 @@ union recv_frame *portctrl(_adapter *adapter, union recv_frame *precv_frame)
 
 			/* get ether_type */
 			ptr = ptr + pfhdr->attrib.hdrlen + pfhdr->attrib.iv_len + LLC_HEADER_SIZE;
-			_rtw_memcpy(&ether_type, ptr, 2);
+			memcpy(&ether_type, ptr, 2);
 			ether_type = ntohs((unsigned short)ether_type);
 
 			if (ether_type == eapol_type)
@@ -805,7 +805,7 @@ sint recv_ucast_pn_decache(union recv_frame *precv_frame)
 			/* return _FAIL; */
 		} else {
 			prxcache->last_tid = tid;
-			_rtw_memcpy(prxcache->iv[tid],
+			memcpy(prxcache->iv[tid],
 				    (pdata + pattrib->hdrlen),
 				    sizeof(prxcache->iv[tid]));
 		}
@@ -859,12 +859,12 @@ sint recv_decache(union recv_frame *precv_frame)
 		return _FAIL;
 
 	if (pattrib->qos) {
-		if (IS_MCAST(pattrib->ra))
+		if (is_multicast_ether_addr(pattrib->ra))
 			prxseq = &psta->sta_recvpriv.bmc_tid_rxseq[tid];
 		else
 			prxseq = &psta->sta_recvpriv.rxcache.tid_rxseq[tid];
 	} else {
-		if (IS_MCAST(pattrib->ra)) {
+		if (is_multicast_ether_addr(pattrib->ra)) {
 			prxseq = &psta->sta_recvpriv.nonqos_bmc_rxseq;
 			#ifdef DBG_RX_SEQ
 			RTW_INFO("DBG_RX_SEQ "FUNC_ADPT_FMT" nonqos bmc seq_num:%d\n"
@@ -1113,7 +1113,7 @@ void count_rx_stats(_adapter *padapter, union recv_frame *prframe, struct sta_in
 
 	padapter->mlmepriv.LinkDetectInfo.NumRxOkInPeriod++;
 
-	if (!is_broadcast_ether_addr(pattrib->dst) && !IS_MCAST(pattrib->dst))
+	if (!is_broadcast_ether_addr(pattrib->dst) && !is_multicast_ether_addr(pattrib->dst))
 		padapter->mlmepriv.LinkDetectInfo.NumRxUnicastOkInPeriod++;
 
 	if (sta)
@@ -1122,7 +1122,7 @@ void count_rx_stats(_adapter *padapter, union recv_frame *prframe, struct sta_in
 		psta = prframe->u.hdr.psta;
 
 	if (psta) {
-		u8 is_ra_bmc = IS_MCAST(pattrib->ra);
+		u8 is_ra_bmc = is_multicast_ether_addr(pattrib->ra);
 
 		pstats = &psta->sta_stats;
 
@@ -1175,7 +1175,7 @@ sint sta2sta_data_frame(
 	u8 *mybssid  = get_bssid(pmlmepriv);
 	u8 *myhwaddr = adapter_mac_addr(adapter);
 	u8 *sta_addr = pattrib->ta;
-	sint bmcast = IS_MCAST(pattrib->dst);
+	sint bmcast = is_multicast_ether_addr(pattrib->dst);
 
 #ifdef CONFIG_TDLS
 	struct tdls_info *ptdlsinfo = &adapter->tdlsinfo;
@@ -1296,7 +1296,7 @@ sint sta2sta_data_frame(
 	} else if (check_fwstate(pmlmepriv, WIFI_AP_STATE) == _TRUE) {
 		if (bmcast) {
 			/* For AP mode, if DA == MCAST, then BSSID should be also MCAST */
-			if (!IS_MCAST(pattrib->bssid)) {
+			if (!is_multicast_ether_addr(pattrib->bssid)) {
 				ret = _FAIL;
 				goto exit;
 			}
@@ -1309,11 +1309,11 @@ sint sta2sta_data_frame(
 		}
 
 	} else if (check_fwstate(pmlmepriv, WIFI_MP_STATE) == _TRUE) {
-		_rtw_memcpy(pattrib->dst, GetAddr1Ptr(ptr), ETH_ALEN);
-		_rtw_memcpy(pattrib->src, get_addr2_ptr(ptr), ETH_ALEN);
-		_rtw_memcpy(pattrib->bssid, GetAddr3Ptr(ptr), ETH_ALEN);
-		_rtw_memcpy(pattrib->ra, pattrib->dst, ETH_ALEN);
-		_rtw_memcpy(pattrib->ta, pattrib->src, ETH_ALEN);
+		memcpy(pattrib->dst, GetAddr1Ptr(ptr), ETH_ALEN);
+		memcpy(pattrib->src, get_addr2_ptr(ptr), ETH_ALEN);
+		memcpy(pattrib->bssid, GetAddr3Ptr(ptr), ETH_ALEN);
+		memcpy(pattrib->ra, pattrib->dst, ETH_ALEN);
+		memcpy(pattrib->ta, pattrib->src, ETH_ALEN);
 
 		sta_addr = mybssid;
 	} else
@@ -1352,7 +1352,7 @@ sint ap2sta_data_frame(
 	struct	mlme_priv	*pmlmepriv = &adapter->mlmepriv;
 	u8 *mybssid  = get_bssid(pmlmepriv);
 	u8 *myhwaddr = adapter_mac_addr(adapter);
-	sint bmcast = IS_MCAST(pattrib->dst);
+	sint bmcast = is_multicast_ether_addr(pattrib->dst);
 
 
 	if ((check_fwstate(pmlmepriv, WIFI_STATION_STATE) == _TRUE)
@@ -1424,11 +1424,11 @@ sint ap2sta_data_frame(
 
 	} else if ((check_fwstate(pmlmepriv, WIFI_MP_STATE) == _TRUE) &&
 		   (check_fwstate(pmlmepriv, _FW_LINKED) == _TRUE)) {
-		_rtw_memcpy(pattrib->dst, GetAddr1Ptr(ptr), ETH_ALEN);
-		_rtw_memcpy(pattrib->src, get_addr2_ptr(ptr), ETH_ALEN);
-		_rtw_memcpy(pattrib->bssid, GetAddr3Ptr(ptr), ETH_ALEN);
-		_rtw_memcpy(pattrib->ra, pattrib->dst, ETH_ALEN);
-		_rtw_memcpy(pattrib->ta, pattrib->src, ETH_ALEN);
+		memcpy(pattrib->dst, GetAddr1Ptr(ptr), ETH_ALEN);
+		memcpy(pattrib->src, get_addr2_ptr(ptr), ETH_ALEN);
+		memcpy(pattrib->bssid, GetAddr3Ptr(ptr), ETH_ALEN);
+		memcpy(pattrib->ra, pattrib->dst, ETH_ALEN);
+		memcpy(pattrib->ta, pattrib->src, ETH_ALEN);
 
 
 		*psta = rtw_get_stainfo(pstapriv, pattrib->bssid); /* get sta_info */
@@ -1527,11 +1527,11 @@ sint sta2ap_data_frame(
 	} else if ((check_fwstate(pmlmepriv, WIFI_MP_STATE) == _TRUE) &&
 		   (check_fwstate(pmlmepriv, _FW_LINKED) == _TRUE)) {
 		/* RTW_INFO("%s ,in WIFI_MP_STATE\n",__func__); */
-		_rtw_memcpy(pattrib->dst, GetAddr1Ptr(ptr), ETH_ALEN);
-		_rtw_memcpy(pattrib->src, get_addr2_ptr(ptr), ETH_ALEN);
-		_rtw_memcpy(pattrib->bssid, GetAddr3Ptr(ptr), ETH_ALEN);
-		_rtw_memcpy(pattrib->ra, pattrib->dst, ETH_ALEN);
-		_rtw_memcpy(pattrib->ta, pattrib->src, ETH_ALEN);
+		memcpy(pattrib->dst, GetAddr1Ptr(ptr), ETH_ALEN);
+		memcpy(pattrib->src, get_addr2_ptr(ptr), ETH_ALEN);
+		memcpy(pattrib->bssid, GetAddr3Ptr(ptr), ETH_ALEN);
+		memcpy(pattrib->ra, pattrib->dst, ETH_ALEN);
+		memcpy(pattrib->ta, pattrib->src, ETH_ALEN);
 
 
 		*psta = rtw_get_stainfo(pstapriv, pattrib->bssid); /* get sta_info */
@@ -1758,7 +1758,7 @@ static sint validate_mgmt_protect(_adapter *adapter, union recv_frame *precv_fra
 	ptr = precv_frame->u.hdr.rx_data;
 	type = GetFrameType(ptr);
 	subtype = get_frame_sub_type(ptr); /* bit(7)~bit(2) */
-	is_bmc = IS_MCAST(GetAddr1Ptr(ptr));
+	is_bmc = is_multicast_ether_addr(GetAddr1Ptr(ptr));
 
 #if DBG_VALIDATE_MGMT_PROTECT
 	if (subtype == WIFI_DEAUTH) {
@@ -1892,8 +1892,8 @@ bip_verify:
 
 	/* set iv and icv length */
 	SET_ICE_IV_LEN(pattrib->iv_len, pattrib->icv_len, pattrib->encrypt);
-	_rtw_memcpy(pattrib->ra, GetAddr1Ptr(ptr), ETH_ALEN);
-	_rtw_memcpy(pattrib->ta, get_addr2_ptr(ptr), ETH_ALEN);
+	memcpy(pattrib->ra, GetAddr1Ptr(ptr), ETH_ALEN);
+	memcpy(pattrib->ta, get_addr2_ptr(ptr), ETH_ALEN);
 
 	/* actual management data frame body */
 	data_len = pattrib->pkt_len - pattrib->hdrlen - pattrib->iv_len - pattrib->icv_len;
@@ -1917,9 +1917,9 @@ bip_verify:
 
 	precv_frame = decryptor(adapter, precv_frame);
 	/* save actual management data frame body */
-	_rtw_memcpy(mgmt_DATA, ptr + pattrib->hdrlen + pattrib->iv_len, data_len);
+	memcpy(mgmt_DATA, ptr + pattrib->hdrlen + pattrib->iv_len, data_len);
 	/* overwrite the iv field */
-	_rtw_memcpy(ptr + pattrib->hdrlen, mgmt_DATA, data_len);
+	memcpy(ptr + pattrib->hdrlen, mgmt_DATA, data_len);
 	/* remove the iv and icv length */
 	pattrib->pkt_len = pattrib->pkt_len - pattrib->iv_len - pattrib->icv_len;
 	rtw_mfree(mgmt_DATA, data_len);
@@ -2000,30 +2000,30 @@ sint validate_recv_mgnt_frame(PADAPTER padapter, union recv_frame *precv_frame)
 		pbssid = get_hdr_bssid(ptr);
 
 
-		_rtw_memcpy(pattrib->dst, pda, ETH_ALEN);
-		_rtw_memcpy(pattrib->src, psa, ETH_ALEN);
+		memcpy(pattrib->dst, pda, ETH_ALEN);
+		memcpy(pattrib->src, psa, ETH_ALEN);
 
-		_rtw_memcpy(pattrib->bssid, pbssid, ETH_ALEN);
+		memcpy(pattrib->bssid, pbssid, ETH_ALEN);
 
 		switch (pattrib->to_fr_ds) {
 		case 0:
-			_rtw_memcpy(pattrib->ra, pda, ETH_ALEN);
-			_rtw_memcpy(pattrib->ta, psa, ETH_ALEN);
+			memcpy(pattrib->ra, pda, ETH_ALEN);
+			memcpy(pattrib->ta, psa, ETH_ALEN);
 			break;
 
 		case 1:
-			_rtw_memcpy(pattrib->ra, pda, ETH_ALEN);
-			_rtw_memcpy(pattrib->ta, pbssid, ETH_ALEN);
+			memcpy(pattrib->ra, pda, ETH_ALEN);
+			memcpy(pattrib->ta, pbssid, ETH_ALEN);
 			break;
 
 		case 2:
-			_rtw_memcpy(pattrib->ra, pbssid, ETH_ALEN);
-			_rtw_memcpy(pattrib->ta, psa, ETH_ALEN);
+			memcpy(pattrib->ra, pbssid, ETH_ALEN);
+			memcpy(pattrib->ta, psa, ETH_ALEN);
 			break;
 
 		case 3:
-			_rtw_memcpy(pattrib->ra, GetAddr1Ptr(ptr), ETH_ALEN);
-			_rtw_memcpy(pattrib->ta, get_addr2_ptr(ptr), ETH_ALEN);
+			memcpy(pattrib->ra, GetAddr1Ptr(ptr), ETH_ALEN);
+			memcpy(pattrib->ta, get_addr2_ptr(ptr), ETH_ALEN);
 			break;
 
 		default:
@@ -2072,29 +2072,29 @@ sint validate_recv_data_frame(_adapter *adapter, union recv_frame *precv_frame)
 
 	switch (pattrib->to_fr_ds) {
 	case 0:
-		_rtw_memcpy(pattrib->ra, GetAddr1Ptr(ptr), ETH_ALEN);
-		_rtw_memcpy(pattrib->ta, get_addr2_ptr(ptr), ETH_ALEN);
-		_rtw_memcpy(pattrib->dst, GetAddr1Ptr(ptr), ETH_ALEN);
-		_rtw_memcpy(pattrib->src, get_addr2_ptr(ptr), ETH_ALEN);
-		_rtw_memcpy(pattrib->bssid, GetAddr3Ptr(ptr), ETH_ALEN);
+		memcpy(pattrib->ra, GetAddr1Ptr(ptr), ETH_ALEN);
+		memcpy(pattrib->ta, get_addr2_ptr(ptr), ETH_ALEN);
+		memcpy(pattrib->dst, GetAddr1Ptr(ptr), ETH_ALEN);
+		memcpy(pattrib->src, get_addr2_ptr(ptr), ETH_ALEN);
+		memcpy(pattrib->bssid, GetAddr3Ptr(ptr), ETH_ALEN);
 		ret = sta2sta_data_frame(adapter, precv_frame, &psta);
 		break;
 
 	case 1:
-		_rtw_memcpy(pattrib->ra, GetAddr1Ptr(ptr), ETH_ALEN);
-		_rtw_memcpy(pattrib->ta, get_addr2_ptr(ptr), ETH_ALEN);
-		_rtw_memcpy(pattrib->dst, GetAddr1Ptr(ptr), ETH_ALEN);
-		_rtw_memcpy(pattrib->src, GetAddr3Ptr(ptr), ETH_ALEN);
-		_rtw_memcpy(pattrib->bssid, get_addr2_ptr(ptr), ETH_ALEN);
+		memcpy(pattrib->ra, GetAddr1Ptr(ptr), ETH_ALEN);
+		memcpy(pattrib->ta, get_addr2_ptr(ptr), ETH_ALEN);
+		memcpy(pattrib->dst, GetAddr1Ptr(ptr), ETH_ALEN);
+		memcpy(pattrib->src, GetAddr3Ptr(ptr), ETH_ALEN);
+		memcpy(pattrib->bssid, get_addr2_ptr(ptr), ETH_ALEN);
 		ret = ap2sta_data_frame(adapter, precv_frame, &psta);
 		break;
 
 	case 2:
-		_rtw_memcpy(pattrib->ra, GetAddr1Ptr(ptr), ETH_ALEN);
-		_rtw_memcpy(pattrib->ta, get_addr2_ptr(ptr), ETH_ALEN);
-		_rtw_memcpy(pattrib->dst, GetAddr3Ptr(ptr), ETH_ALEN);
-		_rtw_memcpy(pattrib->src, get_addr2_ptr(ptr), ETH_ALEN);
-		_rtw_memcpy(pattrib->bssid, GetAddr1Ptr(ptr), ETH_ALEN);
+		memcpy(pattrib->ra, GetAddr1Ptr(ptr), ETH_ALEN);
+		memcpy(pattrib->ta, get_addr2_ptr(ptr), ETH_ALEN);
+		memcpy(pattrib->dst, GetAddr3Ptr(ptr), ETH_ALEN);
+		memcpy(pattrib->src, get_addr2_ptr(ptr), ETH_ALEN);
+		memcpy(pattrib->bssid, GetAddr1Ptr(ptr), ETH_ALEN);
 		ret = sta2ap_data_frame(adapter, precv_frame, &psta);
 		break;
 
@@ -2153,7 +2153,7 @@ pre_validate_status_chk:
 	if (ret  == _FAIL)
 		goto exit;
 
-	if (!IS_MCAST(pattrib->ra)) {
+	if (!is_multicast_ether_addr(pattrib->ra)) {
 
 		if (pattrib->qos)
 			precv_frame->u.hdr.preorder_ctrl = &psta->recvreorder_ctrl[pattrib->priority];
@@ -2183,7 +2183,7 @@ pre_validate_status_chk:
 			pattrib->encrypt = psta->dot118021XPrivacy;
 		else
 #endif /* CONFIG_TDLS */
-			GET_ENCRY_ALGO(psecuritypriv, psta, pattrib->encrypt, IS_MCAST(pattrib->ra));
+			GET_ENCRY_ALGO(psecuritypriv, psta, pattrib->encrypt, is_multicast_ether_addr(pattrib->ra));
 
 
 		SET_ICE_IV_LEN(pattrib->iv_len, pattrib->icv_len, pattrib->encrypt);
@@ -2374,7 +2374,7 @@ sint validate_recv_frame(_adapter *adapter, union recv_frame *precv_frame)
 				/* dump eapol */
 				rtw_hal_get_def_var(adapter, HAL_DEF_DBG_DUMP_RXPKT, &(bDumpRxPkt));
 				/* get ether_type */
-				_rtw_memcpy(&eth_type, ptr + pattrib->hdrlen + pattrib->iv_len + RATTRIB_GET_MCTRL_LEN(pattrib) + LLC_HEADER_SIZE, 2);
+				memcpy(&eth_type, ptr + pattrib->hdrlen + pattrib->iv_len + RATTRIB_GET_MCTRL_LEN(pattrib) + LLC_HEADER_SIZE, 2);
 				eth_type = ntohs((unsigned short) eth_type);
 				if ((bDumpRxPkt == 4) && (eth_type == 0x888e))
 					dump_rx_packet(ptr);
@@ -2441,7 +2441,7 @@ sint wlanhdr_to_ethhdr(union recv_frame *precvframe)
 	len = precvframe->u.hdr.len - rmv_len;
 
 
-	_rtw_memcpy(&eth_type, ptr + rmv_len, 2);
+	memcpy(&eth_type, ptr + rmv_len, 2);
 	eth_type = ntohs((unsigned short)eth_type); /* pattrib->ether_type */
 	pattrib->eth_type = eth_type;
 
@@ -2458,7 +2458,7 @@ sint wlanhdr_to_ethhdr(union recv_frame *precvframe)
 			ret = _FAIL;
 			goto exiting;
 		}
-		_rtw_memcpy(ptr, get_rxmem(precvframe), 24);
+		memcpy(ptr, get_rxmem(precvframe), 24);
 		ptr += 24;
 	} else {
 		ptr = recvframe_pull(precvframe, (rmv_len - sizeof(struct ethhdr) + (bsnaphdr ? 2 : 0)));
@@ -2469,12 +2469,12 @@ sint wlanhdr_to_ethhdr(union recv_frame *precvframe)
 	}
 
 	if (ptr) {
-		_rtw_memcpy(ptr, pattrib->dst, ETH_ALEN);
-		_rtw_memcpy(ptr + ETH_ALEN, pattrib->src, ETH_ALEN);
+		memcpy(ptr, pattrib->dst, ETH_ALEN);
+		memcpy(ptr + ETH_ALEN, pattrib->src, ETH_ALEN);
 
 		if (!bsnaphdr) {
 			len = htons(len);
-			_rtw_memcpy(ptr + 12, &len, 2);
+			memcpy(ptr + 12, &len, 2);
 		}
 
 		rtw_rframe_set_os_pkt(precvframe);
@@ -2540,7 +2540,7 @@ sint wlanhdr_to_ethhdr(union recv_frame *precvframe)
 
 	ptr += rmv_len ;
 
-	_rtw_memcpy(&eth_type, ptr, 2);
+	memcpy(&eth_type, ptr, 2);
 	eth_type = ntohs((unsigned short)eth_type); /* pattrib->ether_type */
 	ptr += 2;
 
@@ -2564,7 +2564,7 @@ sint wlanhdr_to_ethhdr(union recv_frame *precvframe)
 
 	} else if (eth_type == 0x8712) { /* append rx status for mp test packets */
 		/* ptr -= 16; */
-		/* _rtw_memcpy(ptr, get_rxmem(precvframe), 16); */
+		/* memcpy(ptr, get_rxmem(precvframe), 16); */
 	} else {
 #ifdef PLATFORM_OS_XP
 		NDIS_PACKET_8021Q_INFO VlanPriInfo;
@@ -2585,16 +2585,16 @@ sint wlanhdr_to_ethhdr(union recv_frame *precvframe)
 
 	if (eth_type == 0x8712) { /* append rx status for mp test packets */
 		ptr = recvframe_pull(precvframe, (rmv_len - sizeof(struct ethhdr) + 2) - 24);
-		_rtw_memcpy(ptr, get_rxmem(precvframe), 24);
+		memcpy(ptr, get_rxmem(precvframe), 24);
 		ptr += 24;
 	} else
 		ptr = recvframe_pull(precvframe, (rmv_len - sizeof(struct ethhdr) + 2));
 
-	_rtw_memcpy(ptr, pattrib->dst, ETH_ALEN);
-	_rtw_memcpy(ptr + ETH_ALEN, pattrib->src, ETH_ALEN);
+	memcpy(ptr, pattrib->dst, ETH_ALEN);
+	memcpy(ptr + ETH_ALEN, pattrib->src, ETH_ALEN);
 
 	eth_type = htons((unsigned short)eth_type) ;
-	_rtw_memcpy(ptr + 12, &eth_type, 2);
+	memcpy(ptr + 12, &eth_type, 2);
 
 exit:
 
@@ -2647,7 +2647,7 @@ static void recvframe_expand_pkt(
 	/* copy data to new pkt */
 	ptr = skb_put(ppkt, pfhdr->len);
 	if (ptr)
-		_rtw_memcpy(ptr, pfhdr->rx_data, pfhdr->len);
+		memcpy(ptr, pfhdr->rx_data, pfhdr->len);
 
 	rtw_skb_free(pfhdr->pkt);
 
@@ -2735,7 +2735,7 @@ union recv_frame *recvframe_defrag(_adapter *adapter, _queue *defrag_q)
 		recvframe_pull_tail(prframe, pfhdr->attrib.icv_len);
 
 		/* memcpy */
-		_rtw_memcpy(pfhdr->rx_tail, pnfhdr->rx_data, pnfhdr->len);
+		memcpy(pfhdr->rx_tail, pnfhdr->rx_data, pnfhdr->len);
 
 		recvframe_put(prframe, pnfhdr->len);
 
@@ -2917,11 +2917,11 @@ static int rtw_recv_indicatepkt_check(union recv_frame *rframe, u8 *ehdr_pos, u3
 	if (ntohs(ehdr->h_proto) == ETH_P_ARP) {
 
 		if(check_fwstate(pmlmepriv, WIFI_ASOC_STATE) == _TRUE){
-			if(ehdr_pos[ETHERNET_HEADER_SIZE+LEN_ARP_OP_HDR] == 2) {
+			if(ehdr_pos[ETH_HLEN+LEN_ARP_OP_HDR] == 2) {
 				RTW_INFO("%s,[DBG_ARP] Rx ARP RSP Packet with Dst= "MAC_FMT" ;SeqNum = %d !\n",
 					__FUNCTION__, MAC_ARG(pattrib->dst), pattrib->seq_num);
-				for(i=0;i<(pkt_len -ETHERNET_HEADER_SIZE);i++)
-					RTW_INFO("0x%x ",ehdr_pos[i+ETHERNET_HEADER_SIZE]);
+				for(i=0;i<(pkt_len -ETH_HLEN);i++)
+					RTW_INFO("0x%x ",ehdr_pos[i+ETH_HLEN]);
 				RTW_INFO("\n");
 			}
 		}
@@ -3053,7 +3053,7 @@ int amsdu_to_msdu(_adapter *padapter, union recv_frame *prframe)
 	while (a_len > ETH_HLEN) {
 		/* Offset 12 denote 2 mac address */
 		nSubframe_Length = RTW_GET_BE16(pdata + 12);
-		if (a_len < (ETHERNET_HEADER_SIZE + nSubframe_Length)) {
+		if (a_len < (ETH_HLEN + nSubframe_Length)) {
 			RTW_INFO("nRemain_Length is %d and nSubframe_Length is : %d\n", a_len, nSubframe_Length);
 			break;
 		}
@@ -3760,7 +3760,7 @@ static sint MPwlanhdr_to_ethhdr(union recv_frame *precvframe)
 	len = precvframe->u.hdr.len - rmv_len;
 
 
-	_rtw_memcpy(&eth_type, ptr + rmv_len, 2);
+	memcpy(&eth_type, ptr + rmv_len, 2);
 	eth_type = ntohs((unsigned short)eth_type); /* pattrib->ether_type */
 	pattrib->eth_type = eth_type;
 
@@ -3768,24 +3768,24 @@ static sint MPwlanhdr_to_ethhdr(union recv_frame *precvframe)
 		ptr = recvframe_pull(precvframe, (rmv_len - sizeof(struct ethhdr) + (bsnaphdr ? 2 : 0)));
 	}
 
-	_rtw_memcpy(ptr, pattrib->dst, ETH_ALEN);
-	_rtw_memcpy(ptr + ETH_ALEN, pattrib->src, ETH_ALEN);
+	memcpy(ptr, pattrib->dst, ETH_ALEN);
+	memcpy(ptr + ETH_ALEN, pattrib->src, ETH_ALEN);
 
 	if (!bsnaphdr) {
 		len = htons(len);
-		_rtw_memcpy(ptr + 12, &len, 2);
+		memcpy(ptr + 12, &len, 2);
 	}
 
 
 	len = htons(pattrib->seq_num);
 	/* RTW_INFO("wlan seq = %d ,seq_num =%x\n",len,pattrib->seq_num); */
-	_rtw_memcpy(ptr + 12, &len, 2);
+	memcpy(ptr + 12, &len, 2);
 	if (adapter->mppriv.bRTWSmbCfg == _TRUE) {
 		/* if(_rtw_memcmp(mcastheadermac, pattrib->dst, 3) == _TRUE) */ /* SimpleConfig Dest. */
-		/*			_rtw_memcpy(ptr+ETH_ALEN, pattrib->bssid, ETH_ALEN); */
+		/*			memcpy(ptr+ETH_ALEN, pattrib->bssid, ETH_ALEN); */
 
 		if (_rtw_memcmp(mcastheadermac, pattrib->bssid, 3) == _TRUE) /* SimpleConfig Dest. */
-			_rtw_memcpy(ptr, pattrib->bssid, ETH_ALEN);
+			memcpy(ptr, pattrib->bssid, ETH_ALEN);
 
 	}
 
@@ -3840,34 +3840,34 @@ int mp_recv_frame(_adapter *padapter, union recv_frame *rframe)
 				psa = get_sa(ptr);
 				pbssid = get_hdr_bssid(ptr);
 
-				_rtw_memcpy(pattrib->dst, pda, ETH_ALEN);
-				_rtw_memcpy(pattrib->src, psa, ETH_ALEN);
-				_rtw_memcpy(pattrib->bssid, pbssid, ETH_ALEN);
+				memcpy(pattrib->dst, pda, ETH_ALEN);
+				memcpy(pattrib->src, psa, ETH_ALEN);
+				memcpy(pattrib->bssid, pbssid, ETH_ALEN);
 
 				switch (pattrib->to_fr_ds) {
 				case 0:
-					_rtw_memcpy(pattrib->ra, pda, ETH_ALEN);
-					_rtw_memcpy(pattrib->ta, psa, ETH_ALEN);
+					memcpy(pattrib->ra, pda, ETH_ALEN);
+					memcpy(pattrib->ta, psa, ETH_ALEN);
 					ret = sta2sta_data_frame(padapter, rframe, &psta);
 					break;
 
 				case 1:
 
-					_rtw_memcpy(pattrib->ra, pda, ETH_ALEN);
-					_rtw_memcpy(pattrib->ta, pbssid, ETH_ALEN);
+					memcpy(pattrib->ra, pda, ETH_ALEN);
+					memcpy(pattrib->ta, pbssid, ETH_ALEN);
 					ret = ap2sta_data_frame(padapter, rframe, &psta);
 
 					break;
 
 				case 2:
-					_rtw_memcpy(pattrib->ra, pbssid, ETH_ALEN);
-					_rtw_memcpy(pattrib->ta, psa, ETH_ALEN);
+					memcpy(pattrib->ra, pbssid, ETH_ALEN);
+					memcpy(pattrib->ta, psa, ETH_ALEN);
 					ret = sta2ap_data_frame(padapter, rframe, &psta);
 					break;
 
 				case 3:
-					_rtw_memcpy(pattrib->ra, GetAddr1Ptr(ptr), ETH_ALEN);
-					_rtw_memcpy(pattrib->ta, get_addr2_ptr(ptr), ETH_ALEN);
+					memcpy(pattrib->ra, GetAddr1Ptr(ptr), ETH_ALEN);
+					memcpy(pattrib->ta, get_addr2_ptr(ptr), ETH_ALEN);
 					ret = _FAIL;
 					break;
 
@@ -4341,7 +4341,7 @@ int recv_func_posthandle(_adapter *padapter, union recv_frame *prframe)
 	}
 
 #ifdef DBG_RX_BMC_FRAME
-	if (IS_MCAST(pattrib->ra))
+	if (is_multicast_ether_addr(pattrib->ra))
 		RTW_INFO("%s =>"ADPT_FMT" Rx BC/MC from "MAC_FMT"\n", __func__, ADPT_ARG(padapter), MAC_ARG(pattrib->ta));
 #endif
 
@@ -4478,7 +4478,7 @@ int recv_func(_adapter *padapter, union recv_frame *rframe)
 
 		/* check if need to enqueue into uc_swdec_pending_queue*/
 		if (check_fwstate(mlmepriv, WIFI_STATION_STATE) &&
-		    !IS_MCAST(prxattrib->ra) && prxattrib->encrypt > 0 &&
+		    !is_multicast_ether_addr(prxattrib->ra) && prxattrib->encrypt > 0 &&
 		    (prxattrib->bdecrypted == 0 || psecuritypriv->sw_decrypt == _TRUE) &&
 		    psecuritypriv->ndisauthtype == Ndis802_11AuthModeWPAPSK &&
 		    !psecuritypriv->busetkipkey) {
@@ -4787,7 +4787,7 @@ void rx_query_phy_status(
 
 	ta = get_ta(wlanhdr);
 	ra = get_ra(wlanhdr);
-	is_ra_bmc = IS_MCAST(ra);
+	is_ra_bmc = is_multicast_ether_addr(ra);
 
 	if (_rtw_memcmp(adapter_mac_addr(padapter), ta, ETH_ALEN) == _TRUE) {
 		static systime start_time = 0;
@@ -4927,7 +4927,7 @@ s32 pre_recv_entry(union recv_frame *precvframe, u8 *pphy_status)
 	s32 ret = _SUCCESS;
 	u8 *pbuf = precvframe->u.hdr.rx_data;
 	u8 *pda = get_ra(pbuf);
-	u8 ra_is_bmc = IS_MCAST(pda);
+	u8 ra_is_bmc = is_multicast_ether_addr(pda);
 	_adapter *primary_padapter = precvframe->u.hdr.adapter;
 #ifdef CONFIG_CONCURRENT_MODE
 	_adapter *iface = NULL;

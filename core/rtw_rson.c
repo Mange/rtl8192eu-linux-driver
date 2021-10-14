@@ -254,7 +254,7 @@ u32 rtw_rson_append_ie(_adapter *padapter, unsigned char *pframe, u32 *len)
 	ptr = ori = pframe;
 	*ptr++ = _VENDOR_SPECIFIC_IE_;
 	*ptr++ = ie_len = sizeof(RTW_RSON_OUI)+sizeof(pdvobj->rson_data);
-	_rtw_memcpy(ptr, RTW_RSON_OUI, sizeof(RTW_RSON_OUI));
+	memcpy(ptr, RTW_RSON_OUI, sizeof(RTW_RSON_OUI));
 	ptr = ptr + sizeof(RTW_RSON_OUI);
 	*ptr++ = pdvobj->rson_data.ver;
 	*(s32 *)ptr = cpu_to_le32(pdvobj->rson_data.id);
@@ -262,7 +262,7 @@ u32 rtw_rson_append_ie(_adapter *padapter, unsigned char *pframe, u32 *len)
 	*ptr++ = pdvobj->rson_data.hopcnt;
 	*ptr++ = pdvobj->rson_data.connectible;
 	*ptr++ = pdvobj->rson_data.loading;
-	_rtw_memcpy(ptr, pdvobj->rson_data.res, sizeof(pdvobj->rson_data.res));
+	memcpy(ptr, pdvobj->rson_data.res, sizeof(pdvobj->rson_data.res));
 	pframe = ptr;
 /*
 	iii = iii % 20;

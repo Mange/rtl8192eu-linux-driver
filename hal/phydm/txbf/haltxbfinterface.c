@@ -1056,9 +1056,9 @@ send_fw_ht_ndpa_packet(
 	set_order_bit(pframe);
 	set_frame_sub_type(pframe, WIFI_ACTION_NOACK);
 
-	_rtw_memcpy(pwlanhdr->addr1, RA, ETH_ALEN);
-	_rtw_memcpy(pwlanhdr->addr2, beamform_entry->my_mac_addr, ETH_ALEN);
-	_rtw_memcpy(pwlanhdr->addr3, get_my_bssid(&(pmlmeinfo->network)), ETH_ALEN);
+	memcpy(pwlanhdr->addr1, RA, ETH_ALEN);
+	memcpy(pwlanhdr->addr2, beamform_entry->my_mac_addr, ETH_ALEN);
+	memcpy(pwlanhdr->addr3, get_my_bssid(&(pmlmeinfo->network)), ETH_ALEN);
 
 	if (pmlmeext->cur_wireless_mode == WIRELESS_11B)
 		a_sifs_time = 10;
@@ -1078,7 +1078,7 @@ send_fw_ht_ndpa_packet(
 	SET_HT_CTRL_CSI_STEERING(pframe + 24, 3);
 	SET_HT_CTRL_NDP_ANNOUNCEMENT(pframe + 24, 1);
 
-	_rtw_memcpy(pframe + 28, action_hdr, 4);
+	memcpy(pframe + 28, action_hdr, 4);
 
 	pattrib->pktlen = 32;
 
@@ -1142,9 +1142,9 @@ send_sw_ht_ndpa_packet(
 	set_order_bit(pframe);
 	set_frame_sub_type(pframe, WIFI_ACTION_NOACK);
 
-	_rtw_memcpy(pwlanhdr->addr1, RA, ETH_ALEN);
-	_rtw_memcpy(pwlanhdr->addr2, beamform_entry->my_mac_addr, ETH_ALEN);
-	_rtw_memcpy(pwlanhdr->addr3, get_my_bssid(&(pmlmeinfo->network)), ETH_ALEN);
+	memcpy(pwlanhdr->addr1, RA, ETH_ALEN);
+	memcpy(pwlanhdr->addr2, beamform_entry->my_mac_addr, ETH_ALEN);
+	memcpy(pwlanhdr->addr3, get_my_bssid(&(pmlmeinfo->network)), ETH_ALEN);
 
 	if (pmlmeext->cur_wireless_mode == WIRELESS_11B)
 		a_sifs_time = 10;
@@ -1164,7 +1164,7 @@ send_sw_ht_ndpa_packet(
 	SET_HT_CTRL_CSI_STEERING(pframe + 24, 3);
 	SET_HT_CTRL_NDP_ANNOUNCEMENT(pframe + 24, 1);
 
-	_rtw_memcpy(pframe + 28, action_hdr, 4);
+	memcpy(pframe + 28, action_hdr, 4);
 
 	pattrib->pktlen = 32;
 
@@ -1209,7 +1209,7 @@ send_fw_vht_ndpa_packet(
 
 	/* update attribute */
 	pattrib = &pmgntframe->attrib;
-	_rtw_memcpy(pattrib->ra, RA, ETH_ALEN);
+	memcpy(pattrib->ra, RA, ETH_ALEN);
 	update_mgntframe_attrib(adapter, pattrib);
 
 	pattrib->qsel = QSLT_BEACON;
@@ -1231,8 +1231,8 @@ send_fw_vht_ndpa_packet(
 
 	set_frame_sub_type(pframe, WIFI_NDPA);
 
-	_rtw_memcpy(pwlanhdr->addr1, RA, ETH_ALEN);
-	_rtw_memcpy(pwlanhdr->addr2, beamform_entry->my_mac_addr, ETH_ALEN);
+	memcpy(pwlanhdr->addr1, RA, ETH_ALEN);
+	memcpy(pwlanhdr->addr2, beamform_entry->my_mac_addr, ETH_ALEN);
 
 	if (is_supported_5g(pmlmeext->cur_wireless_mode) || is_supported_ht(pmlmeext->cur_wireless_mode))
 		a_sifs_time = 16;
@@ -1256,7 +1256,7 @@ send_fw_vht_ndpa_packet(
 	else
 		beam_info->sounding_sequence++;
 
-	_rtw_memcpy(pframe + 16, &sequence, 1);
+	memcpy(pframe + 16, &sequence, 1);
 
 	if (((pmlmeinfo->state & 0x03) == WIFI_FW_ADHOC_STATE) || ((pmlmeinfo->state & 0x03) == WIFI_FW_AP_STATE))
 		AID = 0;
@@ -1265,7 +1265,7 @@ send_fw_vht_ndpa_packet(
 	sta_info.feedback_type = 0;
 	sta_info.nc_index = 0;
 
-	_rtw_memcpy(pframe + 17, (u8 *)&sta_info, 2);
+	memcpy(pframe + 17, (u8 *)&sta_info, 2);
 
 	pattrib->pktlen = 19;
 
@@ -1314,7 +1314,7 @@ send_sw_vht_ndpa_packet(
 
 	/*update attribute*/
 	pattrib = &pmgntframe->attrib;
-	_rtw_memcpy(pattrib->ra, RA, ETH_ALEN);
+	memcpy(pattrib->ra, RA, ETH_ALEN);
 	update_mgntframe_attrib(adapter, pattrib);
 	pattrib->qsel = QSLT_MGNT;
 	pattrib->rate = ndp_tx_rate;
@@ -1332,8 +1332,8 @@ send_sw_vht_ndpa_packet(
 
 	set_frame_sub_type(pframe, WIFI_NDPA);
 
-	_rtw_memcpy(pwlanhdr->addr1, RA, ETH_ALEN);
-	_rtw_memcpy(pwlanhdr->addr2, beamform_entry->my_mac_addr, ETH_ALEN);
+	memcpy(pwlanhdr->addr1, RA, ETH_ALEN);
+	memcpy(pwlanhdr->addr2, beamform_entry->my_mac_addr, ETH_ALEN);
 
 	if (is_supported_5g(pmlmeext->cur_wireless_mode) || is_supported_ht(pmlmeext->cur_wireless_mode))
 		a_sifs_time = 16;
@@ -1357,7 +1357,7 @@ send_sw_vht_ndpa_packet(
 	else
 		beam_info->sounding_sequence++;
 
-	_rtw_memcpy(pframe + 16, &sequence, 1);
+	memcpy(pframe + 16, &sequence, 1);
 	if (((pmlmeinfo->state & 0x03) == WIFI_FW_ADHOC_STATE) || ((pmlmeinfo->state & 0x03) == WIFI_FW_AP_STATE))
 		AID = 0;
 
@@ -1365,7 +1365,7 @@ send_sw_vht_ndpa_packet(
 	ndpa_sta_info.feedback_type = 0;
 	ndpa_sta_info.nc_index = 0;
 
-	_rtw_memcpy(pframe + 17, (u8 *)&ndpa_sta_info, 2);
+	memcpy(pframe + 17, (u8 *)&ndpa_sta_info, 2);
 
 	pattrib->pktlen = 19;
 

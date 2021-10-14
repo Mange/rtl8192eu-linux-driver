@@ -204,7 +204,7 @@ void rtw_acs_get_rst(_adapter *adapter)
 			(rpt.nhm_rpt_stamp == hal_data->acs.trig_rpt.nhm_rpt_stamp)){
 			hal_data->acs.clm_ratio[chan_idx] = rpt.clm_ratio;
 			hal_data->acs.nhm_ratio[chan_idx] = rpt.nhm_ratio;
-			_rtw_memcpy(&hal_data->acs.nhm[chan_idx][0], rpt.nhm_result, NHM_RPT_NUM);
+			memcpy(&hal_data->acs.nhm[chan_idx][0], rpt.nhm_result, NHM_RPT_NUM);
 
 			/*RTW_INFO("[ACS] get_rst success (rst = 0x%02x, clm_stamp:%d:%d, nhm_stamp:%d:%d)\n",
 			rst,

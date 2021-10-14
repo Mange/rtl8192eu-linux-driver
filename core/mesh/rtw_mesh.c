@@ -102,7 +102,7 @@ inline u8 *rtw_set_ie_mpm(u8 *buf, u32 *buf_len
 	}
 
 	if (chosen_pmk) {
-		_rtw_memcpy(pos, chosen_pmk, 16);
+		memcpy(pos, chosen_pmk, 16);
 		pos += 16;
 	}
 
@@ -854,7 +854,7 @@ flush_add:
 
 		for (i = 0; i < flush_num; i++) {
 			sta = rtw_get_stainfo_by_offset(stapriv, flush_list[i]);
-			_rtw_memcpy(sta_addr, sta->cmn.mac_addr, ETH_ALEN);
+			memcpy(sta_addr, sta->cmn.mac_addr, ETH_ALEN);
 
 			updated |= ap_free_sta(adapter, sta, _TRUE, WLAN_REASON_DEAUTH_LEAVING, _FALSE);
 			rtw_mesh_expire_peer(adapter, sta_addr);
@@ -1202,7 +1202,7 @@ static int rtw_mpm_ampe_dec(_adapter *adapter, struct mesh_plink_ent *plink
 	if (!iv_crypt)
 		goto exit;
 
-	_rtw_memcpy(iv_crypt, mic_ie + 2, iv_crypt_len);
+	memcpy(iv_crypt, mic_ie + 2, iv_crypt_len);
 
 	verify_ret = aes_siv_decrypt(plink->aek, iv_crypt, iv_crypt_len
 		, 3, aad, aad_len, ampe_buf);
@@ -1248,7 +1248,7 @@ static int rtw_mpm_ampe_enc(_adapter *adapter, struct mesh_plink_ent *plink
 	if (!ampe_ie)
 		goto exit;
 
-	_rtw_memcpy(ampe_ie, ampe_buf, ampe_ie_len);
+	memcpy(ampe_ie, ampe_buf, ampe_ie_len);
 
 	protect_ret = aes_siv_encrypt(plink->aek, ampe_ie, ampe_ie_len
 		, 3, aad, aad_len, mic_ie + 2);
@@ -1304,9 +1304,9 @@ static int rtw_mpm_tx_ies_sync_bss(_adapter *adapter, struct mesh_plink_ent *pli
 			goto exit;
 
 		if (*(ampe_buf + 1) >= 68) {
-			_rtw_memcpy(plink->sel_pcs, ampe_buf + 2, 4);
-			_rtw_memcpy(plink->l_nonce, ampe_buf + 6, 32);
-			_rtw_memcpy(plink->p_nonce, ampe_buf + 38, 32);
+			memcpy(plink->sel_pcs, ampe_buf + 2, 4);
+			memcpy(plink->l_nonce, ampe_buf + 6, 32);
+			memcpy(plink->p_nonce, ampe_buf + 38, 32);
 		}
 	}
 #endif
@@ -1349,7 +1349,7 @@ static int rtw_mpm_tx_ies_sync_bss(_adapter *adapter, struct mesh_plink_ent *pli
 	}
 
 	/* build new frame  */
-	_rtw_memcpy(new_buf, fhead, sizeof(struct rtw_ieee80211_hdr_3addr) + tlv_ies_offset);
+	memcpy(new_buf, fhead, sizeof(struct rtw_ieee80211_hdr_3addr) + tlv_ies_offset);
 	new_fhead = new_buf;
 	new_flen = new_len;
 	new_fbody = new_fhead + sizeof(struct rtw_ieee80211_hdr_3addr);
@@ -1666,7 +1666,7 @@ bypass_sync_bss:
 					RTW_INFO(FUNC_ADPT_FMT" sacrifice "MAC_FMT" for acnode\n"
 						, FUNC_ADPT_ARG(adapter), MAC_ARG(sac->cmn.mac_addr));
 
-					_rtw_memcpy(sta_addr, sac->cmn.mac_addr, ETH_ALEN);
+					memcpy(sta_addr, sac->cmn.mac_addr, ETH_ALEN);
 					updated = ap_free_sta(adapter, sac, 0, 0, 1);
 					rtw_mesh_expire_peer(stapriv->padapter, sta_addr);
 
@@ -1697,7 +1697,7 @@ bypass_sync_bss:
 			plink->plid = mpm_info.llid_v;
 			plink->peer_aid = mpm_info.aid_v;
 			if (mpm_info.pid_v == 1)
-				_rtw_memcpy(plink->chosen_pmk, mpm_info.chosen_pmk, 16);
+				memcpy(plink->chosen_pmk, mpm_info.chosen_pmk, 16);
 		}
 		#ifdef CONFIG_RTW_MESH_DRIVER_AID
 		else {
@@ -1724,7 +1724,7 @@ bypass_sync_bss:
 
 		ies = rtw_zmalloc(ies_len);
 		if (ies) {
-			_rtw_memcpy(ies, fhead + sizeof(struct rtw_ieee80211_hdr_3addr) + 2, ies_len);
+			memcpy(ies, fhead + sizeof(struct rtw_ieee80211_hdr_3addr) + 2, ies_len);
 			if (tx == _FALSE) {
 				plink->rx_conf_ies = ies;
 				plink->rx_conf_ies_len = ies_len;
@@ -2094,7 +2094,7 @@ int _rtw_mesh_plink_add(_adapter *adapter, const u8 *hwaddr)
 	}
 
 	if (exist == _FALSE && ent) {
-		_rtw_memcpy(ent->addr, hwaddr, ETH_ALEN);
+		memcpy(ent->addr, hwaddr, ETH_ALEN);
 		ent->valid = _TRUE;
 		#ifdef CONFIG_RTW_MESH_AEK
 		ent->aek_valid = 0;
@@ -2163,7 +2163,7 @@ int rtw_mesh_plink_set_aek(_adapter *adapter, const u8 *hwaddr, const u8 *aek)
 	_enter_critical_bh(&(plink_ctl->lock), &irqL);
 	ent = _rtw_mesh_plink_get(adapter, hwaddr);
 	if (ent) {
-		_rtw_memcpy(ent->aek, aek, 32);
+		memcpy(ent->aek, aek, 32);
 		ent->aek_valid = 1;
 	}
 	_exit_critical_bh(&(plink_ctl->lock), &irqL);
@@ -2524,9 +2524,9 @@ static u8 *rtw_mesh_construct_peer_mesh_close(_adapter *adapter, struct mesh_pli
 		goto exit;
 
 	whdr = (struct rtw_ieee80211_hdr *)frame;
-	_rtw_memcpy(whdr->addr1, adapter_mac_addr(adapter), ETH_ALEN);
-	_rtw_memcpy(whdr->addr2, plink->addr, ETH_ALEN);
-	_rtw_memcpy(whdr->addr3, adapter_mac_addr(adapter), ETH_ALEN);
+	memcpy(whdr->addr1, adapter_mac_addr(adapter), ETH_ALEN);
+	memcpy(whdr->addr2, plink->addr, ETH_ALEN);
+	memcpy(whdr->addr3, adapter_mac_addr(adapter), ETH_ALEN);
 
 	set_frame_sub_type(frame, WIFI_ACTION);
 
@@ -2553,9 +2553,9 @@ static u8 *rtw_mesh_construct_peer_mesh_close(_adapter *adapter, struct mesh_pli
 
 		ampe_buf[0] = WLAN_EID_AMPE;
 		ampe_buf[1] = 68;
-		_rtw_memcpy(ampe_buf + 2, plink->sel_pcs, 4);
-		_rtw_memcpy(ampe_buf + 6, plink->p_nonce, 32);
-		_rtw_memcpy(ampe_buf + 38, plink->l_nonce, 32);
+		memcpy(ampe_buf + 2, plink->sel_pcs, 4);
+		memcpy(ampe_buf + 6, plink->p_nonce, 32);
+		memcpy(ampe_buf + 38, plink->l_nonce, 32);
 
 		enc_ret = rtw_mpm_ampe_enc(adapter, plink
 			, frame + sizeof(struct rtw_ieee80211_hdr_3addr)
@@ -2942,7 +2942,7 @@ static int rtw_mrc_check(_adapter *adapter, const u8 *msa, u32 seq)
 
 	p->seqnum = seq;
 	p->exp_time = rtw_get_current_time() + rtw_ms_to_systime(RTW_MRC_TIMEOUT_MS);
-	_rtw_memcpy(p->msa, msa, ETH_ALEN);
+	memcpy(p->msa, msa, ETH_ALEN);
 	rtw_hlist_add_head(&p->list, &mrc->bucket[idx]);
 	return 0;
 }
@@ -3224,7 +3224,7 @@ int rtw_mesh_nexthop_lookup(_adapter *adapter,
 
 	next_hop = rtw_rcu_dereference(mpath->next_hop);
 	if (next_hop) {
-		_rtw_memcpy(ra, next_hop->cmn.mac_addr, ETH_ALEN);
+		memcpy(ra, next_hop->cmn.mac_addr, ETH_ALEN);
 		err = 0;
 	}
 
@@ -3296,12 +3296,12 @@ static bool rtw_mesh_data_bmc_to_uc(_adapter *adapter
 		attrib->mb2u = 1;
 		attrib->mseq = *b2u_mseq;
 		attrib->mfwd_ttl = ori_ta ? mfwd_ttl : 0;
-		_rtw_memcpy(attrib->ra, sta->cmn.mac_addr, ETH_ALEN);
-		_rtw_memcpy(attrib->ta, adapter_mac_addr(adapter), ETH_ALEN);
-		_rtw_memcpy(attrib->mda, mda, ETH_ALEN);
-		_rtw_memcpy(attrib->msa, msa, ETH_ALEN);
-		_rtw_memcpy(attrib->dst, da, ETH_ALEN);
-		_rtw_memcpy(attrib->src, sa, ETH_ALEN);
+		memcpy(attrib->ra, sta->cmn.mac_addr, ETH_ALEN);
+		memcpy(attrib->ta, adapter_mac_addr(adapter), ETH_ALEN);
+		memcpy(attrib->mda, mda, ETH_ALEN);
+		memcpy(attrib->msa, msa, ETH_ALEN);
+		memcpy(attrib->dst, da, ETH_ALEN);
+		memcpy(attrib->src, sa, ETH_ALEN);
 		attrib->mesh_frame_mode = ae_need ? MESH_UCAST_PX_DATA : MESH_UCAST_DATA;
 
 		rtw_list_insert_tail(&b2uframe->list, b2u_list);
@@ -3326,7 +3326,7 @@ int rtw_mesh_addr_resolve(_adapter *adapter, struct xmit_frame *xframe, _pkt *pk
 	struct ethhdr etherhdr;
 	struct pkt_attrib *attrib;
 	struct rtw_mesh_path *mpath = NULL, *mppath = NULL;
-	u8 is_da_mcast;
+	bool is_da_mcast;
 	u8 ae_need;
 #if CONFIG_RTW_MESH_DATA_BMC_TO_UC
 	bool bmc_need = _TRUE;
@@ -3346,7 +3346,7 @@ int rtw_mesh_addr_resolve(_adapter *adapter, struct xmit_frame *xframe, _pkt *pk
 	_rtw_init_listhead(b2u_list);
 #endif
 
-	is_da_mcast = IS_MCAST(etherhdr.h_dest);
+	is_da_mcast = is_multicast_ether_addr(etherhdr.h_dest);
 	if (!is_da_mcast) {
 		struct sta_info *next_hop; 
 		bool mpp_lookup = 1;
@@ -3402,18 +3402,18 @@ int rtw_mesh_addr_resolve(_adapter *adapter, struct xmit_frame *xframe, _pkt *pk
 #endif
 
 	attrib->mfwd_ttl = 0;
-	_rtw_memcpy(attrib->dst, etherhdr.h_dest, ETH_ALEN);
-	_rtw_memcpy(attrib->src, etherhdr.h_source, ETH_ALEN);
-	_rtw_memcpy(attrib->ta, adapter_mac_addr(adapter), ETH_ALEN);
+	memcpy(attrib->dst, etherhdr.h_dest, ETH_ALEN);
+	memcpy(attrib->src, etherhdr.h_source, ETH_ALEN);
+	memcpy(attrib->ta, adapter_mac_addr(adapter), ETH_ALEN);
 
 	if (is_da_mcast) {
 		attrib->mesh_frame_mode = ae_need ? MESH_BMCAST_PX_DATA : MESH_BMCAST_DATA;
-		_rtw_memcpy(attrib->ra, attrib->dst, ETH_ALEN);
-		_rtw_memcpy(attrib->msa, adapter_mac_addr(adapter), ETH_ALEN);
+		memcpy(attrib->ra, attrib->dst, ETH_ALEN);
+		memcpy(attrib->msa, adapter_mac_addr(adapter), ETH_ALEN);
 	} else {
 		attrib->mesh_frame_mode = ae_need ? MESH_UCAST_PX_DATA : MESH_UCAST_DATA;
-		_rtw_memcpy(attrib->mda, (mppath && ae_need) ? mppath->mpp : attrib->dst, ETH_ALEN);
-		_rtw_memcpy(attrib->msa, adapter_mac_addr(adapter), ETH_ALEN);
+		memcpy(attrib->mda, (mppath && ae_need) ? mppath->mpp : attrib->dst, ETH_ALEN);
+		memcpy(attrib->msa, adapter_mac_addr(adapter), ETH_ALEN);
 		/* RA needs to be resolved */
 		res = rtw_mesh_nexthop_resolve(adapter, xframe);
 	}
@@ -3486,12 +3486,12 @@ void rtw_mesh_tx_build_mctrl(_adapter *adapter, struct pkt_attrib *attrib, u8 *b
 		break;
 	case MESH_UCAST_PX_DATA:
 		mctrl->flags |= MESH_FLAGS_AE_A5_A6;
-		_rtw_memcpy(mctrl->eaddr1, attrib->dst, ETH_ALEN);
-		_rtw_memcpy(mctrl->eaddr2, attrib->src, ETH_ALEN);
+		memcpy(mctrl->eaddr1, attrib->dst, ETH_ALEN);
+		memcpy(mctrl->eaddr2, attrib->src, ETH_ALEN);
 		break;
 	case MESH_BMCAST_PX_DATA:
 		mctrl->flags |= MESH_FLAGS_AE_A4;
-		_rtw_memcpy(mctrl->eaddr1, attrib->src, ETH_ALEN);
+		memcpy(mctrl->eaddr1, attrib->src, ETH_ALEN);
 		break;
 	case MESH_MHOP_UCAST_ACT:
 		/* TBD */
@@ -3512,17 +3512,17 @@ u8 rtw_mesh_tx_build_whdr(_adapter *adapter, struct pkt_attrib *attrib
 	case MESH_UCAST_PX_DATA:	/* 1, 1, RA, TA, mDA,		mSA,		[DA, SA] */
 		SetToDs(fctrl);
 		SetFrDs(fctrl);
-		_rtw_memcpy(whdr->addr1, attrib->ra, ETH_ALEN);
-		_rtw_memcpy(whdr->addr2, attrib->ta, ETH_ALEN);
-		_rtw_memcpy(whdr->addr3, attrib->mda, ETH_ALEN);
-		_rtw_memcpy(whdr->addr4, attrib->msa, ETH_ALEN);
+		memcpy(whdr->addr1, attrib->ra, ETH_ALEN);
+		memcpy(whdr->addr2, attrib->ta, ETH_ALEN);
+		memcpy(whdr->addr3, attrib->mda, ETH_ALEN);
+		memcpy(whdr->addr4, attrib->msa, ETH_ALEN);
 		break;
 	case MESH_BMCAST_DATA:		/* 0, 1, RA(DA), TA, mSA(SA) */
 	case MESH_BMCAST_PX_DATA:	/* 0, 1, RA(DA), TA, mSA,		[SA] */
 		SetFrDs(fctrl);
-		_rtw_memcpy(whdr->addr1, attrib->ra, ETH_ALEN);
-		_rtw_memcpy(whdr->addr2, attrib->ta, ETH_ALEN);
-		_rtw_memcpy(whdr->addr3, attrib->msa, ETH_ALEN);
+		memcpy(whdr->addr1, attrib->ra, ETH_ALEN);
+		memcpy(whdr->addr2, attrib->ta, ETH_ALEN);
+		memcpy(whdr->addr3, attrib->msa, ETH_ALEN);
 		break;
 	case MESH_MHOP_UCAST_ACT:
 		/* TBD */
@@ -3560,37 +3560,37 @@ int rtw_mesh_rx_data_validate_hdr(_adapter *adapter, union recv_frame *rframe, s
 
 	switch (rattrib->to_fr_ds) {
 	case 1:
-		if (!IS_MCAST(GetAddr1Ptr(whdr)))
+		if (!is_multicast_ether_addr(GetAddr1Ptr(whdr)))
 			goto exit;
 		*sta = rtw_get_stainfo(stapriv, get_addr2_ptr(whdr));
 		if (*sta == NULL) {
 			ret = _SUCCESS; /* return _SUCCESS to drop at sta checking */
 			goto exit;
 		}
-		_rtw_memcpy(rattrib->ra, GetAddr1Ptr(whdr), ETH_ALEN);
-		_rtw_memcpy(rattrib->ta, get_addr2_ptr(whdr), ETH_ALEN);
-		_rtw_memcpy(rattrib->mda, GetAddr1Ptr(whdr), ETH_ALEN);
-		_rtw_memcpy(rattrib->msa, GetAddr3Ptr(whdr), ETH_ALEN); /* may change after checking AMSDU subframe header */
-		_rtw_memcpy(rattrib->dst, GetAddr1Ptr(whdr), ETH_ALEN);
-		_rtw_memcpy(rattrib->src, GetAddr3Ptr(whdr), ETH_ALEN); /* may change after checking mesh ctrl field */
-		_rtw_memcpy(rattrib->bssid, get_addr2_ptr(whdr), ETH_ALEN);
+		memcpy(rattrib->ra, GetAddr1Ptr(whdr), ETH_ALEN);
+		memcpy(rattrib->ta, get_addr2_ptr(whdr), ETH_ALEN);
+		memcpy(rattrib->mda, GetAddr1Ptr(whdr), ETH_ALEN);
+		memcpy(rattrib->msa, GetAddr3Ptr(whdr), ETH_ALEN); /* may change after checking AMSDU subframe header */
+		memcpy(rattrib->dst, GetAddr1Ptr(whdr), ETH_ALEN);
+		memcpy(rattrib->src, GetAddr3Ptr(whdr), ETH_ALEN); /* may change after checking mesh ctrl field */
+		memcpy(rattrib->bssid, get_addr2_ptr(whdr), ETH_ALEN);
 		is_ra_bmc = 1;
 		break;
 	case 3:
-		if (IS_MCAST(GetAddr1Ptr(whdr)))
+		if (is_multicast_ether_addr(GetAddr1Ptr(whdr)))
 			goto exit;
 		*sta = rtw_get_stainfo(stapriv, get_addr2_ptr(whdr));
 		if (*sta == NULL) {
 			ret = _SUCCESS; /* return _SUCCESS to drop at sta checking */
 			goto exit;
 		}
-		_rtw_memcpy(rattrib->ra, GetAddr1Ptr(whdr), ETH_ALEN);
-		_rtw_memcpy(rattrib->ta, get_addr2_ptr(whdr), ETH_ALEN);
-		_rtw_memcpy(rattrib->mda, GetAddr3Ptr(whdr), ETH_ALEN); /* may change after checking AMSDU subframe header */
-		_rtw_memcpy(rattrib->msa, GetAddr4Ptr(whdr), ETH_ALEN); /* may change after checking AMSDU subframe header */
-		_rtw_memcpy(rattrib->dst, GetAddr3Ptr(whdr), ETH_ALEN); /* may change after checking mesh ctrl field */
-		_rtw_memcpy(rattrib->src, GetAddr4Ptr(whdr), ETH_ALEN); /* may change after checking mesh ctrl field */
-		_rtw_memcpy(rattrib->bssid, get_addr2_ptr(whdr), ETH_ALEN);
+		memcpy(rattrib->ra, GetAddr1Ptr(whdr), ETH_ALEN);
+		memcpy(rattrib->ta, get_addr2_ptr(whdr), ETH_ALEN);
+		memcpy(rattrib->mda, GetAddr3Ptr(whdr), ETH_ALEN); /* may change after checking AMSDU subframe header */
+		memcpy(rattrib->msa, GetAddr4Ptr(whdr), ETH_ALEN); /* may change after checking AMSDU subframe header */
+		memcpy(rattrib->dst, GetAddr3Ptr(whdr), ETH_ALEN); /* may change after checking mesh ctrl field */
+		memcpy(rattrib->src, GetAddr4Ptr(whdr), ETH_ALEN); /* may change after checking mesh ctrl field */
+		memcpy(rattrib->bssid, get_addr2_ptr(whdr), ETH_ALEN);
 		a4_shift = ETH_ALEN;
 		break;
 	default:
@@ -3695,8 +3695,8 @@ inline int rtw_mesh_rx_validate_mctrl_non_amsdu(_adapter *adapter, union recv_fr
 			, &da, &sa);
 
 	if (ret == _SUCCESS) {
-		_rtw_memcpy(rattrib->dst, da, ETH_ALEN);
-		_rtw_memcpy(rattrib->src, sa, ETH_ALEN);
+		memcpy(rattrib->dst, da, ETH_ALEN);
+		memcpy(rattrib->src, sa, ETH_ALEN);
 	}
 
 	return ret;
@@ -3764,7 +3764,7 @@ int rtw_mesh_rx_msdu_act_check(union recv_frame *rframe
 	struct rtw_mesh_info *minfo = &adapter->mesh_info;
 	struct rx_pkt_attrib *rattrib = &rframe->u.hdr.attrib;
 	struct rtw_mesh_path *mppath;
-	u8 is_mda_bmc = IS_MCAST(mda); 
+	bool is_mda_bmc = is_multicast_ether_addr(mda); 
 	u8 is_mda_self = !is_mda_bmc && _rtw_memcmp(mda, adapter_mac_addr(adapter), ETH_ALEN);
 	struct xmit_frame *xframe;
 	struct pkt_attrib *xattrib;
@@ -3800,7 +3800,7 @@ int rtw_mesh_rx_msdu_act_check(union recv_frame *rframe
 		else {
 			enter_critical_bh(&mppath->state_lock);
 			if (_rtw_memcmp(mppath->mpp, mpp_addr, ETH_ALEN) == _FALSE)
-				_rtw_memcpy(mppath->mpp, mpp_addr, ETH_ALEN);
+				memcpy(mppath->mpp, mpp_addr, ETH_ALEN);
 			mppath->exp_time = rtw_get_current_time();
 			exit_critical_bh(&mppath->state_lock);
 		}
@@ -3923,7 +3923,7 @@ int rtw_mesh_rx_msdu_act_check(union recv_frame *rframe
 					rtw_rcu_read_unlock();
 					goto exit;
 				}
-				_rtw_memcpy(fwd_mpp, mppath->mpp, ETH_ALEN);
+				memcpy(fwd_mpp, mppath->mpp, ETH_ALEN);
 				mda = fwd_mpp;
 				msa = adapter_mac_addr(adapter);
 				rtw_rcu_read_unlock();
@@ -4031,18 +4031,18 @@ fwd_chk:
 #endif
 		xattrib->mfwd_ttl = mctrl->ttl - 1;
 		xattrib->mseq = fwd_mseq;
-		_rtw_memcpy(xattrib->dst, da, ETH_ALEN);
-		_rtw_memcpy(xattrib->src, sa, ETH_ALEN);
-		_rtw_memcpy(xattrib->mda, mda, ETH_ALEN);
-		_rtw_memcpy(xattrib->msa, msa, ETH_ALEN);
-		_rtw_memcpy(xattrib->ta, adapter_mac_addr(adapter), ETH_ALEN);
+		memcpy(xattrib->dst, da, ETH_ALEN);
+		memcpy(xattrib->src, sa, ETH_ALEN);
+		memcpy(xattrib->mda, mda, ETH_ALEN);
+		memcpy(xattrib->msa, msa, ETH_ALEN);
+		memcpy(xattrib->ta, adapter_mac_addr(adapter), ETH_ALEN);
 
 		if (is_mda_bmc) {
 			xattrib->mesh_frame_mode = ae_need ? MESH_BMCAST_PX_DATA : MESH_BMCAST_DATA;
-			_rtw_memcpy(xattrib->ra, mda, ETH_ALEN);
+			memcpy(xattrib->ra, mda, ETH_ALEN);
 		} else {
 			xattrib->mesh_frame_mode = ae_need ? MESH_UCAST_PX_DATA : MESH_UCAST_DATA;
-			_rtw_memcpy(xattrib->ra, fwd_ra, ETH_ALEN);
+			memcpy(xattrib->ra, fwd_ra, ETH_ALEN);
 		}
 
 		*fwd_frame = xframe;

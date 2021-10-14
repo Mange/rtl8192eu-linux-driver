@@ -245,7 +245,7 @@ void DBG_BT_INFO(u8 *dbgmsg)
 		return;
 
 	pbuf = pinfo->info + pinfo->len;
-	_rtw_memcpy(pbuf, dbgmsg, msglen);
+	memcpy(pbuf, dbgmsg, msglen);
 	pinfo->len += msglen;
 }
 
@@ -747,7 +747,7 @@ static u8 _btmpoper_cmd(PBTC_COEXIST pBtCoexist, u8 opcode, u8 opcodever, u8 *cm
 	buf[0] = (opcodever & 0xF) | (seq << 4);
 	buf[1] = opcode;
 	if (cmd && size)
-		_rtw_memcpy(buf + 2, cmd, size);
+		memcpy(buf + 2, cmd, size);
 
 	GLBtcBtMpRptWait = _TRUE;
 	GLBtcBtMpRptWiFiOK = _FALSE;
@@ -1486,7 +1486,7 @@ u8 halbtcoutsrc_Set(void *pBtcContext, u8 setType, void *pInBuf)
 			u8 dataLen = *pU1Tmp;
 			u8 tmpBuf[BTC_TMP_BUF_SHORT];
 			if (dataLen)
-				_rtw_memcpy(tmpBuf, pU1Tmp + 1, dataLen);
+				memcpy(tmpBuf, pU1Tmp + 1, dataLen);
 			BT_SendEventExtBtInfoControl(padapter, dataLen, &tmpBuf[0]);
 		}
 #else /* !CONFIG_BT_COEXIST_SOCKET_TRX */
@@ -1500,7 +1500,7 @@ u8 halbtcoutsrc_Set(void *pBtcContext, u8 setType, void *pInBuf)
 			u8 dataLen = *pU1Tmp;
 			u8 tmpBuf[BTC_TMP_BUF_SHORT];
 			if (dataLen)
-				_rtw_memcpy(tmpBuf, pU1Tmp + 1, dataLen);
+				memcpy(tmpBuf, pU1Tmp + 1, dataLen);
 			BT_SendEventExtBtCoexControl(padapter, _FALSE, dataLen, &tmpBuf[0]);
 		}
 #else /* !CONFIG_BT_COEXIST_SOCKET_TRX */
@@ -2304,7 +2304,7 @@ static COL_H2C_STATUS halbtcoutsrc_check_c2h_ack(PADAPTER Adapter, PCOL_SINGLE_H
 	}
 	/* else */
 	{
-		_rtw_memmove(&pH2cRecord->c2h_ack_buf[0], &gl_coex_offload.c2h_ack_buf[req_num], gl_coex_offload.c2h_ack_len[req_num]);
+		memmove(&pH2cRecord->c2h_ack_buf[0], &gl_coex_offload.c2h_ack_buf[req_num], gl_coex_offload.c2h_ack_len[req_num]);
 		pH2cRecord->c2h_ack_len = gl_coex_offload.c2h_ack_len[req_num];
 	}
 
@@ -2337,7 +2337,7 @@ COL_H2C_STATUS halbtcoutsrc_CoexH2cProcess(void *pBtCoexist,
 	gl_coex_offload.h2c_req_num++;
 	gl_coex_offload.h2c_req_num %= 16;
 
-	_rtw_memmove(&pcol_h2c->buf[0], ph2c_par, h2c_par_len);
+	memmove(&pcol_h2c->buf[0], ph2c_par, h2c_par_len);
 
 
 	col_h2c_len = h2c_par_len + 2;	/* 2=sizeof(OPCode, OPCode_version and  Request number) */
@@ -2347,7 +2347,7 @@ COL_H2C_STATUS halbtcoutsrc_CoexH2cProcess(void *pBtCoexist,
 
 	gl_coex_offload.h2c_record[opcode].count++;
 	gl_coex_offload.h2c_record[opcode].h2c_len = col_h2c_len;
-	_rtw_memmove((PVOID)&gl_coex_offload.h2c_record[opcode].h2c_buf[0], (PVOID)pcol_h2c, col_h2c_len);
+	memmove((PVOID)&gl_coex_offload.h2c_record[opcode].h2c_buf[0], (PVOID)pcol_h2c, col_h2c_len);
 
 	h2c_status = halbtcoutsrc_send_h2c(Adapter, pcol_h2c, col_h2c_len);
 
@@ -2617,7 +2617,7 @@ static void BT_CoexOffloadC2hAckCheck(PADAPTER	Adapter, u8 *tmpBuf, u8 length)
 		p_c2h_ack = (PCOL_C2H_ACK)tmpBuf;
 		req_num = p_c2h_ack->req_num;
 
-		_rtw_memmove(&gl_coex_offload.c2h_ack_buf[req_num][0], tmpBuf, length);
+		memmove(&gl_coex_offload.c2h_ack_buf[req_num][0], tmpBuf, length);
 		gl_coex_offload.c2h_ack_len[req_num] = length;
 
 		complete(&gl_coex_offload.c2h_event[req_num]);
@@ -2648,13 +2648,13 @@ static void BT_CoexOffloadC2hIndCheck(PADAPTER Adapter, u8 *tmpBuf, u8 length)
 		ind_version = p_c2h_ind->version;
 		ind_length = p_c2h_ind->length;
 
-		_rtw_memmove(&gl_coex_offload.c2h_ind_buf[0], tmpBuf, length);
+		memmove(&gl_coex_offload.c2h_ind_buf[0], tmpBuf, length);
 		gl_coex_offload.c2h_ind_len = length;
 
 		/* log */
 		gl_coex_offload.c2h_ind_record[ind_type].count++;
 		gl_coex_offload.c2h_ind_record[ind_type].status[COL_STATUS_C2H_OK]++;
-		_rtw_memmove(&gl_coex_offload.c2h_ind_record[ind_type].ind_buf[0], tmpBuf, length);
+		memmove(&gl_coex_offload.c2h_ind_record[ind_type].ind_buf[0], tmpBuf, length);
 		gl_coex_offload.c2h_ind_record[ind_type].ind_len = length;
 
 		gl_coex_offload.c2h_ind_status[COL_STATUS_C2H_OK]++;
@@ -5058,7 +5058,7 @@ void hal_btcoex_BtMpRptNotify(PADAPTER padapter, u8 length, u8 *tmpBuf)
 
 		GLBtcBtMpRptSeq = seq;
 		GLBtcBtMpRptStatus = status;
-		_rtw_memcpy(GLBtcBtMpRptRsp, tmpBuf + 3, len);
+		memcpy(GLBtcBtMpRptRsp, tmpBuf + 3, len);
 		GLBtcBtMpRptRspSize = len;
 
 		break;
@@ -5220,7 +5220,7 @@ u32 hal_btcoex_GetRaMask(PADAPTER padapter)
 void hal_btcoex_RecordPwrMode(PADAPTER padapter, u8 *pCmdBuf, u8 cmdLen)
 {
 
-	_rtw_memcpy(GLBtCoexist.pwrModeVal, pCmdBuf, cmdLen);
+	memcpy(GLBtCoexist.pwrModeVal, pCmdBuf, cmdLen);
 }
 
 void hal_btcoex_DisplayBtCoexInfo(PADAPTER padapter, u8 *pbuf, u32 bufsize)

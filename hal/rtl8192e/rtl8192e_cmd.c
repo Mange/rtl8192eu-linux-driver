@@ -100,10 +100,10 @@ s32 FillH2CCmd_8192E(PADAPTER padapter, u8 ElementID, u32 CmdLen, u8 *pCmdBuffer
 		*(u8 *)(&h2c_cmd) = ElementID;
 
 		if (CmdLen <= 3)
-			_rtw_memcpy((u8 *)(&h2c_cmd) + 1, pCmdBuffer, CmdLen);
+			memcpy((u8 *)(&h2c_cmd) + 1, pCmdBuffer, CmdLen);
 		else {
-			_rtw_memcpy((u8 *)(&h2c_cmd) + 1, pCmdBuffer, 3);
-			_rtw_memcpy((u8 *)(&h2c_cmd_ex), pCmdBuffer + 3, CmdLen - 3);
+			memcpy((u8 *)(&h2c_cmd) + 1, pCmdBuffer, 3);
+			memcpy((u8 *)(&h2c_cmd_ex), pCmdBuffer + 3, CmdLen - 3);
 		}
 
 		/* Write Ext command */

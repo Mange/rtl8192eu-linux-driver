@@ -50,7 +50,6 @@
 #include <linux/rtnetlink.h>
 #include <linux/delay.h>
 #include <linux/interrupt.h>	/* for struct tasklet_struct */
-#include <linux/ip.h>
 #include <linux/kthread.h>
 #include <linux/list.h>
 #include <linux/vmalloc.h>

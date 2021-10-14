@@ -88,7 +88,7 @@ u8 rtw_do_join(_adapter *padapter)
 	pmlmepriv->to_join = _TRUE;
 
 	rtw_init_sitesurvey_parm(padapter, &parm);
-	_rtw_memcpy(&parm.ssid[0], &pmlmepriv->assoc_ssid, sizeof(NDIS_802_11_SSID));
+	memcpy(&parm.ssid[0], &pmlmepriv->assoc_ssid, sizeof(NDIS_802_11_SSID));
 	parm.ssid_num = 1;
 
 	if (_rtw_queue_empty(queue) == _TRUE) {
@@ -139,7 +139,7 @@ u8 rtw_do_join(_adapter *padapter)
 				pibss = padapter->registrypriv.dev_network.MacAddress;
 
 				memset(&pdev_network->Ssid, 0, sizeof(NDIS_802_11_SSID));
-				_rtw_memcpy(&pdev_network->Ssid, &pmlmepriv->assoc_ssid, sizeof(NDIS_802_11_SSID));
+				memcpy(&pdev_network->Ssid, &pmlmepriv->assoc_ssid, sizeof(NDIS_802_11_SSID));
 
 				rtw_update_registrypriv_dev_network(padapter);
 
@@ -321,7 +321,7 @@ handle_tkip_countermeasure:
 	}
 
 	memset(&pmlmepriv->assoc_ssid, 0, sizeof(NDIS_802_11_SSID));
-	_rtw_memcpy(&pmlmepriv->assoc_bssid, bssid, ETH_ALEN);
+	memcpy(&pmlmepriv->assoc_bssid, bssid, ETH_ALEN);
 	pmlmepriv->assoc_by_bssid = _TRUE;
 
 	if (check_fwstate(pmlmepriv, _FW_UNDER_SURVEY) == _TRUE)
@@ -417,7 +417,7 @@ handle_tkip_countermeasure:
 		goto release_mlme_lock;
 	}
 
-	_rtw_memcpy(&pmlmepriv->assoc_ssid, ssid, sizeof(NDIS_802_11_SSID));
+	memcpy(&pmlmepriv->assoc_ssid, ssid, sizeof(NDIS_802_11_SSID));
 	pmlmepriv->assoc_by_bssid = _FALSE;
 
 	if (check_fwstate(pmlmepriv, _FW_UNDER_SURVEY) == _TRUE)
@@ -479,12 +479,12 @@ handle_tkip_countermeasure:
 	}
 
 	if (ssid && ssid_valid)
-		_rtw_memcpy(&pmlmepriv->assoc_ssid, ssid, sizeof(NDIS_802_11_SSID));
+		memcpy(&pmlmepriv->assoc_ssid, ssid, sizeof(NDIS_802_11_SSID));
 	else
 		memset(&pmlmepriv->assoc_ssid, 0, sizeof(NDIS_802_11_SSID));
 
 	if (bssid && bssid_valid) {
-		_rtw_memcpy(&pmlmepriv->assoc_bssid, bssid, ETH_ALEN);
+		memcpy(&pmlmepriv->assoc_bssid, bssid, ETH_ALEN);
 		pmlmepriv->assoc_by_bssid = _TRUE;
 	} else
 		pmlmepriv->assoc_by_bssid = _FALSE;
@@ -749,7 +749,7 @@ u8 rtw_set_802_11_add_wep(_adapter *padapter, NDIS_802_11_WEP *wep)
 	}
 
 
-	_rtw_memcpy(&(psecuritypriv->dot11DefKey[keyid].skey[0]), &(wep->KeyMaterial), wep->KeyLength);
+	memcpy(&(psecuritypriv->dot11DefKey[keyid].skey[0]), &(wep->KeyMaterial), wep->KeyLength);
 
 	psecuritypriv->dot11DefKeylen[keyid] = wep->KeyLength;
 

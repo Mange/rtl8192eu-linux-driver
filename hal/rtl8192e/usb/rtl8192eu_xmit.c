@@ -58,7 +58,7 @@ static s32 update_txdesc(struct xmit_frame *pxmitframe, u8 *pmem, s32 sz , u8 ba
 	u8	*ptxdesc =  pmem;
 	struct mlme_ext_priv	*pmlmeext = &padapter->mlmeextpriv;
 	struct mlme_ext_info	*pmlmeinfo = &(pmlmeext->mlmext_info);
-	sint	bmcst = IS_MCAST(pattrib->ra);
+	bool bmcst = is_multicast_ether_addr(pattrib->ra);
 
 #ifndef CONFIG_USE_USB_BUFFER_ALLOC_TX
 	if (padapter->registrypriv.mp_mode == 0) {
@@ -918,7 +918,7 @@ s32 rtl8192eu_hostap_mgnt_xmit_entry(_adapter *padapter, _pkt *pkt)
 	/* #ifdef PLATFORM_LINUX */
 	u16 fc;
 	int rc, len, pipe;
-	unsigned int bmcst, tid, qsel;
+	bool bmcst, tid, qsel;
 	struct sk_buff *skb, *pxmit_skb;
 	struct urb *urb;
 	unsigned char *pxmitbuf;
@@ -937,7 +937,7 @@ s32 rtl8192eu_hostap_mgnt_xmit_entry(_adapter *padapter, _pkt *pkt)
 	len = skb->len;
 	tx_hdr = (struct rtw_ieee80211_hdr *)(skb->data);
 	fc = le16_to_cpu(tx_hdr->frame_ctl);
-	bmcst = IS_MCAST(tx_hdr->addr1);
+	bmcst = is_multicast_ether_addr(tx_hdr->addr1);
 
 	if ((fc & RTW_IEEE80211_FCTL_FTYPE) != RTW_IEEE80211_FTYPE_MGMT)
 		goto _exit;

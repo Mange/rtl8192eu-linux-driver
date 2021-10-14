@@ -415,7 +415,7 @@ int rtw_android_get_p2p_dev_addr(struct net_device *net, char *command, int tota
 	int bytes_written = 0;
 
 	/* We use the same address as our HW MAC address */
-	_rtw_memcpy(command, net->dev_addr, ETH_ALEN);
+	memcpy(command, net->dev_addr, ETH_ALEN);
 
 	bytes_written = ETH_ALEN;
 	return bytes_written;
@@ -538,7 +538,7 @@ int rtw_gtk_offload(struct net_device *net, u8 *cmd_ptr)
 		/* string command length of "GTK_REKEY_OFFLOAD" */
 		cmd_ptr += 18;
 
-		_rtw_memcpy(psta->kek, cmd_ptr, RTW_KEK_LEN);
+		memcpy(psta->kek, cmd_ptr, RTW_KEK_LEN);
 		cmd_ptr += RTW_KEK_LEN;
 		/*
 		printk("supplicant KEK: ");
@@ -546,13 +546,13 @@ int rtw_gtk_offload(struct net_device *net, u8 *cmd_ptr)
 			printk(" %02x ", psta->kek[i]);
 		printk("\n supplicant KCK: ");
 		*/
-		_rtw_memcpy(psta->kck, cmd_ptr, RTW_KCK_LEN);
+		memcpy(psta->kck, cmd_ptr, RTW_KCK_LEN);
 		cmd_ptr += RTW_KCK_LEN;
 		/*
 		for(i=0;i<RTW_KEK_LEN; i++)
 			printk(" %02x ", psta->kck[i]);
 		*/
-		_rtw_memcpy(psta->replay_ctr, cmd_ptr, RTW_REPLAY_CTR_LEN);
+		memcpy(psta->replay_ctr, cmd_ptr, RTW_REPLAY_CTR_LEN);
 		psecuritypriv->binstallKCK_KEK = _TRUE;
 
 		/* printk("\nREPLAY_CTR: "); */

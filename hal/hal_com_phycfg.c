@@ -4094,7 +4094,7 @@ phy_ConfigMACWithParaFile(
 				rtStatus = _SUCCESS;
 				pHalData->mac_reg = vzalloc(rlen);
 				if (pHalData->mac_reg) {
-					_rtw_memcpy(pHalData->mac_reg, pHalData->para_file_buf, rlen);
+					memcpy(pHalData->mac_reg, pHalData->para_file_buf, rlen);
 					pHalData->mac_reg_len = rlen;
 				} else
 					RTW_INFO("%s mac_reg alloc fail !\n", __FUNCTION__);
@@ -4102,7 +4102,7 @@ phy_ConfigMACWithParaFile(
 		}
 	} else {
 		if ((pHalData->mac_reg_len != 0) && (pHalData->mac_reg != NULL)) {
-			_rtw_memcpy(pHalData->para_file_buf, pHalData->mac_reg, pHalData->mac_reg_len);
+			memcpy(pHalData->para_file_buf, pHalData->mac_reg, pHalData->mac_reg_len);
 			rtStatus = _SUCCESS;
 		} else
 			RTW_INFO("%s(): Critical Error !!!\n", __FUNCTION__);
@@ -4173,7 +4173,7 @@ phy_ConfigBBWithParaFile(
 				rtStatus = _SUCCESS;
 				pBuf = vzalloc(rlen);
 				if (pBuf) {
-					_rtw_memcpy(pBuf, pHalData->para_file_buf, rlen);
+					memcpy(pBuf, pHalData->para_file_buf, rlen);
 					*pBufLen = rlen;
 
 					switch (ConfigType) {
@@ -4190,7 +4190,7 @@ phy_ConfigBBWithParaFile(
 		}
 	} else {
 		if ((pBufLen != NULL) && (*pBufLen != 0) && (pBuf != NULL)) {
-			_rtw_memcpy(pHalData->para_file_buf, pBuf, *pBufLen);
+			memcpy(pHalData->para_file_buf, pBuf, *pBufLen);
 			rtStatus = _SUCCESS;
 		} else
 			RTW_INFO("%s(): Critical Error !!!\n", __FUNCTION__);
@@ -4479,7 +4479,7 @@ phy_ConfigBBWithPgParaFile(
 				rtStatus = _SUCCESS;
 				pHalData->bb_phy_reg_pg = vzalloc(rlen);
 				if (pHalData->bb_phy_reg_pg) {
-					_rtw_memcpy(pHalData->bb_phy_reg_pg, pHalData->para_file_buf, rlen);
+					memcpy(pHalData->bb_phy_reg_pg, pHalData->para_file_buf, rlen);
 					pHalData->bb_phy_reg_pg_len = rlen;
 				} else
 					RTW_INFO("%s bb_phy_reg_pg alloc fail !\n", __FUNCTION__);
@@ -4487,7 +4487,7 @@ phy_ConfigBBWithPgParaFile(
 		}
 	} else {
 		if ((pHalData->bb_phy_reg_pg_len != 0) && (pHalData->bb_phy_reg_pg != NULL)) {
-			_rtw_memcpy(pHalData->para_file_buf, pHalData->bb_phy_reg_pg, pHalData->bb_phy_reg_pg_len);
+			memcpy(pHalData->para_file_buf, pHalData->bb_phy_reg_pg, pHalData->bb_phy_reg_pg_len);
 			rtStatus = _SUCCESS;
 		} else
 			RTW_INFO("%s(): Critical Error !!!\n", __FUNCTION__);
@@ -4528,7 +4528,7 @@ phy_ConfigBBWithMpParaFile(
 				rtStatus = _SUCCESS;
 				pHalData->bb_phy_reg_mp = vzalloc(rlen);
 				if (pHalData->bb_phy_reg_mp) {
-					_rtw_memcpy(pHalData->bb_phy_reg_mp, pHalData->para_file_buf, rlen);
+					memcpy(pHalData->bb_phy_reg_mp, pHalData->para_file_buf, rlen);
 					pHalData->bb_phy_reg_mp_len = rlen;
 				} else
 					RTW_INFO("%s bb_phy_reg_mp alloc fail !\n", __FUNCTION__);
@@ -4536,7 +4536,7 @@ phy_ConfigBBWithMpParaFile(
 		}
 	} else {
 		if ((pHalData->bb_phy_reg_mp_len != 0) && (pHalData->bb_phy_reg_mp != NULL)) {
-			_rtw_memcpy(pHalData->para_file_buf, pHalData->bb_phy_reg_mp, pHalData->bb_phy_reg_mp_len);
+			memcpy(pHalData->para_file_buf, pHalData->bb_phy_reg_mp, pHalData->bb_phy_reg_mp_len);
 			rtStatus = _SUCCESS;
 		} else
 			RTW_INFO("%s(): Critical Error !!!\n", __FUNCTION__);
@@ -4632,7 +4632,7 @@ PHY_ConfigRFWithParaFile(
 				rtStatus = _SUCCESS;
 				pBuf = vzalloc(rlen);
 				if (pBuf) {
-					_rtw_memcpy(pBuf, pHalData->para_file_buf, rlen);
+					memcpy(pBuf, pHalData->para_file_buf, rlen);
 					*pBufLen = rlen;
 
 					switch (eRFPath) {
@@ -4652,7 +4652,7 @@ PHY_ConfigRFWithParaFile(
 		}
 	} else {
 		if ((pBufLen != NULL) && (*pBufLen != 0) && (pBuf != NULL)) {
-			_rtw_memcpy(pHalData->para_file_buf, pBuf, *pBufLen);
+			memcpy(pHalData->para_file_buf, pBuf, *pBufLen);
 			rtStatus = _SUCCESS;
 		} else
 			RTW_INFO("%s(): Critical Error !!!\n", __FUNCTION__);
@@ -4831,7 +4831,7 @@ PHY_ConfigRFWithTxPwrTrackParaFile(
 				rtStatus = _SUCCESS;
 				pHalData->rf_tx_pwr_track = vzalloc(rlen);
 				if (pHalData->rf_tx_pwr_track) {
-					_rtw_memcpy(pHalData->rf_tx_pwr_track, pHalData->para_file_buf, rlen);
+					memcpy(pHalData->rf_tx_pwr_track, pHalData->para_file_buf, rlen);
 					pHalData->rf_tx_pwr_track_len = rlen;
 				} else
 					RTW_INFO("%s rf_tx_pwr_track alloc fail !\n", __FUNCTION__);
@@ -4839,7 +4839,7 @@ PHY_ConfigRFWithTxPwrTrackParaFile(
 		}
 	} else {
 		if ((pHalData->rf_tx_pwr_track_len != 0) && (pHalData->rf_tx_pwr_track != NULL)) {
-			_rtw_memcpy(pHalData->para_file_buf, pHalData->rf_tx_pwr_track, pHalData->rf_tx_pwr_track_len);
+			memcpy(pHalData->para_file_buf, pHalData->rf_tx_pwr_track, pHalData->rf_tx_pwr_track_len);
 			rtStatus = _SUCCESS;
 		} else
 			RTW_INFO("%s(): Critical Error !!!\n", __FUNCTION__);
@@ -5164,7 +5164,7 @@ phy_ParsePowerLimitTableFile(
 					goto exit;
 				}
 
-				_rtw_memcpy(regulation[forCnt], szLine + i_ns, i - i_ns);
+				memcpy(regulation[forCnt], szLine + i_ns, i - i_ns);
 				regulation[forCnt][i - i_ns] = '\0';
 			}
 
@@ -5330,7 +5330,7 @@ PHY_ConfigRFWithPowerLimitTableParaFile(
 				rtStatus = _SUCCESS;
 				pHalData->rf_tx_pwr_lmt = vzalloc(rlen);
 				if (pHalData->rf_tx_pwr_lmt) {
-					_rtw_memcpy(pHalData->rf_tx_pwr_lmt, pHalData->para_file_buf, rlen);
+					memcpy(pHalData->rf_tx_pwr_lmt, pHalData->para_file_buf, rlen);
 					pHalData->rf_tx_pwr_lmt_len = rlen;
 				} else
 					RTW_INFO("%s rf_tx_pwr_lmt alloc fail !\n", __FUNCTION__);
@@ -5338,7 +5338,7 @@ PHY_ConfigRFWithPowerLimitTableParaFile(
 		}
 	} else {
 		if ((pHalData->rf_tx_pwr_lmt_len != 0) && (pHalData->rf_tx_pwr_lmt != NULL)) {
-			_rtw_memcpy(pHalData->para_file_buf, pHalData->rf_tx_pwr_lmt, pHalData->rf_tx_pwr_lmt_len);
+			memcpy(pHalData->para_file_buf, pHalData->rf_tx_pwr_lmt, pHalData->rf_tx_pwr_lmt_len);
 			rtStatus = _SUCCESS;
 		} else
 			RTW_INFO("%s(): Critical Error !!!\n", __FUNCTION__);

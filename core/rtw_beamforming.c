@@ -235,11 +235,11 @@ static u8 _send_ht_ndpa_packet(PADAPTER adapter, u8 *ra, enum channel_width bw)
 	set_duration(pframe, duration);
 
 	/* DA */
-	_rtw_memcpy(pwlanhdr->addr1, ra, ETH_ALEN);
+	memcpy(pwlanhdr->addr1, ra, ETH_ALEN);
 	/* SA */
-	_rtw_memcpy(pwlanhdr->addr2, adapter_mac_addr(adapter), ETH_ALEN);
+	memcpy(pwlanhdr->addr2, adapter_mac_addr(adapter), ETH_ALEN);
 	/* BSSID */
-	_rtw_memcpy(pwlanhdr->addr3, get_my_bssid(&pmlmeinfo->network), ETH_ALEN);
+	memcpy(pwlanhdr->addr3, get_my_bssid(&pmlmeinfo->network), ETH_ALEN);
 
 	/* HT control field */
 	SET_HT_CTRL_CSI_STEERING(pframe + 24, 3);
@@ -250,7 +250,7 @@ static u8 _send_ht_ndpa_packet(PADAPTER adapter, u8 *ra, enum channel_width bw)
 	 * Category field: vender-specific value, 0x7F
 	 * OUI: 0x00E04C
 	 */
-	_rtw_memcpy(pframe + 28, ActionHdr, 4);
+	memcpy(pframe + 28, ActionHdr, 4);
 
 	attrib->pktlen = 32;
 	attrib->last_txcmdsz = attrib->pktlen;
@@ -331,10 +331,10 @@ static u8 _send_vht_ndpa_packet(PADAPTER adapter, u8 *ra, u16 aid, enum channel_
 	set_duration(pframe, duration);
 
 	/* RA */
-	_rtw_memcpy(pwlanhdr->addr1, ra, ETH_ALEN);
+	memcpy(pwlanhdr->addr1, ra, ETH_ALEN);
 
 	/* TA */
-	_rtw_memcpy(pwlanhdr->addr2, adapter_mac_addr(adapter), ETH_ALEN);
+	memcpy(pwlanhdr->addr2, adapter_mac_addr(adapter), ETH_ALEN);
 
 	/* Sounding Sequence, bit0~1 is reserved */
 	sequence = info->sounding_sequence << 2;
@@ -342,7 +342,7 @@ static u8 _send_vht_ndpa_packet(PADAPTER adapter, u8 *ra, u16 aid, enum channel_
 		info->sounding_sequence = 0;
 	else
 		info->sounding_sequence++;
-	_rtw_memcpy(pframe + 16, &sequence, 1);
+	memcpy(pframe + 16, &sequence, 1);
 
 	/* STA Info */
 	/*
@@ -356,7 +356,7 @@ static u8 _send_vht_ndpa_packet(PADAPTER adapter, u8 *ra, u16 aid, enum channel_
 	sta_info.feedback_type = 0;
 	/* "Nc Index" reserved if the Feedback Type field indicates SU */
 	sta_info.nc_index = 0;
-	_rtw_memcpy(pframe + 17, (u8 *)&sta_info, 2);
+	memcpy(pframe + 17, (u8 *)&sta_info, 2);
 
 	attrib->pktlen = 19;
 	attrib->last_txcmdsz = attrib->pktlen;
@@ -448,10 +448,10 @@ static u8 _send_vht_mu_ndpa_packet(PADAPTER adapter, enum channel_width bw)
 	set_duration(pframe, duration);
 
 	/* RA */
-	_rtw_memcpy(pwlanhdr->addr1, ra, ETH_ALEN);
+	memcpy(pwlanhdr->addr1, ra, ETH_ALEN);
 
 	/* TA */
-	_rtw_memcpy(pwlanhdr->addr2, adapter_mac_addr(adapter), ETH_ALEN);
+	memcpy(pwlanhdr->addr2, adapter_mac_addr(adapter), ETH_ALEN);
 
 	/* Sounding Sequence, bit0~1 is reserved */
 	sequence = info->sounding_sequence << 2;
@@ -459,7 +459,7 @@ static u8 _send_vht_mu_ndpa_packet(PADAPTER adapter, enum channel_width bw)
 		info->sounding_sequence = 0;
 	else
 		info->sounding_sequence++;
-	_rtw_memcpy(pframe + 16, &sequence, 1);
+	memcpy(pframe + 16, &sequence, 1);
 
 	attrib->pktlen = 17;
 
@@ -472,7 +472,7 @@ static u8 _send_vht_mu_ndpa_packet(PADAPTER adapter, enum channel_width bw)
 		sta_info.aid = bfee->aid;
 		sta_info.feedback_type = 1; /* 1'b1: MU */
 		sta_info.nc_index = 0;
-		_rtw_memcpy(pframe + attrib->pktlen, (u8 *)&sta_info, 2);
+		memcpy(pframe + attrib->pktlen, (u8 *)&sta_info, 2);
 		attrib->pktlen += 2;
 	}
 
@@ -529,10 +529,10 @@ static u8 _send_bf_report_poll(PADAPTER adapter, u8 *ra, u8 bFinalPoll)
 	set_duration(pframe, 100);
 
 	/* RA */
-	_rtw_memcpy(pwlanhdr->addr1, ra, ETH_ALEN);
+	memcpy(pwlanhdr->addr1, ra, ETH_ALEN);
 
 	/* TA */
-	_rtw_memcpy(pwlanhdr->addr2, adapter_mac_addr(adapter), ETH_ALEN);
+	memcpy(pwlanhdr->addr2, adapter_mac_addr(adapter), ETH_ALEN);
 
 	/* Feedback Segment Retransmission Bitmap */
 	pframe[16] = 0xFF;
@@ -1017,7 +1017,7 @@ static struct beamformer_entry *_bfer_add_entry(PADAPTER adapter,
 
 	bfer->used = _TRUE;
 	_get_txvector_parameter(adapter, sta, &bfer->g_id, &bfer->p_aid);
-	_rtw_memcpy(bfer->mac_addr, sta->cmn.mac_addr, ETH_ALEN);
+	memcpy(bfer->mac_addr, sta->cmn.mac_addr, ETH_ALEN);
 	bfer->cap = bf_cap;
 	bfer->state = BEAMFORM_ENTRY_HW_STATE_ADD_INIT;
 	bfer->NumofSoundingDim = sounding_dim;
@@ -1209,7 +1209,7 @@ static struct beamformee_entry *_bfee_add_entry(PADAPTER adapter,
 	sta->cmn.bf_info.g_id = bfee->g_id;
 	sta->cmn.bf_info.p_aid = bfee->p_aid;
 
-	_rtw_memcpy(bfee->mac_addr, sta->cmn.mac_addr, ETH_ALEN);
+	memcpy(bfee->mac_addr, sta->cmn.mac_addr, ETH_ALEN);
 	bfee->txbf = _FALSE;
 	bfee->sounding = _FALSE;
 	bfee->sound_period = 40;
@@ -1722,18 +1722,18 @@ u8 rtw_bf_send_vht_gid_mgnt_packet(PADAPTER adapter, u8 *ra, u8 *gid, u8 *positi
 	SetFragNum(pframe, 0);
 	SetSeqNum(pframe, 0);
 
-	_rtw_memcpy(wlanhdr->addr1, ra, ETH_ALEN);
-	_rtw_memcpy(wlanhdr->addr2, adapter_mac_addr(adapter), ETH_ALEN);
-	_rtw_memcpy(wlanhdr->addr3, get_bssid(mlmepriv), ETH_ALEN);
+	memcpy(wlanhdr->addr1, ra, ETH_ALEN);
+	memcpy(wlanhdr->addr2, adapter_mac_addr(adapter), ETH_ALEN);
+	memcpy(wlanhdr->addr3, get_bssid(mlmepriv), ETH_ALEN);
 
 	pframe[24] = RTW_WLAN_CATEGORY_VHT;
 	pframe[25] = RTW_WLAN_ACTION_VHT_GROUPID_MANAGEMENT;
 	/* Set Membership Status Array */
 	ptr = pframe + 26;
-	_rtw_memcpy(ptr, gid, 8);
+	memcpy(ptr, gid, 8);
 	/* Set User Position Array */
 	ptr = pframe + 34;
-	_rtw_memcpy(ptr, position, 16);
+	memcpy(ptr, position, 16);
 
 	attrib->pktlen = 54;
 	attrib->last_txcmdsz = attrib->pktlen;
@@ -1879,7 +1879,7 @@ u8 rtw_bf_cmd(PADAPTER adapter, s32 type, u8 *pbuf, s32 size, u8 enqueue)
 			goto exit;
 		}
 
-		_rtw_memcpy(wk_buf, pbuf, size);
+		memcpy(wk_buf, pbuf, size);
 	} else {
 		wk_buf = NULL;
 		size = 0;
@@ -2077,7 +2077,7 @@ struct beamforming_entry	*beamforming_add_entry(PADAPTER adapter, u8 *ra, u16 ai
 			pEntry->p_aid = (pEntry->p_aid << 1) | (ra[4] >> 7);
 			pEntry->g_id = 0;
 		}
-		_rtw_memcpy(pEntry->mac_addr, ra, ETH_ALEN);
+		memcpy(pEntry->mac_addr, ra, ETH_ALEN);
 		pEntry->bSound = _FALSE;
 
 		/* 3 TODO SW/FW sound period */
@@ -2217,9 +2217,9 @@ BOOLEAN	issue_ht_sw_ndpa_packet(PADAPTER Adapter, u8 *ra, enum channel_width bw,
 	set_order_bit(pframe);
 	set_frame_sub_type(pframe, WIFI_ACTION_NOACK);
 
-	_rtw_memcpy(pwlanhdr->addr1, ra, ETH_ALEN);
-	_rtw_memcpy(pwlanhdr->addr2, adapter_mac_addr(Adapter), ETH_ALEN);
-	_rtw_memcpy(pwlanhdr->addr3, get_my_bssid(&(pmlmeinfo->network)), ETH_ALEN);
+	memcpy(pwlanhdr->addr1, ra, ETH_ALEN);
+	memcpy(pwlanhdr->addr2, adapter_mac_addr(Adapter), ETH_ALEN);
+	memcpy(pwlanhdr->addr3, get_my_bssid(&(pmlmeinfo->network)), ETH_ALEN);
 
 	if (pmlmeext->cur_wireless_mode == WIRELESS_11B)
 		aSifsTime = 10;
@@ -2239,7 +2239,7 @@ BOOLEAN	issue_ht_sw_ndpa_packet(PADAPTER Adapter, u8 *ra, enum channel_width bw,
 	SET_HT_CTRL_CSI_STEERING(pframe + 24, 3);
 	SET_HT_CTRL_NDP_ANNOUNCEMENT(pframe + 24, 1);
 
-	_rtw_memcpy(pframe + 28, ActionHdr, 4);
+	memcpy(pframe + 28, ActionHdr, 4);
 
 	pattrib->pktlen = 32;
 
@@ -2293,9 +2293,9 @@ BOOLEAN	issue_ht_ndpa_packet(PADAPTER Adapter, u8 *ra, enum channel_width bw, u8
 	set_order_bit(pframe);
 	set_frame_sub_type(pframe, WIFI_ACTION_NOACK);
 
-	_rtw_memcpy(pwlanhdr->addr1, ra, ETH_ALEN);
-	_rtw_memcpy(pwlanhdr->addr2, adapter_mac_addr(Adapter), ETH_ALEN);
-	_rtw_memcpy(pwlanhdr->addr3, get_my_bssid(&(pmlmeinfo->network)), ETH_ALEN);
+	memcpy(pwlanhdr->addr1, ra, ETH_ALEN);
+	memcpy(pwlanhdr->addr2, adapter_mac_addr(Adapter), ETH_ALEN);
+	memcpy(pwlanhdr->addr3, get_my_bssid(&(pmlmeinfo->network)), ETH_ALEN);
 
 	if (pmlmeext->cur_wireless_mode == WIRELESS_11B)
 		aSifsTime = 10;
@@ -2315,7 +2315,7 @@ BOOLEAN	issue_ht_ndpa_packet(PADAPTER Adapter, u8 *ra, enum channel_width bw, u8
 	SET_HT_CTRL_CSI_STEERING(pframe + 24, 3);
 	SET_HT_CTRL_NDP_ANNOUNCEMENT(pframe + 24, 1);
 
-	_rtw_memcpy(pframe + 28, ActionHdr, 4);
+	memcpy(pframe + 28, ActionHdr, 4);
 
 	pattrib->pktlen = 32;
 
@@ -2379,8 +2379,8 @@ BOOLEAN	issue_vht_sw_ndpa_packet(PADAPTER Adapter, u8 *ra, u16 aid, enum channel
 
 	set_frame_sub_type(pframe, WIFI_NDPA);
 
-	_rtw_memcpy(pwlanhdr->addr1, ra, ETH_ALEN);
-	_rtw_memcpy(pwlanhdr->addr2, adapter_mac_addr(Adapter), ETH_ALEN);
+	memcpy(pwlanhdr->addr1, ra, ETH_ALEN);
+	memcpy(pwlanhdr->addr2, adapter_mac_addr(Adapter), ETH_ALEN);
 
 	if (is_supported_5g(pmlmeext->cur_wireless_mode) || is_supported_ht(pmlmeext->cur_wireless_mode))
 		aSifsTime = 16;
@@ -2404,7 +2404,7 @@ BOOLEAN	issue_vht_sw_ndpa_packet(PADAPTER Adapter, u8 *ra, u16 aid, enum channel
 	else
 		pBeamInfo->sounding_sequence++;
 
-	_rtw_memcpy(pframe + 16, &sequence, 1);
+	memcpy(pframe + 16, &sequence, 1);
 	if (((pmlmeinfo->state & 0x03) == WIFI_FW_ADHOC_STATE) || ((pmlmeinfo->state & 0x03) == WIFI_FW_AP_STATE))
 		aid = 0;
 
@@ -2412,7 +2412,7 @@ BOOLEAN	issue_vht_sw_ndpa_packet(PADAPTER Adapter, u8 *ra, u16 aid, enum channel
 	sta_info.feedback_type = 0;
 	sta_info.nc_index = 0;
 
-	_rtw_memcpy(pframe + 17, (u8 *)&sta_info, 2);
+	memcpy(pframe + 17, (u8 *)&sta_info, 2);
 
 	pattrib->pktlen = 19;
 
@@ -2465,8 +2465,8 @@ BOOLEAN	issue_vht_ndpa_packet(PADAPTER Adapter, u8 *ra, u16 aid, enum channel_wi
 
 	set_frame_sub_type(pframe, WIFI_NDPA);
 
-	_rtw_memcpy(pwlanhdr->addr1, ra, ETH_ALEN);
-	_rtw_memcpy(pwlanhdr->addr2, adapter_mac_addr(Adapter), ETH_ALEN);
+	memcpy(pwlanhdr->addr1, ra, ETH_ALEN);
+	memcpy(pwlanhdr->addr2, adapter_mac_addr(Adapter), ETH_ALEN);
 
 	if (is_supported_5g(pmlmeext->cur_wireless_mode) || is_supported_ht(pmlmeext->cur_wireless_mode))
 		aSifsTime = 16;
@@ -2490,7 +2490,7 @@ BOOLEAN	issue_vht_ndpa_packet(PADAPTER Adapter, u8 *ra, u16 aid, enum channel_wi
 	else
 		pBeamInfo->sounding_sequence++;
 
-	_rtw_memcpy(pframe + 16, &sequence, 1);
+	memcpy(pframe + 16, &sequence, 1);
 
 	if (((pmlmeinfo->state & 0x03) == WIFI_FW_ADHOC_STATE) || ((pmlmeinfo->state & 0x03) == WIFI_FW_AP_STATE))
 		aid = 0;
@@ -2499,7 +2499,7 @@ BOOLEAN	issue_vht_ndpa_packet(PADAPTER Adapter, u8 *ra, u16 aid, enum channel_wi
 	sta_info.feedback_type = 0;
 	sta_info.nc_index = 0;
 
-	_rtw_memcpy(pframe + 17, (u8 *)&sta_info, 2);
+	memcpy(pframe + 17, (u8 *)&sta_info, 2);
 
 	pattrib->pktlen = 19;
 
@@ -2947,7 +2947,7 @@ u32	rtw_beamforming_get_report_frame(PADAPTER	 Adapter, union recv_frame *precv_
 	else
 		pBeamformEntry->DefaultCsiCnt++;
 
-	_rtw_memcpy(&pBeamformEntry->PreCsiReport, pframe, frame_len);
+	memcpy(&pBeamformEntry->PreCsiReport, pframe, frame_len);
 
 	pBeamformEntry->bDefaultCSI = _FALSE;
 
@@ -3120,7 +3120,7 @@ u8	beamforming_wk_cmd(_adapter *padapter, s32 type, u8 *pbuf, s32 size, u8 enque
 				goto exit;
 			}
 
-			_rtw_memcpy(wk_buf, pbuf, size);
+			memcpy(wk_buf, pbuf, size);
 		} else {
 			wk_buf = NULL;
 			size = 0;

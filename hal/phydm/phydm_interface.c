@@ -407,7 +407,7 @@ void odm_move_memory(struct dm_struct *dm, void *dest, void *src, u32 length)
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE) && defined(DM_ODM_CE_MAC80211_V2)
 	memcpy(dest, src, length);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE)
-	_rtw_memcpy(dest, src, length);
+	memcpy(dest, src, length);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_WIN)
 	PlatformMoveMemory(dest, src, length);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_IOT)

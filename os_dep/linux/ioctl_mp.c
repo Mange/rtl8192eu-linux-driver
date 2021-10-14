@@ -84,7 +84,7 @@ int rtw_mp_write_reg(struct net_device *dev,
 	*pnext = 0;
 	/*addr = simple_strtoul(pch, &ptmp, 16);
 	memset(buf, '\0', sizeof(buf));
-	_rtw_memcpy(buf, pch, pnext-pch);
+	memcpy(buf, pch, pnext-pch);
 	ret = kstrtoul(buf, 16, &addr);*/
 	ret = sscanf(pch, "%x", &addr);
 	if (addr > 0x3FFF)
@@ -2154,7 +2154,7 @@ int rtw_mp_hwtx(struct net_device *dev,
 		return -EFAULT;
 
 	memset(&pMptCtx->PMacTxInfo, 0, sizeof(RT_PMAC_TX_INFO));
-	_rtw_memcpy((void *)&pMptCtx->PMacTxInfo, (void *)input, sizeof(RT_PMAC_TX_INFO));
+	memcpy((void *)&pMptCtx->PMacTxInfo, (void *)input, sizeof(RT_PMAC_TX_INFO));
 	memset(wrqu->data.pointer, 0, wrqu->data.length);
 
 	if (pMptCtx->PMacTxInfo.bEnPMacTx == 1 && pmp_priv->mode != MP_ON) {

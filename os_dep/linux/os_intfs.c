@@ -900,7 +900,7 @@ uint loadparam(_adapter *padapter)
 	/* registry_par->hci = (u8)hci; */
 	registry_par->network_mode  = (u8)rtw_network_mode;
 
-	_rtw_memcpy(registry_par->ssid.Ssid, "ANY", 3);
+	memcpy(registry_par->ssid.Ssid, "ANY", 3);
 	registry_par->ssid.SsidLength = 3;
 
 	registry_par->channel = (u8)rtw_channel;
@@ -1011,7 +1011,7 @@ uint loadparam(_adapter *padapter)
 			RTW_ERR("%s discard rtw_country_code not in alpha2\n", __func__);
 		memset(registry_par->alpha2, 0xFF, 2);
 	} else
-		_rtw_memcpy(registry_par->alpha2, rtw_country_code, 2);
+		memcpy(registry_par->alpha2, rtw_country_code, 2);
 
 	registry_par->channel_plan = (u8)rtw_channel_plan;
 	rtw_regsty_load_excl_chs(registry_par);
@@ -1249,8 +1249,8 @@ static int rtw_net_set_mac_address(struct net_device *pnetdev, void *addr)
 		return ret;
 	}
 
-	_rtw_memcpy(adapter_mac_addr(padapter), sa->sa_data, ETH_ALEN); /* set mac addr to adapter */
-	_rtw_memcpy(pnetdev->dev_addr, sa->sa_data, ETH_ALEN); /* set mac addr to net_device */
+	memcpy(adapter_mac_addr(padapter), sa->sa_data, ETH_ALEN); /* set mac addr to adapter */
+	memcpy(pnetdev->dev_addr, sa->sa_data, ETH_ALEN); /* set mac addr to net_device */
 
 #if 0
 	if (rtw_is_hw_init_completed(padapter)) {
@@ -1366,7 +1366,7 @@ u16 rtw_recv_select_queue(struct sk_buff *skb)
 	u32 priority;
 	u8 *pdata = skb->data;
 
-	_rtw_memcpy(&eth_type, pdata + (ETH_ALEN << 1), 2);
+	memcpy(&eth_type, pdata + (ETH_ALEN << 1), 2);
 
 	switch (eth_type) {
 	case htons(ETH_P_IP):
@@ -1696,7 +1696,7 @@ int rtw_os_ndev_register(_adapter *adapter, const char *name)
 	/* alloc netdev name */
 	rtw_init_netdev_name(ndev, name);
 
-	_rtw_memcpy(ndev->dev_addr, adapter_mac_addr(adapter), ETH_ALEN);
+	memcpy(ndev->dev_addr, adapter_mac_addr(adapter), ETH_ALEN);
 
 	/* Tell the network stack we exist */
 
@@ -2639,7 +2639,7 @@ int _netdev_vir_if_open(struct net_device *pnetdev)
 		if (primary_padapter->bup == _FALSE)
 			rtw_macaddr_cfg(adapter_mac_addr(primary_padapter), get_hal_mac_addr(primary_padapter));
 
-		_rtw_memcpy(mac, adapter_mac_addr(primary_padapter), ETH_ALEN);
+		memcpy(mac, adapter_mac_addr(primary_padapter), ETH_ALEN);
 
 		/*
 		* If the BIT1 is 0, the address is universally administered.
@@ -2647,13 +2647,13 @@ int _netdev_vir_if_open(struct net_device *pnetdev)
 		*/
 		mac[0] |= BIT(1);
 
-		_rtw_memcpy(adapter_mac_addr(padapter), mac, ETH_ALEN);
+		memcpy(adapter_mac_addr(padapter), mac, ETH_ALEN);
 
 #ifdef CONFIG_MI_WITH_MBSSID_CAM
 		rtw_mbid_camid_alloc(padapter, adapter_mac_addr(padapter));
 #endif
 		rtw_init_wifidirect_addrs(padapter, adapter_mac_addr(padapter), adapter_mac_addr(padapter));
-		_rtw_memcpy(pnetdev->dev_addr, adapter_mac_addr(padapter), ETH_ALEN);
+		memcpy(pnetdev->dev_addr, adapter_mac_addr(padapter), ETH_ALEN);
 	}
 #endif /*CONFIG_PLATFORM_INTEL_BYT*/
 
@@ -2812,7 +2812,7 @@ _adapter *rtw_drv_add_vir_if(_adapter *primary_padapter,
 	if (loadparam(padapter) != _SUCCESS)
 		goto free_adapter;
 
-	_rtw_memcpy(padapter, primary_padapter, sizeof(_adapter));
+	memcpy(padapter, primary_padapter, sizeof(_adapter));
 
 	/*  */
 	padapter->bup = _FALSE;
@@ -2850,7 +2850,7 @@ _adapter *rtw_drv_add_vir_if(_adapter *primary_padapter,
 
 
 	/*get mac address from primary_padapter*/
-	_rtw_memcpy(mac, adapter_mac_addr(primary_padapter), ETH_ALEN);
+	memcpy(mac, adapter_mac_addr(primary_padapter), ETH_ALEN);
 
 	/*
 	* If the BIT1 is 0, the address is universally administered.
@@ -2860,7 +2860,7 @@ _adapter *rtw_drv_add_vir_if(_adapter *primary_padapter,
 	if (padapter->iface_id > IFACE_ID1)
 		mac[4] ^= BIT(padapter->iface_id);
 
-	_rtw_memcpy(adapter_mac_addr(padapter), mac, ETH_ALEN);
+	memcpy(adapter_mac_addr(padapter), mac, ETH_ALEN);
 	/* update mac-address to mbsid-cam cache*/
 #ifdef CONFIG_MI_WITH_MBSSID_CAM
 	rtw_mbid_camid_alloc(padapter, adapter_mac_addr(padapter));
@@ -2991,7 +2991,7 @@ static int rtw_inetaddr_notifier_call(struct notifier_block *nb,
 
 	switch (action) {
 	case NETDEV_UP:
-		_rtw_memcpy(pmlmeinfo->ip_addr, &ifa->ifa_address,
+		memcpy(pmlmeinfo->ip_addr, &ifa->ifa_address,
 					RTW_IP_ADDR_LEN);
 		RTW_DBG("%s[%s]: up IP: %pI4\n", __func__,
 					ifa->ifa_label, pmlmeinfo->ip_addr);
@@ -3044,7 +3044,7 @@ static int rtw_inet6addr_notifier_call(struct notifier_block *nb,
 #ifdef CONFIG_WOWLAN
 		pwrctl->wowlan_ns_offload_en = _TRUE;
 #endif
-		_rtw_memcpy(pmlmeinfo->ip6_addr, &inet6_ifa->addr,
+		memcpy(pmlmeinfo->ip6_addr, &inet6_ifa->addr,
 					RTW_IPv6_ADDR_LEN);
 		RTW_DBG("%s: up IPv6 addrs: %pI6\n", __func__,
 					pmlmeinfo->ip6_addr);
@@ -3402,7 +3402,7 @@ int _netdev_open(struct net_device *pnetdev)
 		rtw_mbid_camid_alloc(padapter, adapter_mac_addr(padapter));
 #endif
 		rtw_init_wifidirect_addrs(padapter, adapter_mac_addr(padapter), adapter_mac_addr(padapter));
-		_rtw_memcpy(pnetdev->dev_addr, adapter_mac_addr(padapter), ETH_ALEN);
+		memcpy(pnetdev->dev_addr, adapter_mac_addr(padapter), ETH_ALEN);
 #endif /* CONFIG_PLATFORM_INTEL_BYT */
 
 		rtw_clr_surprise_removed(padapter);
@@ -4160,7 +4160,7 @@ static int arp_query(unsigned char *haddr, u32 paddr,
 	if (neighbor_entry != NULL) {
 		neighbor_entry->used = jiffies;
 		if (neighbor_entry->nud_state & NUD_VALID) {
-			_rtw_memcpy(haddr, neighbor_entry->ha, dev->addr_len);
+			memcpy(haddr, neighbor_entry->ha, dev->addr_len);
 			ret = 1;
 		}
 		neigh_release(neighbor_entry);
@@ -4213,7 +4213,7 @@ int	rtw_gw_addr_query(_adapter *padapter)
 		pmlmepriv->gw_ip[1] = (gw_addr & 0xff00) >> 8;
 		pmlmepriv->gw_ip[2] = (gw_addr & 0xff0000) >> 16;
 		pmlmepriv->gw_ip[3] = (gw_addr & 0xff000000) >> 24;
-		_rtw_memcpy(pmlmepriv->gw_mac_addr, gw_mac, ETH_ALEN);
+		memcpy(pmlmepriv->gw_mac_addr, gw_mac, ETH_ALEN);
 		RTW_INFO("%s Gateway Mac:\t" MAC_FMT "\n", __FUNCTION__, MAC_ARG(pmlmepriv->gw_mac_addr));
 		RTW_INFO("%s Gateway IP:\t" IP_FMT "\n", __FUNCTION__, IP_ARG(pmlmepriv->gw_ip));
 	} else
