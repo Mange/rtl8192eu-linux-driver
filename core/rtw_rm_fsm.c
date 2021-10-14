@@ -329,7 +329,7 @@ static struct rm_obj *_rm_get_rmobj(_queue *queue, u32 rmid)
 
 	phead = get_list_head(queue);
 	plist = get_next(phead);
-	while ((rtw_end_of_queue_search(phead, plist)) == _FALSE) {
+	while (phead != plist) {
 
 		prm = LIST_CONTAINOR(plist, struct rm_obj, list);
 		if (rmid == (prm->rmid)) {
@@ -435,7 +435,7 @@ static void rm_bcast_aid_handler(_adapter *padapter, struct rm_event *pev)
 	_enter_critical(&queue->lock, &irqL);
 	phead = get_list_head(queue);
 	plist = get_next(phead);
-	while ((rtw_end_of_queue_search(phead, plist)) == _FALSE) {
+	while (phead != plist) {
 
 		prm = LIST_CONTAINOR(plist, struct rm_obj, list);
 		plist = get_next(plist);

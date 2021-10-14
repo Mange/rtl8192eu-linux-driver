@@ -38,7 +38,7 @@ static void _rtw_bss_nums_count(_adapter *adapter, u8 *pbss_nums)
 	phead = get_list_head(queue);
 	plist = get_next(phead);
 	while (1) {
-		if (rtw_end_of_queue_search(phead, plist) == _TRUE)
+		if (phead == plist)
 			break;
 
 		pnetwork = LIST_CONTAINOR(plist, struct wlan_network, list);

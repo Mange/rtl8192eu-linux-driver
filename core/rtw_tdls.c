@@ -111,7 +111,7 @@ void rtw_free_all_tdls_sta(_adapter *padapter, u8 enqueue_cmd)
 		phead = &(pstapriv->sta_hash[index]);
 		plist = get_next(phead);
 
-		while (rtw_end_of_queue_search(phead, plist) == _FALSE) {
+		while (phead != plist) {
 			psta = LIST_CONTAINOR(plist, struct sta_info, hash_list);
 
 			plist = get_next(plist);
@@ -231,7 +231,7 @@ u8 rtw_is_tdls_sta_existed(_adapter *padapter)
 	for (i = 0; i < NUM_STA; i++) {
 		phead = &(pstapriv->sta_hash[i]);
 		plist = get_next(phead);
-		while ((rtw_end_of_queue_search(phead, plist)) == _FALSE) {
+		while (phead != plist) {
 			psta = LIST_CONTAINOR(plist, struct sta_info, hash_list);
 			plist = get_next(plist);
 			if (psta->tdls_sta_state != TDLS_STATE_NONE) {
@@ -2478,7 +2478,7 @@ int On_TDLS_Peer_Traffic_Rsp(_adapter *padapter, union recv_frame *precv_frame, 
 			xmitframe_plist = get_next(xmitframe_phead);
 
 			/* transmit buffered frames */
-			while (rtw_end_of_queue_search(xmitframe_phead, xmitframe_plist) == _FALSE) {
+			while (xmitframe_phead != xmitframe_plist) {
 				pxmitframe = LIST_CONTAINOR(xmitframe_plist, struct xmit_frame, list);
 				xmitframe_plist = get_next(xmitframe_plist);
 				rtw_list_delete(&pxmitframe->list);

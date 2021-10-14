@@ -114,7 +114,7 @@ void rtw_mesh_path_assign_nexthop(struct rtw_mesh_path *mpath, struct sta_info *
 	enter_critical_bh(&mpath->frame_queue.lock);
 	head = &mpath->frame_queue.queue;
 	list = get_next(head);
-	while (rtw_end_of_queue_search(head, list) == _FALSE) {
+	while (head != list) {
 		xframe = LIST_CONTAINOR(list, struct xmit_frame, list);
 		list = get_next(list);
 		memcpy(xframe->attrib.ra, sta->cmn.mac_addr, ETH_ALEN);
@@ -183,7 +183,7 @@ static void rtw_mesh_path_move_to_queue(struct rtw_mesh_path *gate_mpath,
 
 	head = &failq;
 	list = get_next(head);
-	while (rtw_end_of_queue_search(head, list) == _FALSE) {
+	while (head != list) {
 		if (gate_mpath->frame_queue_len >= RTW_MESH_FRAME_QUEUE_LEN) {
 			RTW_MPATH_DBG(FUNC_ADPT_FMT" mpath queue for gate %pM is full!\n"
 				, FUNC_ADPT_ARG(gate_mpath->adapter), gate_mpath->dst);
@@ -1047,7 +1047,7 @@ void rtw_mesh_path_flush_pending(struct rtw_mesh_path *mpath)
 
 	head = &tmp;
 	list = get_next(head);
-	while (rtw_end_of_queue_search(head, list) == _FALSE) {
+	while (head != list) {
 		xframe = LIST_CONTAINOR(list, struct xmit_frame, list);
 		list = get_next(list);
 		rtw_list_delete(&xframe->list);

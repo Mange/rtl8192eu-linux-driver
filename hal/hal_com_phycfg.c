@@ -2960,7 +2960,7 @@ s8 phy_get_txpwr_lmt_abs(
 		lmt = hal_spec->txgi_max;
 		head = &rfctl->txpwr_lmt_list;
 		cur = get_next(head);
-		while ((rtw_end_of_queue_search(head, cur)) == _FALSE) {
+		while (head != cur) {
 			ent = LIST_CONTAINOR(cur, struct txpwr_lmt_ent, list);
 			cur = get_next(cur);
 			if (ent->lmt_2g[bw][tlrs][ch_idx][ntx_idx] != ww_lmt_val)
@@ -2979,7 +2979,7 @@ s8 phy_get_txpwr_lmt_abs(
 		lmt = hal_spec->txgi_max;
 		head = &rfctl->txpwr_lmt_list;
 		cur = get_next(head);
-		while ((rtw_end_of_queue_search(head, cur)) == _FALSE) {
+		while (head != cur) {
 			ent = LIST_CONTAINOR(cur, struct txpwr_lmt_ent, list);
 			cur = get_next(cur);
 			if (ent->lmt_5g[bw][tlrs - 1][ch_idx][ntx_idx] != ww_lmt_val)
@@ -3174,7 +3174,7 @@ static void phy_txpwr_lmt_cck_ofdm_mt_chk(_adapter *adapter)
 	head = &rfctl->txpwr_lmt_list;
 	cur = get_next(head);
 
-	while ((rtw_end_of_queue_search(head, cur)) == _FALSE) {
+	while (head != cur) {
 		ent = LIST_CONTAINOR(cur, struct txpwr_lmt_ent, list);
 		cur = get_next(cur);
 
@@ -3245,7 +3245,7 @@ static void phy_txpwr_lmt_cross_ref_ht_vht(_adapter *adapter)
 	head = &rfctl->txpwr_lmt_list;
 	cur = get_next(head);
 
-	while ((rtw_end_of_queue_search(head, cur)) == _FALSE) {
+	while (head != cur) {
 		ent = LIST_CONTAINOR(cur, struct txpwr_lmt_ent, list);
 		cur = get_next(cur);
 
@@ -3427,7 +3427,7 @@ void phy_txpwr_limit_bandwidth_chk(_adapter *adapter)
 
 							head = &rfctl->txpwr_lmt_list;
 							cur = get_next(head);
-							while ((rtw_end_of_queue_search(head, cur)) == _FALSE) {
+							while (head != cur) {
 								ent = LIST_CONTAINOR(cur, struct txpwr_lmt_ent, list);
 								cur = get_next(cur);
 

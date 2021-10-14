@@ -459,7 +459,7 @@ static void rtw_hal_config_mcc_role_setting(PADAPTER padapter, u8 order)
 			plist = get_next(phead);
 			pmccadapriv->mcc_macid_bitmap = 0;
 	
-			while ((rtw_end_of_queue_search(phead, plist)) == _FALSE) {
+			while (phead != plist) {
 				psta = LIST_CONTAINOR(plist, struct sta_info, asoc_list);
 				plist = get_next(plist);
 				pmccadapriv->mcc_macid_bitmap |= BIT(psta->cmn.mac_id);

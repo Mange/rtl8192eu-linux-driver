@@ -273,7 +273,6 @@ extern void	_rtw_spinunlock_ex(_lock	*plock);
 extern void	_rtw_init_queue(_queue *pqueue);
 extern void _rtw_deinit_queue(_queue *pqueue);
 extern u32	_rtw_queue_empty(_queue	*pqueue);
-extern u32	rtw_end_of_queue_search(_list *queue, _list *pelement);
 
 extern s32	_rtw_get_passing_time_ms(systime start);
 extern s32 _rtw_get_remaining_time_ms(systime end);

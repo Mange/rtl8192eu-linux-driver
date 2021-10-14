@@ -994,15 +994,6 @@ u32	  _rtw_queue_empty(_queue	*pqueue)
 	return rtw_is_list_empty(&(pqueue->queue));
 }
 
-
-u32 rtw_end_of_queue_search(_list *head, _list *plist)
-{
-	if (head == plist)
-		return _TRUE;
-	else
-		return _FALSE;
-}
-
 /* the input parameter start use the same unit as returned by jiffies */
 inline s32 _rtw_get_passing_time_ms(systime start)
 {
@@ -1881,7 +1872,7 @@ int rtw_blacklist_add(_queue *blist, const u8 *addr, u32 timeout_ms)
 
 	head = &blist->queue;
 	list = get_next(head);
-	while (rtw_end_of_queue_search(head, list) == _FALSE) {
+	while (head != list) {
 		ent = LIST_CONTAINOR(list, struct blacklist_ent, list);
 		list = get_next(list);
 
@@ -1925,7 +1916,7 @@ int rtw_blacklist_del(_queue *blist, const u8 *addr)
 	enter_critical_bh(&blist->lock);
 	head = &blist->queue;
 	list = get_next(head);
-	while (rtw_end_of_queue_search(head, list) == _FALSE) {
+	while (head != list) {
 		ent = LIST_CONTAINOR(list, struct blacklist_ent, list);
 		list = get_next(list);
 
@@ -1957,7 +1948,7 @@ int rtw_blacklist_search(_queue *blist, const u8 *addr)
 	enter_critical_bh(&blist->lock);
 	head = &blist->queue;
 	list = get_next(head);
-	while (rtw_end_of_queue_search(head, list) == _FALSE) {
+	while (head != list) {
 		ent = LIST_CONTAINOR(list, struct blacklist_ent, list);
 		list = get_next(list);
 
@@ -1996,7 +1987,7 @@ void rtw_blacklist_flush(_queue *blist)
 
 	head = &tmp;
 	list = get_next(head);
-	while (rtw_end_of_queue_search(head, list) == _FALSE) {
+	while (head != list) {
 		ent = LIST_CONTAINOR(list, struct blacklist_ent, list);
 		list = get_next(list);
 		rtw_list_delete(&ent->list);
@@ -2013,11 +2004,11 @@ void dump_blacklist(void *sel, _queue *blist, const char *title)
 	head = &blist->queue;
 	list = get_next(head);
 
-	if (rtw_end_of_queue_search(head, list) == _FALSE) {
+	if (head != list) {
 		if (title)
 			RTW_PRINT_SEL(sel, "%s:\n", title);
 	
-		while (rtw_end_of_queue_search(head, list) == _FALSE) {
+		while (head != list) {
 			ent = LIST_CONTAINOR(list, struct blacklist_ent, list);
 			list = get_next(list);
 

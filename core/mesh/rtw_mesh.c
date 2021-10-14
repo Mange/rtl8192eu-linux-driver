@@ -329,7 +329,7 @@ static bool rtw_mesh_acnode_candidate_exist(_adapter *adapter)
 
 	head = get_list_head(queue);
 	list = get_next(head);
-	while (!rtw_end_of_queue_search(head, list)) {
+	while (head != list) {
 		scanned = LIST_CONTAINOR(list, struct wlan_network, list);
 		list = get_next(list);
 
@@ -409,7 +409,7 @@ struct sta_info *_rtw_mesh_acnode_prevent_pick_sacrifice(_adapter *adapter)
 
 	head = &stapriv->asoc_list;
 	list = get_next(head);
-	while (rtw_end_of_queue_search(head, list) == _FALSE) {
+	while (head != list) {
 		sta = LIST_CONTAINOR(list, struct sta_info, asoc_list);
 		list = get_next(list);
 
@@ -627,7 +627,7 @@ static void rtw_mesh_cto_mgate_blacklist_chk(_adapter *adapter)
 	enter_critical_bh(&blist->lock);
 	head = &blist->queue;
 	list = get_next(head);
-	while (rtw_end_of_queue_search(head, list) == _FALSE) {
+	while (head != list) {
 		ent = LIST_CONTAINOR(list, struct blacklist_ent, list);
 		list = get_next(list);
 
@@ -748,7 +748,7 @@ void rtw_mesh_peer_status_chk(_adapter *adapter)
 
 	head = &stapriv->asoc_list;
 	list = get_next(head);
-	while (rtw_end_of_queue_search(head, list) == _FALSE) {
+	while (head != list) {
 		sta = LIST_CONTAINOR(list, struct sta_info, asoc_list);
 		list = get_next(list);
 
@@ -893,7 +893,7 @@ static u8 rtw_mesh_offch_cto_mgate_required(_adapter *adapter)
 
 	head = get_list_head(queue);
 	pos = get_next(head);
-	while (!rtw_end_of_queue_search(head, pos)) {
+	while (!head == pos) {
 		scanned = LIST_CONTAINOR(pos, struct wlan_network, list);
 
 		if (rtw_get_passing_time_ms(scanned->last_scanned) < mcfg->peer_sel_policy.scanr_exp_ms
@@ -913,7 +913,7 @@ static u8 rtw_mesh_offch_cto_mgate_required(_adapter *adapter)
 		pos = get_next(pos);
 	}
 
-	if (rtw_end_of_queue_search(head, pos))
+	if (head == pos)
 		ret = 1;
 
 	exit_critical_bh(&(mlme->scanned_queue.lock));
@@ -979,7 +979,7 @@ u8 rtw_mesh_select_operating_ch(_adapter *adapter)
 
 	head = get_list_head(queue);
 	pos = get_next(head);
-	while (!rtw_end_of_queue_search(head, pos)) {
+	while (!head == pos) {
 		scanned = LIST_CONTAINOR(pos, struct wlan_network, list);
 		pos = get_next(pos);
 
@@ -1085,7 +1085,7 @@ void dump_mesh_networks(void *sel, _adapter *adapter)
 	head = get_list_head(queue);
 	list = get_next(head);
 
-	while (rtw_end_of_queue_search(head, list) == _FALSE) {
+	while (head != list) {
 		network = LIST_CONTAINOR(list, struct wlan_network, list);
 		list = get_next(list);
 
@@ -2643,7 +2643,7 @@ u8 rtw_mesh_ps_annc(_adapter *adapter, u8 ps)
 
 	head = &stapriv->asoc_list;
 	list = get_next(head);
-	while ((rtw_end_of_queue_search(head, list)) == _FALSE) {
+	while (head != list) {
 		int stainfo_offset;
 
 		sta = LIST_CONTAINOR(list, struct sta_info, asoc_list);
@@ -2695,7 +2695,7 @@ static void mpath_tx_tasklet_hdl(void *priv)
 
 		head = &tmp;
 		list = get_next(head);
-		while (rtw_end_of_queue_search(head, list) == _FALSE) {
+		while (head != list) {
 			xframe = LIST_CONTAINOR(list, struct xmit_frame, list);
 			list = get_next(list);
 			rtw_list_delete(&xframe->list);
@@ -2726,7 +2726,7 @@ static void rtw_mpath_tx_queue_flush(_adapter *adapter)
 
 	head = &tmp;
 	list = get_next(head);
-	while (rtw_end_of_queue_search(head, list) == _FALSE) {
+	while (head != list) {
 		xframe = LIST_CONTAINOR(list, struct xmit_frame, list);
 		list = get_next(list);
 		rtw_list_delete(&xframe->list);
@@ -3253,7 +3253,7 @@ static bool rtw_mesh_data_bmc_to_uc(_adapter *adapter
 	head = &stapriv->asoc_list;
 	list = get_next(head);
 
-	while ((rtw_end_of_queue_search(head, list)) == _FALSE) {
+	while (head != list) {
 		int stainfo_offset;
 
 		sta = LIST_CONTAINOR(list, struct sta_info, asoc_list);
