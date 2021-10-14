@@ -28,10 +28,6 @@ enum {
 
 #define DRIVER_PREFIX "RTW: "
 
-#ifdef PLATFORM_OS_CE
-extern void rtl871x_cedbg(const char *fmt, ...);
-#endif
-
 #define RTW_PRINT(x, ...) do {} while (0)
 #define RTW_ERR(x, ...) do {} while (0)
 #define RTW_WARN(x,...) do {} while (0)

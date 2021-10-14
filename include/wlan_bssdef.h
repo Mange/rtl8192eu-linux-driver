@@ -413,34 +413,5 @@ enum UAPSD_MAX_SP {
 *	WPA2
 */
 
-#ifndef PLATFORM_OS_CE
-typedef struct _PMKID_CANDIDATE {
-	NDIS_802_11_MAC_ADDRESS BSSID;
-	ULONG Flags;
-} PMKID_CANDIDATE, *PPMKID_CANDIDATE;
-
-typedef struct _NDIS_802_11_PMKID_CANDIDATE_LIST {
-	ULONG Version;       /* Version of the structure */
-	ULONG NumCandidates; /* No. of pmkid candidates */
-	PMKID_CANDIDATE CandidateList[1];
-} NDIS_802_11_PMKID_CANDIDATE_LIST, *PNDIS_802_11_PMKID_CANDIDATE_LIST;
-
-
-typedef struct _NDIS_802_11_AUTHENTICATION_ENCRYPTION {
-	NDIS_802_11_AUTHENTICATION_MODE AuthModeSupported;
-	NDIS_802_11_ENCRYPTION_STATUS EncryptStatusSupported;
-
-} NDIS_802_11_AUTHENTICATION_ENCRYPTION, *PNDIS_802_11_AUTHENTICATION_ENCRYPTION;
-
-typedef struct _NDIS_802_11_CAPABILITY {
-	ULONG  Length;
-	ULONG  Version;
-	ULONG  NoOfPMKIDs;
-	ULONG  NoOfAuthEncryptPairsSupported;
-	NDIS_802_11_AUTHENTICATION_ENCRYPTION AuthenticationEncryptionSupported[1];
-
-} NDIS_802_11_CAPABILITY, *PNDIS_802_11_CAPABILITY;
-#endif
-
 
 #endif /* #ifndef WLAN_BSSDEF_H_ */

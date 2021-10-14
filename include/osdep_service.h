@@ -45,10 +45,6 @@
 	#include <osdep_service_linux.h>
 #endif
 
-#ifdef PLATFORM_OS_CE
-	#include <osdep_service_ce.h>
-#endif
-
 /* #include <rtw_byteorder.h> */
 
 #ifndef BIT

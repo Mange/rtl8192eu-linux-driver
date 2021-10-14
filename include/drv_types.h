@@ -34,10 +34,6 @@
 	#include <net/arp.h>
 #endif
 
-#ifdef PLATFORM_OS_CE
-	#include <drv_types_ce.h>
-#endif
-
 typedef struct _ADAPTER _adapter, ADAPTER, *PADAPTER;
 
 #include <rtw_debug.h>

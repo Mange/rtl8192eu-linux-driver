@@ -18,10 +18,6 @@
 #include <drv_conf.h>
 #include <osdep_service.h>
 
-#ifdef PLATFORM_OS_CE
-	#include <drv_types_ce.h>
-#endif
-
 #ifdef PLATFORM_LINUX
 	#include <drv_types_linux.h>
 #endif

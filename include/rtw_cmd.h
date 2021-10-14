@@ -26,11 +26,7 @@
 #define MAX_RSPSZ	512
 #define MAX_EVTSZ	1024
 
-#ifdef PLATFORM_OS_CE
-	#define CMDBUFF_ALIGN_SZ 4
-#else
-	#define CMDBUFF_ALIGN_SZ 512
-#endif
+#define CMDBUFF_ALIGN_SZ 512
 
 struct cmd_obj {
 	_adapter *padapter;
