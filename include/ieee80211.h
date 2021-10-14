@@ -1550,8 +1550,6 @@ enum rtw_ieee80211_wnm_actioncode {
 };
 #endif
 
-#define OUI_MICROSOFT 0x0050f2 /* Microsoft (also used in Wi-Fi specs)
-				* 00:50:F2 */
 #define WME_OUI_TYPE 2
 
 #define WME_OUI_SUBTYPE_INFORMATION_ELEMENT 0

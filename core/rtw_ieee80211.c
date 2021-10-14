@@ -588,7 +588,6 @@ unsigned char *rtw_get_wpa_ie(unsigned char *pie, int *wpa_ie_len, int limit)
 {
 	int len;
 	u16 val16;
-	unsigned char wpa_oui_type[] = {0x00, 0x50, 0xf2, 0x01};
 	u8 *pbuf = pie;
 	int limit_new = limit;
 
@@ -598,7 +597,7 @@ unsigned char *rtw_get_wpa_ie(unsigned char *pie, int *wpa_ie_len, int limit)
 		if (pbuf) {
 
 			/* check if oui matches... */
-			if (_rtw_memcmp((pbuf + 2), wpa_oui_type, sizeof(wpa_oui_type)) == _FALSE)
+			if (_rtw_memcmp((pbuf + 2), RTW_WPA_OUI_TYPE, sizeof(RTW_WPA_OUI_TYPE)) == _FALSE)
 
 				goto check_next_ie;
 
@@ -1211,7 +1210,7 @@ static int rtw_ieee802_11_parse_vendor_specific(u8 *pos, uint elen,
 
 	oui = RTW_GET_BE24(pos);
 	switch (oui) {
-	case OUI_MICROSOFT:
+	case WLAN_OUI_MICROSOFT:
 		/* Microsoft/Wi-Fi information elements are further typed and
 		 * subtyped */
 		switch (pos[3]) {
