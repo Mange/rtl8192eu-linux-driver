@@ -553,10 +553,6 @@ enum bss_type {
 /* temporally add #pragma pack for structure alignment issue of
 *   WLAN_BSSID_EX and get_WLAN_BSSID_EX_sz()
 */
-#ifdef PLATFORM_WINDOWS
-#pragma pack(push)
-#pragma pack(1)
-#endif
 typedef struct _WLAN_BSSID_EX {
 	ULONG  Length;
 	NDIS_802_11_MAC_ADDRESS  MacAddress;
@@ -573,13 +569,8 @@ typedef struct _WLAN_BSSID_EX {
 	ULONG  IELength;
 	UCHAR  IEs[MAX_IE_SZ];	/* (timestamp, beacon interval, and capability information) */
 }
-#ifndef PLATFORM_WINDOWS
 __attribute__((packed))
-#endif
 WLAN_BSSID_EX, *PWLAN_BSSID_EX;
-#ifdef PLATFORM_WINDOWS
-#pragma pack(pop)
-#endif
 
 #define BSS_EX_IES(bss_ex) ((bss_ex)->IEs)
 #define BSS_EX_IES_LEN(bss_ex) ((bss_ex)->IELength)
@@ -627,10 +618,6 @@ struct	wlan_network {
 	int	aid;			/* will only be valid when a BSS is joinned. */
 	int	join_res;
 	WLAN_BSSID_EX	network; /* must be the last item */
-#ifdef PLATFORM_WINDOWS
-	unsigned char  iebuf[MAX_IE_SZ];
-#endif
-
 };
 
 enum VRTL_CARRIER_SENSE {

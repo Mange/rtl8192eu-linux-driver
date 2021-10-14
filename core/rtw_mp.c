@@ -124,64 +124,6 @@ static void _init_mp_priv_(struct mp_priv *pmp_priv)
 
 }
 
-#ifdef PLATFORM_WINDOWS
-#if 0
-void mp_wi_callback(
-	IN NDIS_WORK_ITEM	*pwk_item,
-	IN PVOID			cntx
-)
-{
-	_adapter *padapter = (_adapter *)cntx;
-	struct mp_priv *pmppriv = &padapter->mppriv;
-	struct mp_wi_cntx	*pmp_wi_cntx = &pmppriv->wi_cntx;
-
-	/*  Execute specified action. */
-	if (pmp_wi_cntx->curractfunc != NULL) {
-		LARGE_INTEGER	cur_time;
-		ULONGLONG start_time, end_time;
-		NdisGetCurrentSystemTime(&cur_time);	/*  driver version */
-		start_time = cur_time.QuadPart / 10; /*  The return value is in microsecond */
-
-		pmp_wi_cntx->curractfunc(padapter);
-
-		NdisGetCurrentSystemTime(&cur_time);	/*  driver version */
-		end_time = cur_time.QuadPart / 10; /*  The return value is in microsecond */
-
-	}
-
-	NdisAcquireSpinLock(&(pmp_wi_cntx->mp_wi_lock));
-	pmp_wi_cntx->bmp_wi_progress = _FALSE;
-	NdisReleaseSpinLock(&(pmp_wi_cntx->mp_wi_lock));
-
-	if (pmp_wi_cntx->bmpdrv_unload)
-		NdisSetEvent(&(pmp_wi_cntx->mp_wi_evt));
-
-}
-#endif
-
-static int init_mp_priv_by_os(struct mp_priv *pmp_priv)
-{
-	struct mp_wi_cntx *pmp_wi_cntx;
-
-	if (pmp_priv == NULL)
-		return _FAIL;
-
-	pmp_priv->rx_testcnt = 0;
-	pmp_priv->rx_testcnt1 = 0;
-	pmp_priv->rx_testcnt2 = 0;
-
-	pmp_priv->tx_testcnt = 0;
-	pmp_priv->tx_testcnt1 = 0;
-
-	pmp_wi_cntx = &pmp_priv->wi_cntx
-		      pmp_wi_cntx->bmpdrv_unload = _FALSE;
-	pmp_wi_cntx->bmp_wi_progress = _FALSE;
-	pmp_wi_cntx->curractfunc = NULL;
-
-	return _SUCCESS;
-}
-#endif
-
 #ifdef PLATFORM_LINUX
 #if 0
 static int init_mp_priv_by_os(struct mp_priv *pmp_priv)

@@ -81,11 +81,6 @@ void *_rtw_malloc(u32 sz)
 #ifdef PLATFORM_FREEBSD
 	pbuf = malloc(sz, M_DEVBUF, M_NOWAIT);
 #endif
-#ifdef PLATFORM_WINDOWS
-
-	NdisAllocateMemoryWithTag(&pbuf, sz, RT_TAG);
-
-#endif
 
 #ifdef DBG_MEMORY_LEAK
 #ifdef PLATFORM_LINUX
@@ -114,10 +109,6 @@ void *_rtw_zmalloc(u32 sz)
 		memset(pbuf, 0, sz);
 #endif
 
-#ifdef PLATFORM_WINDOWS
-		NdisFillMemory(pbuf, sz, 0);
-#endif
-
 	}
 
 	return pbuf;
@@ -138,11 +129,6 @@ void _rtw_mfree(void *pbuf, u32 sz)
 #endif
 #ifdef PLATFORM_FREEBSD
 	free(pbuf, M_DEVBUF);
-#endif
-#ifdef PLATFORM_WINDOWS
-
-	NdisFreeMemory(pbuf, sz, 0);
-
 #endif
 
 #ifdef DBG_MEMORY_LEAK
@@ -804,19 +790,6 @@ int	_rtw_memcmp(const void *dst, const void *src, u32 sz)
 		return _FALSE;
 #endif
 
-
-#ifdef PLATFORM_WINDOWS
-	/* under Windows, the return value of NdisEqualMemory for two same mem. chunk is 1 */
-
-	if (NdisEqualMemory(dst, src, sz))
-		return _TRUE;
-	else
-		return _FALSE;
-
-#endif
-
-
-
 }
 
 #ifdef PLATFORM_FREEBSD
@@ -842,11 +815,6 @@ void _rtw_init_listhead(_list *list)
 #ifdef PLATFORM_FREEBSD
 	list->next = list;
 	list->prev = list;
-#endif
-#ifdef PLATFORM_WINDOWS
-
-	NdisInitializeListHead(list);
-
 #endif
 
 }
@@ -877,17 +845,6 @@ u32	rtw_is_list_empty(_list *phead)
 
 #endif
 
-
-#ifdef PLATFORM_WINDOWS
-
-	if (IsListEmpty(phead))
-		return _TRUE;
-	else
-		return _FALSE;
-
-#endif
-
-
 }
 
 void rtw_list_insert_head(_list *plist, _list *phead)
@@ -901,9 +858,6 @@ void rtw_list_insert_head(_list *plist, _list *phead)
 	__list_add(plist, phead, phead->next);
 #endif
 
-#ifdef PLATFORM_WINDOWS
-	InsertHeadList(phead, plist);
-#endif
 }
 
 void rtw_list_insert_tail(_list *plist, _list *phead)
@@ -917,11 +871,6 @@ void rtw_list_insert_tail(_list *plist, _list *phead)
 #ifdef PLATFORM_FREEBSD
 
 	__list_add(plist, phead->prev, phead);
-
-#endif
-#ifdef PLATFORM_WINDOWS
-
-	InsertTailList(phead, plist);
 
 #endif
 
@@ -1014,9 +963,7 @@ void rtw_init_timer(_timer *ptimer, void *padapter, void *pfunc, void *ctx)
 #ifdef PLATFORM_FREEBSD
 	_init_timer(ptimer, adapter->pifp, pfunc, ctx);
 #endif
-#ifdef PLATFORM_WINDOWS
-	_init_timer(ptimer, adapter->hndis_adapter, pfunc, ctx);
-#endif
+
 }
 
 /*
@@ -1213,11 +1160,6 @@ void	_rtw_spinlock_init(_lock *plock)
 #ifdef PLATFORM_FREEBSD
 	mtx_init(plock, "", NULL, MTX_DEF | MTX_RECURSE);
 #endif
-#ifdef PLATFORM_WINDOWS
-
-	NdisAllocateSpinLock(plock);
-
-#endif
 
 }
 
@@ -1253,11 +1195,6 @@ void	_rtw_spinlock(_lock	*plock)
 #ifdef PLATFORM_FREEBSD
 	mtx_lock(plock);
 #endif
-#ifdef PLATFORM_WINDOWS
-
-	NdisAcquireSpinLock(plock);
-
-#endif
 
 }
 
@@ -1272,11 +1209,7 @@ void	_rtw_spinunlock(_lock *plock)
 #ifdef PLATFORM_FREEBSD
 	mtx_unlock(plock);
 #endif
-#ifdef PLATFORM_WINDOWS
 
-	NdisReleaseSpinLock(plock);
-
-#endif
 }
 
 
@@ -1290,11 +1223,6 @@ void	_rtw_spinlock_ex(_lock	*plock)
 #endif
 #ifdef PLATFORM_FREEBSD
 	mtx_lock(plock);
-#endif
-#ifdef PLATFORM_WINDOWS
-
-	NdisDprAcquireSpinLock(plock);
-
 #endif
 
 }
@@ -1310,11 +1238,7 @@ void	_rtw_spinunlock_ex(_lock *plock)
 #ifdef PLATFORM_FREEBSD
 	mtx_unlock(plock);
 #endif
-#ifdef PLATFORM_WINDOWS
 
-	NdisDprReleaseSpinLock(plock);
-
-#endif
 }
 
 
@@ -1355,11 +1279,6 @@ systime _rtw_get_current_time(void)
 	getmicrotime(&tvp);
 	return tvp.tv_sec;
 #endif
-#ifdef PLATFORM_WINDOWS
-	LARGE_INTEGER	SystemTime;
-	NdisGetCurrentSystemTime(&SystemTime);
-	return SystemTime.LowPart;/* count of 100-nanosecond intervals */
-#endif
 }
 
 inline u32 _rtw_systime_to_ms(systime stime)
@@ -1370,9 +1289,6 @@ inline u32 _rtw_systime_to_ms(systime stime)
 #ifdef PLATFORM_FREEBSD
 	return stime * 1000;
 #endif
-#ifdef PLATFORM_WINDOWS
-	return stime / 10000 ;
-#endif
 }
 
 inline systime _rtw_ms_to_systime(u32 ms)
@@ -1382,9 +1298,6 @@ inline systime _rtw_ms_to_systime(u32 ms)
 #endif
 #ifdef PLATFORM_FREEBSD
 	return ms / 1000;
-#endif
-#ifdef PLATFORM_WINDOWS
-	return ms * 10000 ;
 #endif
 }
 
@@ -1443,12 +1356,6 @@ void rtw_usleep_os(int us)
 
 	return ;
 #endif
-#ifdef PLATFORM_WINDOWS
-
-	NdisMSleep(us); /* (us) */
-
-#endif
-
 
 }
 
@@ -2096,8 +2003,6 @@ u64 rtw_division64(u64 x, u64 y)
 #ifdef PLATFORM_LINUX
 	do_div(x, y);
 	return x;
-#elif defined(PLATFORM_WINDOWS)
-	return x / y;
 #elif defined(PLATFORM_FREEBSD)
 	return x / y;
 #endif
@@ -2115,8 +2020,6 @@ inline u32 rtw_random32(void)
 #else
 	return random32();
 #endif
-#elif defined(PLATFORM_WINDOWS)
-#error "to be implemented\n"
 #elif defined(PLATFORM_FREEBSD)
 #error "to be implemented\n"
 #endif

@@ -25,24 +25,6 @@
 #include <sdio_ops_linux.h>
 #endif
 
-#ifdef PLATFORM_WINDOWS
-
-#ifdef PLATFORM_OS_XP
-#include <sdio_ops_xp.h>
-struct async_context {
-	PMDL pmdl;
-	PSDBUS_REQUEST_PACKET sdrp;
-	unsigned char *r_buf;
-	unsigned char *padapter;
-};
-#endif
-
-#ifdef PLATFORM_OS_CE
-#include <sdio_ops_ce.h>
-#endif
-
-#endif /* PLATFORM_WINDOWS */
-
 
 extern void sdio_set_intf_ops(_adapter *padapter, struct _io_ops *pops);
 void dump_sdio_card_info(void *sel, struct dvobj_priv *dvobj);
