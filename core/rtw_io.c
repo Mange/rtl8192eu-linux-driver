@@ -47,10 +47,6 @@ jackson@realtek.com.tw
 #include <drv_types.h>
 #include <hal_data.h>
 
-#if defined(PLATFORM_LINUX) && defined (PLATFORM_WINDOWS)
-	#error "Shall be Linux or Windows, but not both!\n"
-#endif
-
 #if defined(CONFIG_SDIO_HCI) || defined(CONFIG_PLATFORM_RTL8197D)
 	#define rtw_le16_to_cpu(val)		val
 	#define rtw_le32_to_cpu(val)		val
