@@ -19,13 +19,7 @@
 #define RTW_RX_MSDU_ACT_INDICATE	BIT0
 #define RTW_RX_MSDU_ACT_FORWARD		BIT1
 
-#ifdef PLATFORM_OS_XP
-	#ifdef CONFIG_SDIO_HCI
-		#define NR_RECVBUFF 1024/* 512 */ /* 128 */
-	#else
-		#define NR_RECVBUFF (16)
-	#endif
-#elif defined(PLATFORM_OS_CE)
+#if defined(PLATFORM_OS_CE)
 	#ifdef CONFIG_SDIO_HCI
 		#define NR_RECVBUFF (128)
 	#else
@@ -517,10 +511,6 @@ struct recv_buf {
 PURB	purb;
 dma_addr_t dma_transfer_addr;	/* (in) dma addr for transfer_buffer */
 u32 alloc_sz;
-
-#ifdef PLATFORM_OS_XP
-	PIRP		pirp;
-#endif
 
 #ifdef PLATFORM_OS_CE
 	USB_TRANSFER	usb_transfer_read_port;

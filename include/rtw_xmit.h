@@ -600,10 +600,6 @@ struct xmit_buf {
 	PURB	pxmit_urb[8];
 	dma_addr_t dma_transfer_addr;	/* (in) dma addr for transfer_buffer */
 
-#ifdef PLATFORM_OS_XP
-	PIRP		pxmit_irp[8];
-#endif
-
 #ifdef PLATFORM_OS_CE
 	USB_TRANSFER	usb_transfer_write_port;
 #endif
@@ -622,11 +618,6 @@ struct xmit_buf {
 	u32 ff_hwaddr;
 	u8	pg_num;
 	u8	agg_num;
-#ifdef PLATFORM_OS_XP
-	PMDL pxmitbuf_mdl;
-	PIRP  pxmitbuf_irp;
-	PSDBUS_REQUEST_PACKET pxmitbuf_sdrp;
-#endif
 #endif
 
 #ifdef CONFIG_PCI_HCI

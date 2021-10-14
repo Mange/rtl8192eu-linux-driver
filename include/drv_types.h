@@ -34,10 +34,6 @@
 	#include <net/arp.h>
 #endif
 
-#ifdef PLATFORM_OS_XP
-	#include <drv_types_xp.h>
-#endif
-
 #ifdef PLATFORM_OS_CE
 	#include <drv_types_ce.h>
 #endif

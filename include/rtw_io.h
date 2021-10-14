@@ -144,17 +144,6 @@ struct io_req {
 	void (*_async_io_callback)(_adapter *padater, struct io_req *pio_req, u8 *cnxt);
 	u8 *cnxt;
 
-#ifdef PLATFORM_OS_XP
-	PMDL pmdl;
-	PIRP  pirp;
-
-#ifdef CONFIG_SDIO_HCI
-	PSDBUS_REQUEST_PACKET sdrp;
-#endif
-
-#endif
-
-
 };
 
 struct	intf_hdl {
