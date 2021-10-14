@@ -156,7 +156,6 @@ __inline static void _init_pwrlock(_pwrlock *plock)
 
 __inline static void _free_pwrlock(_pwrlock *plock)
 {
-	_rtw_free_sema(plock);
 }
 
 

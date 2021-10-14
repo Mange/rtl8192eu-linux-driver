@@ -161,9 +161,6 @@ exit:
 void rtw_mfree_recv_priv_lock(struct recv_priv *precvpriv);
 void rtw_mfree_recv_priv_lock(struct recv_priv *precvpriv)
 {
-#ifdef CONFIG_RECV_THREAD_MODE
-	_rtw_free_sema(&precvpriv->recv_sema);
-#endif
 }
 
 void _rtw_free_recv_priv(struct recv_priv *precvpriv)

@@ -350,7 +350,6 @@ exit:
 void  rtw_mfree_xmit_priv_lock(struct xmit_priv *pxmitpriv);
 void  rtw_mfree_xmit_priv_lock(struct xmit_priv *pxmitpriv)
 {
-	_rtw_free_sema(&pxmitpriv->xmit_sema);
 }
 
 
