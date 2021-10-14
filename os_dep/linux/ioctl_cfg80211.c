@@ -2527,7 +2527,7 @@ u32 rtw_cfg80211_wait_scan_req_empty(_adapter *adapter, u32 timeout_ms)
 	systime start;
 	u32 pass_ms;
 
-	start = rtw_get_current_time();
+	start = jiffies;
 
 	while (rtw_get_passing_time_ms(start) <= timeout_ms) {
 
@@ -3227,7 +3227,7 @@ cancel_ps_deny:
 
 exit:
 	if (pmlmepriv)
-		pmlmepriv->lastscantime = rtw_get_current_time();
+		pmlmepriv->lastscantime = jiffies;
 
 	return ret;
 }
@@ -6604,7 +6604,7 @@ inline bool rtw_cfg80211_is_ro_ch_once(_adapter *adapter)
 
 inline void rtw_cfg80211_set_last_ro_ch_time(_adapter *adapter)
 {
-	adapter->cfg80211_wdinfo.last_ro_ch_time = rtw_get_current_time();
+	adapter->cfg80211_wdinfo.last_ro_ch_time = jiffies;
 
 	if (!adapter->cfg80211_wdinfo.last_ro_ch_time)
 		adapter->cfg80211_wdinfo.last_ro_ch_time++;
@@ -6711,7 +6711,7 @@ static s32 cfg80211_rtw_remain_on_channel(struct wiphy *wiphy,
 		RTW_INFO(FUNC_ADPT_FMT" init listen_channel %u\n"
 			, FUNC_ADPT_ARG(padapter), padapter->wdinfo.listen_channel);
 	} else if (rtw_p2p_chk_state(pwdinfo , P2P_STATE_LISTEN)
-		&& (time_after_eq(rtw_get_current_time(), pwdev_priv->probe_resp_ie_update_time)
+		&& (time_after_eq(jiffies, pwdev_priv->probe_resp_ie_update_time)
 			&& rtw_get_passing_time_ms(pwdev_priv->probe_resp_ie_update_time) < 50)
 	) {
 		if (padapter->wdinfo.listen_channel != remain_ch) {
@@ -7247,7 +7247,7 @@ static int cfg80211_rtw_mgmt_tx(struct wiphy *wiphy,
 	u8 is_p2p = 0;
 #endif
 	int type = (-1);
-	systime start = rtw_get_current_time();
+	systime start = jiffies;
 	_adapter *padapter;
 	struct dvobj_priv *dvobj;
 	struct rtw_wdev_priv *pwdev_priv;
@@ -8598,7 +8598,7 @@ static void rtw_cfg80211_mpath_set_pinfo(struct rtw_mesh_path *mpath, u8 *next_h
 	pinfo->frame_qlen = mpath->frame_queue_len;
 	pinfo->sn = mpath->sn;
 	pinfo->metric = mpath->metric;
-	if (rtw_time_after(mpath->exp_time, rtw_get_current_time()))
+	if (rtw_time_after(mpath->exp_time, jiffies))
 		pinfo->exptime = rtw_get_remaining_time_ms(mpath->exp_time);
 	pinfo->discovery_timeout = rtw_systime_to_ms(mpath->discovery_timeout);
 	pinfo->discovery_retries = mpath->discovery_retries;
@@ -9192,7 +9192,7 @@ int rtw_cfg80211_set_mgnt_wpsp2pie(struct net_device *net, char *buf, int len,
 				ret = rtw_cfg80211_set_probe_resp_wpsp2pie(net, buf, len);
 				#ifdef CONFIG_P2P
 				if (ret == 0)
-					adapter_wdev_data((_adapter *)rtw_netdev_priv(net))->probe_resp_ie_update_time = rtw_get_current_time();
+					adapter_wdev_data((_adapter *)rtw_netdev_priv(net))->probe_resp_ie_update_time = jiffies;
 				#endif
 				break;
 			case 0x4: /* ASSOC_RESP */
@@ -10068,7 +10068,7 @@ int rtw_wdev_alloc(_adapter *padapter, struct wiphy *wiphy)
 	_rtw_spinlock_init(&pwdev_priv->connect_req_lock);
 
 	pwdev_priv->p2p_enabled = _FALSE;
-	pwdev_priv->probe_resp_ie_update_time = rtw_get_current_time();
+	pwdev_priv->probe_resp_ie_update_time = jiffies;
 	pwdev_priv->provdisc_req_issued = _FALSE;
 	rtw_wdev_invit_info_init(&pwdev_priv->invit_info);
 	rtw_wdev_nego_info_init(&pwdev_priv->nego_info);

@@ -579,7 +579,7 @@ _next:
 			continue;
 		}
 
-		cmd_start_time = rtw_get_current_time();
+		cmd_start_time = jiffies;
 		pcmdpriv->cmd_issued_cnt++;
 
 		if (pcmd->cmdsz > MAX_CMDSZ) {
@@ -895,7 +895,7 @@ u8 rtw_sitesurvey_cmd(_adapter *padapter, struct sitesurvey_parm *pparm)
 	if (res == _SUCCESS) {
 		u32 scan_timeout_ms;
 
-		pmlmepriv->scan_start_time = rtw_get_current_time();
+		pmlmepriv->scan_start_time = jiffies;
 		scan_timeout_ms = rtw_scan_timeout_decision(padapter);
 		mlme_set_scan_to_timer(pmlmepriv,scan_timeout_ms);
 
@@ -4128,7 +4128,7 @@ static void rtw_chk_hi_queue_hdl(_adapter *padapter)
 {
 	struct sta_info *psta_bmc;
 	struct sta_priv *pstapriv = &padapter->stapriv;
-	systime start = rtw_get_current_time();
+	systime start = jiffies;
 	u8 empty = _FALSE;
 
 	psta_bmc = rtw_get_bcmc_stainfo(padapter);
@@ -5402,7 +5402,7 @@ unlock:
 			st->local_port = local_port;
 			st->remote_naddr = remote_naddr;
 			st->remote_port = remote_port;
-			st->set_time = rtw_get_current_time();
+			st->set_time = jiffies;
 			st->status = ST_STATUS_CHECK;
 
 			_enter_critical_bh(&st_ctl->tracker_q.lock, &irqL);
@@ -5751,7 +5751,7 @@ void rtw_create_ibss_post_hdl(_adapter *padapter, int status)
 				_exit_critical_bh(&(pmlmepriv->scanned_queue.lock), &irqL);
 				goto createbss_cmd_fail;
 			}
-			pwlan->last_scanned = rtw_get_current_time();
+			pwlan->last_scanned = jiffies;
 		} else
 			rtw_list_insert_tail(&(pwlan->list), &pmlmepriv->scanned_queue.queue);
 

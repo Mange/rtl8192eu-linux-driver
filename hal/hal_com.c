@@ -1376,7 +1376,7 @@ int c2h_iqk_offload_wait(_adapter *adapter, u32 timeout_ms)
 	HAL_DATA_TYPE *hal_data = GET_HAL_DATA(adapter);
 	struct submit_ctx *iqk_sctx = &hal_data->iqk_sctx;
 
-	iqk_sctx->submit_time = rtw_get_current_time();
+	iqk_sctx->submit_time = jiffies;
 	iqk_sctx->timeout_ms = timeout_ms;
 	iqk_sctx->status = RTW_SCTX_SUBMITTED;
 
@@ -1536,7 +1536,7 @@ int hal_read_mac_hidden_rpt(_adapter *adapter)
 	int ret = _FAIL;
 	int ret_fwdl;
 	u8 mac_hidden_rpt[MAC_HIDDEN_RPT_LEN + MAC_HIDDEN_RPT_2_LEN] = {0};
-	systime start = rtw_get_current_time();
+	systime start = jiffies;
 	u32 cnt = 0;
 	u32 timeout_ms = 800;
 	u32 min_cnt = 10;
@@ -1562,7 +1562,7 @@ int hal_read_mac_hidden_rpt(_adapter *adapter)
 		goto mac_hidden_rpt_hdl;
 
 	/* polling for data ready */
-	start = rtw_get_current_time();
+	start = jiffies;
 	do {
 		cnt++;
 		id = rtw_read8(adapter, REG_C2HEVT_MSG_NORMAL);
@@ -2249,7 +2249,7 @@ u32 rtw_sec_read_cam(_adapter *adapter, u8 addr)
 
 	rtw_write32(adapter, REG_CAMCMD, CAM_POLLINIG | addr);
 
-	start = rtw_get_current_time();
+	start = jiffies;
 	while (1) {
 		if (rtw_is_surprise_removed(adapter)) {
 			sr = 1;
@@ -2265,7 +2265,7 @@ u32 rtw_sec_read_cam(_adapter *adapter, u8 addr)
 			break;
 		}
 	}
-	end = rtw_get_current_time();
+	end = jiffies;
 
 	rdata = rtw_read32(adapter, REG_CAMREAD);
 
@@ -2292,7 +2292,7 @@ void rtw_sec_write_cam(_adapter *adapter, u8 addr, u32 wdata)
 	rtw_write32(adapter, REG_CAMWRITE, wdata);
 	rtw_write32(adapter, REG_CAMCMD, CAM_POLLINIG | CAM_WRITE | addr);
 
-	start = rtw_get_current_time();
+	start = jiffies;
 	while (1) {
 		if (rtw_is_surprise_removed(adapter)) {
 			sr = 1;
@@ -2308,7 +2308,7 @@ void rtw_sec_write_cam(_adapter *adapter, u8 addr, u32 wdata)
 			break;
 		}
 	}
-	end = rtw_get_current_time();
+	end = jiffies;
 
 	_exit_critical_mutex(mutex, NULL);
 
@@ -3366,7 +3366,7 @@ static void rtw_hal_tsf_update_pause(_adapter *adapter)
 
 		rtw_hal_set_tsf_update(iface, 0);
 		if (iface->mlmeextpriv.tsf_update_required) {
-			iface->mlmeextpriv.tsf_update_pause_stime = rtw_get_current_time();
+			iface->mlmeextpriv.tsf_update_pause_stime = jiffies;
 			if (!iface->mlmeextpriv.tsf_update_pause_stime)
 				iface->mlmeextpriv.tsf_update_pause_stime++;
 		}
@@ -3413,7 +3413,7 @@ void rtw_hal_periodic_tsf_update_chk(_adapter *adapter)
 	u32 restore_ms = 0;
 
 	if (dvobj->periodic_tsf_update_etime) {
-		if (rtw_time_after(rtw_get_current_time(), dvobj->periodic_tsf_update_etime)) {
+		if (rtw_time_after(jiffies, dvobj->periodic_tsf_update_etime)) {
 			/* end for restore status */
 			dvobj->periodic_tsf_update_etime = 0;
 			rtw_hal_rcr_set_chk_bssid(adapter, MLME_ACTION_NONE);
@@ -3448,7 +3448,7 @@ void rtw_hal_periodic_tsf_update_chk(_adapter *adapter)
 	if (!restore_ms)
 		return;
 
-	dvobj->periodic_tsf_update_etime = rtw_get_current_time() + rtw_ms_to_systime(restore_ms);
+	dvobj->periodic_tsf_update_etime = jiffies + rtw_ms_to_systime(restore_ms);
 	if (!dvobj->periodic_tsf_update_etime)
 		dvobj->periodic_tsf_update_etime++;
 
@@ -9280,7 +9280,7 @@ static u32 _rtw_wow_pattern_read_cam(_adapter *adapter, u8 addr)
 
 	rtw_write32(adapter, REG_WKFMCAM_CMD, BIT_WKFCAM_POLLING_V1 | BIT_WKFCAM_ADDR_V2(addr));
 
-	start = rtw_get_current_time();
+	start = jiffies;
 	while (1) {
 		if (rtw_is_surprise_removed(adapter))
 			break;
@@ -9351,7 +9351,7 @@ static void _rtw_wow_pattern_write_cam(_adapter *adapter, u8 addr, u32 wdata)
 	rtw_write32(adapter, REG_WKFMCAM_RWD, wdata);
 	rtw_write32(adapter, REG_WKFMCAM_CMD, BIT_WKFCAM_POLLING_V1 | BIT_WKFCAM_WE | BIT_WKFCAM_ADDR_V2(addr));
 
-	start = rtw_get_current_time();
+	start = jiffies;
 	while (1) {
 		if (rtw_is_surprise_removed(adapter))
 			break;
@@ -9365,7 +9365,7 @@ static void _rtw_wow_pattern_write_cam(_adapter *adapter, u8 addr, u32 wdata)
 			break;
 		}
 	}
-	end = rtw_get_current_time();
+	end = jiffies;
 
 	_exit_critical_mutex(mutex, NULL);
 
@@ -9418,7 +9418,7 @@ static u8 _rtw_wow_pattern_clean_cam(_adapter *adapter)
 	_enter_critical_mutex(mutex, NULL);
 	rtw_write32(adapter, REG_WKFMCAM_CMD, BIT_WKFCAM_POLLING_V1 | BIT_WKFCAM_CLR_V1);
 
-	start = rtw_get_current_time();
+	start = jiffies;
 	while (1) {
 		if (rtw_is_surprise_removed(adapter))
 			break;
@@ -14424,7 +14424,7 @@ u8 rtw_ap_bcn_recovery(_adapter *padapter)
 #ifdef CONFIG_BCN_XMIT_PROTECT
 u8 rtw_ap_bcn_queue_empty_check(_adapter *padapter, u32 txbcn_timer_ms)
 {
-	u32 start_time = rtw_get_current_time();
+	u32 start_time = jiffies;
 	u8 bcn_queue_empty = _FALSE;
 
 	do {

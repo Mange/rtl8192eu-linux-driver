@@ -4543,14 +4543,14 @@ s32 rtw_xmit(_adapter *padapter, _pkt **ppkt)
 		return -1;
 
 	if (start == 0)
-		start = rtw_get_current_time();
+		start = jiffies;
 
 	pxmitframe = rtw_alloc_xmitframe(pxmitpriv);
 
 	if (rtw_get_passing_time_ms(start) > 2000) {
 		if (drop_cnt)
 			RTW_INFO("DBG_TX_DROP_FRAME %s no more pxmitframe, drop_cnt:%u\n", __FUNCTION__, drop_cnt);
-		start = rtw_get_current_time();
+		start = jiffies;
 		drop_cnt = 0;
 	}
 
@@ -5762,7 +5762,7 @@ u8 rtw_get_tx_desc_backup(_adapter *padapter, u8 hwq, struct rtw_tx_desc_backup 
 void rtw_sctx_init(struct submit_ctx *sctx, int timeout_ms)
 {
 	sctx->timeout_ms = timeout_ms;
-	sctx->submit_time = rtw_get_current_time();
+	sctx->submit_time = jiffies;
 #ifdef PLATFORM_LINUX /* TODO: add condition wating interface for other os */
 	init_completion(&sctx->done);
 #endif
@@ -5829,7 +5829,7 @@ int rtw_ack_tx_wait(struct xmit_priv *pxmitpriv, u32 timeout_ms)
 {
 	struct submit_ctx *pack_tx_ops = &pxmitpriv->ack_tx_ops;
 
-	pack_tx_ops->submit_time = rtw_get_current_time();
+	pack_tx_ops->submit_time = jiffies;
 	pack_tx_ops->timeout_ms = timeout_ms;
 	pack_tx_ops->status = RTW_SCTX_SUBMITTED;
 

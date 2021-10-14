@@ -1167,13 +1167,13 @@ static void LinkLayerStats(_adapter *padapter)
 		if (rtw_mi_check_fwstate(padapter, _FW_LINKED)) {
 			if ( pwrpriv->bpower_saving == _TRUE ) {
 				pwrpriv->pwr_saving_time += rtw_get_passing_time_ms(pwrpriv->pwr_saving_start_time);
-				pwrpriv->pwr_saving_start_time = rtw_get_current_time();
+				pwrpriv->pwr_saving_start_time = jiffies;
 			}
 		} else {		
 #ifdef CONFIG_IPS
 			if ( pwrpriv->bpower_saving == _TRUE ) {
 				pwrpriv->pwr_saving_time += rtw_get_passing_time_ms(pwrpriv->pwr_saving_start_time);
-				pwrpriv->pwr_saving_start_time = rtw_get_current_time();
+				pwrpriv->pwr_saving_start_time = jiffies;
 			}
 #else
 			pwrpriv->pwr_saving_time = pwrpriv->on_time;

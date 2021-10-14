@@ -50,7 +50,7 @@ void interrupt_handler_8192eu(_adapter *padapter, u16 pkt_len, u8 *pbuf)
 	if (pHalData->IntArray[0] & IMR_BCNDMAINT0_88E) {
 		struct tdls_ch_switch *pchsw_info = &padapter->tdlsinfo.chsw_info;
 		u32	last_time = pchsw_info->cur_time;
-		pchsw_info->cur_time = rtw_systime_to_ms(rtw_get_current_time());
+		pchsw_info->cur_time = rtw_systime_to_ms(jiffies);
 		if ((atomic_read(&pchsw_info->chsw_on) == _TRUE) &&
 		    /* Sometimes we receive multiple interrupts in very little time period, use the follow condition test to filter */
 		    (pchsw_info->cur_time - last_time > padapter->mlmeextpriv.mlmext_info.bcn_interval - 5) &&

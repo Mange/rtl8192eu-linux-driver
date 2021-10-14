@@ -5123,7 +5123,7 @@ void init_wifidirect_info(_adapter *padapter, enum P2P_ROLE role)
 
 	rtw_p2p_findphase_ex_set(pwdinfo, P2P_FINDPHASE_EX_NONE);
 
-	pwdinfo->listen_dwell = (u8)((rtw_get_current_time() % 3) + 1);
+	pwdinfo->listen_dwell = (u8)((jiffies % 3) + 1);
 	/* RTW_INFO( "[%s] listen_dwell time is %d00ms\n", __FUNCTION__, pwdinfo->listen_dwell ); */
 
 	memset(&pwdinfo->tx_prov_disc_info, 0x00, sizeof(struct tx_provdisc_req_info));

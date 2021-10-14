@@ -907,8 +907,8 @@ struct rf_ctl_t {
 #define RTW_CAC_STOPPED 0
 #ifdef CONFIG_DFS_MASTER
 #define IS_CAC_STOPPED(rfctl) ((rfctl)->cac_end_time == RTW_CAC_STOPPED)
-#define IS_CH_WAITING(rfctl) (!IS_CAC_STOPPED(rfctl) && rtw_time_after((rfctl)->cac_end_time, rtw_get_current_time()))
-#define IS_UNDER_CAC(rfctl) (IS_CH_WAITING(rfctl) && rtw_time_after(rtw_get_current_time(), (rfctl)->cac_start_time))
+#define IS_CH_WAITING(rfctl) (!IS_CAC_STOPPED(rfctl) && rtw_time_after((rfctl)->cac_end_time, jiffies))
+#define IS_UNDER_CAC(rfctl) (IS_CH_WAITING(rfctl) && rtw_time_after(jiffies, (rfctl)->cac_start_time))
 #define IS_RADAR_DETECTED(rfctl) ((rfctl)->radar_detected)
 #else
 #define IS_CAC_STOPPED(rfctl) 1

@@ -1119,7 +1119,7 @@ void count_rx_stats(_adapter *padapter, union recv_frame *prframe, struct sta_in
 
 		pstats = &psta->sta_stats;
 
-		pstats->last_rx_time = rtw_get_current_time();
+		pstats->last_rx_time = jiffies;
 		pstats->rx_data_pkts++;
 		pstats->rx_bytes += sz;
 		if (is_broadcast_mac_addr(pattrib->ra)) {
@@ -1450,7 +1450,7 @@ sint ap2sta_data_frame(
 				/* RTW_INFO("After send deauth , %u ms has elapsed.\n", rtw_get_passing_time_ms(send_issue_deauth_time)); */
 
 				if (rtw_get_passing_time_ms(send_issue_deauth_time) > 10000 || send_issue_deauth_time == 0) {
-					send_issue_deauth_time = rtw_get_current_time();
+					send_issue_deauth_time = jiffies;
 
 					RTW_INFO("issue_deauth to the ap=" MAC_FMT " for the reason(7)\n", MAC_ARG(pattrib->bssid));
 
@@ -1581,7 +1581,7 @@ sint validate_recv_ctrl_frame(_adapter *padapter, union recv_frame *precv_frame)
 		return _FAIL;
 
 	/* for rx pkt statistics */
-	psta->sta_stats.last_rx_time = rtw_get_current_time();
+	psta->sta_stats.last_rx_time = jiffies;
 	psta->sta_stats.rx_ctrl_pkts++;
 
 	/* only handle ps-poll */
@@ -1965,7 +1965,7 @@ sint validate_recv_mgnt_frame(PADAPTER padapter, union recv_frame *precv_frame)
 
 	/* for rx pkt statistics */
 	if (psta) {
-		psta->sta_stats.last_rx_time = rtw_get_current_time();
+		psta->sta_stats.last_rx_time = jiffies;
 		psta->sta_stats.rx_mgnt_pkts++;
 		if (get_frame_sub_type(precv_frame->u.hdr.rx_data) == WIFI_BEACON)
 			psta->sta_stats.rx_beacon_pkts++;
@@ -4803,7 +4803,7 @@ void rx_query_phy_status(
 
 		if ((start_time == 0) || (rtw_get_passing_time_ms(start_time) > 5000)) {
 			RTW_PRINT("Warning!!! %s: Confilc mac addr!!\n", __func__);
-			start_time = rtw_get_current_time();
+			start_time = jiffies;
 		}
 		precvpriv->dbg_rx_conflic_mac_addr_cnt++;
 	} else {

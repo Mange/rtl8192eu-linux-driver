@@ -458,7 +458,7 @@ u32 rtw_chset_get_ch_non_ocp_ms(RT_CHANNEL_INFO *ch_set, u8 ch, u8 bw, u8 offset
 	if (rtw_chbw_to_freq_range(ch, bw, offset, &hi, &lo) == _FALSE)
 		goto exit;
 
-	current_time = rtw_get_current_time();
+	current_time = jiffies;
 
 	for (i = 0; i < MAX_CHANNEL_NUM && ch_set[i].ChannelNum != 0; i++) {
 		if (!rtw_ch2freq(ch_set[i].ChannelNum)) {
@@ -507,9 +507,9 @@ static void _rtw_chset_update_non_ocp(RT_CHANNEL_INFO *ch_set, u8 ch, u8 bw, u8 
 			&& rtw_ch2freq(ch_set[i].ChannelNum) <= hi
 		) {
 			if (ms >= 0)
-				ch_set[i].non_ocp_end_time = rtw_get_current_time() + rtw_ms_to_systime(ms);
+				ch_set[i].non_ocp_end_time = jiffies + rtw_ms_to_systime(ms);
 			else
-				ch_set[i].non_ocp_end_time = rtw_get_current_time() + rtw_ms_to_systime(NON_OCP_TIME_MS);
+				ch_set[i].non_ocp_end_time = jiffies + rtw_ms_to_systime(NON_OCP_TIME_MS);
 		}
 	}
 
@@ -560,7 +560,7 @@ u32 rtw_get_ch_waiting_ms(struct rf_ctl_t *rfctl, u8 ch, u8 bw, u8 offset, u32 *
 		cac_ms = 0;
 	else if (in_rd_range && !non_ocp_ms) {
 		if (IS_CH_WAITING(rfctl))
-			cac_ms = rtw_systime_to_ms(rfctl->cac_end_time - rtw_get_current_time());
+			cac_ms = rtw_systime_to_ms(rfctl->cac_end_time - jiffies);
 		else
 			cac_ms = 0;
 	} else if (rtw_is_long_cac_ch(ch, bw, offset, rtw_odm_get_dfs_domain(dvobj)))
@@ -589,7 +589,7 @@ void rtw_reset_cac(struct rf_ctl_t *rfctl, u8 ch, u8 bw, u8 offset)
 		, &cac_ms
 	);
 
-	rfctl->cac_start_time = rtw_get_current_time() + rtw_ms_to_systime(non_ocp_ms);
+	rfctl->cac_start_time = jiffies + rtw_ms_to_systime(non_ocp_ms);
 	rfctl->cac_end_time = rfctl->cac_start_time + rtw_ms_to_systime(cac_ms);
 
 	/* skip special value */
@@ -607,7 +607,7 @@ u32 rtw_force_stop_cac(struct rf_ctl_t *rfctl, u32 timeout_ms)
 	systime start;
 	u32 pass_ms;
 
-	start = rtw_get_current_time();
+	start = jiffies;
 
 	rfctl->cac_force_stop = 1;
 
@@ -767,7 +767,7 @@ void dump_chset(void *sel, RT_CHANNEL_INFO *ch_set)
 		if (rtw_is_dfs_ch(ch_set[i].ChannelNum)) {
 			if (CH_IS_NON_OCP(&ch_set[i]))
 				_RTW_PRINT_SEL(sel, ", non_ocp:%d"
-					, rtw_systime_to_ms(ch_set[i].non_ocp_end_time - rtw_get_current_time()));
+					, rtw_systime_to_ms(ch_set[i].non_ocp_end_time - jiffies));
 			else
 				_RTW_PRINT_SEL(sel, ", non_ocp:N/A");
 		}
@@ -6114,7 +6114,7 @@ int issue_probereq_p2p_ex(_adapter *adapter, u8 *da, int try_cnt, int wait_ms)
 {
 	int ret;
 	int i = 0;
-	systime start = rtw_get_current_time();
+	systime start = jiffies;
 
 	do {
 		ret = _issue_probereq_p2p(adapter, da, wait_ms > 0 ? _TRUE : _FALSE);
@@ -8533,7 +8533,7 @@ int issue_probereq_ex(_adapter *padapter, const NDIS_802_11_SSID *pssid, const u
 {
 	int ret = _FAIL;
 	int i = 0;
-	systime start = rtw_get_current_time();
+	systime start = jiffies;
 
 	if (rtw_rfctl_is_tx_blocked_by_ch_waiting(adapter_to_rfctl(padapter)))
 		goto exit;
@@ -9537,7 +9537,7 @@ int issue_nulldata(_adapter *padapter, unsigned char *da, unsigned int power_mod
 {
 	int ret = _FAIL;
 	int i = 0;
-	systime start = rtw_get_current_time();
+	systime start = jiffies;
 	struct mlme_ext_priv	*pmlmeext = &(padapter->mlmeextpriv);
 	struct mlme_ext_info	*pmlmeinfo = &(pmlmeext->mlmext_info);
 
@@ -9691,7 +9691,7 @@ int issue_qos_nulldata(_adapter *padapter, unsigned char *da, u16 tid, u8 ps, in
 {
 	int ret = _FAIL;
 	int i = 0;
-	systime start = rtw_get_current_time();
+	systime start = jiffies;
 	struct mlme_ext_priv	*pmlmeext = &(padapter->mlmeextpriv);
 	struct mlme_ext_info	*pmlmeinfo = &(pmlmeext->mlmext_info);
 
@@ -9832,7 +9832,7 @@ int issue_deauth_ex(_adapter *padapter, u8 *da, unsigned short reason, int try_c
 {
 	int ret = _FAIL;
 	int i = 0;
-	systime start = rtw_get_current_time();
+	systime start = jiffies;
 
 	if (rtw_rfctl_is_tx_blocked_by_ch_waiting(adapter_to_rfctl(padapter)))
 		goto exit;
@@ -10248,7 +10248,7 @@ inline u8 issue_addba_rsp_wait_ack(_adapter *adapter, unsigned char *ra, u8 tid,
 {
 	int ret = _FAIL;
 	int i = 0;
-	systime start = rtw_get_current_time();
+	systime start = jiffies;
 
 	if (rtw_rfctl_is_tx_blocked_by_ch_waiting(adapter_to_rfctl(adapter)))
 		goto exit;
@@ -10326,7 +10326,7 @@ int issue_del_ba_ex(_adapter *adapter, unsigned char *ra, u8 tid, u16 reason, u8
 {
 	int ret = _FAIL;
 	int i = 0;
-	systime start = rtw_get_current_time();
+	systime start = jiffies;
 
 	if (rtw_rfctl_is_tx_blocked_by_ch_waiting(adapter_to_rfctl(adapter)))
 		goto exit;
@@ -10607,7 +10607,7 @@ int issue_action_SM_PS_wait_ack(_adapter *padapter, unsigned char *raddr, u8 New
 {
 	int ret = _FAIL;
 	int i = 0;
-	systime start = rtw_get_current_time();
+	systime start = jiffies;
 
 	if (rtw_rfctl_is_tx_blocked_by_ch_waiting(adapter_to_rfctl(padapter)))
 		goto exit;
@@ -10798,7 +10798,7 @@ unsigned int send_beacon(_adapter *padapter)
 	u8 bxmitok = _FALSE;
 	int issue = 0;
 	int poll = 0;
-	systime start = rtw_get_current_time();
+	systime start = jiffies;
 	#ifdef CONFIG_FW_HANDLE_TXBCN
 	u8 vap_id = padapter->vap_id;
 
@@ -12791,7 +12791,7 @@ void linked_status_chk(_adapter *padapter, u8 from_timer)
 #endif
 				pmlmepriv->need_to_roam = _TRUE;
 				rtw_drv_scan_by_self(padapter, RTW_AUTO_SCAN_REASON_ROAM);
-				pmlmepriv->last_roaming = rtw_get_current_time();
+				pmlmepriv->last_roaming = jiffies;
 			} else
 				pmlmepriv->need_to_roam = _FALSE;
 		}
@@ -14250,7 +14250,7 @@ u8 rtw_scan_sparse(_adapter *adapter, struct rtw_ieee80211_channel *ch, u8 ch_nu
 		goto exit;
 
 	if (mlmeext->last_scan_time == 0)
-		mlmeext->last_scan_time = rtw_get_current_time();
+		mlmeext->last_scan_time = jiffies;
 
 	interval = rtw_get_passing_time_ms(mlmeext->last_scan_time);
 
@@ -14306,7 +14306,7 @@ u8 rtw_scan_sparse(_adapter *adapter, struct rtw_ieee80211_channel *ch, u8 ch_nu
 		memset(&ch[k], 0, sizeof(struct rtw_ieee80211_channel));
 
 		ret_num = k;
-		mlmeext->last_scan_time = rtw_get_current_time();
+		mlmeext->last_scan_time = jiffies;
 	}
 
 exit:
@@ -15235,7 +15235,7 @@ operation_by_state:
 		}
 
 		mlmeext_set_scan_state(pmlmeext, SCAN_BACK_OP);
-		ss->backop_time = rtw_get_current_time();
+		ss->backop_time = jiffies;
 
 		if (mlmeext_chk_scan_backop_flags(pmlmeext, SS_BACKOP_TX_RESUME))
 			rtw_mi_os_xmit_schedule(padapter);

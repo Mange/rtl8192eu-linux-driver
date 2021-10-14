@@ -269,7 +269,7 @@ void rtw_mesh_update_scanned_acnode_status(_adapter *adapter, struct wlan_networ
 	acnode = !nop && accept;
 
 	if (acnode && scanned->acnode_stime == 0) {
-		scanned->acnode_stime = rtw_get_current_time();
+		scanned->acnode_stime = jiffies;
 		if (scanned->acnode_stime == 0)
 			scanned->acnode_stime++;
 	} else if (!acnode) {
@@ -288,7 +288,7 @@ bool rtw_mesh_scanned_is_acnode_confirmed(_adapter *adapter, struct wlan_network
 static bool rtw_mesh_scanned_is_acnode_allow_notify(_adapter *adapter, struct wlan_network *scanned)
 {
 	return scanned->acnode_notify_etime
-			&& rtw_time_after(scanned->acnode_notify_etime, rtw_get_current_time());
+			&& rtw_time_after(scanned->acnode_notify_etime, jiffies);
 }
 
 bool rtw_mesh_acnode_prevent_allow_sacrifice(_adapter *adapter)
@@ -466,7 +466,7 @@ static void rtw_mesh_acnode_set_notify_etime(_adapter *adapter, u8 *rframe_whdr)
 		struct wlan_network *scanned = rtw_find_network(&adapter->mlmepriv.scanned_queue, get_addr2_ptr(rframe_whdr));
 
 		if (rtw_mesh_scanned_is_acnode_confirmed(adapter, scanned)) {
-			scanned->acnode_notify_etime = rtw_get_current_time()
+			scanned->acnode_notify_etime = jiffies
 				+ rtw_ms_to_systime(adapter->mesh_cfg.peer_sel_policy.acnode_notify_timeout_ms);
 			if (scanned->acnode_notify_etime == 0)
 				scanned->acnode_notify_etime++;
@@ -631,7 +631,7 @@ static void rtw_mesh_cto_mgate_blacklist_chk(_adapter *adapter)
 		ent = LIST_CONTAINOR(list, struct blacklist_ent, list);
 		list = get_next(list);
 
-		if (rtw_time_after(rtw_get_current_time(), ent->exp_time)) {
+		if (rtw_time_after(jiffies, ent->exp_time)) {
 			rtw_list_delete(&ent->list);
 			rtw_mfree(ent, sizeof(struct blacklist_ent));
 			continue;
@@ -2344,7 +2344,7 @@ void dump_mesh_plink_ctl(void *sel, _adapter *adapter)
 		#if CONFIG_RTW_MESH_PEER_BLACKLIST
 		if (!IS_PEER_CONF_DISABLED(ent)) {
 			if (!IS_PEER_CONF_TIMEOUT(ent))
-				RTW_PRINT_SEL(sel, "peer_conf:%d\n", rtw_systime_to_ms(ent->peer_conf_end_time - rtw_get_current_time()));
+				RTW_PRINT_SEL(sel, "peer_conf:%d\n", rtw_systime_to_ms(ent->peer_conf_end_time - jiffies));
 			else
 				RTW_PRINT_SEL(sel, "peer_conf:TIMEOUT\n");
 		}
@@ -2353,7 +2353,7 @@ void dump_mesh_plink_ctl(void *sel, _adapter *adapter)
 		#if CONFIG_RTW_MESH_CTO_MGATE_BLACKLIST
 		if (!IS_CTO_MGATE_CONF_DISABLED(ent)) {
 			if (!IS_CTO_MGATE_CONF_TIMEOUT(ent))
-				RTW_PRINT_SEL(sel, "cto_mgate_conf:%d\n", rtw_systime_to_ms(ent->cto_mgate_conf_end_time - rtw_get_current_time()));
+				RTW_PRINT_SEL(sel, "cto_mgate_conf:%d\n", rtw_systime_to_ms(ent->cto_mgate_conf_end_time - jiffies));
 			else
 				RTW_PRINT_SEL(sel, "cto_mgate_conf:TIMEOUT\n");
 		}
@@ -2924,7 +2924,7 @@ static int rtw_mrc_check(_adapter *adapter, const u8 *msa, u32 seq)
 	idx = seq & mrc->idx_mask;
 	rtw_hlist_for_each_entry_safe(p, np, n, &mrc->bucket[idx], list) {
 		++entries;
-		timeout = rtw_time_after(rtw_get_current_time(), p->exp_time);
+		timeout = rtw_time_after(jiffies, p->exp_time);
 		if (timeout || entries == RTW_MRC_QUEUE_MAX_LEN) {
 			if (!timeout)
 				minfo->mshstats.mrc_del_qlen++;
@@ -2941,7 +2941,7 @@ static int rtw_mrc_check(_adapter *adapter, const u8 *msa, u32 seq)
 		return 0;
 
 	p->seqnum = seq;
-	p->exp_time = rtw_get_current_time() + rtw_ms_to_systime(RTW_MRC_TIMEOUT_MS);
+	p->exp_time = jiffies + rtw_ms_to_systime(RTW_MRC_TIMEOUT_MS);
 	memcpy(p->msa, msa, ETH_ALEN);
 	rtw_hlist_add_head(&p->list, &mrc->bucket[idx]);
 	return 0;
@@ -3081,9 +3081,9 @@ void rtw_mesh_init_mesh_info(_adapter *adapter)
 
 	rtw_mesh_plink_ctl_init(adapter);
 	
-	minfo->last_preq = rtw_get_current_time();
-	/* minfo->last_sn_update = rtw_get_current_time(); */
-	minfo->next_perr = rtw_get_current_time();
+	minfo->last_preq = jiffies;
+	/* minfo->last_sn_update = jiffies; */
+	minfo->next_perr = jiffies;
 	
 	atomic_set(&minfo->mpaths, 0);
 	rtw_mesh_pathtbl_init(adapter);
@@ -3213,7 +3213,7 @@ int rtw_mesh_nexthop_lookup(_adapter *adapter,
 	if (!mpath || !(mpath->flags & RTW_MESH_PATH_ACTIVE))
 		goto endlookup;
 
-	if (rtw_time_after(rtw_get_current_time(),
+	if (rtw_time_after(jiffies,
 		       mpath->exp_time -
 		       rtw_ms_to_systime(adapter->mesh_cfg.path_refresh_time)) &&
 	    _rtw_memcmp(adapter_mac_addr(adapter), msa, ETH_ALEN) == _TRUE &&
@@ -3366,7 +3366,7 @@ int rtw_mesh_addr_resolve(_adapter *adapter, struct xmit_frame *xframe, _pkt *pk
 		if (mpp_lookup) {
 			mppath = rtw_mpp_path_lookup(adapter, etherhdr.h_dest);
 			if (mppath)
-				mppath->exp_time = rtw_get_current_time();
+				mppath->exp_time = jiffies;
 		}
 
 		if (mppath && mpath)
@@ -3801,7 +3801,7 @@ int rtw_mesh_rx_msdu_act_check(union recv_frame *rframe
 			enter_critical_bh(&mppath->state_lock);
 			if (_rtw_memcmp(mppath->mpp, mpp_addr, ETH_ALEN) == _FALSE)
 				memcpy(mppath->mpp, mpp_addr, ETH_ALEN);
-			mppath->exp_time = rtw_get_current_time();
+			mppath->exp_time = jiffies;
 			exit_critical_bh(&mppath->state_lock);
 		}
 		rtw_rcu_read_unlock();

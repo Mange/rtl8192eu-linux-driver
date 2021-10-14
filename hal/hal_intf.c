@@ -54,7 +54,7 @@ u8 rtw_hal_read_chip_info(_adapter *padapter)
 {
 	u8 rtn = _SUCCESS;
 	u8 hci_type = rtw_get_intf_type(padapter);
-	systime start = rtw_get_current_time();
+	systime start = jiffies;
 
 	/*  before access eFuse, make sure card enable has been called */
 	if ((hci_type == RTW_SDIO || hci_type == RTW_GSPI)
@@ -472,7 +472,7 @@ s32 rtw_hal_fw_dl(_adapter *padapter, u8 wowlan)
 #ifdef RTW_HALMAC
 s32 rtw_hal_fw_mem_dl(_adapter *padapter, enum fw_mem mem)
 {
-	systime dlfw_start_time = rtw_get_current_time();
+	systime dlfw_start_time = jiffies;
 	struct dvobj_priv *dvobj = adapter_to_dvobj(padapter);
 	struct debug_priv *pdbgpriv = &dvobj->drv_dbg;
 	s32 rst = _FALSE;

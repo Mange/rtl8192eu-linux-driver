@@ -367,7 +367,7 @@ void rtw_mstat_update(const enum mstat_f flags, const MSTAT_STATUS status, u32 s
 
 	/* if (rtw_get_passing_time_ms(update_time) > 5000) { */
 	/*	rtw_mstat_dump(RTW_DBGDUMP); */
-	update_time = rtw_get_current_time();
+	update_time = jiffies;
 	/* } */
 }
 
@@ -1008,15 +1008,6 @@ u32 rtw_end_of_queue_search(_list *head, _list *plist)
 		return _FALSE;
 }
 
-
-systime _rtw_get_current_time(void)
-{
-
-#ifdef PLATFORM_LINUX
-	return jiffies;
-#endif
-}
-
 inline u32 _rtw_systime_to_ms(systime stime)
 {
 #ifdef PLATFORM_LINUX
@@ -1040,15 +1031,15 @@ inline systime _rtw_us_to_systime(u32 us)
 #endif
 }
 
-/* the input parameter start use the same unit as returned by rtw_get_current_time */
+/* the input parameter start use the same unit as returned by jiffies */
 inline s32 _rtw_get_passing_time_ms(systime start)
 {
-	return _rtw_systime_to_ms(_rtw_get_current_time() - start);
+	return _rtw_systime_to_ms(jiffies - start);
 }
 
 inline s32 _rtw_get_remaining_time_ms(systime end)
 {
-	return _rtw_systime_to_ms(end - _rtw_get_current_time());
+	return _rtw_systime_to_ms(end - jiffies);
 }
 
 inline s32 _rtw_get_time_interval_ms(systime start, systime end)
@@ -1924,14 +1915,14 @@ int rtw_blacklist_add(_queue *blist, const u8 *addr, u32 timeout_ms)
 
 		if (_rtw_memcmp(ent->addr, addr, ETH_ALEN) == _TRUE) {
 			exist = _TRUE;
-			if (rtw_time_after(rtw_get_current_time(), ent->exp_time))
+			if (rtw_time_after(jiffies, ent->exp_time))
 				timeout = _TRUE;
-			ent->exp_time = rtw_get_current_time()
+			ent->exp_time = jiffies
 				+ rtw_ms_to_systime(timeout_ms);
 			break;
 		}
 
-		if (rtw_time_after(rtw_get_current_time(), ent->exp_time)) {
+		if (rtw_time_after(jiffies, ent->exp_time)) {
 			rtw_list_delete(&ent->list);
 			rtw_mfree(ent, sizeof(struct blacklist_ent));
 		}
@@ -1941,7 +1932,7 @@ int rtw_blacklist_add(_queue *blist, const u8 *addr, u32 timeout_ms)
 		ent = rtw_malloc(sizeof(struct blacklist_ent));
 		if (ent) {
 			memcpy(ent->addr, addr, ETH_ALEN);
-			ent->exp_time = rtw_get_current_time()
+			ent->exp_time = jiffies
 				+ rtw_ms_to_systime(timeout_ms);
 			rtw_list_insert_tail(&ent->list, head);
 		}
@@ -1973,7 +1964,7 @@ int rtw_blacklist_del(_queue *blist, const u8 *addr)
 			break;
 		}
 
-		if (rtw_time_after(rtw_get_current_time(), ent->exp_time)) {
+		if (rtw_time_after(jiffies, ent->exp_time)) {
 			rtw_list_delete(&ent->list);
 			rtw_mfree(ent, sizeof(struct blacklist_ent));
 		}
@@ -1999,7 +1990,7 @@ int rtw_blacklist_search(_queue *blist, const u8 *addr)
 		list = get_next(list);
 
 		if (_rtw_memcmp(ent->addr, addr, ETH_ALEN) == _TRUE) {
-			if (rtw_time_after(rtw_get_current_time(), ent->exp_time)) {
+			if (rtw_time_after(jiffies, ent->exp_time)) {
 				rtw_list_delete(&ent->list);
 				rtw_mfree(ent, sizeof(struct blacklist_ent));
 			} else
@@ -2007,7 +1998,7 @@ int rtw_blacklist_search(_queue *blist, const u8 *addr)
 			break;
 		}
 
-		if (rtw_time_after(rtw_get_current_time(), ent->exp_time)) {
+		if (rtw_time_after(jiffies, ent->exp_time)) {
 			rtw_list_delete(&ent->list);
 			rtw_mfree(ent, sizeof(struct blacklist_ent));
 		}
@@ -2058,7 +2049,7 @@ void dump_blacklist(void *sel, _queue *blist, const char *title)
 			ent = LIST_CONTAINOR(list, struct blacklist_ent, list);
 			list = get_next(list);
 
-			if (rtw_time_after(rtw_get_current_time(), ent->exp_time))
+			if (rtw_time_after(jiffies, ent->exp_time))
 				RTW_PRINT_SEL(sel, MAC_FMT" expired\n", MAC_ARG(ent->addr));
 			else
 				RTW_PRINT_SEL(sel, MAC_FMT" %u\n", MAC_ARG(ent->addr)

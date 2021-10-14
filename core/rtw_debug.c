@@ -2132,7 +2132,7 @@ static u8 sta_linking_test_force_fail = 0;
 
 void rtw_sta_linking_test_set_start(void)
 {
-	sta_linking_test_start_time = rtw_get_current_time();
+	sta_linking_test_start_time = jiffies;
 }
 
 bool rtw_sta_linking_test_wait_done(void)

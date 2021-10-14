@@ -1059,17 +1059,17 @@ u8 phydm_c2H_content_parsing(void *dm_void, u8 c2h_cmd_id, u8 c2h_cmd_len,
 u64 odm_get_current_time(struct dm_struct *dm)
 {
 #if (DM_ODM_SUPPORT_TYPE & (ODM_AP))
-	return (u64)rtw_get_current_time();
+	return (u64)jiffies;
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE) && defined(DM_ODM_CE_MAC80211)
 	return jiffies;
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE) && defined(DM_ODM_CE_MAC80211_V2)
 	return jiffies;
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE)
-	return rtw_get_current_time();
+	return jiffies;
 #elif (DM_ODM_SUPPORT_TYPE & ODM_WIN)
 	return PlatformGetCurrentTime();
 #elif (DM_ODM_SUPPORT_TYPE & ODM_IOT)
-	return rtw_get_current_time();
+	return jiffies;
 #endif
 }
 

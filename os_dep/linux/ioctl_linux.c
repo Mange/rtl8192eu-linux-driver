@@ -7960,7 +7960,7 @@ static int rtw_wowlan_ctrl(struct net_device *dev,
 	struct mlme_priv *pmlmepriv = &padapter->mlmepriv;
 	struct sta_info	*psta = NULL;
 	int ret = 0;
-	systime start_time = rtw_get_current_time();
+	systime start_time = jiffies;
 	poidparam.subcode = 0;
 
 	RTW_INFO("+rtw_wowlan_ctrl: %s\n", extra);
@@ -8032,7 +8032,7 @@ static int rtw_wowlan_set_pattern(struct net_device *dev,
 	struct mlme_priv *pmlmepriv = &padapter->mlmepriv;
 	struct wowlan_ioctl_param poidparam;
 	int ret = 0, len = 0, i = 0;
-	systime start_time = rtw_get_current_time();
+	systime start_time = jiffies;
 	u8 input[wrqu->data.length];
 	u8 index = 0;
 
@@ -8103,7 +8103,7 @@ static int rtw_ap_wowlan_ctrl(struct net_device *dev,
 	struct mlme_priv *pmlmepriv = &padapter->mlmepriv;
 	struct sta_info	*psta = NULL;
 	int ret = 0;
-	systime start_time = rtw_get_current_time();
+	systime start_time = jiffies;
 	poidparam.subcode = 0;
 
 	RTW_INFO("+rtw_ap_wowlan_ctrl: %s\n", extra);
