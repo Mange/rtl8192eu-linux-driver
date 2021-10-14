@@ -1003,43 +1003,20 @@ u32 rtw_end_of_queue_search(_list *head, _list *plist)
 		return _FALSE;
 }
 
-inline u32 _rtw_systime_to_ms(systime stime)
-{
-#ifdef PLATFORM_LINUX
-	return jiffies_to_msecs(stime);
-#endif
-}
-
-inline systime _rtw_ms_to_systime(u32 ms)
-{
-#ifdef PLATFORM_LINUX
-	return msecs_to_jiffies(ms);
-#endif
-}
-
-inline systime _rtw_us_to_systime(u32 us)
-{
-#ifdef PLATFORM_LINUX
-	return usecs_to_jiffies(us);
-#else
-	#error "TBD\n"
-#endif
-}
-
 /* the input parameter start use the same unit as returned by jiffies */
 inline s32 _rtw_get_passing_time_ms(systime start)
 {
-	return _rtw_systime_to_ms(jiffies - start);
+	return jiffies_to_msecs(jiffies - start);
 }
 
 inline s32 _rtw_get_remaining_time_ms(systime end)
 {
-	return _rtw_systime_to_ms(end - jiffies);
+	return jiffies_to_msecs(end - jiffies);
 }
 
 inline s32 _rtw_get_time_interval_ms(systime start, systime end)
 {
-	return _rtw_systime_to_ms(end - start);
+	return jiffies_to_msecs(end - start);
 }
 
 inline bool _rtw_time_after(systime a, systime b)
@@ -1183,9 +1160,9 @@ inline void rtw_resume_unlock_suspend(void)
 inline void rtw_lock_suspend_timeout(u32 timeout_ms)
 {
 #ifdef CONFIG_WAKELOCK
-	wake_lock_timeout(&rtw_suspend_lock, rtw_ms_to_systime(timeout_ms));
+	wake_lock_timeout(&rtw_suspend_lock, msecs_to_jiffies(timeout_ms));
 #elif defined(CONFIG_ANDROID_POWER)
-	android_lock_suspend_auto_expire(&rtw_suspend_lock, rtw_ms_to_systime(timeout_ms));
+	android_lock_suspend_auto_expire(&rtw_suspend_lock, msecs_to_jiffies(timeout_ms));
 #endif
 }
 
@@ -1193,9 +1170,9 @@ inline void rtw_lock_suspend_timeout(u32 timeout_ms)
 inline void rtw_lock_traffic_suspend_timeout(u32 timeout_ms)
 {
 #ifdef CONFIG_WAKELOCK
-	wake_lock_timeout(&rtw_suspend_traffic_lock, rtw_ms_to_systime(timeout_ms));
+	wake_lock_timeout(&rtw_suspend_traffic_lock, msecs_to_jiffies(timeout_ms));
 #elif defined(CONFIG_ANDROID_POWER)
-	android_lock_suspend_auto_expire(&rtw_suspend_traffic_lock, rtw_ms_to_systime(timeout_ms));
+	android_lock_suspend_auto_expire(&rtw_suspend_traffic_lock, msecs_to_jiffies(timeout_ms));
 #endif
 	/* RTW_INFO("traffic lock timeout:%d\n", timeout_ms); */
 }
@@ -1913,7 +1890,7 @@ int rtw_blacklist_add(_queue *blist, const u8 *addr, u32 timeout_ms)
 			if (rtw_time_after(jiffies, ent->exp_time))
 				timeout = _TRUE;
 			ent->exp_time = jiffies
-				+ rtw_ms_to_systime(timeout_ms);
+				+ msecs_to_jiffies(timeout_ms);
 			break;
 		}
 
@@ -1928,7 +1905,7 @@ int rtw_blacklist_add(_queue *blist, const u8 *addr, u32 timeout_ms)
 		if (ent) {
 			memcpy(ent->addr, addr, ETH_ALEN);
 			ent->exp_time = jiffies
-				+ rtw_ms_to_systime(timeout_ms);
+				+ msecs_to_jiffies(timeout_ms);
 			rtw_list_insert_tail(&ent->list, head);
 		}
 	}

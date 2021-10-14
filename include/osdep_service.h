@@ -275,27 +275,18 @@ extern void _rtw_deinit_queue(_queue *pqueue);
 extern u32	_rtw_queue_empty(_queue	*pqueue);
 extern u32	rtw_end_of_queue_search(_list *queue, _list *pelement);
 
-extern u32	_rtw_systime_to_ms(systime stime);
-extern systime _rtw_ms_to_systime(u32 ms);
-extern systime _rtw_us_to_systime(u32 us);
 extern s32	_rtw_get_passing_time_ms(systime start);
 extern s32 _rtw_get_remaining_time_ms(systime end);
 extern s32	_rtw_get_time_interval_ms(systime start, systime end);
 extern bool _rtw_time_after(systime a, systime b);
 
 #ifdef DBG_SYSTIME
-#define rtw_systime_to_ms(stime) ({u32 __ms = _rtw_systime_to_ms(stime); typecheck(systime, stime); __ms;})
-#define rtw_ms_to_systime(ms) ({systime __stime = _rtw_ms_to_systime(ms); __stime;})
-#define rtw_us_to_systime(us) ({systime __stime = _rtw_us_to_systime(us); __stime;})
 #define rtw_get_passing_time_ms(start) ({u32 __ms = _rtw_get_passing_time_ms(start); typecheck(systime, start); __ms;})
 #define rtw_get_remaining_time_ms(end) ({u32 __ms = _rtw_get_remaining_time_ms(end); typecheck(systime, end); __ms;})
 #define rtw_get_time_interval_ms(start, end) ({u32 __ms = _rtw_get_time_interval_ms(start, end); typecheck(systime, start); typecheck(systime, end); __ms;})
 #define rtw_time_after(a,b) ({bool __r = _rtw_time_after(a,b); typecheck(systime, a); typecheck(systime, b); __r;})
 #define rtw_time_before(a,b) ({bool __r = _rtw_time_after(b, a); typecheck(systime, a); typecheck(systime, b); __r;})
 #else
-#define rtw_systime_to_ms(stime) _rtw_systime_to_ms(stime)
-#define rtw_ms_to_systime(ms) _rtw_ms_to_systime(ms)
-#define rtw_us_to_systime(us) _rtw_us_to_systime(us)
 #define rtw_get_passing_time_ms(start) _rtw_get_passing_time_ms(start)
 #define rtw_get_remaining_time_ms(end) _rtw_get_remaining_time_ms(end)
 #define rtw_get_time_interval_ms(start, end) _rtw_get_time_interval_ms(start, end)

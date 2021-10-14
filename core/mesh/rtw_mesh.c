@@ -467,7 +467,7 @@ static void rtw_mesh_acnode_set_notify_etime(_adapter *adapter, u8 *rframe_whdr)
 
 		if (rtw_mesh_scanned_is_acnode_confirmed(adapter, scanned)) {
 			scanned->acnode_notify_etime = jiffies
-				+ rtw_ms_to_systime(adapter->mesh_cfg.peer_sel_policy.acnode_notify_timeout_ms);
+				+ msecs_to_jiffies(adapter->mesh_cfg.peer_sel_policy.acnode_notify_timeout_ms);
 			if (scanned->acnode_notify_etime == 0)
 				scanned->acnode_notify_etime++;
 		}
@@ -2344,7 +2344,7 @@ void dump_mesh_plink_ctl(void *sel, _adapter *adapter)
 		#if CONFIG_RTW_MESH_PEER_BLACKLIST
 		if (!IS_PEER_CONF_DISABLED(ent)) {
 			if (!IS_PEER_CONF_TIMEOUT(ent))
-				RTW_PRINT_SEL(sel, "peer_conf:%d\n", rtw_systime_to_ms(ent->peer_conf_end_time - jiffies));
+				RTW_PRINT_SEL(sel, "peer_conf:%d\n", jiffies_to_msecs(ent->peer_conf_end_time - jiffies));
 			else
 				RTW_PRINT_SEL(sel, "peer_conf:TIMEOUT\n");
 		}
@@ -2353,7 +2353,7 @@ void dump_mesh_plink_ctl(void *sel, _adapter *adapter)
 		#if CONFIG_RTW_MESH_CTO_MGATE_BLACKLIST
 		if (!IS_CTO_MGATE_CONF_DISABLED(ent)) {
 			if (!IS_CTO_MGATE_CONF_TIMEOUT(ent))
-				RTW_PRINT_SEL(sel, "cto_mgate_conf:%d\n", rtw_systime_to_ms(ent->cto_mgate_conf_end_time - jiffies));
+				RTW_PRINT_SEL(sel, "cto_mgate_conf:%d\n", jiffies_to_msecs(ent->cto_mgate_conf_end_time - jiffies));
 			else
 				RTW_PRINT_SEL(sel, "cto_mgate_conf:TIMEOUT\n");
 		}
@@ -2941,7 +2941,7 @@ static int rtw_mrc_check(_adapter *adapter, const u8 *msa, u32 seq)
 		return 0;
 
 	p->seqnum = seq;
-	p->exp_time = jiffies + rtw_ms_to_systime(RTW_MRC_TIMEOUT_MS);
+	p->exp_time = jiffies + msecs_to_jiffies(RTW_MRC_TIMEOUT_MS);
 	memcpy(p->msa, msa, ETH_ALEN);
 	rtw_hlist_add_head(&p->list, &mrc->bucket[idx]);
 	return 0;
@@ -3215,7 +3215,7 @@ int rtw_mesh_nexthop_lookup(_adapter *adapter,
 
 	if (rtw_time_after(jiffies,
 		       mpath->exp_time -
-		       rtw_ms_to_systime(adapter->mesh_cfg.path_refresh_time)) &&
+		       msecs_to_jiffies(adapter->mesh_cfg.path_refresh_time)) &&
 	    _rtw_memcmp(adapter_mac_addr(adapter), msa, ETH_ALEN) == _TRUE &&
 	    !(mpath->flags & RTW_MESH_PATH_RESOLVING) &&
 	    !(mpath->flags & RTW_MESH_PATH_FIXED)) {

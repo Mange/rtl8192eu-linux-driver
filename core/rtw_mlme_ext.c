@@ -472,8 +472,8 @@ u32 rtw_chset_get_ch_non_ocp_ms(RT_CHANNEL_INFO *ch_set, u8 ch, u8 bw, u8 offset
 		if (lo <= rtw_ch2freq(ch_set[i].ChannelNum)
 			&& rtw_ch2freq(ch_set[i].ChannelNum) <= hi
 		) {
-			if (rtw_systime_to_ms(ch_set[i].non_ocp_end_time - current_time) > ms)
-				ms = rtw_systime_to_ms(ch_set[i].non_ocp_end_time - current_time);
+			if (jiffies_to_msecs(ch_set[i].non_ocp_end_time - current_time) > ms)
+				ms = jiffies_to_msecs(ch_set[i].non_ocp_end_time - current_time);
 		}
 	}
 
@@ -507,9 +507,9 @@ static void _rtw_chset_update_non_ocp(RT_CHANNEL_INFO *ch_set, u8 ch, u8 bw, u8 
 			&& rtw_ch2freq(ch_set[i].ChannelNum) <= hi
 		) {
 			if (ms >= 0)
-				ch_set[i].non_ocp_end_time = jiffies + rtw_ms_to_systime(ms);
+				ch_set[i].non_ocp_end_time = jiffies + msecs_to_jiffies(ms);
 			else
-				ch_set[i].non_ocp_end_time = jiffies + rtw_ms_to_systime(NON_OCP_TIME_MS);
+				ch_set[i].non_ocp_end_time = jiffies + msecs_to_jiffies(NON_OCP_TIME_MS);
 		}
 	}
 
@@ -560,7 +560,7 @@ u32 rtw_get_ch_waiting_ms(struct rf_ctl_t *rfctl, u8 ch, u8 bw, u8 offset, u32 *
 		cac_ms = 0;
 	else if (in_rd_range && !non_ocp_ms) {
 		if (IS_CH_WAITING(rfctl))
-			cac_ms = rtw_systime_to_ms(rfctl->cac_end_time - jiffies);
+			cac_ms = jiffies_to_msecs(rfctl->cac_end_time - jiffies);
 		else
 			cac_ms = 0;
 	} else if (rtw_is_long_cac_ch(ch, bw, offset, rtw_odm_get_dfs_domain(dvobj)))
@@ -589,8 +589,8 @@ void rtw_reset_cac(struct rf_ctl_t *rfctl, u8 ch, u8 bw, u8 offset)
 		, &cac_ms
 	);
 
-	rfctl->cac_start_time = jiffies + rtw_ms_to_systime(non_ocp_ms);
-	rfctl->cac_end_time = rfctl->cac_start_time + rtw_ms_to_systime(cac_ms);
+	rfctl->cac_start_time = jiffies + msecs_to_jiffies(non_ocp_ms);
+	rfctl->cac_end_time = rfctl->cac_start_time + msecs_to_jiffies(cac_ms);
 
 	/* skip special value */
 	if (rfctl->cac_start_time == RTW_CAC_STOPPED) {
@@ -767,7 +767,7 @@ void dump_chset(void *sel, RT_CHANNEL_INFO *ch_set)
 		if (rtw_is_dfs_ch(ch_set[i].ChannelNum)) {
 			if (CH_IS_NON_OCP(&ch_set[i]))
 				_RTW_PRINT_SEL(sel, ", non_ocp:%d"
-					, rtw_systime_to_ms(ch_set[i].non_ocp_end_time - jiffies));
+					, jiffies_to_msecs(ch_set[i].non_ocp_end_time - jiffies));
 			else
 				_RTW_PRINT_SEL(sel, ", non_ocp:N/A");
 		}

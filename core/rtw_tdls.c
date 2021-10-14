@@ -991,7 +991,7 @@ s32 rtw_tdls_do_ch_sw(_adapter *padapter, struct sta_info *ptdls_sta, u8 chnl_ty
 	u8 take_care_iqk;
 	s32 ret = _FAIL;
 
-	ch_sw_time_start = rtw_systime_to_ms(jiffies);
+	ch_sw_time_start = jiffies_to_msecs(jiffies);
 
 	/* set mac_id sleep before channel switch */
 	rtw_hal_macid_sleep(padapter, ptdls_sta->cmn.mac_id);
@@ -1043,7 +1043,7 @@ s32 rtw_tdls_do_ch_sw(_adapter *padapter, struct sta_info *ptdls_sta, u8 chnl_ty
 #endif
 
 	if (ret == _SUCCESS) {
-		ch_sw_time_spent = rtw_systime_to_ms(jiffies) - ch_sw_time_start;
+		ch_sw_time_spent = jiffies_to_msecs(jiffies) - ch_sw_time_start;
 		if (chnl_type == TDLS_CH_SW_OFF_CHNL) {
 			if ((u32)ch_switch_time / 1000 > ch_sw_time_spent)
 				wait_time = (u32)ch_switch_time / 1000 - ch_sw_time_spent;

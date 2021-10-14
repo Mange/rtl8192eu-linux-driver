@@ -159,7 +159,7 @@ enum rtw_mesh_deferred_task_flags {
 #define SET_PEER_CONF_DISABLED(plink) (plink)->peer_conf_end_time = RTW_MESH_PEER_CONF_DISABLED
 #define SET_PEER_CONF_END_TIME(plink, timeout_ms) \
 	do { \
-		(plink)->peer_conf_end_time = jiffies + rtw_ms_to_systime(timeout_ms); \
+		(plink)->peer_conf_end_time = jiffies + msecs_to_jiffies(timeout_ms); \
 		if ((plink)->peer_conf_end_time == RTW_MESH_PEER_CONF_DISABLED) \
 			(plink)->peer_conf_end_time++; \
 	} while (0)
@@ -177,7 +177,7 @@ enum rtw_mesh_deferred_task_flags {
 #define SET_CTO_MGATE_CONF_DISABLED(plink) (plink)->cto_mgate_conf_end_time = RTW_MESH_CTO_MGATE_CONF_DISABLED
 #define SET_CTO_MGATE_CONF_END_TIME(plink, timeout_ms) \
 	do { \
-		(plink)->cto_mgate_conf_end_time = jiffies + rtw_ms_to_systime(timeout_ms); \
+		(plink)->cto_mgate_conf_end_time = jiffies + msecs_to_jiffies(timeout_ms); \
 		if ((plink)->cto_mgate_conf_end_time == RTW_MESH_CTO_MGATE_CONF_DISABLED) \
 			(plink)->cto_mgate_conf_end_time++; \
 	} while (0)

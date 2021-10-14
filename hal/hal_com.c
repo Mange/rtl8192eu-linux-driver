@@ -3448,7 +3448,7 @@ void rtw_hal_periodic_tsf_update_chk(_adapter *adapter)
 	if (!restore_ms)
 		return;
 
-	dvobj->periodic_tsf_update_etime = jiffies + rtw_ms_to_systime(restore_ms);
+	dvobj->periodic_tsf_update_etime = jiffies + msecs_to_jiffies(restore_ms);
 	if (!dvobj->periodic_tsf_update_etime)
 		dvobj->periodic_tsf_update_etime++;
 

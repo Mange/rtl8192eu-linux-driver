@@ -2475,7 +2475,7 @@ u8 rtw_interface_ps_func(_adapter *padapter, HAL_INTF_PS_FUNC efunc_id, u8 *val)
 inline void rtw_set_ips_deny(_adapter *padapter, u32 ms)
 {
 	struct pwrctrl_priv *pwrpriv = adapter_to_pwrctl(padapter);
-	pwrpriv->ips_deny_time = jiffies + rtw_ms_to_systime(ms);
+	pwrpriv->ips_deny_time = jiffies + msecs_to_jiffies(ms);
 }
 
 /*
@@ -2501,8 +2501,8 @@ int _rtw_pwr_wakeup(_adapter *padapter, u32 ips_deffer_ms, const char *caller)
 	padapter = GET_PRIMARY_ADAPTER(padapter);
 	pmlmepriv = &padapter->mlmepriv;
 
-	if (rtw_time_after(jiffies + rtw_ms_to_systime(ips_deffer_ms), pwrpriv->ips_deny_time))
-		pwrpriv->ips_deny_time = jiffies + rtw_ms_to_systime(ips_deffer_ms);
+	if (rtw_time_after(jiffies + msecs_to_jiffies(ips_deffer_ms), pwrpriv->ips_deny_time))
+		pwrpriv->ips_deny_time = jiffies + msecs_to_jiffies(ips_deffer_ms);
 
 
 	if (pwrpriv->ps_processing) {
@@ -2627,8 +2627,8 @@ int _rtw_pwr_wakeup(_adapter *padapter, u32 ips_deffer_ms, const char *caller)
 	}
 
 exit:
-	if (rtw_time_after(jiffies + rtw_ms_to_systime(ips_deffer_ms), pwrpriv->ips_deny_time))
-		pwrpriv->ips_deny_time = jiffies + rtw_ms_to_systime(ips_deffer_ms);
+	if (rtw_time_after(jiffies + msecs_to_jiffies(ips_deffer_ms), pwrpriv->ips_deny_time))
+		pwrpriv->ips_deny_time = jiffies + msecs_to_jiffies(ips_deffer_ms);
 	/*RTW_INFO(FUNC_ADPT_FMT "<===\n", FUNC_ADPT_ARG(padapter));*/
 	return ret;
 
@@ -2675,7 +2675,7 @@ int rtw_pm_set_lps_level(_adapter *padapter, u8 level)
 inline void rtw_set_lps_deny(_adapter *adapter, u32 ms)
 {
 	struct pwrctrl_priv *pwrpriv = adapter_to_pwrctl(adapter);
-	pwrpriv->lps_deny_time = jiffies + rtw_ms_to_systime(ms);
+	pwrpriv->lps_deny_time = jiffies + msecs_to_jiffies(ms);
 }
 
 int rtw_pm_set_ips(_adapter *padapter, u8 mode)

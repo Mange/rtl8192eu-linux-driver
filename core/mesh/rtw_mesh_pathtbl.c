@@ -360,7 +360,7 @@ int rtw_mesh_path_add_gate(struct rtw_mesh_path *mpath)
 	enter_critical_bh(&mpath->state_lock);
 	mcfg = &mpath->adapter->mesh_cfg;
 	mpath->gate_timeout = jiffies +
-			      rtw_ms_to_systime(mcfg->path_gate_timeout_factor *
+			      msecs_to_jiffies(mcfg->path_gate_timeout_factor *
 					        mpath->gate_ann_int);
 	if (mpath->is_gate) {
 		err = -EEXIST;
@@ -1148,7 +1148,7 @@ void rtw_mesh_path_tbl_expire(_adapter *adapter,
 				exit_critical_bh(&mpath->state_lock);
 			} else {
 				mpath->gate_asked = true;
-				mpath->gate_timeout = jiffies + rtw_ms_to_systime(mpath->gate_ann_int);
+				mpath->gate_timeout = jiffies + msecs_to_jiffies(mpath->gate_ann_int);
 				exit_critical_bh(&mpath->state_lock);
 				rtw_mesh_queue_preq(mpath, RTW_PREQ_Q_F_START | RTW_PREQ_Q_F_REFRESH);
 				RTW_MPATH_DBG(FUNC_ADPT_FMT"mpath [%pM] ask mesh gate existence (is_root=%d)\n",

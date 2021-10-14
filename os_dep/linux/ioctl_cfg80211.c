@@ -8600,7 +8600,7 @@ static void rtw_cfg80211_mpath_set_pinfo(struct rtw_mesh_path *mpath, u8 *next_h
 	pinfo->metric = mpath->metric;
 	if (rtw_time_after(mpath->exp_time, jiffies))
 		pinfo->exptime = rtw_get_remaining_time_ms(mpath->exp_time);
-	pinfo->discovery_timeout = rtw_systime_to_ms(mpath->discovery_timeout);
+	pinfo->discovery_timeout = jiffies_to_msecs(mpath->discovery_timeout);
 	pinfo->discovery_retries = mpath->discovery_retries;
 	if (mpath->flags & RTW_MESH_PATH_ACTIVE)
 		pinfo->flags |= NL80211_MPATH_FLAG_ACTIVE;

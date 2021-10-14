@@ -454,7 +454,7 @@ void halbtcoutsrc_AggregationCheck(PBTC_COEXIST pBtCoexist)
 	/* It can only be called after 8 seconds. */
 	/* ===================================== */
 
-	curTime = rtw_systime_to_ms(jiffies);
+	curTime = jiffies_to_msecs(jiffies);
 	if ((curTime - preTime) < HALBTCOUTSRC_AGG_CHK_WINDOW_IN_MS)	/* over 8 seconds you can execute this function again. */
 		return;
 	else

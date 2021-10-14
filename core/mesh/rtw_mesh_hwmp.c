@@ -145,7 +145,7 @@ static inline u16 rtw_u16_field_get(const u8 *preq_elem, int shift, BOOLEAN ae)
 #define RTW_PERR_IE_TARGET_SN(x)	rtw_u32_field_get(x, 9, 0)
 #define RTW_PERR_IE_TARGET_RCODE(x)	rtw_u16_field_get(x, 13, 0)
 
-#define RTW_TU_TO_SYSTIME(x)	(rtw_us_to_systime((x) * 1024))
+#define RTW_TU_TO_SYSTIME(x)	(usecs_to_jiffies((x) * 1024))
 #define RTW_TU_TO_EXP_TIME(x)	(jiffies + RTW_TU_TO_SYSTIME(x))
 #define RTW_MSEC_TO_TU(x) (x*1000/1024)
 #define RTW_SN_GT(x, y) ((s32)(y - x) < 0)
@@ -158,16 +158,16 @@ static inline u32 RTW_SN_DELTA(u32 x, u32 y)
 }
 
 #define rtw_net_traversal_jiffies(adapter) \
-	rtw_ms_to_systime(adapter->mesh_cfg.dot11MeshHWMPnetDiameterTraversalTime)
+	msecs_to_jiffies(adapter->mesh_cfg.dot11MeshHWMPnetDiameterTraversalTime)
 #define rtw_default_lifetime(adapter) \
 	RTW_MSEC_TO_TU(adapter->mesh_cfg.dot11MeshHWMPactivePathTimeout)
 #define rtw_min_preq_int_jiff(adapter) \
-	(rtw_ms_to_systime(adapter->mesh_cfg.dot11MeshHWMPpreqMinInterval))
+	(msecs_to_jiffies(adapter->mesh_cfg.dot11MeshHWMPpreqMinInterval))
 #define rtw_max_preq_retries(adapter) (adapter->mesh_cfg.dot11MeshHWMPmaxPREQretries)
 #define rtw_disc_timeout_jiff(adapter) \
-	rtw_ms_to_systime(adapter->mesh_cfg.min_discovery_timeout)
+	msecs_to_jiffies(adapter->mesh_cfg.min_discovery_timeout)
 #define rtw_root_path_confirmation_jiffies(adapter) \
-	rtw_ms_to_systime(adapter->mesh_cfg.dot11MeshHWMPconfirmationInterval)
+	msecs_to_jiffies(adapter->mesh_cfg.dot11MeshHWMPconfirmationInterval)
 
 static inline BOOLEAN rtw_ether_addr_equal(const u8 *addr1, const u8 *addr2)
 {
