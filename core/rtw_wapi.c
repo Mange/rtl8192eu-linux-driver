@@ -569,7 +569,7 @@ void rtw_build_probe_resp_wapi_ie(_adapter *padapter, unsigned char *pframe, str
 
 	WapiSetIE(padapter);
 	WapiIELength = pWapiInfo->wapiIELength;
-	pframe[0] = _WAPI_IE_;
+	pframe[0] = WLAN_EID_BSS_AC_ACCESS_DELAY;
 	pframe[1] = WapiIELength;
 	memcpy(pframe + 2, pWapiInfo->wapiIE, WapiIELength);
 	pframe += WapiIELength + 2;
@@ -591,7 +591,7 @@ void rtw_build_beacon_wapi_ie(_adapter *padapter, unsigned char *pframe, struct 
 
 	WapiSetIE(padapter);
 	WapiIELength = pWapiInfo->wapiIELength;
-	pframe[0] = _WAPI_IE_;
+	pframe[0] = WLAN_EID_BSS_AC_ACCESS_DELAY;
 	pframe[1] = WapiIELength;
 	memcpy(pframe + 2, pWapiInfo->wapiIE, WapiIELength);
 	pframe += WapiIELength + 2;
@@ -627,7 +627,7 @@ void rtw_build_assoc_req_wapi_ie(_adapter *padapter, unsigned char *pframe, stru
 	memcpy(pWapiInfo->wapiIE + WapiIELength, &bkidNum, 2);
 	WapiIELength += 2;
 
-	pframe[0] = _WAPI_IE_;
+	pframe[0] = WLAN_EID_BSS_AC_ACCESS_DELAY;
 	pframe[1] = WapiIELength;
 	memcpy(pframe + 2, pWapiInfo->wapiIE, WapiIELength);
 	pframe += WapiIELength + 2;

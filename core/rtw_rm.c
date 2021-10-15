@@ -1082,7 +1082,7 @@ static u8 *rm_gen_bcn_detail_elem(_adapter *padapter, u8 *pframe,
 #if (RM_MORE_DBG_MSG)
 			RTW_INFO("RM: bcn_req_ssid\n");
 #endif
-			pframe = rtw_set_ie(pframe, _SSID_IE_,
+			pframe = rtw_set_ie(pframe, WLAN_EID_SSID,
 				pbss->Ssid.SsidLength,
 				pbss->Ssid.Ssid, &my_len);
 			break;

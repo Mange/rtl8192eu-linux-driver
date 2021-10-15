@@ -118,75 +118,13 @@ enum WIFI_FRAME_SUBTYPE {
 	WIFI_QOS_DATA_NULL	= (BIT(6) | WIFI_QOS_DATA_TYPE),
 };
 
-enum WIFI_REASON_CODE	{
-	_RSON_RESERVED_					= 0,
-	_RSON_UNSPECIFIED_				= 1,
-	_RSON_AUTH_NO_LONGER_VALID_		= 2,
-	_RSON_DEAUTH_STA_LEAVING_		= 3,
-	_RSON_INACTIVITY_				= 4,
-	_RSON_UNABLE_HANDLE_			= 5,
-	_RSON_CLS2_						= 6,
-	_RSON_CLS3_						= 7,
-	_RSON_DISAOC_STA_LEAVING_		= 8,
-	_RSON_ASOC_NOT_AUTH_			= 9,
-
-	/* WPA reason */
-	_RSON_INVALID_IE_				= 13,
-	_RSON_MIC_FAILURE_				= 14,
-	_RSON_4WAY_HNDSHK_TIMEOUT_		= 15,
-	_RSON_GROUP_KEY_UPDATE_TIMEOUT_	= 16,
-	_RSON_DIFF_IE_					= 17,
-	_RSON_MLTCST_CIPHER_NOT_VALID_	= 18,
-	_RSON_UNICST_CIPHER_NOT_VALID_	= 19,
-	_RSON_AKMP_NOT_VALID_			= 20,
-	_RSON_UNSUPPORT_RSNE_VER_		= 21,
-	_RSON_INVALID_RSNE_CAP_			= 22,
-	_RSON_IEEE_802DOT1X_AUTH_FAIL_	= 23,
-
-	/* belowing are Realtek definition */
-	_RSON_PMK_NOT_AVAILABLE_		= 24,
-	_RSON_TDLS_TEAR_TOOFAR_			= 25,
-	_RSON_TDLS_TEAR_UN_RSN_			= 26,
-};
 
 /* Reason codes (IEEE 802.11-2007, 7.3.1.7, Table 7-22) */
-
-enum WIFI_STATUS_CODE {
-	_STATS_SUCCESSFUL_			= 0,
-	_STATS_FAILURE_				= 1,
-	_STATS_SEC_DISABLED_		= 5,
-	_STATS_NOT_IN_SAME_BSS_		= 7,
-	_STATS_CAP_FAIL_			= 10,
-	_STATS_NO_ASOC_				= 11,
-	_STATS_OTHER_				= 12,
-	_STATS_NO_SUPP_ALG_			= 13,
-	_STATS_OUT_OF_AUTH_SEQ_		= 14,
-	_STATS_CHALLENGE_FAIL_		= 15,
-	_STATS_AUTH_TIMEOUT_		= 16,
-	_STATS_UNABLE_HANDLE_STA_	= 17,
-	_STATS_RATE_FAIL_			= 18,
-	_STATS_REFUSED_TEMPORARILY_ = 30,
-	_STATS_DECLINE_REQ_			= 37,
-	_STATS_INVALID_PARAMETERS_	= 38,
-	_STATS_INVALID_RSNIE_		= 72,
+enum {
+	_STATS_REFUSED_TEMPORARILY_ = 30, /* Code-22-65535 reserved */
 };
-
 /* IEEE 802.11r */
 #define WLAN_STATUS_INVALID_PMKID 53
-
-enum WIFI_REG_DOMAIN {
-	DOMAIN_FCC		= 1,
-	DOMAIN_IC		= 2,
-	DOMAIN_ETSI		= 3,
-	DOMAIN_SPAIN	= 4,
-	DOMAIN_FRANCE	= 5,
-	DOMAIN_MKK		= 6,
-	DOMAIN_ISRAEL	= 7,
-	DOMAIN_MKK1		= 8,
-	DOMAIN_MKK2		= 9,
-	DOMAIN_MKK3		= 10,
-	DOMAIN_MAX
-};
 
 #define _TO_DS_		BIT(8)
 #define _FROM_DS_	BIT(9)
@@ -500,47 +438,6 @@ static inline int IsFrameTypeData(unsigned char *pframe)
 #define _PUBLIC_ACTION_IE_OFFSET_	8
 
 #define _FIXED_IE_LENGTH_			_BEACON_IE_OFFSET_
-
-#define _SSID_IE_				0
-#define _SUPPORTEDRATES_IE_	1
-#define _DSSET_IE_				3
-#define _TIM_IE_					5
-#define _IBSS_PARA_IE_			6
-#define _COUNTRY_IE_			7
-#define _CHLGETXT_IE_			16
-#define _SUPPORTED_CH_IE_		36
-#define _CH_SWTICH_ANNOUNCE_	37	/* Secondary Channel Offset */
-#define	_MEAS_REQ_IE_		38
-#define	_MEAS_RSP_IE_		39
-#define _RSN_IE_2_				48
-#define _SSN_IE_1_					221
-#define _ERPINFO_IE_			42
-#define _EXT_SUPPORTEDRATES_IE_	50
-
-#define _HT_CAPABILITY_IE_			45
-#define _MDIE_					54
-#define _FTIE_					55
-#define _TIMEOUT_ITVL_IE_			56
-#define _SRC_IE_				59
-#define _HT_EXTRA_INFO_IE_			61
-#define _HT_ADD_INFO_IE_			61 /* _HT_EXTRA_INFO_IE_ */
-#define _WAPI_IE_				68
-#define _EID_RRM_EN_CAP_IE_			70
-
-
-/* #define EID_BSSCoexistence			72 */ /* 20/40 BSS Coexistence
- * #define EID_BSSIntolerantChlReport	73 */
-#define _RIC_Descriptor_IE_			75
-#ifdef CONFIG_IEEE80211W
-#define _MME_IE_					76 /* 802.11w Management MIC element */
-#endif /* CONFIG_IEEE80211W */
-#define _LINK_ID_IE_					101
-#define _CH_SWITCH_TIMING_		104
-#define _PTI_BUFFER_STATUS_		106
-#define _EXT_CAP_IE_				127
-#define _VENDOR_SPECIFIC_IE_		221
-
-#define	_RESERVED47_				47
 
 typedef	enum _ELEMENT_ID {
 	EID_SsId					= 0, /* service set identifier (0:32) */

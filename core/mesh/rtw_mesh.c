@@ -2429,10 +2429,10 @@ int rtw_mesh_peer_establish(_adapter *adapter, struct mesh_plink_ent *plink, str
 
 	rtw_ap_parse_sta_capability(adapter, sta, plink->rx_conf_ies);
 
-	if (rtw_ap_parse_sta_supported_rates(adapter, sta, tlv_ies, tlv_ieslen) != _STATS_SUCCESSFUL_)
+	if (rtw_ap_parse_sta_supported_rates(adapter, sta, tlv_ies, tlv_ieslen) != WLAN_STATUS_SUCCESS)
 		goto exit;
 	
-	if (rtw_ap_parse_sta_security_ie(adapter, sta, &elems) != _STATS_SUCCESSFUL_)
+	if (rtw_ap_parse_sta_security_ie(adapter, sta, &elems) != WLAN_STATUS_SUCCESS)
 		goto exit;
 
 	rtw_ap_parse_sta_wmm_ie(adapter, sta, tlv_ies, tlv_ieslen);

@@ -218,7 +218,7 @@ int rtw_get_rson_struct(WLAN_BSSID_EX *bssid, struct  rtw_rson_struct *rson_data
 	limit = bssid->IELength - _BEACON_IE_OFFSET_;
 
 	for (p = bssid->IEs + _BEACON_IE_OFFSET_; ; p += (len + 2)) {
-		p = rtw_get_ie(p, _VENDOR_SPECIFIC_IE_, &len, limit);
+		p = rtw_get_ie(p, WLAN_EID_VENDOR_SPECIFIC, &len, limit);
 		limit -= len;
 		if ((p == NULL) || (len == 0))
 			break;
@@ -252,7 +252,7 @@ u32 rtw_rson_append_ie(_adapter *padapter, unsigned char *pframe, u32 *len)
 	if ((!pdvobj) || (!pframe))
 		return 0;
 	ptr = ori = pframe;
-	*ptr++ = _VENDOR_SPECIFIC_IE_;
+	*ptr++ = WLAN_EID_VENDOR_SPECIFIC;
 	*ptr++ = ie_len = sizeof(RTW_RSON_OUI)+sizeof(pdvobj->rson_data);
 	memcpy(ptr, RTW_RSON_OUI, sizeof(RTW_RSON_OUI));
 	ptr = ptr + sizeof(RTW_RSON_OUI);
@@ -434,7 +434,7 @@ u8 rtw_rson_ap_check_sta(_adapter *padapter, u8 *pframe, uint pkt_len, unsigned 
 #ifndef CONFIG_RTW_REPEATER_SON_ROOT
 	memset(&rson_target, 0, sizeof(rson_target));
 	for (p = pframe + WLAN_HDR_A3_LEN + ie_offset; ; p += (len + 2)) {
-		p = rtw_get_ie(p, _VENDOR_SPECIFIC_IE_, &len, pkt_len - WLAN_HDR_A3_LEN - ie_offset);
+		p = rtw_get_ie(p, WLAN_EID_VENDOR_SPECIFIC, &len, pkt_len - WLAN_HDR_A3_LEN - ie_offset);
 
 		if ((p == NULL) || (len == 0))
 			break;

@@ -1190,7 +1190,7 @@ int rtw_is_desired_network(_adapter *adapter, struct wlan_network *pnetwork)
 			bselected = _FALSE;
 
 		if (psecuritypriv->ndisauthtype == Ndis802_11AuthModeWPA2PSK) {
-			p = rtw_get_ie(pnetwork->network.IEs + _BEACON_IE_OFFSET_, _RSN_IE_2_, &ie_len, (pnetwork->network.IELength - _BEACON_IE_OFFSET_));
+			p = rtw_get_ie(pnetwork->network.IEs + _BEACON_IE_OFFSET_, WLAN_EID_RSN, &ie_len, (pnetwork->network.IELength - _BEACON_IE_OFFSET_));
 			if (p && ie_len > 0)
 				bselected = _TRUE;
 			else
@@ -4606,7 +4606,7 @@ void rtw_build_wmm_ie_ht(_adapter *padapter, u8 *out_ie, uint *pout_len)
 
 	if (padapter->mlmepriv.qospriv.qos_option == 0) {
 		out_len = *pout_len;
-		pframe = rtw_set_ie(out_ie + out_len, _VENDOR_SPECIFIC_IE_,
+		pframe = rtw_set_ie(out_ie + out_len, WLAN_EID_VENDOR_SPECIFIC,
 				    _WMM_IE_Length_, WMM_IE, pout_len);
 
 		padapter->mlmepriv.qospriv.qos_option = 1;
@@ -4846,16 +4846,16 @@ unsigned int rtw_restructure_ht_ie(_adapter *padapter, u8 *in_ie, u8 *out_ie, ui
 	}
 #endif/*CONFIG_BEAMFORMING*/
 
-	pframe = rtw_set_ie(out_ie + out_len, _HT_CAPABILITY_IE_,
+	pframe = rtw_set_ie(out_ie + out_len, WLAN_EID_HT_CAPABILITY,
 		sizeof(struct rtw_ieee80211_ht_cap), (unsigned char *)&ht_capie, pout_len);
 
 	phtpriv->ht_option = _TRUE;
 
 	if (in_ie != NULL) {
-		p = rtw_get_ie(in_ie, _HT_ADD_INFO_IE_, &ielen, in_len);
+		p = rtw_get_ie(in_ie, WLAN_EID_HT_OPERATION, &ielen, in_len);
 		if (p && (ielen == sizeof(struct ieee80211_ht_addt_info))) {
 			out_len = *pout_len;
-			pframe = rtw_set_ie(out_ie + out_len, _HT_ADD_INFO_IE_, ielen, p + 2 , pout_len);
+			pframe = rtw_set_ie(out_ie + out_len, WLAN_EID_HT_OPERATION, ielen, p + 2 , pout_len);
 		}
 	}
 
@@ -4903,7 +4903,7 @@ void rtw_update_ht_cap(_adapter *padapter, u8 *pie, uint ie_len, u8 channel)
 
 	/* check Max Rx A-MPDU Size */
 	len = 0;
-	p = rtw_get_ie(pie + sizeof(NDIS_802_11_FIXED_IEs), _HT_CAPABILITY_IE_, &len, ie_len - sizeof(NDIS_802_11_FIXED_IEs));
+	p = rtw_get_ie(pie + sizeof(NDIS_802_11_FIXED_IEs), WLAN_EID_HT_CAPABILITY, &len, ie_len - sizeof(NDIS_802_11_FIXED_IEs));
 	if (p && len > 0) {
 		pht_capie = (struct rtw_ieee80211_ht_cap *)(p + 2);
 		max_ampdu_sz = (pht_capie->ampdu_params_info & IEEE80211_HT_AMPDU_PARM_FACTOR);
@@ -4916,7 +4916,7 @@ void rtw_update_ht_cap(_adapter *padapter, u8 *pie, uint ie_len, u8 channel)
 
 
 	len = 0;
-	p = rtw_get_ie(pie + sizeof(NDIS_802_11_FIXED_IEs), _HT_ADD_INFO_IE_, &len, ie_len - sizeof(NDIS_802_11_FIXED_IEs));
+	p = rtw_get_ie(pie + sizeof(NDIS_802_11_FIXED_IEs), WLAN_EID_HT_OPERATION, &len, ie_len - sizeof(NDIS_802_11_FIXED_IEs));
 	if (p && len > 0) {
 		pht_addtinfo = (struct ieee80211_ht_addt_info *)(p + 2);
 		/* todo: */

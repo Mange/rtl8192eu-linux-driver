@@ -2888,7 +2888,7 @@ s32 rtw_mgmt_xmitframe_coalesce(_adapter *padapter, _pkt *pkt, struct xmit_frame
 			RTW_PUT_LE64(&MME[2], padapter->securitypriv.dot11wBIPtxpn.val);
 
 			/* add MME IE with MIC all zero, MME string doesn't include element id and length */
-			pframe = rtw_set_ie(pframe, _MME_IE_ , 16 , MME, &(pattrib->pktlen));
+			pframe = rtw_set_ie(pframe, WLAN_EID_MMIE  , 16 , MME, &(pattrib->pktlen));
 			pattrib->last_txcmdsz = pattrib->pktlen;
 			/* total frame length - header length */
 			frame_body_len = pattrib->pktlen - sizeof(struct rtw_ieee80211_hdr_3addr);
@@ -3124,7 +3124,7 @@ void rtw_update_protection(_adapter *padapter, u8 *ie, uint ie_len)
 
 	case AUTO_VCS:
 	default:
-		perp = rtw_get_ie(ie, _ERPINFO_IE_, &erp_len, ie_len);
+		perp = rtw_get_ie(ie, WLAN_EID_ERP_INFO, &erp_len, ie_len);
 		if (perp == NULL)
 			pxmitpriv->vcs = NONE_VCS;
 		else {
@@ -4816,9 +4816,9 @@ sint xmitframe_enqueue_for_sleeping_sta(_adapter *padapter, struct xmit_frame *p
 			/* RTW_INFO_DUMP("enqueue, tim=", pstapriv->tim_bitmap, pstapriv->aid_bmp_len); */
 			if (update_tim == _TRUE) {
 				if (is_broadcast_mac_addr(pattrib->ra))
-					_update_beacon(padapter, _TIM_IE_, NULL, _TRUE, "buffer BC");
+					_update_beacon(padapter, WLAN_EID_DS_PARAMS, NULL, _TRUE, "buffer BC");
 				else
-					_update_beacon(padapter, _TIM_IE_, NULL, _TRUE, "buffer MC");
+					_update_beacon(padapter, WLAN_EID_DS_PARAMS, NULL, _TRUE, "buffer MC");
 			} else
 				chk_bmc_sleepq_cmd(padapter);
 
@@ -4885,7 +4885,7 @@ sint xmitframe_enqueue_for_sleeping_sta(_adapter *padapter, struct xmit_frame *p
 				if (update_tim == _TRUE) {
 					/* RTW_INFO("sleepq_len==1, update BCNTIM\n"); */
 					/* upate BCN for TIM IE */
-					_update_beacon(padapter, _TIM_IE_, NULL, _TRUE, "buffer UC");
+					_update_beacon(padapter, WLAN_EID_DS_PARAMS, NULL, _TRUE, "buffer UC");
 				}
 			}
 
@@ -5170,11 +5170,11 @@ _exit:
 	if (update_mask) {
 		/* update_BCNTIM(padapter); */
 		if ((update_mask & (BIT(0) | BIT(1))) == (BIT(0) | BIT(1)))
-			_update_beacon(padapter, _TIM_IE_, NULL, _TRUE, "clear UC&BMC");
+			_update_beacon(padapter, WLAN_EID_DS_PARAMS, NULL, _TRUE, "clear UC&BMC");
 		else if ((update_mask & BIT(1)) == BIT(1))
-			_update_beacon(padapter, _TIM_IE_, NULL, _TRUE, "clear BMC");
+			_update_beacon(padapter, WLAN_EID_DS_PARAMS, NULL, _TRUE, "clear BMC");
 		else
-			_update_beacon(padapter, _TIM_IE_, NULL, _TRUE, "clear UC");
+			_update_beacon(padapter, WLAN_EID_DS_PARAMS, NULL, _TRUE, "clear UC");
 	}
 
 }
@@ -5252,7 +5252,7 @@ void xmit_delivery_enabled_frames(_adapter *padapter, struct sta_info *psta)
 			/* RTW_INFO_DUMP("update_BCNTIM, tim=", pstapriv->tim_bitmap, pstapriv->aid_bmp_len); */
 			/* upate BCN for TIM IE */
 			/* update_BCNTIM(padapter); */
-			update_beacon(padapter, _TIM_IE_, NULL, _TRUE);
+			update_beacon(padapter, WLAN_EID_DS_PARAMS, NULL, _TRUE);
 			/* update_mask = BIT(0); */
 		}
 

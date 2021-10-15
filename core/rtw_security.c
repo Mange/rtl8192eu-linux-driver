@@ -2045,7 +2045,7 @@ u32	rtw_BIP_verify(_adapter *padapter, u8 *whdr_pos, sint flen
 	u8 mic[16];
 
 	mme = whdr_pos + flen - 18;
-	if (*mme != _MME_IE_)
+	if (*mme != WLAN_EID_MMIE )
 		return RTW_RX_HANDLED;
 
 	/* copy key index */

@@ -6174,14 +6174,14 @@ static void rtw_hal_construct_P2PBeacon(_adapter *padapter, u8 *pframe, u32 *pLe
 	pktlen += 2;
 
 	/* SSID */
-	pframe = rtw_set_ie(pframe, _SSID_IE_, cur_network->Ssid.SsidLength, cur_network->Ssid.Ssid, &pktlen);
+	pframe = rtw_set_ie(pframe, WLAN_EID_SSID, cur_network->Ssid.SsidLength, cur_network->Ssid.Ssid, &pktlen);
 
 	/* supported rates... */
 	rate_len = rtw_get_rateset_len(cur_network->SupportedRates);
-	pframe = rtw_set_ie(pframe, _SUPPORTEDRATES_IE_, ((rate_len > 8) ? 8 : rate_len), cur_network->SupportedRates, &pktlen);
+	pframe = rtw_set_ie(pframe, WLAN_EID_SUPP_RATES, ((rate_len > 8) ? 8 : rate_len), cur_network->SupportedRates, &pktlen);
 
 	/* DS parameter set */
-	pframe = rtw_set_ie(pframe, _DSSET_IE_, 1, (unsigned char *)&(cur_network->Configuration.DSConfig), &pktlen);
+	pframe = rtw_set_ie(pframe, WLAN_EID_DS_PARAMS, 1, (unsigned char *)&(cur_network->Configuration.DSConfig), &pktlen);
 
 	/* if( (pmlmeinfo->state&0x03) == WIFI_FW_ADHOC_STATE) */
 	{
@@ -6190,16 +6190,16 @@ static void rtw_hal_construct_P2PBeacon(_adapter *padapter, u8 *pframe, u32 *pLe
 		/* IBSS Parameter Set... */
 		/* ATIMWindow = cur->Configuration.ATIMWindow; */
 		ATIMWindow = 0;
-		pframe = rtw_set_ie(pframe, _IBSS_PARA_IE_, 2, (unsigned char *)(&ATIMWindow), &pktlen);
+		pframe = rtw_set_ie(pframe, WLAN_EID_IBSS_PARAMS, 2, (unsigned char *)(&ATIMWindow), &pktlen);
 
 		/* ERP IE */
-		pframe = rtw_set_ie(pframe, _ERPINFO_IE_, 1, &erpinfo, &pktlen);
+		pframe = rtw_set_ie(pframe, WLAN_EID_ERP_INFO, 1, &erpinfo, &pktlen);
 	}
 
 
 	/* EXTERNDED SUPPORTED RATE */
 	if (rate_len > 8)
-		pframe = rtw_set_ie(pframe, _EXT_SUPPORTEDRATES_IE_, (rate_len - 8), (cur_network->SupportedRates + 8), &pktlen);
+		pframe = rtw_set_ie(pframe, WLAN_EID_EXT_SUPP_RATES, (rate_len - 8), (cur_network->SupportedRates + 8), &pktlen);
 
 
 	/* todo:HT for adhoc */
@@ -6299,14 +6299,14 @@ static void rtw_hal_construct_P2PProbeRsp(_adapter *padapter, u8 *pframe, u32 *p
 
 
 	/* SSID */
-	pframe = rtw_set_ie(pframe, _SSID_IE_, 7, pwdinfo->p2p_wildcard_ssid, &pktlen);
+	pframe = rtw_set_ie(pframe, WLAN_EID_SSID, 7, pwdinfo->p2p_wildcard_ssid, &pktlen);
 
 	/* supported rates... */
 	/*	Use the OFDM rate in the P2P probe response frame. ( 6(B), 9(B), 12, 18, 24, 36, 48, 54 ) */
-	pframe = rtw_set_ie(pframe, _SUPPORTEDRATES_IE_, 8, pwdinfo->support_rate, &pktlen);
+	pframe = rtw_set_ie(pframe, WLAN_EID_SUPP_RATES, 8, pwdinfo->support_rate, &pktlen);
 
 	/* DS parameter set */
-	pframe = rtw_set_ie(pframe, _DSSET_IE_, 1, (unsigned char *)&pwdinfo->listen_channel, &pktlen);
+	pframe = rtw_set_ie(pframe, WLAN_EID_DS_PARAMS, 1, (unsigned char *)&pwdinfo->listen_channel, &pktlen);
 
 #ifdef CONFIG_IOCTL_CFG80211
 	if (pwdinfo->driver_interface == DRIVER_CFG80211) {
@@ -6520,7 +6520,7 @@ static void rtw_hal_construct_P2PProbeRsp(_adapter *padapter, u8 *pframe, u32 *p
 		wpsielen += 2;
 
 
-		pframe = rtw_set_ie(pframe, _VENDOR_SPECIFIC_IE_, wpsielen, (unsigned char *) wpsie, &pktlen);
+		pframe = rtw_set_ie(pframe, WLAN_EID_VENDOR_SPECIFIC, wpsielen, (unsigned char *) wpsie, &pktlen);
 
 
 		p2pielen = build_probe_resp_p2p_ie(pwdinfo, pframe);
@@ -6648,7 +6648,7 @@ static void rtw_hal_construct_P2PNegoRsp(_adapter *padapter, u8 *pframe, u32 *pL
 		*(u16 *)(wpsie + wpsielen) = cpu_to_be16(WPS_DPID_PBC);
 	wpsielen += 2;
 
-	pframe = rtw_set_ie(pframe, _VENDOR_SPECIFIC_IE_, wpsielen, (unsigned char *) wpsie, &pktlen);
+	pframe = rtw_set_ie(pframe, WLAN_EID_VENDOR_SPECIFIC, wpsielen, (unsigned char *) wpsie, &pktlen);
 
 
 	/*	P2P IE Section. */
@@ -6930,7 +6930,7 @@ static void rtw_hal_construct_P2PNegoRsp(_adapter *padapter, u8 *pframe, u32 *pL
 
 	}
 
-	pframe = rtw_set_ie(pframe, _VENDOR_SPECIFIC_IE_, p2pielen, (unsigned char *) p2pie, &pktlen);
+	pframe = rtw_set_ie(pframe, WLAN_EID_VENDOR_SPECIFIC, p2pielen, (unsigned char *) p2pie, &pktlen);
 
 #ifdef CONFIG_WFD
 	wfdielen = build_nego_resp_wfd_ie(pwdinfo, pframe);
@@ -7175,7 +7175,7 @@ static void rtw_hal_construct_P2PInviteRsp(_adapter *padapter, u8 *pframe, u32 *
 	}
 #endif
 
-	pframe = rtw_set_ie(pframe, _VENDOR_SPECIFIC_IE_, p2pielen, (unsigned char *) p2pie, &pktlen);
+	pframe = rtw_set_ie(pframe, WLAN_EID_VENDOR_SPECIFIC, p2pielen, (unsigned char *) p2pie, &pktlen);
 
 #ifdef CONFIG_WFD
 	wfdielen = build_invitation_resp_wfd_ie(pwdinfo, pframe);
@@ -7288,7 +7288,7 @@ static void rtw_hal_construct_P2PProvisionDisRsp(_adapter *padapter, u8 *pframe,
 	RTW_PUT_BE16(wpsie + wpsielen, WPS_CM_PUSH_BUTTON);
 	wpsielen += 2;
 
-	pframe = rtw_set_ie(pframe, _VENDOR_SPECIFIC_IE_, wpsielen, (unsigned char *) wpsie, &pktlen);
+	pframe = rtw_set_ie(pframe, WLAN_EID_VENDOR_SPECIFIC, wpsielen, (unsigned char *) wpsie, &pktlen);
 
 #ifdef CONFIG_WFD
 	wfdielen = build_provdisc_resp_wfd_ie(pwdinfo, pframe);
@@ -7438,21 +7438,21 @@ void rtw_hal_construct_beacon(_adapter *padapter,
 	/* below for ad-hoc mode */
 
 	/* SSID */
-	pframe = rtw_set_ie(pframe, _SSID_IE_, cur_network->Ssid.SsidLength, cur_network->Ssid.Ssid, &pktlen);
+	pframe = rtw_set_ie(pframe, WLAN_EID_SSID, cur_network->Ssid.SsidLength, cur_network->Ssid.Ssid, &pktlen);
 
 	/* supported rates... */
 	rate_len = rtw_get_rateset_len(cur_network->SupportedRates);
-	pframe = rtw_set_ie(pframe, _SUPPORTEDRATES_IE_, ((rate_len > 8) ? 8 : rate_len), cur_network->SupportedRates, &pktlen);
+	pframe = rtw_set_ie(pframe, WLAN_EID_SUPP_RATES, ((rate_len > 8) ? 8 : rate_len), cur_network->SupportedRates, &pktlen);
 
 	/* DS parameter set */
-	pframe = rtw_set_ie(pframe, _DSSET_IE_, 1, (unsigned char *)&(cur_network->Configuration.DSConfig), &pktlen);
+	pframe = rtw_set_ie(pframe, WLAN_EID_DS_PARAMS, 1, (unsigned char *)&(cur_network->Configuration.DSConfig), &pktlen);
 
 	if ((pmlmeinfo->state & 0x03) == WIFI_FW_ADHOC_STATE) {
 		u32 ATIMWindow;
 		/* IBSS Parameter Set... */
 		/* ATIMWindow = cur->Configuration.ATIMWindow; */
 		ATIMWindow = 0;
-		pframe = rtw_set_ie(pframe, _IBSS_PARA_IE_, 2, (unsigned char *)(&ATIMWindow), &pktlen);
+		pframe = rtw_set_ie(pframe, WLAN_EID_IBSS_PARAMS, 2, (unsigned char *)(&ATIMWindow), &pktlen);
 	}
 
 
@@ -7461,7 +7461,7 @@ void rtw_hal_construct_beacon(_adapter *padapter,
 
 	/* EXTERNDED SUPPORTED RATE */
 	if (rate_len > 8)
-		pframe = rtw_set_ie(pframe, _EXT_SUPPORTEDRATES_IE_, (rate_len - 8), (cur_network->SupportedRates + 8), &pktlen);
+		pframe = rtw_set_ie(pframe, WLAN_EID_EXT_SUPP_RATES, (rate_len - 8), (cur_network->SupportedRates + 8), &pktlen);
 
 	/* todo:HT for adhoc */
 #endif
@@ -8060,19 +8060,19 @@ static void rtw_hal_construct_ProbeReq(_adapter *padapter, u8 *pframe,
 	pframe += pktlen;
 
 	if (ssid == NULL)
-		pframe = rtw_set_ie(pframe, _SSID_IE_, 0, NULL, &pktlen);
+		pframe = rtw_set_ie(pframe, WLAN_EID_SSID, 0, NULL, &pktlen);
 	else {
 		/* RTW_INFO("%s len:%d\n", ssid->SSID, ssid->SSID_len); */
-		pframe = rtw_set_ie(pframe, _SSID_IE_, ssid->SSID_len, ssid->SSID, &pktlen);
+		pframe = rtw_set_ie(pframe, WLAN_EID_SSID, ssid->SSID_len, ssid->SSID, &pktlen);
 	}
 
 	get_rate_set(padapter, bssrate, &bssrate_len);
 
 	if (bssrate_len > 8) {
-		pframe = rtw_set_ie(pframe, _SUPPORTEDRATES_IE_ , 8, bssrate, &pktlen);
-		pframe = rtw_set_ie(pframe, _EXT_SUPPORTEDRATES_IE_ , (bssrate_len - 8), (bssrate + 8), &pktlen);
+		pframe = rtw_set_ie(pframe, WLAN_EID_SUPP_RATES , 8, bssrate, &pktlen);
+		pframe = rtw_set_ie(pframe, WLAN_EID_EXT_SUPP_RATES , (bssrate_len - 8), (bssrate + 8), &pktlen);
 	} else
-		pframe = rtw_set_ie(pframe, _SUPPORTEDRATES_IE_ , bssrate_len , bssrate, &pktlen);
+		pframe = rtw_set_ie(pframe, WLAN_EID_SUPP_RATES , bssrate_len , bssrate, &pktlen);
 
 	*pLength = pktlen;
 }
@@ -14585,7 +14585,7 @@ u8 * rtw_hal_set_8812a_vendor_ie(_adapter *padapter , u8 *pframe ,uint *frlen ) 
 		vendor_info[6] = RT_HT_CAP_USE_JAGUAR_CCUT;
 	else
 		vendor_info[6] = RT_HT_CAP_USE_JAGUAR_BCUT;
-	pframe = rtw_set_ie(pframe, _VENDOR_SPECIFIC_IE_,vender_len,vendor_info , frlen);
+	pframe = rtw_set_ie(pframe, WLAN_EID_VENDOR_SPECIFIC,vender_len,vendor_info , frlen);
 	
 	return pframe;
 }

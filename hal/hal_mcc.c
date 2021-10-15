@@ -132,7 +132,7 @@ static void rtw_hal_mcc_build_p2p_noa_attr(PADAPTER padapter, u8 *ie, u32 *ie_le
 		, p2p_noa_attr_ie[p2p_noa_attr_len + 3]);
 
 	p2p_noa_attr_len = p2p_noa_attr_len + 4;
-	rtw_set_ie(ie, _VENDOR_SPECIFIC_IE_, p2p_noa_attr_len, (u8 *)p2p_noa_attr_ie, ie_len);
+	rtw_set_ie(ie, WLAN_EID_VENDOR_SPECIFIC, p2p_noa_attr_len, (u8 *)p2p_noa_attr_ie, ie_len);
 }
 
 
@@ -183,7 +183,7 @@ static void rtw_hal_mcc_update_go_p2p_ie(PADAPTER padapter)
 		RTW_INFO("p2p_go_noa_ie_len:%d\n", pmccadapriv->p2p_go_noa_ie_len);
 		RTW_INFO_DUMP("\n", pmccadapriv->p2p_go_noa_ie, pmccadapriv->p2p_go_noa_ie_len);
 	}
-	update_beacon(padapter, _VENDOR_SPECIFIC_IE_, P2P_OUI, _TRUE);
+	update_beacon(padapter, WLAN_EID_VENDOR_SPECIFIC, P2P_OUI, _TRUE);
 }
 
 /**
@@ -200,7 +200,7 @@ static void rtw_hal_mcc_remove_go_p2p_ie(PADAPTER padapter)
 		return;
 
 	pmccadapriv->p2p_go_noa_ie_len = 0;
-	update_beacon(padapter, _VENDOR_SPECIFIC_IE_, P2P_OUI, _TRUE);
+	update_beacon(padapter, WLAN_EID_VENDOR_SPECIFIC, P2P_OUI, _TRUE);
 }
 
 /* restore IQK value for all interface */

@@ -358,7 +358,7 @@ static inline char *iwe_stream_protocol_process(_adapter *padapter,
 #ifdef CONFIG_80211N_HT
 	/* parsing HT_CAP_IE	 */
 	if(padapter->registrypriv.ht_enable && is_supported_ht(padapter->registrypriv.wireless_mode)) {
-		p = rtw_get_ie(&pnetwork->network.IEs[ie_offset], _HT_CAPABILITY_IE_, &ht_ielen, pnetwork->network.IELength - ie_offset);
+		p = rtw_get_ie(&pnetwork->network.IEs[ie_offset], WLAN_EID_HT_CAPABILITY, &ht_ielen, pnetwork->network.IELength - ie_offset);
 		if (p && ht_ielen > 0)
 			ht_cap = _TRUE;
 	}
@@ -423,7 +423,7 @@ static inline char *iwe_stream_rate_process(_adapter *padapter,
 
 	/* parsing HT_CAP_IE	 */
 	if(is_supported_ht(padapter->registrypriv.wireless_mode)) {
-		p = rtw_get_ie(&pnetwork->network.IEs[ie_offset], _HT_CAPABILITY_IE_, &ht_ielen, pnetwork->network.IELength - ie_offset);
+		p = rtw_get_ie(&pnetwork->network.IEs[ie_offset], WLAN_EID_HT_CAPABILITY, &ht_ielen, pnetwork->network.IELength - ie_offset);
 		if (p && ht_ielen > 0) {
 			struct rtw_ieee80211_ht_cap *pht_capie;
 			ht_cap = _TRUE;
@@ -1093,7 +1093,7 @@ static int rtw_set_wpa_ie(_adapter *padapter, char *pie, unsigned short ielen)
 			while (cnt < ielen) {
 				eid = buf[cnt];
 
-				if ((eid == _VENDOR_SPECIFIC_IE_) && (_rtw_memcmp(&buf[cnt + 2], wps_oui, 4) == _TRUE)) {
+				if ((eid == WLAN_EID_VENDOR_SPECIFIC) && (_rtw_memcmp(&buf[cnt + 2], wps_oui, 4) == _TRUE)) {
 					RTW_INFO("SET WPS_IE\n");
 
 					padapter->securitypriv.wps_ie_len = ((buf[cnt + 1] + 2) < MAX_WPS_IE_LEN) ? (buf[cnt + 1] + 2) : MAX_WPS_IE_LEN;
@@ -1150,7 +1150,7 @@ static int rtw_wx_get_name(struct net_device *dev,
 	if (check_fwstate(pmlmepriv, _FW_LINKED | WIFI_ADHOC_MASTER_STATE) == _TRUE) {
 		/* parsing HT_CAP_IE */
 		if( is_supported_ht(padapter->registrypriv.wireless_mode)&&(padapter->registrypriv.ht_enable)) {
-			p = rtw_get_ie(&pcur_bss->IEs[12], _HT_CAPABILITY_IE_, &ht_ielen, pcur_bss->IELength - 12);
+			p = rtw_get_ie(&pcur_bss->IEs[12], WLAN_EID_HT_CAPABILITY, &ht_ielen, pcur_bss->IELength - 12);
 			if (p && ht_ielen > 0 )
 				ht_cap = _TRUE;
 		}
@@ -7450,7 +7450,7 @@ static int rtw_set_wps_beacon(struct net_device *dev, struct ieee_param *param, 
 
 		memcpy(pmlmepriv->wps_beacon_ie, param->u.bcn_ie.buf, ie_len);
 
-		update_beacon(padapter, _VENDOR_SPECIFIC_IE_, wps_oui, _TRUE);
+		update_beacon(padapter, WLAN_EID_VENDOR_SPECIFIC, wps_oui, _TRUE);
 
 		pmlmeext->bstart_bss = _TRUE;
 
@@ -7833,7 +7833,7 @@ static int rtw_wx_set_priv(struct net_device *dev,
 		int probereq_wpsie_len = len;
 		u8 wps_oui[4] = {0x0, 0x50, 0xf2, 0x04};
 
-		if ((_VENDOR_SPECIFIC_IE_ == probereq_wpsie[0]) &&
+		if ((WLAN_EID_VENDOR_SPECIFIC == probereq_wpsie[0]) &&
 		    (_rtw_memcmp(&probereq_wpsie[2], wps_oui, 4) == _TRUE)) {
 			cp_sz = probereq_wpsie_len > MAX_WPS_IE_LEN ? MAX_WPS_IE_LEN : probereq_wpsie_len;
 

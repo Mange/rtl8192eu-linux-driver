@@ -530,7 +530,7 @@ int rtw_generate_ie(struct registry_priv *pregistrypriv)
 	ie += 2;
 
 	/* SSID */
-	ie = rtw_set_ie(ie, _SSID_IE_, pdev_network->Ssid.SsidLength, pdev_network->Ssid.Ssid, &sz);
+	ie = rtw_set_ie(ie, WLAN_EID_SSID, pdev_network->Ssid.SsidLength, pdev_network->Ssid.Ssid, &sz);
 
 	/* supported rates */
 	if (pregistrypriv->wireless_mode == WIRELESS_11ABGN) {
@@ -551,21 +551,21 @@ int rtw_generate_ie(struct registry_priv *pregistrypriv)
 	rateLen = rtw_get_rateset_len(pdev_network->SupportedRates);
 
 	if (rateLen > 8) {
-		ie = rtw_set_ie(ie, _SUPPORTEDRATES_IE_, 8, pdev_network->SupportedRates, &sz);
-		/* ie = rtw_set_ie(ie, _EXT_SUPPORTEDRATES_IE_, (rateLen - 8), (pdev_network->SupportedRates + 8), &sz); */
+		ie = rtw_set_ie(ie, WLAN_EID_SUPP_RATES, 8, pdev_network->SupportedRates, &sz);
+		/* ie = rtw_set_ie(ie, WLAN_EID_EXT_SUPP_RATES, (rateLen - 8), (pdev_network->SupportedRates + 8), &sz); */
 	} else
-		ie = rtw_set_ie(ie, _SUPPORTEDRATES_IE_, rateLen, pdev_network->SupportedRates, &sz);
+		ie = rtw_set_ie(ie, WLAN_EID_SUPP_RATES, rateLen, pdev_network->SupportedRates, &sz);
 
 	/* DS parameter set */
-	ie = rtw_set_ie(ie, _DSSET_IE_, 1, (u8 *)&(pdev_network->Configuration.DSConfig), &sz);
+	ie = rtw_set_ie(ie, WLAN_EID_DS_PARAMS, 1, (u8 *)&(pdev_network->Configuration.DSConfig), &sz);
 
 
 	/* IBSS Parameter Set */
 
-	ie = rtw_set_ie(ie, _IBSS_PARA_IE_, 2, (u8 *)&(pdev_network->Configuration.ATIMWindow), &sz);
+	ie = rtw_set_ie(ie, WLAN_EID_IBSS_PARAMS, 2, (u8 *)&(pdev_network->Configuration.ATIMWindow), &sz);
 
 	if (rateLen > 8)
-		ie = rtw_set_ie(ie, _EXT_SUPPORTEDRATES_IE_, (rateLen - 8), (pdev_network->SupportedRates + 8), &sz);
+		ie = rtw_set_ie(ie, WLAN_EID_EXT_SUPP_RATES, (rateLen - 8), (pdev_network->SupportedRates + 8), &sz);
 
 #ifdef CONFIG_80211N_HT
 	/* HT Cap. */
@@ -942,8 +942,8 @@ int rtw_get_wapi_ie(u8 *in_ie, uint in_len, u8 *wapi_ie, u16 *wapi_len)
 	while (cnt < in_len) {
 		authmode = in_ie[cnt];
 
-		/* if(authmode==_WAPI_IE_) */
-		if (authmode == _WAPI_IE_ && (_rtw_memcmp(&in_ie[cnt + 6], wapi_oui1, 4) == _TRUE ||
+		/* if(authmode==WLAN_EID_BSS_AC_ACCESS_DELAY) */
+		if (authmode == WLAN_EID_BSS_AC_ACCESS_DELAY && (_rtw_memcmp(&in_ie[cnt + 6], wapi_oui1, 4) == _TRUE ||
 			_rtw_memcmp(&in_ie[cnt + 6], wapi_oui2, 4) == _TRUE)) {
 			if (wapi_ie)
 				memcpy(wapi_ie, &in_ie[cnt], in_ie[cnt + 1] + 2);
@@ -1124,7 +1124,7 @@ u8 *rtw_get_wps_attr(u8 *wps_ie, uint wps_ielen, u16 target_attr_id , u8 *buf_at
 	if (len_attr)
 		*len_attr = 0;
 
-	if ((wps_ie[0] != _VENDOR_SPECIFIC_IE_) ||
+	if ((wps_ie[0] != WLAN_EID_VENDOR_SPECIFIC) ||
 	    (_rtw_memcmp(wps_ie + 2, wps_oui , 4) != _TRUE))
 		return attr_ptr;
 
@@ -1413,7 +1413,7 @@ ParseRes rtw_ieee802_11_parse_elems(u8 *start, uint len,
 			elems->vht_op_mode_notify = pos;
 			elems->vht_op_mode_notify_len = elen;
 			break;
-		case _EID_RRM_EN_CAP_IE_:
+		case WLAN_EID_RRM_ENABLED_CAPABILITIES :
 			elems->rm_en_cap = pos;
 			elems->rm_en_cap_len = elen;
 			break;
@@ -1767,7 +1767,7 @@ void rtw_ies_get_chbw(u8 *ies, int ies_len, u8 *ch, u8 *bw, u8 *offset, u8 ht, u
 	*bw = CHANNEL_WIDTH_20;
 	*offset = HAL_PRIME_CHNL_OFFSET_DONT_CARE;
 
-	p = rtw_get_ie(ies, _DSSET_IE_, &ie_len, ies_len);
+	p = rtw_get_ie(ies, WLAN_EID_DS_PARAMS, &ie_len, ies_len);
 	if (p && ie_len > 0)
 		*ch = *(p + 2);
 
@@ -1944,7 +1944,7 @@ u32 rtw_get_p2p_merged_ies_len(u8 *in_ie, u32 in_len)
 	while (i < in_len) {
 		pIE = (PNDIS_802_11_VARIABLE_IEs)(in_ie + i);
 
-		if (pIE->ElementID == _VENDOR_SPECIFIC_IE_ && _rtw_memcmp(pIE->data, OUI, 4)) {
+		if (pIE->ElementID == WLAN_EID_VENDOR_SPECIFIC && _rtw_memcmp(pIE->data, OUI, 4)) {
 			len += pIE->Length - 4; /* 4 is P2P OUI length, don't count it in this loop */
 		}
 
@@ -1978,7 +1978,7 @@ int rtw_p2p_merge_ies(u8 *in_ie, u32 in_len, u8 *merge_ie)
 			pIE = (PNDIS_802_11_VARIABLE_IEs)(in_ie + i);
 
 			/* Take out the rest of P2P OUIs */
-			if (pIE->ElementID == _VENDOR_SPECIFIC_IE_ && _rtw_memcmp(pIE->data, OUI, 4)) {
+			if (pIE->ElementID == WLAN_EID_VENDOR_SPECIFIC && _rtw_memcmp(pIE->data, OUI, 4)) {
 				memcpy(merge_ie, pIE->data + 4, pIE->Length - 4);
 				len += pIE->Length - 4;
 				merge_ie += pIE->Length - 4;

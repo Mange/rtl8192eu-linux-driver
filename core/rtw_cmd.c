@@ -1470,7 +1470,7 @@ u8 rtw_joinbss_cmd(_adapter  *padapter, struct wlan_network *pnetwork)
 #ifdef CONFIG_80211N_HT
 	phtpriv->ht_option = _FALSE;
 	if (pregistrypriv->ht_enable && is_supported_ht(pregistrypriv->wireless_mode)) {
-		ptmp = rtw_get_ie(&pnetwork->network.IEs[12], _HT_CAPABILITY_IE_, &tmp_len, pnetwork->network.IELength - 12);
+		ptmp = rtw_get_ie(&pnetwork->network.IEs[12], WLAN_EID_HT_CAPABILITY, &tmp_len, pnetwork->network.IELength - 12);
 		if (ptmp && tmp_len > 0) {
 			/*	Added by Albert 2010/06/23 */
 			/*	For the WEP mode, we will use the bg mode to do the connection to avoid some IOT issue. */
@@ -3231,8 +3231,8 @@ static void dynamic_update_bcn_check(_adapter *padapter)
 				&& _FALSE == atomic_read(&pmlmepriv->olbc_ht)) {
 
 				if (rtw_ht_operation_update(padapter) > 0) {
-					update_beacon(padapter, _HT_CAPABILITY_IE_, NULL, _FALSE);
-					update_beacon(padapter, _HT_ADD_INFO_IE_, NULL, _TRUE);
+					update_beacon(padapter, WLAN_EID_HT_CAPABILITY, NULL, _FALSE);
+					update_beacon(padapter, WLAN_EID_HT_OPERATION, NULL, _TRUE);
 				}
 			}
 #endif /* CONFIG_80211N_HT */
@@ -3245,8 +3245,8 @@ static void dynamic_update_bcn_check(_adapter *padapter)
 			&& _FALSE != atomic_read(&pmlmepriv->olbc_ht)) {
 					
 			if (rtw_ht_operation_update(padapter) > 0) {
-				update_beacon(padapter, _HT_CAPABILITY_IE_, NULL, _FALSE);
-				update_beacon(padapter, _HT_ADD_INFO_IE_, NULL, _TRUE);
+				update_beacon(padapter, WLAN_EID_HT_CAPABILITY, NULL, _FALSE);
+				update_beacon(padapter, WLAN_EID_HT_OPERATION, NULL, _TRUE);
 
 			}
 			atomic_set(&pmlmepriv->olbc, _FALSE);
@@ -4147,7 +4147,7 @@ static void rtw_chk_hi_queue_hdl(_adapter *padapter)
 			rtw_tim_map_clear(padapter, pstapriv->sta_dz_bitmap, 0);
 
 			if (update_tim == _TRUE)
-				_update_beacon(padapter, _TIM_IE_, NULL, _TRUE, "bmc sleepq and HIQ empty");
+				_update_beacon(padapter, WLAN_EID_DS_PARAMS, NULL, _TRUE, "bmc sleepq and HIQ empty");
 		} else /* re check again */
 			rtw_chk_hi_queue_cmd(padapter);
 

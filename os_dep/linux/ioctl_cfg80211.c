@@ -2657,7 +2657,7 @@ static void _rtw_cfg80211_surveydone_event_callback(_adapter *padapter, struct c
 			if (_rtw_memcmp(pnetwork->network.Ssid.Ssid, "Ralink_11n_AP", 13)) {
 				uint ie_len = 0;
 				u8 *p = NULL;
-				p = rtw_get_ie(pnetwork->network.IEs + _BEACON_IE_OFFSET_, _RSN_IE_2_, &ie_len, (pnetwork->network.IELength - _BEACON_IE_OFFSET_));
+				p = rtw_get_ie(pnetwork->network.IEs + _BEACON_IE_OFFSET_, WLAN_EID_RSN, &ie_len, (pnetwork->network.IELength - _BEACON_IE_OFFSET_));
 				RTW_INFO("ie_len=%d\n", ie_len);
 			}
 		}
@@ -4944,8 +4944,8 @@ static int rtw_add_beacon(_adapter *adapter, const u8 *head, size_t head_len, co
 #endif /* CONFIG_P2P */
 
 	/* pbss_network->IEs will not include p2p_ie, wfd ie */
-	rtw_ies_remove_ie(pbuf, &len, _BEACON_IE_OFFSET_, _VENDOR_SPECIFIC_IE_, P2P_OUI, 4);
-	rtw_ies_remove_ie(pbuf, &len, _BEACON_IE_OFFSET_, _VENDOR_SPECIFIC_IE_, WFD_OUI, 4);
+	rtw_ies_remove_ie(pbuf, &len, _BEACON_IE_OFFSET_, WLAN_EID_VENDOR_SPECIFIC, P2P_OUI, 4);
+	rtw_ies_remove_ie(pbuf, &len, _BEACON_IE_OFFSET_, WLAN_EID_VENDOR_SPECIFIC, WFD_OUI, 4);
 
 	if (rtw_check_beacon_data(adapter, pbuf,  len) == _SUCCESS) {
 #ifdef CONFIG_P2P
@@ -6438,7 +6438,7 @@ void rtw_cfg80211_issue_p2p_provision_request(_adapter *padapter, const u8 *buf,
 	p2pielen += devinfo_contentlen;
 
 
-	pframe = rtw_set_ie(pframe, _VENDOR_SPECIFIC_IE_, p2pielen, (unsigned char *) p2p_ie, &p2p_ielen);
+	pframe = rtw_set_ie(pframe, WLAN_EID_VENDOR_SPECIFIC, p2pielen, (unsigned char *) p2p_ie, &p2p_ielen);
 	/* p2pielen = build_prov_disc_request_p2p_ie( pwdinfo, pframe, NULL, 0, pwdinfo->tx_prov_disc_info.peerDevAddr); */
 	/* pframe += p2pielen; */
 	pattrib->pktlen += p2p_ielen;
@@ -6473,7 +6473,7 @@ void rtw_cfg80211_issue_p2p_provision_request(_adapter *padapter, const u8 *buf,
 	*(u16 *)(wpsie + wpsielen) = cpu_to_be16(pwdinfo->tx_prov_disc_info.wps_config_method_request);
 	wpsielen += 2;
 
-	pframe = rtw_set_ie(pframe, _VENDOR_SPECIFIC_IE_, wpsielen, (unsigned char *) wpsie, &pattrib->pktlen);
+	pframe = rtw_set_ie(pframe, WLAN_EID_VENDOR_SPECIFIC, wpsielen, (unsigned char *) wpsie, &pattrib->pktlen);
 
 
 #ifdef CONFIG_WFD
@@ -8188,7 +8188,7 @@ u8 *rtw_cfg80211_construct_mesh_beacon_ies(struct wiphy *wiphy, _adapter *adapte
 	*c = WLAN_EID_TIM;
 	*(c + 1) = 4;
 	c += 6;
-	//c = rtw_set_ie(c, _TIM_IE_, 4, NULL, NULL);
+	//c = rtw_set_ie(c, WLAN_EID_DS_PARAMS, 4, NULL, NULL);
 
 	/* Extended Supported Rates */
 	if (n_bitrates > 8)
@@ -8889,7 +8889,7 @@ static int rtw_cfg80211_set_beacon_wpsp2pie(struct net_device *ndev, char *buf, 
 			memcpy(pmlmepriv->wps_beacon_ie, wps_ie, wps_ielen);
 			pmlmepriv->wps_beacon_ie_len = wps_ielen;
 
-			update_beacon(padapter, _VENDOR_SPECIFIC_IE_, wps_oui, _TRUE);
+			update_beacon(padapter, WLAN_EID_VENDOR_SPECIFIC, wps_oui, _TRUE);
 
 		}
 

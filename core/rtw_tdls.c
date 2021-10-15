@@ -727,24 +727,24 @@ u8 *rtw_tdls_set_rsnie(struct tdls_txmgmt *ptxmgmt, u8 *pframe, struct pkt_attri
 	int len = 0;
 
 	if (ptxmgmt->len > 0)
-		p = rtw_get_ie(ptxmgmt->buf, _RSN_IE_2_, &len, ptxmgmt->len);
+		p = rtw_get_ie(ptxmgmt->buf, WLAN_EID_RSN, &len, ptxmgmt->len);
 
 	if (p != NULL)
-		return rtw_set_ie(pframe, _RSN_IE_2_, len, p + 2, &(pattrib->pktlen));
+		return rtw_set_ie(pframe, WLAN_EID_RSN, len, p + 2, &(pattrib->pktlen));
 	else if (init == _TRUE)
-		return rtw_set_ie(pframe, _RSN_IE_2_, sizeof(TDLS_RSNIE), TDLS_RSNIE, &(pattrib->pktlen));
+		return rtw_set_ie(pframe, WLAN_EID_RSN, sizeof(TDLS_RSNIE), TDLS_RSNIE, &(pattrib->pktlen));
 	else
-		return rtw_set_ie(pframe, _RSN_IE_2_, sizeof(ptdls_sta->TDLS_RSNIE), ptdls_sta->TDLS_RSNIE, &(pattrib->pktlen));
+		return rtw_set_ie(pframe, WLAN_EID_RSN, sizeof(ptdls_sta->TDLS_RSNIE), ptdls_sta->TDLS_RSNIE, &(pattrib->pktlen));
 }
 
 u8 *rtw_tdls_set_ext_cap(u8 *pframe, struct pkt_attrib *pattrib)
 {
-	return rtw_set_ie(pframe, _EXT_CAP_IE_ , sizeof(TDLS_EXT_CAPIE), TDLS_EXT_CAPIE, &(pattrib->pktlen));
+	return rtw_set_ie(pframe, WLAN_EID_EXT_CAPABILITY  , sizeof(TDLS_EXT_CAPIE), TDLS_EXT_CAPIE, &(pattrib->pktlen));
 }
 
 u8 *rtw_tdls_set_qos_cap(u8 *pframe, struct pkt_attrib *pattrib)
 {
-	return rtw_set_ie(pframe, _VENDOR_SPECIFIC_IE_, sizeof(TDLS_WMMIE), TDLS_WMMIE,  &(pattrib->pktlen));
+	return rtw_set_ie(pframe, WLAN_EID_VENDOR_SPECIFIC, sizeof(TDLS_WMMIE), TDLS_WMMIE,  &(pattrib->pktlen));
 }
 
 u8 *rtw_tdls_set_ftie(struct tdls_txmgmt *ptxmgmt, u8 *pframe, struct pkt_attrib *pattrib, u8 *ANonce, u8 *SNonce)
@@ -777,10 +777,10 @@ u8 *rtw_tdls_set_timeout_interval(struct tdls_txmgmt *ptxmgmt, u8 *pframe, struc
 	int len = 0;
 
 	if (ptxmgmt->len > 0)
-		p = rtw_get_ie(ptxmgmt->buf, _TIMEOUT_ITVL_IE_, &len, ptxmgmt->len);
+		p = rtw_get_ie(ptxmgmt->buf, WLAN_EID_TIMEOUT_INTERVAL, &len, ptxmgmt->len);
 
 	if (p != NULL)
-		return rtw_set_ie(pframe, _TIMEOUT_ITVL_IE_, len, p + 2, &(pattrib->pktlen));
+		return rtw_set_ie(pframe, WLAN_EID_TIMEOUT_INTERVAL, len, p + 2, &(pattrib->pktlen));
 	else {
 		/* Timeout interval */
 		timeout_itvl[0] = 0x02;
@@ -789,7 +789,7 @@ u8 *rtw_tdls_set_timeout_interval(struct tdls_txmgmt *ptxmgmt, u8 *pframe, struc
 		else
 			memcpy(timeout_itvl + 1, (u8 *)(&ptdls_sta->TDLS_PeerKey_Lifetime), 4);
 
-		return rtw_set_ie(pframe, _TIMEOUT_ITVL_IE_, 5, timeout_itvl, &(pattrib->pktlen));
+		return rtw_set_ie(pframe, WLAN_EID_TIMEOUT_INTERVAL, 5, timeout_itvl, &(pattrib->pktlen));
 	}
 }
 
@@ -867,14 +867,14 @@ u8 *rtw_tdls_set_supported_rate(_adapter *padapter, u8 *pframe, struct pkt_attri
 	bssrate_len = rtw_get_rateset_len(bssrate);
 
 	if (bssrate_len > 8) {
-		pframe = rtw_set_ie(pframe, _SUPPORTEDRATES_IE_ , 8, bssrate, &(pattrib->pktlen));
+		pframe = rtw_set_ie(pframe, WLAN_EID_SUPP_RATES , 8, bssrate, &(pattrib->pktlen));
 		more_supportedrates = 1;
 	} else
-		pframe = rtw_set_ie(pframe, _SUPPORTEDRATES_IE_ , bssrate_len , bssrate, &(pattrib->pktlen));
+		pframe = rtw_set_ie(pframe, WLAN_EID_SUPP_RATES , bssrate_len , bssrate, &(pattrib->pktlen));
 
 	/* extended supported rates */
 	if (more_supportedrates == 1)
-		pframe = rtw_set_ie(pframe, _EXT_SUPPORTEDRATES_IE_ , (bssrate_len - 8), (bssrate + 8), &(pattrib->pktlen));
+		pframe = rtw_set_ie(pframe, WLAN_EID_EXT_SUPP_RATES , (bssrate_len - 8), (bssrate + 8), &(pattrib->pktlen));
 
 	return pframe;
 }
@@ -1075,7 +1075,7 @@ u8 *rtw_tdls_set_wmm_params(_adapter *padapter, u8 *pframe, struct pkt_attrib *p
 			memcpy(wmm_param_ele + 6, (u8 *)&TDLS_WMM_PARAM_IE, sizeof(TDLS_WMM_PARAM_IE));
 		else
 			memcpy(wmm_param_ele + 6, (u8 *)&pmlmeinfo->WMM_param, sizeof(pmlmeinfo->WMM_param));
-		return rtw_set_ie(pframe, _VENDOR_SPECIFIC_IE_,  24, wmm_param_ele, &(pattrib->pktlen));
+		return rtw_set_ie(pframe, WLAN_EID_VENDOR_SPECIFIC,  24, wmm_param_ele, &(pattrib->pktlen));
 	} else
 		return pframe;
 }
@@ -1902,7 +1902,7 @@ sint On_TDLS_Setup_Req(_adapter *padapter, union recv_frame *precv_frame, struct
 
 	if (ptdls_sta) {
 		txmgmt.dialog_token = *(ptr + 2);	/* Copy dialog token */
-		txmgmt.status_code = _STATS_SUCCESSFUL_;
+		txmgmt.status_code = WLAN_STATUS_SUCCESS;
 
 		/* Parsing information element */
 		for (j = FIXED_IE; j < parsing_length;) {
@@ -1910,13 +1910,13 @@ sint On_TDLS_Setup_Req(_adapter *padapter, union recv_frame *precv_frame, struct
 			pIE = (PNDIS_802_11_VARIABLE_IEs)(ptr + j);
 
 			switch (pIE->ElementID) {
-			case _SUPPORTEDRATES_IE_:
+			case WLAN_EID_SUPP_RATES:
 				memcpy(supportRate, pIE->data, pIE->Length);
 				supportRateNum = pIE->Length;
 				break;
 			case _COUNTRY_IE_:
 				break;
-			case _EXT_SUPPORTEDRATES_IE_:
+			case WLAN_EID_EXT_SUPP_RATES:
 				if (supportRateNum < sizeof(supportRate)) {
 					memcpy(supportRate + supportRateNum, pIE->data, pIE->Length);
 					supportRateNum += pIE->Length;
@@ -1924,7 +1924,7 @@ sint On_TDLS_Setup_Req(_adapter *padapter, union recv_frame *precv_frame, struct
 				break;
 			case _SUPPORTED_CH_IE_:
 				break;
-			case _RSN_IE_2_:
+			case WLAN_EID_RSN:
 				rsnie_included = 1;
 				if (prx_pkt_attrib->encrypt) {
 					prsnie = (u8 *)pIE;
@@ -1941,22 +1941,22 @@ sint On_TDLS_Setup_Req(_adapter *padapter, union recv_frame *precv_frame, struct
 						txmgmt.status_code = _STATS_INVALID_RSNIE_;
 				}
 				break;
-			case _EXT_CAP_IE_:
+			case WLAN_EID_EXT_CAPABILITY :
 				break;
-			case _VENDOR_SPECIFIC_IE_:
+			case WLAN_EID_VENDOR_SPECIFIC:
 				break;
 			case _FTIE_:
 				if (prx_pkt_attrib->encrypt)
 					memcpy(SNonce, (ptr + j + 52), 32);
 				break;
-			case _TIMEOUT_ITVL_IE_:
+			case WLAN_EID_TIMEOUT_INTERVAL:
 				if (prx_pkt_attrib->encrypt)
 					timeout_interval = cpu_to_le32(*(u32 *)(ptr + j + 3));
 				break;
 			case _RIC_Descriptor_IE_:
 				break;
 #ifdef CONFIG_80211N_HT
-			case _HT_CAPABILITY_IE_:
+			case WLAN_EID_HT_CAPABILITY:
 				rtw_tdls_process_ht_cap(padapter, ptdls_sta, pIE->data, pIE->Length);
 				break;
 #endif
@@ -1983,7 +1983,7 @@ sint On_TDLS_Setup_Req(_adapter *padapter, union recv_frame *precv_frame, struct
 
 		/* Check status code */
 		/* If responder STA has/hasn't security on AP, but request hasn't/has RSNIE, it should reject */
-		if (txmgmt.status_code == _STATS_SUCCESSFUL_) {
+		if (txmgmt.status_code == WLAN_STATUS_SUCCESS) {
 			if (rsnie_included && prx_pkt_attrib->encrypt == 0)
 				txmgmt.status_code = _STATS_SEC_DISABLED_;
 			else if (rsnie_included == 0 && prx_pkt_attrib->encrypt)
@@ -2027,7 +2027,7 @@ sint On_TDLS_Setup_Req(_adapter *padapter, union recv_frame *precv_frame, struct
 	if (rtw_tdls_is_driver_setup(padapter)) {
 		issue_tdls_setup_rsp(padapter, &txmgmt);
 
-		if (txmgmt.status_code == _STATS_SUCCESSFUL_)
+		if (txmgmt.status_code == WLAN_STATUS_SUCCESS)
 			_set_timer(&ptdls_sta->handshake_timer, TDLS_HANDSHAKE_TIME);
 		else {
 			rtw_tdls_teardown_pre_hdl(padapter, ptdls_sta);
@@ -2092,13 +2092,13 @@ int On_TDLS_Setup_Rsp(_adapter *padapter, union recv_frame *precv_frame, struct 
 		pIE = (PNDIS_802_11_VARIABLE_IEs)(ptr + j);
 
 		switch (pIE->ElementID) {
-		case _SUPPORTEDRATES_IE_:
+		case WLAN_EID_SUPP_RATES:
 			memcpy(supportRate, pIE->data, pIE->Length);
 			supportRateNum = pIE->Length;
 			break;
 		case _COUNTRY_IE_:
 			break;
-		case _EXT_SUPPORTEDRATES_IE_:
+		case WLAN_EID_EXT_SUPP_RATES:
 			if (supportRateNum < sizeof(supportRate)) {
 				memcpy(supportRate + supportRateNum, pIE->data, pIE->Length);
 				supportRateNum += pIE->Length;
@@ -2106,7 +2106,7 @@ int On_TDLS_Setup_Rsp(_adapter *padapter, union recv_frame *precv_frame, struct 
 			break;
 		case _SUPPORTED_CH_IE_:
 			break;
-		case _RSN_IE_2_:
+		case WLAN_EID_RSN:
 			prsnie = (u8 *)pIE;
 			/* Check CCMP pairwise_cipher presence. */
 			ppairwise_cipher = prsnie + 10;
@@ -2115,9 +2115,9 @@ int On_TDLS_Setup_Rsp(_adapter *padapter, union recv_frame *precv_frame, struct 
 				if (_rtw_memcmp(ppairwise_cipher + 4 * k, RSN_CIPHER_SUITE_CCMP, 4) == _TRUE)
 					verify_ccmp = 1;
 			}
-		case _EXT_CAP_IE_:
+		case WLAN_EID_EXT_CAPABILITY :
 			break;
-		case _VENDOR_SPECIFIC_IE_:
+		case WLAN_EID_VENDOR_SPECIFIC:
 			if (_rtw_memcmp((u8 *)pIE + 2, WMM_INFO_OUI, 6) == _TRUE) {
 				/* WMM Info ID and OUI */
 				if ((pregistrypriv->wmm_enable == _TRUE) || (padapter->mlmepriv.htpriv.ht_option == _TRUE))
@@ -2128,14 +2128,14 @@ int On_TDLS_Setup_Rsp(_adapter *padapter, union recv_frame *precv_frame, struct 
 			pftie = (u8 *)pIE;
 			memcpy(ANonce, (ptr + j + 20), 32);
 			break;
-		case _TIMEOUT_ITVL_IE_:
+		case WLAN_EID_TIMEOUT_INTERVAL:
 			ptimeout_ie = (u8 *)pIE;
 			timeout_interval = cpu_to_le32(*(u32 *)(ptimeout_ie + 3));
 			break;
 		case _RIC_Descriptor_IE_:
 			break;
 #ifdef CONFIG_80211N_HT
-		case _HT_CAPABILITY_IE_:
+		case WLAN_EID_HT_CAPABILITY:
 			rtw_tdls_process_ht_cap(padapter, ptdls_sta, pIE->data, pIE->Length);
 			break;
 #endif
@@ -2173,7 +2173,7 @@ int On_TDLS_Setup_Rsp(_adapter *padapter, union recv_frame *precv_frame, struct 
 
 	if (prx_pkt_attrib->encrypt) {
 		if (verify_ccmp == 1) {
-			txmgmt.status_code = _STATS_SUCCESSFUL_;
+			txmgmt.status_code = WLAN_STATUS_SUCCESS;
 			if (rtw_tdls_is_driver_setup(padapter) == _TRUE) {
 				wpa_tdls_generate_tpk(padapter, ptdls_sta);
 				if (tdls_verify_mic(ptdls_sta->tpk.kck, 2, plinkid_ie, prsnie, ptimeout_ie, pftie) == _FAIL) {
@@ -2188,13 +2188,13 @@ int On_TDLS_Setup_Rsp(_adapter *padapter, union recv_frame *precv_frame, struct 
 		} else
 			txmgmt.status_code = _STATS_INVALID_RSNIE_;
 	} else
-		txmgmt.status_code = _STATS_SUCCESSFUL_;
+		txmgmt.status_code = WLAN_STATUS_SUCCESS;
 
 	if (rtw_tdls_is_driver_setup(padapter) == _TRUE) {
 		memcpy(txmgmt.peer, prx_pkt_attrib->src, ETH_ALEN);
 		issue_tdls_setup_cfm(padapter, &txmgmt);
 
-		if (txmgmt.status_code == _STATS_SUCCESSFUL_) {
+		if (txmgmt.status_code == WLAN_STATUS_SUCCESS) {
 			rtw_tdls_set_link_established(padapter, _TRUE);
 
 			if (ptdls_sta->tdls_sta_state & TDLS_RESPONDER_STATE) {
@@ -2262,10 +2262,10 @@ int On_TDLS_Setup_Cfm(_adapter *padapter, union recv_frame *precv_frame, struct 
 		pIE = (PNDIS_802_11_VARIABLE_IEs)(ptr + j);
 
 		switch (pIE->ElementID) {
-		case _RSN_IE_2_:
+		case WLAN_EID_RSN:
 			prsnie = (u8 *)pIE;
 			break;
-		case _VENDOR_SPECIFIC_IE_:
+		case WLAN_EID_VENDOR_SPECIFIC:
 			if (_rtw_memcmp((u8 *)pIE + 2, WMM_PARA_OUI, 6) == _TRUE) {
 				/* WMM Parameter ID and OUI */
 				ptdls_sta->qos_option = _TRUE;
@@ -2274,11 +2274,11 @@ int On_TDLS_Setup_Cfm(_adapter *padapter, union recv_frame *precv_frame, struct 
 		case _FTIE_:
 			pftie = (u8 *)pIE;
 			break;
-		case _TIMEOUT_ITVL_IE_:
+		case WLAN_EID_TIMEOUT_INTERVAL:
 			ptimeout_ie = (u8 *)pIE;
 			break;
 #ifdef CONFIG_80211N_HT
-		case _HT_EXTRA_INFO_IE_:
+		case WLAN_EID_HT_OPERATION:
 			break;
 #endif
 #ifdef CONFIG_80211AC_VHT
@@ -2789,7 +2789,7 @@ void wfd_ie_tdls(_adapter *padapter, u8 *pframe, u32 *pktlen)
 	memcpy(wfdie + wfdielen, pwfd_info->ip_address, 4);
 	wfdielen += 4;
 
-	pframe = rtw_set_ie(pframe, _VENDOR_SPECIFIC_IE_, wfdielen, (unsigned char *) wfdie, pktlen);
+	pframe = rtw_set_ie(pframe, WLAN_EID_VENDOR_SPECIFIC, wfdielen, (unsigned char *) wfdie, pktlen);
 
 }
 #endif /* CONFIG_WFD */
