@@ -1498,7 +1498,7 @@ unsigned int OnProbeReq(_adapter *padapter, union recv_frame *precv_frame)
 					if (padapter->wdinfo.driver_interface == DRIVER_WEXT)
 						report_survey_event(padapter, precv_frame);
 
-					p2p_listen_state_process(padapter,  get_sa(pframe));
+					p2p_listen_state_process(padapter,  ieee80211_get_SA((struct ieee80211_hdr *)pframe));
 
 					return _SUCCESS;
 				}
@@ -1532,10 +1532,10 @@ _continue:
 		target_ie = rtw_get_wps_attr_content(wps_ie, wps_ielen, WPS_ATTR_MANUFACTURER, NULL, &target_ielen);
 	if ((target_ie && (target_ielen == 4)) && (_TRUE == _rtw_memcmp((void *)target_ie, "Ozmo", 4))) {
 		/* psta->flag_atmel_rc = 1; */
-		unsigned char *sa_addr = get_sa(pframe);
+		unsigned char *sa_addr = ieee80211_get_SA((struct ieee80211_hdr *)pframe);
 		printk("%s: Find Ozmo RC -- %02x:%02x:%02x:%02x:%02x:%02x  \n\n",
 		       __func__, *sa_addr, *(sa_addr + 1), *(sa_addr + 2), *(sa_addr + 3), *(sa_addr + 4), *(sa_addr + 5));
-		memcpy(pstapriv->atmel_rc_pattern, get_sa(pframe), ETH_ALEN);
+		memcpy(pstapriv->atmel_rc_pattern, ieee80211_get_SA((struct ieee80211_hdr *)pframe), ETH_ALEN);
 	}
 #endif
 
@@ -1559,21 +1559,21 @@ _continue:
 		if (!_rtw_memcmp(p + 2, RC_OUI, sizeof(RC_OUI)))
 			goto _non_rc_device;
 
-		if (!_rtw_memcmp(p + 6, get_sa(pframe), ETH_ALEN)) {
+		if (!_rtw_memcmp(p + 6, ieee80211_get_SA((struct ieee80211_hdr *)pframe), ETH_ALEN)) {
 			RTW_INFO("%s, do rc pairing ("MAC_FMT"), but mac addr mismatch!("MAC_FMT")\n", __FUNCTION__,
-				 MAC_ARG(get_sa(pframe)), MAC_ARG(p + 6));
+				 MAC_ARG(ieee80211_get_SA((struct ieee80211_hdr *)pframe)), MAC_ARG(p + 6));
 
 			goto _non_rc_device;
 		}
 
-		RTW_INFO("%s, got the pairing device("MAC_FMT")\n", __FUNCTION__,  MAC_ARG(get_sa(pframe)));
+		RTW_INFO("%s, got the pairing device("MAC_FMT")\n", __FUNCTION__,  MAC_ARG(ieee80211_get_SA((struct ieee80211_hdr *)pframe)));
 
 		/* new a station */
-		psta = rtw_get_stainfo(pstapriv, get_sa(pframe));
+		psta = rtw_get_stainfo(pstapriv, ieee80211_get_SA((struct ieee80211_hdr *)pframe));
 		if (psta == NULL) {
 			/* allocate a new one */
-			RTW_INFO("going to alloc stainfo for rc="MAC_FMT"\n",  MAC_ARG(get_sa(pframe)));
-			psta = rtw_alloc_stainfo(pstapriv, get_sa(pframe));
+			RTW_INFO("going to alloc stainfo for rc="MAC_FMT"\n",  MAC_ARG(ieee80211_get_SA((struct ieee80211_hdr *)pframe)));
+			psta = rtw_alloc_stainfo(pstapriv, ieee80211_get_SA((struct ieee80211_hdr *)pframe));
 			if (psta == NULL) {
 				/* TODO: */
 				RTW_INFO(" Exceed the upper limit of supported clients...\n");
@@ -1635,7 +1635,7 @@ _continue:
 
 		}
 
-		issue_probersp(padapter, get_sa(pframe), _FALSE);
+		issue_probersp(padapter, ieee80211_get_SA((struct ieee80211_hdr *)pframe), _FALSE);
 
 		return _SUCCESS;
 
@@ -1685,7 +1685,7 @@ _issue_probersp:
 		if (((check_fwstate(pmlmepriv, _FW_LINKED) == _TRUE &&
 		      pmlmepriv->cur_network.join_res == _TRUE)) || check_fwstate(pmlmepriv, WIFI_ADHOC_MASTER_STATE)) {
 			/* RTW_INFO("+issue_probersp during ap mode\n"); */
-			issue_probersp(padapter, get_sa(pframe), is_valid_p2p_probereq);
+			issue_probersp(padapter, ieee80211_get_SA((struct ieee80211_hdr *)pframe), is_valid_p2p_probereq);
 		}
 
 	}
@@ -2325,7 +2325,7 @@ normal:
 #endif /* CONFIG_IOCTL_CFG80211 */
 
 	/* check A1 matches or not */
-	if (!_rtw_memcmp(adapter_mac_addr(padapter), get_da(pframe), ETH_ALEN))
+	if (!_rtw_memcmp(adapter_mac_addr(padapter), ieee80211_get_DA((struct ieee80211_hdr *)pframe), ETH_ALEN))
 		return _SUCCESS;
 
 	if (!(pmlmeinfo->state & WIFI_FW_AUTH_STATE) || pmlmeext->join_abort)
@@ -2776,7 +2776,7 @@ unsigned int OnAssocRsp(_adapter *padapter, union recv_frame *precv_frame)
 	RTW_INFO("%s\n", __FUNCTION__);
 
 	/* check A1 matches or not */
-	if (!_rtw_memcmp(adapter_mac_addr(padapter), get_da(pframe), ETH_ALEN))
+	if (!_rtw_memcmp(adapter_mac_addr(padapter), ieee80211_get_DA((struct ieee80211_hdr *)pframe), ETH_ALEN))
 		return _SUCCESS;
 
 	if (!(pmlmeinfo->state & (WIFI_FW_AUTH_SUCCESS | WIFI_FW_ASSOC_STATE)) || pmlmeext->join_abort)
@@ -3603,7 +3603,7 @@ unsigned int OnAction_back(_adapter *padapter, union recv_frame *precv_frame)
 
 #if 0
 	/* check A1 matches or not */
-	if (!_rtw_memcmp(adapter_mac_addr(padapter), get_da(pframe), ETH_ALEN))
+	if (!_rtw_memcmp(adapter_mac_addr(padapter), ieee80211_get_DA((struct ieee80211_hdr *)pframe), ETH_ALEN))
 		return _SUCCESS;
 #endif
 

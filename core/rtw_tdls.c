@@ -1771,7 +1771,7 @@ int On_TDLS_Dis_Rsp(_adapter *padapter, union recv_frame *precv_frame)
 	/* WFDTDLS: for sigma test, not to setup direct link automatically */
 	ptdlsinfo->dev_discovered = _TRUE;
 
-	psa = get_sa(ptr);
+	psa = ieee80211_get_SA((struct ieee80211_hdr *)ptr);
 	ptdls_sta = rtw_get_stainfo(&(padapter->stapriv), psa);
 	if (ptdls_sta != NULL)
 		ptdls_sta->sta_stats.rx_tdls_disc_rsp_pkts++;
@@ -1848,7 +1848,7 @@ sint On_TDLS_Setup_Req(_adapter *padapter, union recv_frame *precv_frame, struct
 		goto exit;
 
 	memset(&txmgmt, 0x00, sizeof(struct tdls_txmgmt));
-	psa = get_sa(ptr);
+	psa = ieee80211_get_SA((struct ieee80211_hdr *)ptr);
 
 	if (ptdlsinfo->sta_maximum == _TRUE) {
 		if (ptdls_sta == NULL)
@@ -2064,7 +2064,7 @@ int On_TDLS_Setup_Rsp(_adapter *padapter, union recv_frame *precv_frame, struct 
 	u32 timeout_interval = TDLS_TPK_RESEND_COUNT;
 
 	memset(&txmgmt, 0x00, sizeof(struct tdls_txmgmt));
-	psa = get_sa(ptr);
+	psa = ieee80211_get_SA((struct ieee80211_hdr *)ptr);
 
 	ptr += prx_pkt_attrib->hdrlen + prx_pkt_attrib->iv_len + LLC_HEADER_SIZE + ETH_TYPE_LEN + PAYLOAD_TYPE_LEN;
 	parsing_length = ((union recv_frame *)precv_frame)->u.hdr.len
@@ -2235,7 +2235,7 @@ int On_TDLS_Setup_Cfm(_adapter *padapter, union recv_frame *precv_frame, struct 
 	u16 j, pairwise_count;
 	int ret = _SUCCESS;
 
-	psa = get_sa(ptr);
+	psa = ieee80211_get_SA((struct ieee80211_hdr *)ptr);
 
 	ptr += prx_pkt_attrib->hdrlen + prx_pkt_attrib->iv_len + LLC_HEADER_SIZE + ETH_TYPE_LEN + PAYLOAD_TYPE_LEN;
 	parsing_length = ((union recv_frame *)precv_frame)->u.hdr.len

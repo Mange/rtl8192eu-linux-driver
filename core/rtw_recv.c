@@ -1010,14 +1010,14 @@ sint OnTDLS(_adapter *adapter, union recv_frame *precv_frame)
 		return ret;
 	}
 
-	ptdls_sta = rtw_get_stainfo(pstapriv, get_sa(ptr));
+	ptdls_sta = rtw_get_stainfo(pstapriv, ieee80211_get_SA((struct ieee80211_hdr *)ptr));
 	if (ptdls_sta == NULL) {
 		switch (*paction) {
 		case TDLS_SETUP_REQUEST:
 		case TDLS_DISCOVERY_REQUEST:
 			break;
 		default:
-			RTW_INFO("[TDLS] %s - Direct Link Peer = "MAC_FMT" not found for action = %d\n", __func__, MAC_ARG(get_sa(ptr)), *paction);
+			RTW_INFO("[TDLS] %s - Direct Link Peer = "MAC_FMT" not found for action = %d\n", __func__, MAC_ARG(ieee80211_get_SA((struct ieee80211_hdr *)ptr)), *paction);
 			ret = _FAIL;
 			goto exit;
 		}
@@ -1980,8 +1980,8 @@ sint validate_recv_mgnt_frame(PADAPTER padapter, union recv_frame *precv_frame)
 		struct recv_stat *prxstat = (struct recv_stat *)  precv_frame->u.hdr.rx_head ;
 		u8 *pda, *psa, *pbssid, *ptr;
 		ptr = precv_frame->u.hdr.rx_data;
-		pda = get_da(ptr);
-		psa = get_sa(ptr);
+		pda = ieee80211_get_DA((struct ieee80211_hdr *)ptr);
+		psa = ieee80211_get_SA((struct ieee80211_hdr *)ptr);
 		pbssid = get_hdr_bssid(ptr);
 
 
@@ -3821,8 +3821,8 @@ int mp_recv_frame(_adapter *padapter, union recv_frame *rframe)
 			pattrib->order = GetOrder(ptr);
 
 			if (type == IEEE80211_FTYPE_DATA) {
-				pda = get_da(ptr);
-				psa = get_sa(ptr);
+				pda = ieee80211_get_DA((struct ieee80211_hdr *)ptr);
+				psa = ieee80211_get_SA((struct ieee80211_hdr *)ptr);
 				pbssid = get_hdr_bssid(ptr);
 
 				memcpy(pattrib->dst, pda, ETH_ALEN);
