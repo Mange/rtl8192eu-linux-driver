@@ -122,11 +122,6 @@ enum {
 		*(unsigned short *)(pbuf) &= (~cpu_to_le16(IEEE80211_FCTL_MOREFRAGS)); \
 	} while (0)
 
-#define SetRetry(pbuf)	\
-	do	{	\
-		*(unsigned short *)(pbuf) |= cpu_to_le16(IEEE80211_FCTL_RETRY); \
-	} while (0)
-
 #define GetRetry(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(IEEE80211_FCTL_RETRY)) != 0)
 
 #define ClearRetry(pbuf)	\
