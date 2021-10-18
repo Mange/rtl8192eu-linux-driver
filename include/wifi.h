@@ -549,23 +549,6 @@ typedef	enum _ELEMENT_ID {
 #define ACT_CAT_VENDOR				0x7F/* 127 */
 
 /**
- * struct rtw_ieee80211_bar - HT Block Ack Request
- *
- * This structure refers to "HT BlockAckReq" as
- * described in 802.11n draft section 7.2.1.7.1
- */
-#if defined(PLATFORM_LINUX) || defined(CONFIG_RTL8712FW)
-struct rtw_ieee80211_bar {
-	unsigned short frame_control;
-	unsigned short duration;
-	unsigned char ra[6];
-	unsigned char ta[6];
-	unsigned short control;
-	unsigned short start_seq_num;
-} __attribute__((packed));
-#endif
-
-/**
  * struct ieee80211_ht_cap - HT additional information
  *
  * This structure refers to "HT information element" as
