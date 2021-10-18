@@ -2528,7 +2528,7 @@ static u8 *rtw_mesh_construct_peer_mesh_close(_adapter *adapter, struct mesh_pli
 	memcpy(whdr->addr2, plink->addr, ETH_ALEN);
 	memcpy(whdr->addr3, adapter_mac_addr(adapter), ETH_ALEN);
 
-	set_frame_sub_type(frame, WIFI_ACTION);
+	set_frame_sub_type(frame, IEEE80211_STYPE_ACTION);
 
 	pos += sizeof(struct rtw_ieee80211_hdr_3addr);
 	*(pos++) = RTW_WLAN_CATEGORY_SELF_PROTECTED;

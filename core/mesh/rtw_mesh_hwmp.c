@@ -245,7 +245,7 @@ static int rtw_mesh_path_sel_frame_tx(enum rtw_mpath_frame_type mpath_action, u8
 
 	SetSeqNum(pwlanhdr, pmlmeext->mgnt_seq);
 	pmlmeext->mgnt_seq++;
-	set_frame_sub_type(pos, WIFI_ACTION);
+	set_frame_sub_type(pos, IEEE80211_STYPE_ACTION);
 
 	pos += sizeof(struct rtw_ieee80211_hdr_3addr);
 	pattrib->pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
@@ -358,7 +358,7 @@ int rtw_mesh_path_error_tx(_adapter *adapter,
 
 	SetSeqNum(pwlanhdr, pmlmeext->mgnt_seq);
 	pmlmeext->mgnt_seq++;
-	set_frame_sub_type(pos, WIFI_ACTION);
+	set_frame_sub_type(pos, IEEE80211_STYPE_ACTION);
 
 	pos += sizeof(struct rtw_ieee80211_hdr_3addr);
 	pattrib->pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);

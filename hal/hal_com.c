@@ -5994,7 +5994,7 @@ static void rtw_hal_construct_P2PBeacon(_adapter *padapter, u8 *pframe, u32 *pLe
 
 	SetSeqNum(pwlanhdr, 0/*pmlmeext->mgnt_seq*/);
 	/* pmlmeext->mgnt_seq++; */
-	set_frame_sub_type(pframe, WIFI_BEACON);
+	set_frame_sub_type(pframe, IEEE80211_STYPE_BEACON);
 
 	pframe += sizeof(struct rtw_ieee80211_hdr_3addr);
 	pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
@@ -6273,7 +6273,7 @@ static void rtw_hal_construct_P2PProbeRsp(_adapter *padapter, u8 *pframe, u32 *p
 	memcpy(pwlanhdr->addr3, mac, ETH_ALEN);
 
 	SetSeqNum(pwlanhdr, 0);
-	set_frame_sub_type(fctrl, WIFI_PROBERSP);
+	set_frame_sub_type(fctrl, IEEE80211_STYPE_PROBE_RESP);
 
 	pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
 	pframe += pktlen;
@@ -6596,7 +6596,7 @@ static void rtw_hal_construct_P2PNegoRsp(_adapter *padapter, u8 *pframe, u32 *pL
 	memcpy(pwlanhdr->addr3, adapter_mac_addr(padapter), ETH_ALEN);
 
 	SetSeqNum(pwlanhdr, 0);
-	set_frame_sub_type(pframe, WIFI_ACTION);
+	set_frame_sub_type(pframe, IEEE80211_STYPE_ACTION);
 
 	pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
 	pframe += pktlen;
@@ -6997,7 +6997,7 @@ static void rtw_hal_construct_P2PInviteRsp(_adapter *padapter, u8 *pframe, u32 *
 	memset(pwlanhdr->addr3, 0, ETH_ALEN);
 
 	SetSeqNum(pwlanhdr, 0);
-	set_frame_sub_type(pframe, WIFI_ACTION);
+	set_frame_sub_type(pframe, IEEE80211_STYPE_ACTION);
 
 	pframe += sizeof(struct rtw_ieee80211_hdr_3addr);
 	pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
@@ -7240,7 +7240,7 @@ static void rtw_hal_construct_P2PProvisionDisRsp(_adapter *padapter, u8 *pframe,
 	memcpy(pwlanhdr->addr3, adapter_mac_addr(padapter), ETH_ALEN);
 
 	SetSeqNum(pwlanhdr, 0);
-	set_frame_sub_type(pframe, WIFI_ACTION);
+	set_frame_sub_type(pframe, IEEE80211_STYPE_ACTION);
 
 	pframe += sizeof(struct rtw_ieee80211_hdr_3addr);
 	pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
@@ -7405,7 +7405,7 @@ void rtw_hal_construct_beacon(_adapter *padapter,
 
 	SetSeqNum(pwlanhdr, 0/*pmlmeext->mgnt_seq*/);
 	/* pmlmeext->mgnt_seq++; */
-	set_frame_sub_type(pframe, WIFI_BEACON);
+	set_frame_sub_type(pframe, IEEE80211_STYPE_BEACON);
 
 	pframe += sizeof(struct rtw_ieee80211_hdr_3addr);
 	pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
@@ -7498,7 +7498,7 @@ static void rtw_hal_construct_PSPoll(_adapter *padapter,
 	fctrl = &(pwlanhdr->frame_ctl);
 	*(fctrl) = 0;
 	SetPwrMgt(fctrl);
-	set_frame_sub_type(pframe, WIFI_PSPOLL);
+	set_frame_sub_type(pframe, (IEEE80211_FTYPE_CTL | IEEE80211_STYPE_PSPOLL));
 
 	/* AID. */
 	set_duration(pframe, (pmlmeinfo->aid | 0xc000));
@@ -7542,7 +7542,7 @@ void rtw_hal_construct_fw_dbg_msg_pkt(
 
 	SetSeqNum(pwlanhdr, 0);
 
-	set_frame_sub_type(pframe, WIFI_DATA);
+	set_frame_sub_type(pframe, (IEEE80211_FTYPE_DATA | IEEE80211_STYPE_DATA));
 
 	pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
 
@@ -7611,7 +7611,7 @@ void rtw_hal_construct_NullFunctionData(
 	if (bQoS == _TRUE) {
 		struct rtw_ieee80211_hdr_3addr_qos *pwlanqoshdr;
 
-		set_frame_sub_type(pframe, WIFI_QOS_DATA_NULL);
+		set_frame_sub_type(pframe, IEEE80211_FTYPE_DATA | IEEE80211_STYPE_QOS_NULLFUNC);
 
 		pwlanqoshdr = (struct rtw_ieee80211_hdr_3addr_qos *)pframe;
 		SetPriority(&pwlanqoshdr->qc, AC);
@@ -7619,7 +7619,7 @@ void rtw_hal_construct_NullFunctionData(
 
 		pktlen = sizeof(struct rtw_ieee80211_hdr_3addr_qos);
 	} else {
-		set_frame_sub_type(pframe, WIFI_DATA_NULL);
+		set_frame_sub_type(pframe, IEEE80211_FTYPE_DATA | IEEE80211_STYPE_NULLFUNC);
 
 		pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
 	}
@@ -7653,7 +7653,7 @@ void rtw_hal_construct_ProbeRsp(_adapter *padapter, u8 *pframe, u32 *pLength,
 	memcpy(pwlanhdr->addr3, bssid, ETH_ALEN);
 
 	SetSeqNum(pwlanhdr, 0);
-	set_frame_sub_type(fctrl, WIFI_PROBERSP);
+	set_frame_sub_type(fctrl, IEEE80211_STYPE_PROBE_RESP);
 
 	pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
 	pframe += pktlen;
@@ -7749,7 +7749,7 @@ static void rtw_hal_construct_ARPRsp(
 	/* ------------------------------------------------------------------------- */
 	/* MAC Header. */
 	/* ------------------------------------------------------------------------- */
-	SetFrameType(fctrl, WIFI_DATA);
+	SetFrameType(fctrl, (IEEE80211_FTYPE_DATA | IEEE80211_STYPE_DATA));
 	/* set_frame_sub_type(fctrl, 0); */
 	SetToDs(fctrl);
 	memcpy(pwlanhdr->addr1, get_my_bssid(&(pmlmeinfo->network)), ETH_ALEN);
@@ -7883,7 +7883,7 @@ static void rtw_hal_construct_na_message(_adapter *padapter,
 	/* ------------------------------------------------------------------------- */
 	/* MAC Header. */
 	/* ------------------------------------------------------------------------- */
-	SetFrameType(fctrl, WIFI_DATA);
+	SetFrameType(fctrl, (IEEE80211_FTYPE_DATA | IEEE80211_STYPE_DATA));
 	SetToDs(fctrl);
 	memcpy(pwlanhdr->addr1,
 		    get_my_bssid(&(pmlmeinfo->network)), ETH_ALEN);
@@ -8054,7 +8054,7 @@ static void rtw_hal_construct_ProbeReq(_adapter *padapter, u8 *pframe,
 	memcpy(pwlanhdr->addr2, mac, ETH_ALEN);
 
 	SetSeqNum(pwlanhdr, 0);
-	set_frame_sub_type(pframe, WIFI_PROBEREQ);
+	set_frame_sub_type(pframe, IEEE80211_STYPE_PROBE_REQ);
 
 	pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
 	pframe += pktlen;
@@ -8232,7 +8232,7 @@ static void rtw_hal_construct_GTKRsp(
 	/* ------------------------------------------------------------------------- */
 	/* MAC Header. */
 	/* ------------------------------------------------------------------------- */
-	SetFrameType(fctrl, WIFI_DATA);
+	SetFrameType(fctrl, (IEEE80211_FTYPE_DATA | IEEE80211_STYPE_DATA));
 	/* set_frame_sub_type(fctrl, 0); */
 	SetToDs(fctrl);
 
@@ -12523,9 +12523,9 @@ void rtw_store_phy_info(_adapter *padapter, union recv_frame *prframe)
 			}
 		}
 #ifdef DBG_RX_DFRAME_RAW_DATA
-		if ((dframe_type == WIFI_DATA_TYPE) || (dframe_type == WIFI_QOS_DATA_TYPE) || (padapter->registrypriv.mp_mode == 1)) {
+		if ((dframe_type == IEEE80211_FTYPE_DATA) || (dframe_type == (IEEE80211_STYPE_QOS_DATA |  IEEE80211_FTYPE_DATA)) || (padapter->registrypriv.mp_mode == 1)) {
 
-			/*RTW_INFO("=>%s WIFI_DATA_TYPE or WIFI_QOS_DATA_TYPE\n", __FUNCTION__);*/
+			/*RTW_INFO("=>%s IEEE80211_FTYPE_DATA or (IEEE80211_STYPE_QOS_DATA |  IEEE80211_FTYPE_DATA)\n", __FUNCTION__);*/
 			if (psta) {
 				if (is_multicast_ether_addr(get_ra(get_recvframe_data(prframe))))
 					psta_dframe_info = &psta->sta_dframe_info_bmc;

@@ -396,7 +396,7 @@ u8 rtw_wapi_is_wai_packet(_adapter *padapter, u8 *pkt_data)
 
 	WAPI_TRACE(WAPI_TX | WAPI_RX, "%s: bFind=%d pTaddr="MAC_FMT"\n", __FUNCTION__, bFind, MAC_ARG(pTaddr));
 
-	if (pkt_data[0] == WIFI_QOS_DATA_TYPE)
+	if (pkt_data[0] == (IEEE80211_STYPE_QOS_DATA |  IEEE80211_FTYPE_DATA))
 		Offset_TypeWAI += 2;
 
 	/* 88b4? */

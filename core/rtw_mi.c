@@ -1451,7 +1451,7 @@ void rtw_mi_buddy_clone_bcmc_packet(_adapter *padapter, union recv_frame *precvf
 			continue;
 		if (rtw_is_adapter_up(iface) == _FALSE || iface->registered == 0)
 			continue;
-		if (type == WIFI_DATA_TYPE && !adapter_allow_bmc_data_rx(iface))
+		if (type == IEEE80211_FTYPE_DATA && !adapter_allow_bmc_data_rx(iface))
 			continue;
 
 		pcloneframe = rtw_alloc_recvframe(pfree_recv_queue);

@@ -189,7 +189,7 @@ static void mp_init_xmit_attrib(struct mp_tx *pmptx, PADAPTER padapter)
 	pattrib->ack_policy = 0;
 	/*	pattrib->pkt_hdrlen = ETH_HLEN; */
 	pattrib->hdrlen = WLAN_HDR_A3_LEN;
-	pattrib->subtype = WIFI_DATA;
+	pattrib->subtype = (IEEE80211_FTYPE_DATA | IEEE80211_STYPE_DATA);
 	pattrib->priority = 0;
 	pattrib->qsel = pattrib->priority;
 	/*	do_queue_select(padapter, pattrib); */

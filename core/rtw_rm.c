@@ -347,7 +347,7 @@ static u8 *build_wlan_hdr(_adapter *padapter, struct xmit_frame *pmgntframe,
 	pmlmeext->mgnt_seq++;
 	SetFragNum(pframe, 0);
 
-	set_frame_sub_type(pframe, WIFI_ACTION);
+	set_frame_sub_type(pframe, IEEE80211_STYPE_ACTION);
 
 	pframe += sizeof(struct rtw_ieee80211_hdr_3addr);
 	pattr->pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
@@ -410,7 +410,7 @@ int issue_null_reply(struct rm_obj *prm)
 		return _FALSE;
 	}
 	pattr = &pmgntframe->attrib;
-	pframe = build_wlan_hdr(padapter, pmgntframe, prm->psta, WIFI_ACTION);
+	pframe = build_wlan_hdr(padapter, pmgntframe, prm->psta, IEEE80211_STYPE_ACTION);
 	pframe = rtw_set_fixed_ie(pframe, 3, &prm->p.category, &pattr->pktlen);
 
 	my_len = 0;
@@ -1556,7 +1556,7 @@ int issue_beacon_rep(struct rm_obj *prm)
 		}
 		pattr = &pmgntframe->attrib;
 		pframe = build_wlan_hdr(padapter,
-			pmgntframe, prm->psta, WIFI_ACTION);
+			pmgntframe, prm->psta, IEEE80211_STYPE_ACTION);
 		pframe = rtw_set_fixed_ie(pframe,
 			3, &prm->p.category, &pattr->pktlen);
 
@@ -1600,7 +1600,7 @@ int issue_nb_req(struct rm_obj *prm)
 		return _FALSE;
 	}
 	pattr = &pmgntframe->attrib;
-	pframe = build_wlan_hdr(padapter, pmgntframe, psta, WIFI_ACTION);
+	pframe = build_wlan_hdr(padapter, pmgntframe, psta, IEEE80211_STYPE_ACTION);
 	pframe = rtw_set_fixed_ie(pframe,
 		3, &prm->q.category, &pattr->pktlen);
 
@@ -1743,7 +1743,7 @@ int issue_radio_meas_req(struct rm_obj *prm)
 		return _FALSE;
 	}
 	pattr = &pmgntframe->attrib;
-	pframe = build_wlan_hdr(padapter, pmgntframe, prm->psta, WIFI_ACTION);
+	pframe = build_wlan_hdr(padapter, pmgntframe, prm->psta, IEEE80211_STYPE_ACTION);
 	pframe = rtw_set_fixed_ie(pframe, 3, &prm->q.category, &pattr->pktlen);
 
 	/* repeat */
@@ -1917,7 +1917,7 @@ int issue_radio_meas_rep(struct rm_obj *prm)
 		return _FALSE;
 	}
 	pattr = &pmgntframe->attrib;
-	pframe = build_wlan_hdr(padapter, pmgntframe, psta, WIFI_ACTION);
+	pframe = build_wlan_hdr(padapter, pmgntframe, psta, IEEE80211_STYPE_ACTION);
 	pframe = rtw_set_fixed_ie(pframe, 3,
 		&prm->p.category, &pattr->pktlen);
 

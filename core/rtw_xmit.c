@@ -1158,7 +1158,7 @@ static void set_qos(struct pkt_file *ppktfile, struct pkt_attrib *pattrib)
 	#endif/*CONFIG_IP_R_MONITOR*/
 	pattrib->priority = UserPriority;
 	pattrib->hdrlen = WLAN_HDR_A3_QOS_LEN;
-	pattrib->subtype = WIFI_QOS_DATA_TYPE;
+	pattrib->subtype = (IEEE80211_STYPE_QOS_DATA |  IEEE80211_FTYPE_DATA);
 }
 
 #ifdef CONFIG_TDLS
@@ -1223,11 +1223,11 @@ s32 update_tdls_attrib(_adapter *padapter, struct pkt_attrib *pattrib)
 	if (pqospriv->qos_option &&  psta->qos_option) {
 		pattrib->priority = 4;	/* tdls management frame should be AC_VI */
 		pattrib->hdrlen = WLAN_HDR_A3_QOS_LEN;
-		pattrib->subtype = WIFI_QOS_DATA_TYPE;
+		pattrib->subtype = (IEEE80211_STYPE_QOS_DATA |  IEEE80211_FTYPE_DATA);
 	} else {
 		pattrib->priority = 0;
 		pattrib->hdrlen = WLAN_HDR_A3_LEN;
-		pattrib->subtype = WIFI_DATA_TYPE;
+		pattrib->subtype = IEEE80211_FTYPE_DATA;
 	}
 
 	/* TODO:_lock */
@@ -1490,7 +1490,7 @@ get_sta_info:
 	pattrib->pkt_hdrlen = ETH_HLEN;/* (pattrib->ether_type == 0x8100) ? (14 + 4 ): 14; */ /* vlan tag */
 
 	pattrib->hdrlen = WLAN_HDR_A3_LEN;
-	pattrib->subtype = WIFI_DATA_TYPE;
+	pattrib->subtype = IEEE80211_FTYPE_DATA;
 	pattrib->qos_en = psta->qos_option;
 	pattrib->priority = 0;
 
@@ -1757,7 +1757,7 @@ s32 rtw_make_wlanhdr(_adapter *padapter , u8 *hdr, struct pkt_attrib *pattrib)
 
 	set_frame_sub_type(fctrl, pattrib->subtype);
 
-	if (pattrib->subtype & WIFI_DATA_TYPE) {
+	if (pattrib->subtype & IEEE80211_FTYPE_DATA) {
 		if ((check_fwstate(pmlmepriv,  WIFI_STATION_STATE) == _TRUE)) {
 #ifdef CONFIG_TDLS
 			if (pattrib->direct_link == _TRUE) {
@@ -2796,9 +2796,9 @@ s32 rtw_mgmt_xmitframe_coalesce(_adapter *padapter, _pkt *pkt, struct xmit_frame
 	subtype = get_frame_sub_type(pframe); /* bit(7)~bit(2) */
 
 	/* check if robust mgmt frame */
-	if (subtype != WIFI_DEAUTH && subtype != WIFI_DISASSOC && subtype != WIFI_ACTION)
+	if (subtype != IEEE80211_STYPE_DEAUTH && subtype != IEEE80211_STYPE_DISASSOC && subtype != IEEE80211_STYPE_ACTION)
 		return _SUCCESS;
-	if (subtype == WIFI_ACTION) {
+	if (subtype == IEEE80211_STYPE_ACTION) {
 		category = *(pframe + sizeof(struct rtw_ieee80211_hdr_3addr));
 		if (CATEGORY_IS_NON_ROBUST(category))
 			return _SUCCESS;
@@ -2831,7 +2831,7 @@ s32 rtw_mgmt_xmitframe_coalesce(_adapter *padapter, _pkt *pkt, struct xmit_frame
 	_enter_critical_bh(&padapter->security_key_mutex, &irqL);
 
 	if (bmcst) {
-		if (subtype == WIFI_ACTION && CATEGORY_IS_GROUP_PRIVACY(category)) {
+		if (subtype == IEEE80211_STYPE_ACTION && CATEGORY_IS_GROUP_PRIVACY(category)) {
 			/* broadcast group privacy action frame */
 			#if DBG_MGMT_XMIT_COALESEC_DUMP
 			RTW_INFO(FUNC_ADPT_FMT" broadcast gp action(%u)\n"
@@ -2866,11 +2866,11 @@ s32 rtw_mgmt_xmitframe_coalesce(_adapter *padapter, _pkt *pkt, struct xmit_frame
 				goto xmitframe_coalesce_success;
 
 			#if DBG_MGMT_XMIT_COALESEC_DUMP
-			if (subtype == WIFI_DEAUTH)
+			if (subtype == IEEE80211_STYPE_DEAUTH)
 				RTW_INFO(FUNC_ADPT_FMT" braodcast deauth\n", FUNC_ADPT_ARG(padapter));
-			else if (subtype == WIFI_DISASSOC)
+			else if (subtype == IEEE80211_STYPE_DISASSOC)
 				RTW_INFO(FUNC_ADPT_FMT" braodcast disassoc\n", FUNC_ADPT_ARG(padapter));
-			else if (subtype == WIFI_ACTION) {
+			else if (subtype == IEEE80211_STYPE_ACTION) {
 				RTW_INFO(FUNC_ADPT_FMT" braodcast action(%u)\n"
 					, FUNC_ADPT_ARG(padapter), category);
 			}
@@ -2952,13 +2952,13 @@ s32 rtw_mgmt_xmitframe_coalesce(_adapter *padapter, _pkt *pkt, struct xmit_frame
 	else {
 		/* unicast robust mgmt frame */
 		#if DBG_MGMT_XMIT_COALESEC_DUMP
-		if (subtype == WIFI_DEAUTH) {
+		if (subtype == IEEE80211_STYPE_DEAUTH) {
 			RTW_INFO(FUNC_ADPT_FMT" unicast deauth to "MAC_FMT"\n"
 				, FUNC_ADPT_ARG(padapter), MAC_ARG(pattrib->ra));
-		} else if (subtype == WIFI_DISASSOC) {
+		} else if (subtype == IEEE80211_STYPE_DISASSOC) {
 			RTW_INFO(FUNC_ADPT_FMT" unicast disassoc to "MAC_FMT"\n"
 				, FUNC_ADPT_ARG(padapter), MAC_ARG(pattrib->ra));
-		} else if (subtype == WIFI_ACTION) {
+		} else if (subtype == IEEE80211_STYPE_ACTION) {
 			RTW_INFO(FUNC_ADPT_FMT" unicast action(%u) to "MAC_FMT"\n"
 				, FUNC_ADPT_ARG(padapter), category, MAC_ARG(pattrib->ra));
 		}

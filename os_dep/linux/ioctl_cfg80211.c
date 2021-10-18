@@ -862,12 +862,12 @@ struct cfg80211_bss *rtw_cfg80211_inform_bss(_adapter *padapter, struct wlan_net
 	SetSeqNum(pwlanhdr, 0/*pmlmeext->mgnt_seq*/);
 	/* pmlmeext->mgnt_seq++; */
 
-	if (pnetwork->network.Reserved[0] == BSS_TYPE_BCN) { /* WIFI_BEACON */
+	if (pnetwork->network.Reserved[0] == BSS_TYPE_BCN) { /* IEEE80211_STYPE_BEACON */
 		memcpy(pwlanhdr->addr1, bc_addr, ETH_ALEN);
-		set_frame_sub_type(pbuf, WIFI_BEACON);
+		set_frame_sub_type(pbuf, IEEE80211_STYPE_BEACON);
 	} else {
 		memcpy(pwlanhdr->addr1, adapter_mac_addr(padapter), ETH_ALEN);
-		set_frame_sub_type(pbuf, WIFI_PROBERSP);
+		set_frame_sub_type(pbuf, IEEE80211_STYPE_PROBE_RESP);
 	}
 
 	memcpy(pwlanhdr->addr2, pnetwork->network.MacAddress, ETH_ALEN);
@@ -904,7 +904,7 @@ struct cfg80211_bss *rtw_cfg80211_inform_bss(_adapter *padapter, struct wlan_net
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 38))
 #ifndef COMPAT_KERNEL_RELEASE
 	/* patch for cfg80211, update beacon ies to information_elements */
-	if (pnetwork->network.Reserved[0] == BSS_TYPE_BCN) { /* WIFI_BEACON */
+	if (pnetwork->network.Reserved[0] == BSS_TYPE_BCN) { /* IEEE80211_STYPE_BEACON */
 
 		if (bss->len_information_elements != bss->len_beacon_ies) {
 			bss->information_elements = bss->beacon_ies;
@@ -4344,9 +4344,9 @@ void rtw_cfg80211_indicate_sta_assoc(_adapter *padapter, u8 *pmgmt_frame, uint f
 	{
 		struct station_info sinfo;
 		u8 ie_offset;
-		if (get_frame_sub_type(pmgmt_frame) == WIFI_ASSOCREQ)
+		if (get_frame_sub_type(pmgmt_frame) == IEEE80211_STYPE_ASSOC_REQ)
 			ie_offset = _ASOCREQ_IE_OFFSET_;
-		else /* WIFI_REASSOCREQ */
+		else /* IEEE80211_STYPE_REASSOC_REQ */
 			ie_offset = _REASOCREQ_IE_OFFSET_;
 
 		memset(&sinfo, 0, sizeof(sinfo));
@@ -4416,7 +4416,7 @@ void rtw_cfg80211_indicate_sta_disassoc(_adapter *padapter, const u8 *da, unsign
 
 	SetSeqNum(pwlanhdr, pmlmeext->mgnt_seq);
 	pmlmeext->mgnt_seq++;
-	set_frame_sub_type(pmgmt_frame, WIFI_DEAUTH);
+	set_frame_sub_type(pmgmt_frame, IEEE80211_STYPE_DEAUTH);
 
 	pmgmt_frame += sizeof(struct rtw_ieee80211_hdr_3addr);
 	frame_len = sizeof(struct rtw_ieee80211_hdr_3addr);
@@ -6380,7 +6380,7 @@ void rtw_cfg80211_issue_p2p_provision_request(_adapter *padapter, const u8 *buf,
 
 	SetSeqNum(pwlanhdr, pmlmeext->mgnt_seq);
 	pmlmeext->mgnt_seq++;
-	set_frame_sub_type(pframe, WIFI_ACTION);
+	set_frame_sub_type(pframe, IEEE80211_STYPE_ACTION);
 
 	pframe += sizeof(struct rtw_ieee80211_hdr_3addr);
 	pattrib->pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
@@ -6569,7 +6569,7 @@ void rtw_cfg80211_external_auth_request(_adapter *padapter, union recv_frame *rf
 	cfg80211_external_auth_request(netdev,
 		(struct cfg80211_external_auth_params *)&params, GFP_ATOMIC);
 #elif (KERNEL_VERSION(2, 6, 37) <= LINUX_VERSION_CODE)
-	set_frame_sub_type(frame, WIFI_AUTH);
+	set_frame_sub_type(frame, IEEE80211_STYPE_AUTH);
 
 	memcpy(frame + 4, get_my_bssid(&pmlmeinfo->network), ETH_ALEN);
 	memcpy(frame + 10, adapter_mac_addr(padapter), ETH_ALEN);

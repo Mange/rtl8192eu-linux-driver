@@ -205,7 +205,7 @@ static u8 _send_ht_ndpa_packet(PADAPTER adapter, u8 *ra, enum channel_width bw)
 	/* update attribute */
 	attrib = &pmgntframe->attrib;
 	update_mgntframe_attrib(adapter, attrib);
-	/*attrib->type = WIFI_MGT_TYPE;*/ /* set in update_mgntframe_attrib() */
+	/*attrib->type = IEEE80211_FTYPE_MGMT;*/ /* set in update_mgntframe_attrib() */
 	attrib->subtype = WIFI_ACTION_NOACK;
 	attrib->bwmode = bw;
 	/*attrib->qsel = QSLT_MGNT;*/ /* set in update_mgntframe_attrib() */
@@ -301,7 +301,7 @@ static u8 _send_vht_ndpa_packet(PADAPTER adapter, u8 *ra, u16 aid, enum channel_
 	/* update attribute */
 	attrib = &pmgntframe->attrib;
 	update_mgntframe_attrib(adapter, attrib);
-	/*pattrib->type = WIFI_MGT_TYPE;*/ /* set in update_mgntframe_attrib() */
+	/*pattrib->type = IEEE80211_FTYPE_MGMT;*/ /* set in update_mgntframe_attrib() */
 	attrib->subtype = WIFI_NDPA;
 	attrib->bwmode = bw;
 	/*attrib->qsel = QSLT_MGNT;*/ /* set in update_mgntframe_attrib() */
@@ -414,7 +414,7 @@ static u8 _send_vht_mu_ndpa_packet(PADAPTER adapter, enum channel_width bw)
 	/* update attribute */
 	attrib = &pmgntframe->attrib;
 	update_mgntframe_attrib(adapter, attrib);
-	/*attrib->type = WIFI_MGT_TYPE;*/ /* set in update_mgntframe_attrib() */
+	/*attrib->type = IEEE80211_FTYPE_MGMT;*/ /* set in update_mgntframe_attrib() */
 	attrib->subtype = WIFI_NDPA;
 	attrib->bwmode = bw;
 	/*attrib->qsel = QSLT_MGNT;*/ /* set in update_mgntframe_attrib() */
@@ -507,7 +507,7 @@ static u8 _send_bf_report_poll(PADAPTER adapter, u8 *ra, u8 bFinalPoll)
 	/* update attribute */
 	attrib = &pmgntframe->attrib;
 	update_mgntframe_attrib(adapter, attrib);
-	/*attrib->type = WIFI_MGT_TYPE;*/ /* set in update_mgntframe_attrib() */
+	/*attrib->type = IEEE80211_FTYPE_MGMT;*/ /* set in update_mgntframe_attrib() */
 	attrib->subtype = WIFI_BF_REPORT_POLL;
 	attrib->bwmode = CHANNEL_WIDTH_20;
 	/*attrib->qsel = QSLT_MGNT;*/ /* set in update_mgntframe_attrib() */
@@ -1709,7 +1709,7 @@ u8 rtw_bf_send_vht_gid_mgnt_packet(PADAPTER adapter, u8 *ra, u8 *gid, u8 *positi
 	update_mgntframe_attrib(adapter, attrib);
 	attrib->rate = MGN_6M;
 	attrib->bwmode = CHANNEL_WIDTH_20;
-	attrib->subtype = WIFI_ACTION;
+	attrib->subtype = IEEE80211_STYPE_ACTION;
 
 	memset(pmgntframe->buf_addr, 0, WLANHDR_OFFSET + TXDESC_OFFSET);
 
