@@ -652,12 +652,6 @@ struct ADDBA_request {
     #define IEEE80211_MAX_AMPDU_BUF 0x40
 #endif
 
-/* Spatial Multiplexing Power Save Modes */
-#define WLAN_HT_CAP_SM_PS_STATIC		0
-#define WLAN_HT_CAP_SM_PS_DYNAMIC	1
-#define WLAN_HT_CAP_SM_PS_INVALID	2
-#define WLAN_HT_CAP_SM_PS_DISABLED	3
-
 
 #define OP_MODE_PURE                    0
 #define OP_MODE_MAY_BE_LEGACY_STAS      1
