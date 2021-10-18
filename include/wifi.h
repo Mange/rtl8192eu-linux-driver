@@ -83,37 +83,28 @@ enum {
 /* IEEE 802.11r */
 #define WLAN_STATUS_INVALID_PMKID 53
 
-#define _TO_DS_		BIT(8)
-#define _FROM_DS_	BIT(9)
-#define _MORE_FRAG_	BIT(10)
-#define _RETRY_		BIT(11)
-#define _PWRMGT_	BIT(12)
-#define _MORE_DATA_	BIT(13)
-#define _PRIVACY_	BIT(14)
-#define _ORDER_			BIT(15)
-
 #define SetToDs(pbuf)	\
 	do	{	\
-		*(unsigned short *)(pbuf) |= cpu_to_le16(_TO_DS_); \
+		*(unsigned short *)(pbuf) |= cpu_to_le16(IEEE80211_FCTL_TODS); \
 	} while (0)
 
-#define GetToDs(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(_TO_DS_)) != 0)
+#define GetToDs(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(IEEE80211_FCTL_TODS)) != 0)
 
 #define ClearToDs(pbuf)	\
 	do	{	\
-		*(unsigned short *)(pbuf) &= (~cpu_to_le16(_TO_DS_)); \
+		*(unsigned short *)(pbuf) &= (~cpu_to_le16(IEEE80211_FCTL_TODS)); \
 	} while (0)
 
 #define SetFrDs(pbuf)	\
 	do	{	\
-		*(unsigned short *)(pbuf) |= cpu_to_le16(_FROM_DS_); \
+		*(unsigned short *)(pbuf) |= cpu_to_le16(IEEE80211_FCTL_FROMDS); \
 	} while (0)
 
-#define GetFrDs(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(_FROM_DS_)) != 0)
+#define GetFrDs(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(IEEE80211_FCTL_FROMDS)) != 0)
 
 #define ClearFrDs(pbuf)	\
 	do	{	\
-		*(unsigned short *)(pbuf) &= (~cpu_to_le16(_FROM_DS_)); \
+		*(unsigned short *)(pbuf) &= (~cpu_to_le16(IEEE80211_FCTL_FROMDS)); \
 	} while (0)
 
 #define get_tofr_ds(pframe)	((GetToDs(pframe) << 1) | GetFrDs(pframe))
@@ -121,66 +112,66 @@ enum {
 
 #define SetMFrag(pbuf)	\
 	do	{	\
-		*(unsigned short *)(pbuf) |= cpu_to_le16(_MORE_FRAG_); \
+		*(unsigned short *)(pbuf) |= cpu_to_le16(IEEE80211_FCTL_MOREFRAGS); \
 	} while (0)
 
-#define GetMFrag(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(_MORE_FRAG_)) != 0)
+#define GetMFrag(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(IEEE80211_FCTL_MOREFRAGS)) != 0)
 
 #define ClearMFrag(pbuf)	\
 	do	{	\
-		*(unsigned short *)(pbuf) &= (~cpu_to_le16(_MORE_FRAG_)); \
+		*(unsigned short *)(pbuf) &= (~cpu_to_le16(IEEE80211_FCTL_MOREFRAGS)); \
 	} while (0)
 
 #define SetRetry(pbuf)	\
 	do	{	\
-		*(unsigned short *)(pbuf) |= cpu_to_le16(_RETRY_); \
+		*(unsigned short *)(pbuf) |= cpu_to_le16(IEEE80211_FCTL_RETRY); \
 	} while (0)
 
-#define GetRetry(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(_RETRY_)) != 0)
+#define GetRetry(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(IEEE80211_FCTL_RETRY)) != 0)
 
 #define ClearRetry(pbuf)	\
 	do	{	\
-		*(unsigned short *)(pbuf) &= (~cpu_to_le16(_RETRY_)); \
+		*(unsigned short *)(pbuf) &= (~cpu_to_le16(IEEE80211_FCTL_RETRY)); \
 	} while (0)
 
 #define SetPwrMgt(pbuf)	\
 	do	{	\
-		*(unsigned short *)(pbuf) |= cpu_to_le16(_PWRMGT_); \
+		*(unsigned short *)(pbuf) |= cpu_to_le16(IEEE80211_FCTL_PM); \
 	} while (0)
 
-#define GetPwrMgt(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(_PWRMGT_)) != 0)
+#define GetPwrMgt(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(IEEE80211_FCTL_PM)) != 0)
 
 #define ClearPwrMgt(pbuf)	\
 	do	{	\
-		*(unsigned short *)(pbuf) &= (~cpu_to_le16(_PWRMGT_)); \
+		*(unsigned short *)(pbuf) &= (~cpu_to_le16(IEEE80211_FCTL_PM)); \
 	} while (0)
 
 #define SetMData(pbuf)	\
 	do	{	\
-		*(unsigned short *)(pbuf) |= cpu_to_le16(_MORE_DATA_); \
+		*(unsigned short *)(pbuf) |= cpu_to_le16(IEEE80211_FCTL_MOREDATA); \
 	} while (0)
 
-#define GetMData(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(_MORE_DATA_)) != 0)
+#define GetMData(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(IEEE80211_FCTL_MOREDATA)) != 0)
 
 #define ClearMData(pbuf)	\
 	do	{	\
-		*(unsigned short *)(pbuf) &= (~cpu_to_le16(_MORE_DATA_)); \
+		*(unsigned short *)(pbuf) &= (~cpu_to_le16(IEEE80211_FCTL_MOREDATA)); \
 	} while (0)
 
 #define SetPrivacy(pbuf)	\
 	do	{	\
-		*(unsigned short *)(pbuf) |= cpu_to_le16(_PRIVACY_); \
+		*(unsigned short *)(pbuf) |= cpu_to_le16(IEEE80211_FCTL_PROTECTED); \
 	} while (0)
 
-#define GetPrivacy(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(_PRIVACY_)) != 0)
+#define GetPrivacy(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(IEEE80211_FCTL_PROTECTED)) != 0)
 
 #define ClearPrivacy(pbuf)	\
 	do	{	\
-		*(unsigned short *)(pbuf) &= (~cpu_to_le16(_PRIVACY_)); \
+		*(unsigned short *)(pbuf) &= (~cpu_to_le16(IEEE80211_FCTL_PROTECTED)); \
 	} while (0)
 
 
-#define GetOrder(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(_ORDER_)) != 0)
+#define GetOrder(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(IEEE80211_FCTL_ORDER)) != 0)
 
 #define GetFrameType(pbuf)	(le16_to_cpu(*(unsigned short *)(pbuf)) & (BIT(3) | BIT(2)))
 
@@ -539,12 +530,12 @@ typedef	enum _ELEMENT_ID {
 
 #define set_order_bit(pbuf)	\
 		do	{	\
-			*(unsigned short *)(pbuf) |= cpu_to_le16(_ORDER_); \
+			*(unsigned short *)(pbuf) |= cpu_to_le16(IEEE80211_FCTL_ORDER); \
 		} while (0)
 
 
 
-#define GetOrderBit(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(_ORDER_)) != 0)
+#define GetOrderBit(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(IEEE80211_FCTL_ORDER)) != 0)
 
 #define ACT_CAT_VENDOR				0x7F/* 127 */
 
