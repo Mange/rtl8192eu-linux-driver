@@ -154,7 +154,7 @@ s8 rtw_get_sta_rx_nss(_adapter *adapter, struct sta_info *psta)
 	else
 	#endif /* CONFIG_80211AC_VHT */
 	if (psta->htpriv.ht_option)
-		nss = rtw_min(nss, rtw_ht_mcsset_to_nss(psta->htpriv.ht_cap.supp_mcs_set));
+		nss = rtw_min(nss, rtw_ht_mcsset_to_nss(psta->htpriv.ht_cap.mcs.rx_mask));
 #endif /*CONFIG_80211N_HT*/
 	RTW_INFO("%s: %d SS\n", __func__, nss);
 	return nss;
@@ -183,7 +183,7 @@ s8 rtw_get_sta_tx_nss(_adapter *adapter, struct sta_info *psta)
 	else
 	#endif /* CONFIG_80211AC_VHT */
 	if (psta->htpriv.ht_option)
-		nss = rtw_min(nss, rtw_ht_mcsset_to_nss(psta->htpriv.ht_cap.supp_mcs_set));
+		nss = rtw_min(nss, rtw_ht_mcsset_to_nss(psta->htpriv.ht_cap.mcs.rx_mask));
 #endif /*CONFIG_80211N_HT*/
 	RTW_INFO("%s: %d SS\n", __func__, nss);
 	return nss;

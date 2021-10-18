@@ -425,12 +425,12 @@ void rtw_tdls_process_ht_cap(_adapter *padapter, struct sta_info *ptdls_sta, u8 
 	u8	cur_ldpc_cap = 0, cur_stbc_cap = 0, cur_beamform_cap = 0;
 
 	/* Save HT capabilities in the sta object */
-	memset(&ptdls_sta->htpriv.ht_cap, 0, sizeof(struct rtw_ieee80211_ht_cap));
-	if (data && Length >= sizeof(struct rtw_ieee80211_ht_cap)) {
+	memset(&ptdls_sta->htpriv.ht_cap, 0, sizeof(struct ieee80211_ht_cap));
+	if (data && Length >= sizeof(struct ieee80211_ht_cap)) {
 		ptdls_sta->flags |= WLAN_STA_HT;
 		ptdls_sta->flags |= WLAN_STA_WME;
 
-		memcpy(&ptdls_sta->htpriv.ht_cap, data, sizeof(struct rtw_ieee80211_ht_cap));
+		memcpy(&ptdls_sta->htpriv.ht_cap, data, sizeof(struct ieee80211_ht_cap));
 	} else {
 		ptdls_sta->flags &= ~WLAN_STA_HT;
 		return;

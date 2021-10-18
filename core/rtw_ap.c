@@ -2242,7 +2242,7 @@ int rtw_check_beacon_data(_adapter *padapter, u8 *pbuf,  int len)
 		if (p && ie_len > 0) {
 			u8 rf_type = 0;
 			enum ieee80211_max_ampdu_length_exp max_rx_ampdu_factor = IEEE80211_HT_MAX_AMPDU_64K;
-			struct rtw_ieee80211_ht_cap *pht_cap = (struct rtw_ieee80211_ht_cap *)(p + 2);
+			struct ieee80211_ht_cap *pht_cap = (struct ieee80211_ht_cap *)(p + 2);
 
 			if (0) {
 				RTW_INFO(FUNC_ADPT_FMT" HT_CAP_IE from upper layer:\n", FUNC_ADPT_ARG(padapter));
@@ -5416,11 +5416,11 @@ void rtw_ap_parse_sta_ht_ie(_adapter *adapter, struct sta_info *sta, struct rtw_
 		goto exit;
 
 	/* save HT capabilities in the sta object */
-	memset(&sta->htpriv.ht_cap, 0, sizeof(struct rtw_ieee80211_ht_cap));
-	if (elems->ht_capabilities && elems->ht_capabilities_len >= sizeof(struct rtw_ieee80211_ht_cap)) {
+	memset(&sta->htpriv.ht_cap, 0, sizeof(struct ieee80211_ht_cap));
+	if (elems->ht_capabilities && elems->ht_capabilities_len >= sizeof(struct ieee80211_ht_cap)) {
 		sta->flags |= WLAN_STA_HT;
 		sta->flags |= WLAN_STA_WME;
-		memcpy(&sta->htpriv.ht_cap, elems->ht_capabilities, sizeof(struct rtw_ieee80211_ht_cap));
+		memcpy(&sta->htpriv.ht_cap, elems->ht_capabilities, sizeof(struct ieee80211_ht_cap));
 
 		if (elems->ht_operation && elems->ht_operation_len == HT_OP_IE_LEN) {
 			memcpy(sta->htpriv.ht_op, elems->ht_operation, HT_OP_IE_LEN);

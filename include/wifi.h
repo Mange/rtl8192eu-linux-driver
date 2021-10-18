@@ -566,23 +566,7 @@ struct rtw_ieee80211_bar {
 #endif
 
 /**
-* struct rtw_ieee80211_ht_cap - HT capabilities
-*
-* This structure refers to "HT capabilities element" as
-* described in 802.11n draft section 7.3.2.52
-*/
-
-struct rtw_ieee80211_ht_cap {
-	unsigned short	cap_info;
-	unsigned char	ampdu_params_info;
-	unsigned char	supp_mcs_set[16];
-	unsigned short	extended_ht_cap_info;
-	unsigned int		tx_BF_cap_info;
-	unsigned char	       antenna_selection_info;
-} __attribute__((packed));
-
-/**
- * struct rtw_ieee80211_ht_cap - HT additional information
+ * struct ieee80211_ht_cap - HT additional information
  *
  * This structure refers to "HT information element" as
  * described in 802.11n draft section 7.3.2.53

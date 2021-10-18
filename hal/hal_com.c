@@ -2088,7 +2088,7 @@ if (padapter->registrypriv.ht_enable && is_supported_ht(padapter->registrypriv.w
 			}
 		}
 
-		tmp64 = rtw_ht_mcs_set_to_bitmap(psta->htpriv.ht_cap.supp_mcs_set, tx_nss);
+		tmp64 = rtw_ht_mcs_set_to_bitmap(psta->htpriv.ht_cap.mcs.rx_mask, tx_nss);
 		tx_ra_bitmap |= (tmp64 << 12);
 	}
 }
