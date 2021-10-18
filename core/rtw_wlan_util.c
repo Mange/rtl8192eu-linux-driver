@@ -2181,7 +2181,7 @@ void VCS_update(_adapter *padapter, struct sta_info *psta)
 	case 2: /* auto */
 	default:
 		if (((pmlmeinfo->ERP_enable) && (pmlmeinfo->ERP_IE & BIT(1)))
-			/*||(pmlmepriv->ht_op_mode & HT_INFO_OPERATION_MODE_NON_GF_DEVS_PRESENT)*/
+			/*||(pmlmepriv->ht_op_mode & IEEE80211_HT_OP_MODE_NON_GF_STA_PRSNT)*/
 		) {
 			if (pregpriv->vcs_type == 1) {
 				psta->rtsen = 1;
