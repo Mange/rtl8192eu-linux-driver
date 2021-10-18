@@ -3255,7 +3255,7 @@ exit:
 u8 rtw_rx_ampdu_size(_adapter *adapter)
 {
 	u8 size;
-	HT_CAP_AMPDU_FACTOR max_rx_ampdu_factor;
+	enum ieee80211_max_ampdu_length_exp max_rx_ampdu_factor;
 
 #ifdef CONFIG_BT_COEXIST
 	if (rtw_btcoex_IsBTCoexCtrlAMPDUSize(adapter) == _TRUE) {
@@ -3275,7 +3275,7 @@ u8 rtw_rx_ampdu_size(_adapter *adapter)
 
 	/* default value based on max_rx_ampdu_factor */
 	if (adapter->driver_rx_ampdu_factor != 0xFF)
-		max_rx_ampdu_factor = (HT_CAP_AMPDU_FACTOR)adapter->driver_rx_ampdu_factor;
+		max_rx_ampdu_factor = (enum ieee80211_max_ampdu_length_exp)adapter->driver_rx_ampdu_factor;
 	else
 		rtw_hal_get_def_var(adapter, HW_VAR_MAX_RX_AMPDU_FACTOR, &max_rx_ampdu_factor);
 
@@ -3286,13 +3286,13 @@ u8 rtw_rx_ampdu_size(_adapter *adapter)
 		MSDU or AMSDU.
 		The size variable means how many MSDUs or AMSDUs, it's not Kbytes.
 	*/
-	if (MAX_AMPDU_FACTOR_64K == max_rx_ampdu_factor)
+	if (IEEE80211_HT_MAX_AMPDU_64K == max_rx_ampdu_factor)
 		size = 64;
-	else if (MAX_AMPDU_FACTOR_32K == max_rx_ampdu_factor)
+	else if (IEEE80211_HT_MAX_AMPDU_32K == max_rx_ampdu_factor)
 		size = 32;
-	else if (MAX_AMPDU_FACTOR_16K == max_rx_ampdu_factor)
+	else if (IEEE80211_HT_MAX_AMPDU_16K == max_rx_ampdu_factor)
 		size = 16;
-	else if (MAX_AMPDU_FACTOR_8K == max_rx_ampdu_factor)
+	else if (IEEE80211_HT_MAX_AMPDU_8K == max_rx_ampdu_factor)
 		size = 8;
 	else
 		size = 64;

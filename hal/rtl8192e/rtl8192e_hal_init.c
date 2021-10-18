@@ -4509,7 +4509,7 @@ GetHalDefVar8192E(
 		*((u32 *)pValue) = 8;
 		break;
 	case HW_VAR_BEST_AMPDU_DENSITY:
-		*((u32 *)pValue) = AMPDU_DENSITY_VALUE_7;
+		*((u32 *)pValue) = IEEE80211_HT_MPDU_DENSITY_16;
 		break;
 	default:
 		bResult = GetHalDefVar(Adapter, eVariable, pValue);

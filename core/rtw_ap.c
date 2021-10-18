@@ -1898,7 +1898,7 @@ int rtw_check_beacon_data(_adapter *padapter, u8 *pbuf,  int len)
 	u8	channel, network_type, supportRate[NDIS_802_11_LENGTH_RATES_EX];
 	int supportRateNum = 0;
 	u8 WMM_PARA_IE[] = {0x00, 0x50, 0xf2, 0x02, 0x01, 0x01};
-	HT_CAP_AMPDU_DENSITY best_ampdu_density;
+	enum ieee80211_min_mpdu_spacing best_ampdu_density;
 	struct registry_priv *pregistrypriv = &padapter->registrypriv;
 	struct security_priv *psecuritypriv = &padapter->securitypriv;
 	struct mlme_priv *pmlmepriv = &(padapter->mlmepriv);
@@ -2241,7 +2241,7 @@ int rtw_check_beacon_data(_adapter *padapter, u8 *pbuf,  int len)
 		p = rtw_get_ie(ie + _BEACON_IE_OFFSET_, WLAN_EID_HT_CAPABILITY, &ie_len, (pbss_network->IELength - _BEACON_IE_OFFSET_));
 		if (p && ie_len > 0) {
 			u8 rf_type = 0;
-			HT_CAP_AMPDU_FACTOR max_rx_ampdu_factor = MAX_AMPDU_FACTOR_64K;
+			enum ieee80211_max_ampdu_length_exp max_rx_ampdu_factor = IEEE80211_HT_MAX_AMPDU_64K;
 			struct rtw_ieee80211_ht_cap *pht_cap = (struct rtw_ieee80211_ht_cap *)(p + 2);
 
 			if (0) {

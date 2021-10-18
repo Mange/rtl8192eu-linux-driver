@@ -636,31 +636,7 @@ struct ADDBA_request {
 	unsigned short	BA_starting_seqctrl;
 }  __attribute__((packed));
 
-typedef enum _HT_CAP_AMPDU_FACTOR {
-	MAX_AMPDU_FACTOR_8K		= 0,
-	MAX_AMPDU_FACTOR_16K	= 1,
-	MAX_AMPDU_FACTOR_32K	= 2,
-	MAX_AMPDU_FACTOR_64K	= 3,
-} HT_CAP_AMPDU_FACTOR;
 
-typedef enum _VHT_CAP_AMPDU_FACTOR {
-	MAX_AMPDU_FACTOR_128K = 4,
-	MAX_AMPDU_FACTOR_256K = 5,
-	MAX_AMPDU_FACTOR_512K = 6,
-	MAX_AMPDU_FACTOR_1M = 7,
-} VHT_CAP_AMPDU_FACTOR;
-
-
-typedef enum _HT_CAP_AMPDU_DENSITY {
-	AMPDU_DENSITY_VALUE_0 = 0 , /* For no restriction */
-	AMPDU_DENSITY_VALUE_1 = 1 , /* For 1/4 us */
-	AMPDU_DENSITY_VALUE_2 = 2 , /* For 1/2 us */
-	AMPDU_DENSITY_VALUE_3 = 3 , /* For 1 us */
-	AMPDU_DENSITY_VALUE_4 = 4 , /* For 2 us */
-	AMPDU_DENSITY_VALUE_5 = 5 , /* For 4 us */
-	AMPDU_DENSITY_VALUE_6 = 6 , /* For 8 us */
-	AMPDU_DENSITY_VALUE_7 = 7 , /* For 16 us */
-} HT_CAP_AMPDU_DENSITY;
 
 /* 802.11n HT capabilities masks */
 #define IEEE80211_HT_CAP_RX_STBC_1R 0x0100

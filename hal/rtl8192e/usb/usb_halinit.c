@@ -1710,7 +1710,7 @@ GetHalDefVar8192EUsb(
 	switch (eVariable) {
 
 	case HW_VAR_MAX_RX_AMPDU_FACTOR:
-		*((u32 *)pValue) = MAX_AMPDU_FACTOR_64K; /* MAX_AMPDU_FACTOR_64K; */
+		*((u32 *)pValue) = IEEE80211_HT_MAX_AMPDU_64K; /* IEEE80211_HT_MAX_AMPDU_64K; */
 		break;
 	default:
 		GetHalDefVar8192E(Adapter, eVariable, pValue);
