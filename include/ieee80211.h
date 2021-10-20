@@ -1592,55 +1592,10 @@ enum rtw_ieee80211_preq_target_flags {
 	RTW_IEEE80211_PREQ_USN_FLAG	= 1<<2,
 };
 
-/**
- * enum rtw_ieee80211_root_mode_identifier - root mesh STA mode identifier
- *
- * These attribute are used by dot11MeshHWMPRootMode to set root mesh STA mode
- *
- * @RTW_IEEE80211_ROOTMODE_NO_ROOT: the mesh STA is not a root mesh STA (default)
- * @RTW_IEEE80211_ROOTMODE_ROOT: the mesh STA is a root mesh STA if greater than
- *	this value
- * @RTW_IEEE80211_PROACTIVE_PREQ_NO_PREP: the mesh STA is a root mesh STA supports
- *	the proactive PREQ with proactive PREP subfield set to 0
- * @RTW_IEEE80211_PROACTIVE_PREQ_WITH_PREP: the mesh STA is a root mesh STA
- *	supports the proactive PREQ with proactive PREP subfield set to 1
- * @RTW_IEEE80211_PROACTIVE_RANN: the mesh STA is a root mesh STA supports
- *	the proactive RANN
- */
-enum rtw_ieee80211_root_mode_identifier {
-	RTW_IEEE80211_ROOTMODE_NO_ROOT = 0,
-	RTW_IEEE80211_ROOTMODE_ROOT = 1,
-	RTW_IEEE80211_PROACTIVE_PREQ_NO_PREP = 2,
-	RTW_IEEE80211_PROACTIVE_PREQ_WITH_PREP = 3,
-	RTW_IEEE80211_PROACTIVE_RANN = 4,
-};
 
-/**
- * enum rtw_ieee80211_channel_flags - channel flags
- *
- * Channel flags set by the regulatory control code.
- *
- * @RTW_IEEE80211_CHAN_DISABLED: This channel is disabled.
- * @RTW_IEEE80211_CHAN_PASSIVE_SCAN: Only passive scanning is permitted
- *      on this channel.
- * @RTW_IEEE80211_CHAN_NO_IBSS: IBSS is not allowed on this channel.
- * @RTW_IEEE80211_CHAN_RADAR: Radar detection is required on this channel.
- * @RTW_IEEE80211_CHAN_NO_HT40PLUS: extension channel above this channel
- *      is not permitted.
- * @RTW_IEEE80211_CHAN_NO_HT40MINUS: extension channel below this channel
- *      is not permitted.
- */
-enum rtw_ieee80211_channel_flags {
-	RTW_IEEE80211_CHAN_DISABLED         = 1 << 0,
-	RTW_IEEE80211_CHAN_PASSIVE_SCAN     = 1 << 1,
-	RTW_IEEE80211_CHAN_NO_IBSS          = 1 << 2,
-	RTW_IEEE80211_CHAN_RADAR            = 1 << 3,
-	RTW_IEEE80211_CHAN_NO_HT40PLUS      = 1 << 4,
-	RTW_IEEE80211_CHAN_NO_HT40MINUS     = 1 << 5,
-};
-
-#define RTW_IEEE80211_CHAN_NO_HT40 \
-	(RTW_IEEE80211_CHAN_NO_HT40PLUS | RTW_IEEE80211_CHAN_NO_HT40MINUS)
+/* for kernel 3.14 , both value are changed to IEEE80211_CHAN_NO_IR*/
+#define RTW_IEEE80211_CHAN_NO_IBSS          (1 << 2)
+#define RTW_IEEE80211_CHAN_PASSIVE_SCAN     (1 << 1)
 
 /* Represent channel details, subset of ieee80211_channel */
 struct rtw_ieee80211_channel {

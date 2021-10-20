@@ -8030,9 +8030,9 @@ static void rtw_cfg80211_mesh_cfg_set(_adapter *adapter, const struct mesh_confi
 		mcfg->dot11MeshGateAnnouncementProtocol = conf->dot11MeshGateAnnouncementProtocol;
 	/* our current gate annc implementation rides on root annc with gate annc bit in PREQ flags */
 	if (mcfg->dot11MeshGateAnnouncementProtocol
-		&& mcfg->dot11MeshHWMPRootMode <= RTW_IEEE80211_ROOTMODE_ROOT
+		&& mcfg->dot11MeshHWMPRootMode <= IEEE80211_ROOTMODE_ROOT
 	) {
-		mcfg->dot11MeshHWMPRootMode = RTW_IEEE80211_PROACTIVE_RANN;
+		mcfg->dot11MeshHWMPRootMode = IEEE80211_PROACTIVE_RANN;
 		RTW_INFO(ADPT_FMT" enable PROACTIVE_RANN becaue gate annc is needed\n", ADPT_ARG(adapter));
 	}
 	if (chk_mesh_attr(NL80211_MESHCONF_HWMP_RANN_INTERVAL, mask))

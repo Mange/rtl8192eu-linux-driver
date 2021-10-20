@@ -1519,15 +1519,15 @@ void rtw_mesh_path_tx_root_frame(_adapter *adapter)
 			? RTW_RANN_FLAG_IS_GATE : 0;
 
 	switch (mshcfg->dot11MeshHWMPRootMode) {
-	case RTW_IEEE80211_PROACTIVE_RANN:
+	case IEEE80211_PROACTIVE_RANN:
 		rtw_mesh_path_sel_frame_tx(RTW_MPATH_RANN, flags, adapter_mac_addr(adapter),
 					   ++minfo->sn, 0, NULL, 0, bcast_addr,
 					   0, mshcfg->element_ttl,
 					   interval, 0, 0, adapter);
 		break;
-	case RTW_IEEE80211_PROACTIVE_PREQ_WITH_PREP:
+	case IEEE80211_PROACTIVE_PREQ_WITH_PREP:
 		flags |= RTW_IEEE80211_PREQ_PROACTIVE_PREP_FLAG;
-	case RTW_IEEE80211_PROACTIVE_PREQ_NO_PREP:
+	case IEEE80211_PROACTIVE_PREQ_NO_PREP:
 		interval = mshcfg->dot11MeshHWMPactivePathToRootTimeout;
 		target_flags |= RTW_IEEE80211_PREQ_TO_FLAG |
 				RTW_IEEE80211_PREQ_USN_FLAG;
@@ -1570,7 +1570,7 @@ static void rtw_ieee80211_mesh_rootpath(_adapter *adapter)
 
 	rtw_mesh_path_tx_root_frame(adapter);
 
-	if (adapter->mesh_cfg.dot11MeshHWMPRootMode == RTW_IEEE80211_PROACTIVE_RANN)
+	if (adapter->mesh_cfg.dot11MeshHWMPRootMode == IEEE80211_PROACTIVE_RANN)
 		interval = adapter->mesh_cfg.dot11MeshHWMPRannInterval;
 	else
 		interval = adapter->mesh_cfg.dot11MeshHWMProotInterval;
@@ -1583,7 +1583,7 @@ BOOLEAN rtw_ieee80211_mesh_root_setup(_adapter *adapter)
 {
 	BOOLEAN root_enabled = _FALSE;
 
-	if (adapter->mesh_cfg.dot11MeshHWMPRootMode > RTW_IEEE80211_ROOTMODE_ROOT) {
+	if (adapter->mesh_cfg.dot11MeshHWMPRootMode > IEEE80211_ROOTMODE_ROOT) {
 		rtw_set_bit(RTW_MESH_WORK_ROOT, &adapter->wrkq_flags);
 		root_enabled = _TRUE;
 	}

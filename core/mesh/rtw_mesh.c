@@ -3035,7 +3035,7 @@ void rtw_mesh_cfg_init(_adapter *adapter)
 	mcfg->dot11MeshHWMPpreqMinInterval = RTW_MESH_PREQ_MIN_INT;
 	mcfg->dot11MeshHWMPperrMinInterval = RTW_MESH_PERR_MIN_INT;
 	mcfg->dot11MeshHWMPnetDiameterTraversalTime = RTW_MESH_DIAM_TRAVERSAL_TIME;
-	mcfg->dot11MeshHWMPRootMode = RTW_IEEE80211_ROOTMODE_NO_ROOT;
+	mcfg->dot11MeshHWMPRootMode = IEEE80211_ROOTMODE_NO_ROOT;
 	mcfg->dot11MeshHWMPRannInterval = RTW_MESH_RANN_INTERVAL;
 	mcfg->dot11MeshGateAnnouncementProtocol = _FALSE;
 	mcfg->dot11MeshForwarding = _TRUE;
