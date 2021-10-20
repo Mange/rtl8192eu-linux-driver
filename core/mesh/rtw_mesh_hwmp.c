@@ -218,7 +218,7 @@ static int rtw_mesh_path_sel_frame_tx(enum rtw_mpath_frame_type mpath_action, u8
 	struct xmit_frame *pmgntframe = NULL;
 	struct rtw_ieee80211_hdr *pwlanhdr = NULL;
 	struct pkt_attrib *pattrib = NULL;
-	u8 category = RTW_WLAN_CATEGORY_MESH;
+	u8 category = WLAN_CATEGORY_MESH_ACTION;
 	u8 action = RTW_ACT_MESH_HWMP_PATH_SELECTION;
 	u16 *fctrl = NULL;
 	u8 *pos, ie_len;
@@ -330,7 +330,7 @@ int rtw_mesh_path_error_tx(_adapter *adapter,
 	struct rtw_ieee80211_hdr *pwlanhdr = NULL;
 	struct pkt_attrib *pattrib = NULL;
 	struct rtw_mesh_info *minfo = &adapter->mesh_info;
-	u8 category = RTW_WLAN_CATEGORY_MESH;
+	u8 category = WLAN_CATEGORY_MESH_ACTION;
 	u8 action = RTW_ACT_MESH_HWMP_PATH_SELECTION;
 	u8 *pos, ie_len;
 	u16 *fctrl = NULL;
@@ -644,7 +644,7 @@ static void rtw_hwmp_preq_frame_process(_adapter *adapter,
 	target_flags = RTW_PREQ_IE_TARGET_F(preq_elem);
 	/* PREQ gate announcements */
 	flags = RTW_PREQ_IE_FLAGS(preq_elem);
-	preq_is_gate = !!(flags & RTW_IEEE80211_PREQ_IS_GATE_FLAG);
+	preq_is_gate = !!(flags & IEEE80211_PREQ_IS_GATE_FLAG);
 
 	RTW_HWMP_DBG("received PREQ from "MAC_FMT"\n", MAC_ARG(originator_addr));
 
@@ -677,11 +677,11 @@ static void rtw_hwmp_preq_frame_process(_adapter *adapter,
 		}
 		target_sn = minfo->sn;
 	} else if (is_broadcast_mac_addr(target_addr) &&
-		   (target_flags & RTW_IEEE80211_PREQ_TO_FLAG)) {
+		   (target_flags & IEEE80211_PREQ_TO_FLAG)) {
 		rtw_rcu_read_lock();
 		path = rtw_mesh_path_lookup(adapter, originator_addr);
 		if (path) {
-			if (flags & RTW_IEEE80211_PREQ_PROACTIVE_PREP_FLAG) {
+			if (flags & IEEE80211_PREQ_PROACTIVE_PREP_FLAG) {
 				reply = _TRUE;
 				target_addr = adapter_mac_addr(adapter);
 				target_sn = ++minfo->sn;
@@ -722,13 +722,13 @@ static void rtw_hwmp_preq_frame_process(_adapter *adapter,
 					RTW_SN_LT(path->sn, target_sn)) {
 				path->sn = target_sn;
 				path->flags |= RTW_MESH_PATH_SN_VALID;
-			} else if ((!(target_flags & RTW_IEEE80211_PREQ_TO_FLAG)) &&
+			} else if ((!(target_flags & IEEE80211_PREQ_TO_FLAG)) &&
 					(path->flags & RTW_MESH_PATH_ACTIVE)) {
 				reply = _TRUE;
 				target_metric = path->metric;
 				target_sn = path->sn;
 				/* Case E2 of sec 13.10.9.3 IEEE 802.11-2012*/
-				target_flags |= RTW_IEEE80211_PREQ_TO_FLAG;
+				target_flags |= IEEE80211_PREQ_TO_FLAG;
 			}
 		}
 		rtw_rcu_read_unlock();
@@ -748,7 +748,7 @@ static void rtw_hwmp_preq_frame_process(_adapter *adapter,
 			RTW_HWMP_DBG("replying to the PREQ (PREQ for us)\n");
 			if (mshcfg->dot11MeshGateAnnouncementProtocol) {
 				/* BIT 7 is used to identify the prep is from mesh gate */
-				to_gate_ask = RTW_IEEE80211_PREQ_IS_GATE_FLAG | BIT(7);
+				to_gate_ask = IEEE80211_PREQ_IS_GATE_FLAG | BIT(7);
 			} else {
 				to_gate_ask = 0;
 			}
@@ -780,7 +780,7 @@ static void rtw_hwmp_preq_frame_process(_adapter *adapter,
 		da = (path && path->is_root) ?
 			path->rann_snd_addr : bcast_addr;
 
-		if (flags & RTW_IEEE80211_PREQ_PROACTIVE_PREP_FLAG) {
+		if (flags & IEEE80211_PREQ_PROACTIVE_PREP_FLAG) {
 			target_addr = RTW_PREQ_IE_TARGET_ADDR(preq_elem);
 			target_sn = RTW_PREQ_IE_TARGET_SN(preq_elem);
 		}
@@ -831,7 +831,7 @@ static void rtw_hwmp_prep_frame_process(_adapter *adapter,
 				enter_critical_bh(&path->state_lock);
 				path->gate_asked = false;
 				exit_critical_bh(&path->state_lock);
-				if (!(flags & RTW_IEEE80211_PREQ_IS_GATE_FLAG)) {
+				if (!(flags & IEEE80211_PREQ_IS_GATE_FLAG)) {
 					enter_critical_bh(&path->state_lock);
 					rtw_mesh_gate_del(adapter->mesh_info.mesh_paths, path);
 					exit_critical_bh(&path->state_lock);
@@ -957,7 +957,7 @@ static void rtw_hwmp_rann_frame_process(_adapter *adapter,
 
 	ttl = rann->rann_ttl;
 	flags = rann->rann_flags;
-	root_is_gate = !!(flags & RTW_RANN_FLAG_IS_GATE);
+	root_is_gate = !!(flags & RANN_FLAG_IS_GATE);
 	originator_addr = rann->rann_addr;
 	originator_sn = le32_to_cpu(rann->rann_seq);
 	interval = le32_to_cpu(rann->rann_interval);
@@ -1429,9 +1429,9 @@ void rtw_mesh_path_start_discovery(_adapter *adapter)
 	}
 
 	if (preq_node->flags & RTW_PREQ_Q_F_REFRESH)
-		target_flags |= RTW_IEEE80211_PREQ_TO_FLAG;
+		target_flags |= IEEE80211_PREQ_TO_FLAG;
 	else
-		target_flags &= ~RTW_IEEE80211_PREQ_TO_FLAG;
+		target_flags &= ~IEEE80211_PREQ_TO_FLAG;
 
 #ifdef CONFIG_RTW_MESH_ADD_ROOT_CHK
 	is_root_add_chk = !!(path->flags & RTW_MESH_PATH_ROOT_ADD_CHK);
@@ -1443,7 +1443,7 @@ void rtw_mesh_path_start_discovery(_adapter *adapter)
 
 #ifdef CONFIG_RTW_MESH_ON_DMD_GANN
 	flags = (mshcfg->dot11MeshGateAnnouncementProtocol)
-		? RTW_IEEE80211_PREQ_IS_GATE_FLAG : 0;
+		? IEEE80211_PREQ_IS_GATE_FLAG : 0;
 #endif
 	rtw_mesh_path_sel_frame_tx(RTW_MPATH_PREQ, flags, adapter_mac_addr(adapter), minfo->sn,
 				   target_flags, path->dst, path->sn, da, 0,
@@ -1516,7 +1516,7 @@ void rtw_mesh_path_tx_root_frame(_adapter *adapter)
 	u8 flags, target_flags = 0;
 
 	flags = (mshcfg->dot11MeshGateAnnouncementProtocol)
-			? RTW_RANN_FLAG_IS_GATE : 0;
+			? RANN_FLAG_IS_GATE : 0;
 
 	switch (mshcfg->dot11MeshHWMPRootMode) {
 	case IEEE80211_PROACTIVE_RANN:
@@ -1526,11 +1526,11 @@ void rtw_mesh_path_tx_root_frame(_adapter *adapter)
 					   interval, 0, 0, adapter);
 		break;
 	case IEEE80211_PROACTIVE_PREQ_WITH_PREP:
-		flags |= RTW_IEEE80211_PREQ_PROACTIVE_PREP_FLAG;
+		flags |= IEEE80211_PREQ_PROACTIVE_PREP_FLAG;
 	case IEEE80211_PROACTIVE_PREQ_NO_PREP:
 		interval = mshcfg->dot11MeshHWMPactivePathToRootTimeout;
-		target_flags |= RTW_IEEE80211_PREQ_TO_FLAG |
-				RTW_IEEE80211_PREQ_USN_FLAG;
+		target_flags |= IEEE80211_PREQ_TO_FLAG |
+				IEEE80211_PREQ_USN_FLAG;
 		rtw_mesh_path_sel_frame_tx(RTW_MPATH_PREQ, flags, adapter_mac_addr(adapter),
 					   ++minfo->sn, target_flags,
 					   (u8 *) bcast_addr, 0, bcast_addr,

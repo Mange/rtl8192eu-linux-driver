@@ -68,30 +68,30 @@ struct mlme_handler mlme_ap_tbl[] = {
 #endif
 
 struct action_handler OnAction_tbl[] = {
-	{RTW_WLAN_CATEGORY_SPECTRUM_MGMT,	 "ACTION_SPECTRUM_MGMT", on_action_spct},
-	{RTW_WLAN_CATEGORY_QOS, "ACTION_QOS", &OnAction_qos},
-	{RTW_WLAN_CATEGORY_DLS, "ACTION_DLS", &OnAction_dls},
-	{RTW_WLAN_CATEGORY_BACK, "ACTION_BACK", &OnAction_back},
-	{RTW_WLAN_CATEGORY_PUBLIC, "ACTION_PUBLIC", on_action_public},
-	{RTW_WLAN_CATEGORY_RADIO_MEAS, "ACTION_RADIO_MEAS", &on_action_rm},
-	{RTW_WLAN_CATEGORY_FT, "ACTION_FT",	&OnAction_ft},
-	{RTW_WLAN_CATEGORY_HT,	"ACTION_HT",	&OnAction_ht},
+	{WLAN_CATEGORY_SPECTRUM_MGMT,	 "ACTION_SPECTRUM_MGMT", on_action_spct},
+	{WLAN_CATEGORY_QOS, "ACTION_QOS", &OnAction_qos},
+	{WLAN_CATEGORY_DLS, "ACTION_DLS", &OnAction_dls},
+	{WLAN_CATEGORY_BACK, "ACTION_BACK", &OnAction_back},
+	{WLAN_CATEGORY_PUBLIC, "ACTION_PUBLIC", on_action_public},
+	{WLAN_CATEGORY_RADIO_MEASUREMENT, "ACTION_RADIO_MEAS", &on_action_rm},
+	{WLAN_CATEGORY_FAST_BBS_TRANSITION, "ACTION_FT",	&OnAction_ft},
+	{WLAN_CATEGORY_HT,	"ACTION_HT",	&OnAction_ht},
 #ifdef CONFIG_IEEE80211W
-	{RTW_WLAN_CATEGORY_SA_QUERY, "ACTION_SA_QUERY", &OnAction_sa_query},
+	{WLAN_CATEGORY_SA_QUERY, "ACTION_SA_QUERY", &OnAction_sa_query},
 #else
-	{RTW_WLAN_CATEGORY_SA_QUERY, "ACTION_SA_QUERY", &DoReserved},
+	{WLAN_CATEGORY_SA_QUERY, "ACTION_SA_QUERY", &DoReserved},
 #endif /* CONFIG_IEEE80211W */
 #ifdef CONFIG_RTW_WNM
-	{RTW_WLAN_CATEGORY_WNM, "ACTION_WNM", &on_action_wnm},
+	{WLAN_CATEGORY_WNM, "ACTION_WNM", &on_action_wnm},
 #endif
-	{RTW_WLAN_CATEGORY_UNPROTECTED_WNM, "ACTION_UNPROTECTED_WNM", &DoReserved},
+	{WLAN_CATEGORY_WNM_UNPROTECTED, "ACTION_UNPROTECTED_WNM", &DoReserved},
 #ifdef CONFIG_RTW_MESH
-	{RTW_WLAN_CATEGORY_MESH, "ACTION_MESH", &on_action_mesh},
-	{RTW_WLAN_CATEGORY_SELF_PROTECTED, "ACTION_SELF_PROTECTED", &on_action_self_protected},
+	{WLAN_CATEGORY_MESH_ACTION, "ACTION_MESH", &on_action_mesh},
+	{WLAN_CATEGORY_SELF_PROTECTED, "ACTION_SELF_PROTECTED", &on_action_self_protected},
 #endif
-	{RTW_WLAN_CATEGORY_WMM, "ACTION_WMM", &OnAction_wmm},
-	{RTW_WLAN_CATEGORY_VHT, "ACTION_VHT", &OnAction_vht},
-	{RTW_WLAN_CATEGORY_P2P, "ACTION_P2P", &OnAction_p2p},
+	{WLAN_CATEGORY_WMM, "ACTION_WMM", &OnAction_wmm},
+	{WLAN_CATEGORY_VHT, "ACTION_VHT", &OnAction_vht},
+	{WLAN_CATEGORY_VENDOR_SPECIFIC, "ACTION_P2P", &OnAction_p2p},
 };
 
 
@@ -1304,9 +1304,9 @@ void mgt_dispatcher(_adapter *padapter, union recv_frame *precv_frame)
 
 #ifdef CONFIG_TDLS
 	if ((index << 4) == IEEE80211_STYPE_ACTION) {
-		/* category==public (4), action==TDLS_DISCOVERY_RESPONSE */
-		if (*(pframe + 24) == RTW_WLAN_CATEGORY_PUBLIC && *(pframe + 25) == TDLS_DISCOVERY_RESPONSE) {
-			RTW_INFO("[TDLS] Recv %s from "MAC_FMT"\n", rtw_tdls_action_txt(TDLS_DISCOVERY_RESPONSE), MAC_ARG(get_addr2_ptr(pframe)));
+		/* category==public (4), action==WLAN_TDLS_DISCOVERY_RESPONSE */
+		if (*(pframe + 24) == WLAN_CATEGORY_PUBLIC && *(pframe + 25) == WLAN_TDLS_DISCOVERY_RESPONSE) {
+			RTW_INFO("[TDLS] Recv %s from "MAC_FMT"\n", rtw_tdls_action_txt(WLAN_TDLS_DISCOVERY_RESPONSE), MAC_ARG(get_addr2_ptr(pframe)));
 			On_TDLS_Dis_Rsp(padapter, precv_frame);
 		}
 	}
@@ -3155,7 +3155,7 @@ unsigned int on_action_spct(_adapter *padapter, union recv_frame *precv_frame)
 		goto exit;
 
 	category = frame_body[0];
-	if (category != RTW_WLAN_CATEGORY_SPECTRUM_MGMT)
+	if (category != WLAN_CATEGORY_SPECTRUM_MGMT)
 		goto exit;
 
 	action = frame_body[1];
@@ -3217,7 +3217,7 @@ unsigned int on_action_wnm(_adapter *adapter, union recv_frame *rframe)
 		goto exit;
 
 	category = frame_body[0];
-	if (category != RTW_WLAN_CATEGORY_WNM)
+	if (category != WLAN_CATEGORY_WNM)
 		goto exit;
 
 	action = frame_body[1];
@@ -3620,7 +3620,7 @@ unsigned int OnAction_back(_adapter *padapter, union recv_frame *precv_frame)
 	frame_body = (unsigned char *)(pframe + sizeof(struct rtw_ieee80211_hdr_3addr));
 
 	category = frame_body[0];
-	if (category == RTW_WLAN_CATEGORY_BACK) { /* representing Block Ack */
+	if (category == WLAN_CATEGORY_BACK) { /* representing Block Ack */
 #ifdef CONFIG_TDLS
 		if ((psta->tdls_sta_state & TDLS_LINKED_STATE) &&
 		    (psta->htpriv.ht_option == _TRUE) &&
@@ -3634,7 +3634,7 @@ unsigned int OnAction_back(_adapter *padapter, union recv_frame *precv_frame)
 		action = frame_body[1];
 		RTW_INFO("%s, action=%d\n", __FUNCTION__, action);
 		switch (action) {
-		case RTW_WLAN_ACTION_ADDBA_REQ: /* ADDBA request */
+		case WLAN_ACTION_ADDBA_REQ: /* ADDBA request */
 
 			memcpy(&(pmlmeinfo->ADDBA_req), &(frame_body[2]), sizeof(struct ADDBA_request));
 			/* process_addba_req(padapter, (u8*)&(pmlmeinfo->ADDBA_req), GetAddr3Ptr(pframe)); */
@@ -3642,7 +3642,7 @@ unsigned int OnAction_back(_adapter *padapter, union recv_frame *precv_frame)
 
 			break;
 
-		case RTW_WLAN_ACTION_ADDBA_RESP: /* ADDBA response */
+		case WLAN_ACTION_ADDBA_RESP: /* ADDBA response */
 
 			/* status = frame_body[3] | (frame_body[4] << 8); */ /* endian issue */
 			status = RTW_GET_LE16(&frame_body[3]);
@@ -3674,7 +3674,7 @@ unsigned int OnAction_back(_adapter *padapter, union recv_frame *precv_frame)
 			/* RTW_INFO("marc: ADDBA RSP: %x\n", pmlmeinfo->agg_enable_bitmap); */
 			break;
 
-		case RTW_WLAN_ACTION_DELBA: /* DELBA */
+		case WLAN_ACTION_DELBA: /* DELBA */
 			if ((frame_body[3] & BIT(3)) == 0) {
 				psta->htpriv.agg_enable_bitmap &= ~(1 << ((frame_body[3] >> 4) & 0xf));
 				psta->htpriv.candidate_tid_bitmap &= ~(1 << ((frame_body[3] >> 4) & 0xf));
@@ -3735,7 +3735,7 @@ int get_reg_classes_full_count(struct p2p_channels *channel_list)
 void issue_p2p_GO_request(_adapter *padapter, u8 *raddr)
 {
 	struct p2p_channels *ch_list = &(adapter_to_rfctl(padapter)->channel_list);
-	unsigned char category = RTW_WLAN_CATEGORY_PUBLIC;
+	unsigned char category = WLAN_CATEGORY_PUBLIC;
 	u8			action = P2P_PUB_ACTION_ACTION;
 	u32			p2poui = cpu_to_be32(P2POUI);
 	u8			oui_subtype = P2P_GO_NEGO_REQ;
@@ -4131,7 +4131,7 @@ void issue_p2p_GO_request(_adapter *padapter, u8 *raddr)
 void issue_p2p_GO_response(_adapter *padapter, u8 *raddr, u8 *frame_body, uint len, u8 result)
 {
 	struct p2p_channels *ch_list = &(adapter_to_rfctl(padapter)->channel_list);
-	unsigned char category = RTW_WLAN_CATEGORY_PUBLIC;
+	unsigned char category = WLAN_CATEGORY_PUBLIC;
 	u8			action = P2P_PUB_ACTION_ACTION;
 	u32			p2poui = cpu_to_be32(P2POUI);
 	u8			oui_subtype = P2P_GO_NEGO_RESP;
@@ -4548,7 +4548,7 @@ void issue_p2p_GO_response(_adapter *padapter, u8 *raddr, u8 *frame_body, uint l
 void issue_p2p_GO_confirm(_adapter *padapter, u8 *raddr, u8 result)
 {
 
-	unsigned char category = RTW_WLAN_CATEGORY_PUBLIC;
+	unsigned char category = WLAN_CATEGORY_PUBLIC;
 	u8			action = P2P_PUB_ACTION_ACTION;
 	u32			p2poui = cpu_to_be32(P2POUI);
 	u8			oui_subtype = P2P_GO_NEGO_CONF;
@@ -4782,7 +4782,7 @@ void issue_p2p_GO_confirm(_adapter *padapter, u8 *raddr, u8 result)
 void issue_p2p_invitation_request(_adapter *padapter, u8 *raddr)
 {
 	struct p2p_channels *ch_list = &(adapter_to_rfctl(padapter)->channel_list);
-	unsigned char category = RTW_WLAN_CATEGORY_PUBLIC;
+	unsigned char category = WLAN_CATEGORY_PUBLIC;
 	u8			action = P2P_PUB_ACTION_ACTION;
 	u32			p2poui = cpu_to_be32(P2POUI);
 	u8			oui_subtype = P2P_INVIT_REQ;
@@ -5080,7 +5080,7 @@ void issue_p2p_invitation_request(_adapter *padapter, u8 *raddr)
 void issue_p2p_invitation_response(_adapter *padapter, u8 *raddr, u8 dialogToken, u8 status_code)
 {
 	struct p2p_channels *ch_list = &(adapter_to_rfctl(padapter)->channel_list);
-	unsigned char category = RTW_WLAN_CATEGORY_PUBLIC;
+	unsigned char category = WLAN_CATEGORY_PUBLIC;
 	u8			action = P2P_PUB_ACTION_ACTION;
 	u32			p2poui = cpu_to_be32(P2POUI);
 	u8			oui_subtype = P2P_INVIT_RESP;
@@ -5314,7 +5314,7 @@ void issue_p2p_invitation_response(_adapter *padapter, u8 *raddr, u8 dialogToken
 
 void issue_p2p_provision_request(_adapter *padapter, u8 *pssid, u8 ussidlen, u8 *pdev_raddr)
 {
-	unsigned char category = RTW_WLAN_CATEGORY_PUBLIC;
+	unsigned char category = WLAN_CATEGORY_PUBLIC;
 	u8			action = P2P_PUB_ACTION_ACTION;
 	u8			dialogToken = 1;
 	u32			p2poui = cpu_to_be32(P2POUI);
@@ -6611,7 +6611,7 @@ unsigned int on_action_public(_adapter *padapter, union recv_frame *precv_frame)
 		goto exit;
 
 	category = frame_body[0];
-	if (category != RTW_WLAN_CATEGORY_PUBLIC)
+	if (category != WLAN_CATEGORY_PUBLIC)
 		goto exit;
 
 	action = frame_body[1];
@@ -6909,7 +6909,7 @@ unsigned int OnAction_ft(_adapter *padapter, union recv_frame *precv_frame)
 	pframe_body = pframe + sizeof(struct rtw_ieee80211_hdr_3addr);
 	category = pframe_body[0];
 
-	if (category != RTW_WLAN_CATEGORY_FT)
+	if (category != WLAN_CATEGORY_FAST_BBS_TRANSITION)
 		goto exit;
 
 	action_code = pframe_body[1];
@@ -7164,7 +7164,7 @@ void rtw_wnm_issue_action(_adapter *padapter, u8 action, u8 reason)
 	pframe += sizeof(struct rtw_ieee80211_hdr_3addr);
 	pattrib->pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
 
-	category = RTW_WLAN_CATEGORY_WNM;
+	category = WLAN_CATEGORY_WNM;
 	pframe = rtw_set_fixed_ie(pframe, 1, &(category), &(pattrib->pktlen));
 	pframe = rtw_set_fixed_ie(pframe, 1, &(action), &(pattrib->pktlen));
 
@@ -7208,12 +7208,12 @@ unsigned int OnAction_ht(_adapter *padapter, union recv_frame *precv_frame)
 		goto exit;
 
 	category = frame_body[0];
-	if (category != RTW_WLAN_CATEGORY_HT)
+	if (category != WLAN_CATEGORY_HT)
 		goto exit;
 
 	action = frame_body[1];
 	switch (action) {
-	case RTW_WLAN_ACTION_HT_SM_PS:
+	case WLAN_HT_ACTION_SMPS:
 #ifdef CONFIG_80211N_HT
 #ifdef CONFIG_AP_MODE
 		if (check_fwstate(&padapter->mlmepriv, WIFI_AP_STATE) == _TRUE)
@@ -7221,9 +7221,9 @@ unsigned int OnAction_ht(_adapter *padapter, union recv_frame *precv_frame)
 #endif /*CONFIG_AP_MODE*/
 #endif /*CONFIG_80211N_HT*/
 		break;
-	case RTW_WLAN_ACTION_HT_COMPRESS_BEAMFORMING:
+	case WLAN_HT_ACTION_COMPRESSED_BF:
 #ifdef CONFIG_BEAMFORMING
-		/*RTW_INFO("RTW_WLAN_ACTION_HT_COMPRESS_BEAMFORMING\n");*/
+		/*RTW_INFO("WLAN_HT_ACTION_COMPRESSED_BF\n");*/
 		rtw_beamforming_get_report_frame(padapter, precv_frame);
 #endif /*CONFIG_BEAMFORMING*/
 		break;
@@ -7309,25 +7309,25 @@ unsigned int OnAction_vht(_adapter *padapter, union recv_frame *precv_frame)
 		goto exit;
 
 	category = frame_body[0];
-	if (category != RTW_WLAN_CATEGORY_VHT)
+	if (category != WLAN_CATEGORY_VHT)
 		goto exit;
 
 	action = frame_body[1];
 	switch (action) {
-	case RTW_WLAN_ACTION_VHT_COMPRESSED_BEAMFORMING:
+	case WLAN_VHT_ACTION_COMPRESSED_BF:
 #ifdef CONFIG_BEAMFORMING
-		/*RTW_INFO("RTW_WLAN_ACTION_VHT_COMPRESSED_BEAMFORMING\n");*/
+		/*RTW_INFO("WLAN_VHT_ACTION_COMPRESSED_BF\n");*/
 		rtw_beamforming_get_report_frame(padapter, precv_frame);
 #endif /*CONFIG_BEAMFORMING*/
 		break;
-	case RTW_WLAN_ACTION_VHT_OPMODE_NOTIFICATION:
+	case WLAN_VHT_ACTION_OPMODE_NOTIF:
 		/* CategoryCode(1) + ActionCode(1) + OpModeNotification(1) */
-		/* RTW_INFO("RTW_WLAN_ACTION_VHT_OPMODE_NOTIFICATION\n"); */
+		/* RTW_INFO("WLAN_VHT_ACTION_OPMODE_NOTIF\n"); */
 		psta = rtw_get_stainfo(&padapter->stapriv, whdr->addr2);
 		if (psta)
 			rtw_process_vht_op_mode_notify(padapter, &frame_body[2], psta);
 		break;
-	case RTW_WLAN_ACTION_VHT_GROUPID_MANAGEMENT:
+	case WLAN_VHT_ACTION_GROUPID_MGMT:
 #ifdef CONFIG_BEAMFORMING
 #ifdef RTW_BEAMFORMING_VERSION_2
 		rtw_beamforming_get_vht_gid_mgnt_frame(padapter, precv_frame);
@@ -7360,7 +7360,7 @@ unsigned int OnAction_p2p(_adapter *padapter, union recv_frame *precv_frame)
 	frame_body = (unsigned char *)(pframe + sizeof(struct rtw_ieee80211_hdr_3addr));
 
 	category = frame_body[0];
-	if (category != RTW_WLAN_CATEGORY_P2P)
+	if (category != WLAN_CATEGORY_VENDOR_SPECIFIC)
 		return _SUCCESS;
 
 	if (cpu_to_be32(*((u32 *)(frame_body + 1))) != P2POUI)
@@ -9914,7 +9914,7 @@ void issue_action_spct_ch_switch(_adapter *padapter, u8 *ra, u8 new_ch, u8 ch_of
 	/* category, action */
 	{
 		u8 category, action;
-		category = RTW_WLAN_CATEGORY_SPECTRUM_MGMT;
+		category = WLAN_CATEGORY_SPECTRUM_MGMT;
 		action = RTW_WLAN_ACTION_SPCT_CHL_SWITCH;
 
 		pframe = rtw_set_fixed_ie(pframe, 1, &(category), &(pattrib->pktlen));
@@ -9934,7 +9934,7 @@ void issue_action_spct_ch_switch(_adapter *padapter, u8 *ra, u8 new_ch, u8 ch_of
 #ifdef CONFIG_IEEE80211W
 void issue_action_SA_Query(_adapter *padapter, unsigned char *raddr, unsigned char action, unsigned short tid, u8 key_type)
 {
-	u8	category = RTW_WLAN_CATEGORY_SA_QUERY;
+	u8	category = WLAN_CATEGORY_SA_QUERY;
 	u16	reason_code;
 	struct xmit_frame		*pmgntframe;
 	struct pkt_attrib		*pattrib;
@@ -10037,7 +10037,7 @@ static int issue_action_ba(_adapter *padapter, unsigned char *raddr, unsigned ch
 		   , u8 tid, u8 size, u16 status, u8 initiator, int wait_ack)
 {
 	int ret = _FAIL;
-	u8	category = RTW_WLAN_CATEGORY_BACK;
+	u8	category = WLAN_CATEGORY_BACK;
 	u16	start_seq;
 	u16	BA_para_set;
 	u16	BA_timeout_value;
@@ -10092,7 +10092,7 @@ static int issue_action_ba(_adapter *padapter, unsigned char *raddr, unsigned ch
 
 	if (category == 3) {
 		switch (action) {
-		case RTW_WLAN_ACTION_ADDBA_REQ:
+		case WLAN_ACTION_ADDBA_REQ:
 			do {
 				pmlmeinfo->dialogToken++;
 			} while (pmlmeinfo->dialogToken == 0);
@@ -10134,7 +10134,7 @@ static int issue_action_ba(_adapter *padapter, unsigned char *raddr, unsigned ch
 			pframe = rtw_set_fixed_ie(pframe, 2, (unsigned char *)(&(BA_starting_seqctrl)), &(pattrib->pktlen));
 			break;
 
-		case RTW_WLAN_ACTION_ADDBA_RESP:
+		case WLAN_ACTION_ADDBA_RESP:
 			pframe = rtw_set_fixed_ie(pframe, 1, &(pmlmeinfo->ADDBA_req.dialog_token), &(pattrib->pktlen));
 			status = cpu_to_le16(status);
 			pframe = rtw_set_fixed_ie(pframe, 2, (unsigned char *)(&status), &(pattrib->pktlen));
@@ -10160,7 +10160,7 @@ static int issue_action_ba(_adapter *padapter, unsigned char *raddr, unsigned ch
 			pframe = rtw_set_fixed_ie(pframe, 2, (unsigned char *)(&(pmlmeinfo->ADDBA_req.BA_timeout_value)), &(pattrib->pktlen));
 			break;
 
-		case RTW_WLAN_ACTION_DELBA:
+		case WLAN_ACTION_DELBA:
 			BA_para_set = 0;
 			BA_para_set |= (tid << 12) & IEEE80211_DELBA_PARAM_TID_MASK;
 			BA_para_set |= (initiator << 11) & IEEE80211_DELBA_PARAM_INITIATOR_MASK;
@@ -10197,7 +10197,7 @@ exit:
  */
 inline void issue_addba_req(_adapter *adapter, unsigned char *ra, u8 tid)
 {
-	issue_action_ba(adapter, ra, RTW_WLAN_ACTION_ADDBA_REQ
+	issue_action_ba(adapter, ra, WLAN_ACTION_ADDBA_REQ
 			, tid
 			, 0 /* unused */
 			, 0 /* unused */
@@ -10219,7 +10219,7 @@ inline void issue_addba_req(_adapter *adapter, unsigned char *ra, u8 tid)
  */
 inline void issue_addba_rsp(_adapter *adapter, unsigned char *ra, u8 tid, u16 status, u8 size)
 {
-	issue_action_ba(adapter, ra, RTW_WLAN_ACTION_ADDBA_RESP
+	issue_action_ba(adapter, ra, WLAN_ACTION_ADDBA_RESP
 			, tid
 			, size
 			, status
@@ -10251,7 +10251,7 @@ inline u8 issue_addba_rsp_wait_ack(_adapter *adapter, unsigned char *ra, u8 tid,
 		goto exit;
 
 	do {
-		ret = issue_action_ba(adapter, ra, RTW_WLAN_ACTION_ADDBA_RESP
+		ret = issue_action_ba(adapter, ra, WLAN_ACTION_ADDBA_RESP
 				      , tid
 				      , size
 				      , status
@@ -10296,7 +10296,7 @@ exit:
  */
 inline void issue_del_ba(_adapter *adapter, unsigned char *ra, u8 tid, u16 reason, u8 initiator)
 {
-	issue_action_ba(adapter, ra, RTW_WLAN_ACTION_DELBA
+	issue_action_ba(adapter, ra, WLAN_ACTION_DELBA
 			, tid
 			, 0 /* unused */
 			, reason
@@ -10329,7 +10329,7 @@ int issue_del_ba_ex(_adapter *adapter, unsigned char *ra, u8 tid, u16 reason, u8
 		goto exit;
 
 	do {
-		ret = issue_action_ba(adapter, ra, RTW_WLAN_ACTION_DELBA
+		ret = issue_action_ba(adapter, ra, WLAN_ACTION_DELBA
 				      , tid
 				      , 0 /* unused */
 				      , reason
@@ -10394,7 +10394,7 @@ void issue_action_BSSCoexistPacket(_adapter *padapter)
 	RTW_INFO("%s\n", __FUNCTION__);
 
 
-	category = RTW_WLAN_CATEGORY_PUBLIC;
+	category = WLAN_CATEGORY_PUBLIC;
 	action = ACT_PUBLIC_BSSCOEXIST;
 
 	pmgntframe = alloc_mgtxmitframe(pxmitpriv);
@@ -10518,8 +10518,8 @@ int _issue_action_SM_PS(_adapter *padapter ,  unsigned char *raddr , u8 NewMimoP
 {
 
 	int ret = _FAIL;
-	unsigned char category = RTW_WLAN_CATEGORY_HT;
-	u8 action = RTW_WLAN_ACTION_HT_SM_PS;
+	unsigned char category = WLAN_CATEGORY_HT;
+	u8 action = WLAN_HT_ACTION_SMPS;
 	u8 sm_power_control = 0;
 	struct xmit_frame			*pmgntframe;
 	struct pkt_attrib			*pattrib;
@@ -13481,7 +13481,7 @@ void rtw_ft_issue_action_req(_adapter *padapter, u8 *pTargetAddr)
 	struct rtw_ieee80211_hdr *pwlanhdr;
 	struct pkt_attrib *pattrib;
 	u8 *pframe;
-	u8 category = RTW_WLAN_CATEGORY_FT;
+	u8 category = WLAN_CATEGORY_FAST_BBS_TRANSITION;
 	u8 action = RTW_WLAN_ACTION_FT_REQ;
 
 	pmgntframe = alloc_mgtxmitframe(pxmitpriv);

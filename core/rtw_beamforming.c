@@ -1631,8 +1631,8 @@ u32 rtw_bf_get_report_packet(PADAPTER adapter, union recv_frame *precv_frame)
 	category = frame_body[0];
 	action = frame_body[1];
 
-	if ((category == RTW_WLAN_CATEGORY_VHT)
-	    && (action == RTW_WLAN_ACTION_VHT_COMPRESSED_BEAMFORMING)) {
+	if ((category == WLAN_CATEGORY_VHT)
+	    && (action == WLAN_VHT_ACTION_COMPRESSED_BF)) {
 		pMIMOCtrlField = pframe + 26;
 		Nc = (*pMIMOCtrlField) & 0x7;
 		Nr = ((*pMIMOCtrlField) & 0x38) >> 3;
@@ -1646,8 +1646,8 @@ u32 rtw_bf_get_report_packet(PADAPTER adapter, union recv_frame *precv_frame)
 		pCSIMatrix = pMIMOCtrlField + 3 + Nc;
 		CSIMatrixLen = frame_len - 26 - 3 - Nc;
 		info->TargetCSIInfo.bVHT = _TRUE;
-	} else if ((category == RTW_WLAN_CATEGORY_HT)
-		   && (action == RTW_WLAN_ACTION_HT_COMPRESS_BEAMFORMING)) {
+	} else if ((category == WLAN_CATEGORY_HT)
+		   && (action == WLAN_HT_ACTION_COMPRESSED_BF)) {
 		pMIMOCtrlField = pframe + 26;
 		Nc = (*pMIMOCtrlField) & 0x3;
 		Nr = ((*pMIMOCtrlField) & 0xC) >> 2;
@@ -1726,8 +1726,8 @@ u8 rtw_bf_send_vht_gid_mgnt_packet(PADAPTER adapter, u8 *ra, u8 *gid, u8 *positi
 	memcpy(wlanhdr->addr2, adapter_mac_addr(adapter), ETH_ALEN);
 	memcpy(wlanhdr->addr3, get_bssid(mlmepriv), ETH_ALEN);
 
-	pframe[24] = RTW_WLAN_CATEGORY_VHT;
-	pframe[25] = RTW_WLAN_ACTION_VHT_GROUPID_MANAGEMENT;
+	pframe[24] = WLAN_CATEGORY_VHT;
+	pframe[25] = WLAN_VHT_ACTION_GROUPID_MGMT;
 	/* Set Membership Status Array */
 	ptr = pframe + 26;
 	memcpy(ptr, gid, 8);

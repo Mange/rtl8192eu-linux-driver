@@ -939,7 +939,7 @@ s32 rtl8192eu_hostap_mgnt_xmit_entry(_adapter *padapter, _pkt *pkt)
 	fc = le16_to_cpu(tx_hdr->frame_ctl);
 	bmcst = is_multicast_ether_addr(tx_hdr->addr1);
 
-	if ((fc & RTW_IEEE80211_FCTL_FTYPE) != RTW_IEEE80211_FTYPE_MGMT)
+	if ((fc &  IEEE80211_FCTL_FTYPE) != IEEE80211_FTYPE_MGMT)
 		goto _exit;
 
 	pxmit_skb = rtw_skb_alloc(len + TXDESC_SIZE);

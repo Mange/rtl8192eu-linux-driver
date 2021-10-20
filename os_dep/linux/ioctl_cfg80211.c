@@ -4504,7 +4504,7 @@ static int rtw_cfg80211_monitor_if_xmit_entry(struct sk_buff *skb, struct net_de
 	dot11_hdr = (struct rtw_ieee80211_hdr *)skb->data;
 	frame_ctl = le16_to_cpu(dot11_hdr->frame_ctl);
 	/* Check if the QoS bit is set */
-	if ((frame_ctl & RTW_IEEE80211_FCTL_FTYPE) == RTW_IEEE80211_FTYPE_DATA) {
+	if ((frame_ctl &  IEEE80211_FCTL_FTYPE) == IEEE80211_FTYPE_DATA) {
 		/* Check if this ia a Wireless Distribution System (WDS) frame
 		 * which has 4 MAC addresses
 		 */
@@ -4531,8 +4531,8 @@ static int rtw_cfg80211_monitor_if_xmit_entry(struct sk_buff *skb, struct net_de
 
 		return ret;
 
-	} else if ((frame_ctl & (RTW_IEEE80211_FCTL_FTYPE | RTW_IEEE80211_FCTL_STYPE))
-		== (RTW_IEEE80211_FTYPE_MGMT | RTW_IEEE80211_STYPE_ACTION)
+	} else if ((frame_ctl & ( IEEE80211_FCTL_FTYPE | IEEE80211_FCTL_STYPE))
+		== (IEEE80211_FTYPE_MGMT | IEEE80211_STYPE_ACTION)
 	) {
 		/* only for action frames */
 		struct xmit_frame		*pmgntframe;
@@ -4561,7 +4561,7 @@ static int rtw_cfg80211_monitor_if_xmit_entry(struct sk_buff *skb, struct net_de
 		if (type >= 0)
 			goto dump;
 		#endif
-		if (category == RTW_WLAN_CATEGORY_PUBLIC)
+		if (category == WLAN_CATEGORY_PUBLIC)
 			RTW_INFO("RTW_Tx:%s\n", action_public_str(action));
 		else
 			RTW_INFO("RTW_Tx:category(%u), action(%u)\n", category, action);
@@ -4601,7 +4601,7 @@ dump:
 		dump_mgntframe(padapter, pmgntframe);
 
 	} else
-		RTW_INFO("frame_ctl=0x%x\n", frame_ctl & (RTW_IEEE80211_FCTL_FTYPE | RTW_IEEE80211_FCTL_STYPE));
+		RTW_INFO("frame_ctl=0x%x\n", frame_ctl & ( IEEE80211_FCTL_FTYPE | IEEE80211_FCTL_STYPE));
 
 
 fail:
@@ -6203,7 +6203,7 @@ void rtw_cfg80211_rx_action(_adapter *adapter, union recv_frame *rframe, const c
 	}
 #endif
 	rtw_action_frame_parse(frame, frame_len, &category, &action);
-	if (category == RTW_WLAN_CATEGORY_PUBLIC) {
+	if (category == WLAN_CATEGORY_PUBLIC) {
 		if (action == ACT_PUBLIC_GAS_INITIAL_REQ) {
 			rtw_mi_set_scan_deny(adapter, 200);
 			rtw_mi_scan_abort(adapter, _FALSE); /*rtw_scan_abort_no_wait*/
@@ -6286,7 +6286,7 @@ void rtw_cfg80211_issue_p2p_provision_request(_adapter *padapter, const u8 *buf,
 	u16	capability = 0;
 	uint capability_len = 0;
 
-	unsigned char category = RTW_WLAN_CATEGORY_PUBLIC;
+	unsigned char category = WLAN_CATEGORY_PUBLIC;
 	u8			action = P2P_PUB_ACTION_ACTION;
 	u8			dialogToken = 1;
 	u32			p2poui = cpu_to_be32(P2POUI);
@@ -7329,7 +7329,7 @@ static int cfg80211_rtw_mgmt_tx(struct wiphy *wiphy,
 		wait_ack = 0;
 		goto dump;
 	}
-	else if (frame_styp == RTW_IEEE80211_STYPE_AUTH) {
+	else if (frame_styp == IEEE80211_STYPE_AUTH) {
 		int retval = 0;
 
 		RTW_INFO("RTW_Tx:tx_ch=%d, no_cck=%u, da="MAC_FMT"\n", tx_ch, no_cck, MAC_ARG(GetAddr1Ptr(buf)));
@@ -7367,7 +7367,7 @@ static int cfg80211_rtw_mgmt_tx(struct wiphy *wiphy,
 		}
 	}
 #endif
-	if (category == RTW_WLAN_CATEGORY_PUBLIC) {
+	if (category == WLAN_CATEGORY_PUBLIC) {
 		RTW_INFO("RTW_Tx:%s\n", action_public_str(action));
 		switch (action) {
 		case ACT_PUBLIC_GAS_INITIAL_REQ:
@@ -7378,7 +7378,7 @@ static int cfg80211_rtw_mgmt_tx(struct wiphy *wiphy,
 		}
 	}
 #ifdef CONFIG_RTW_80211K
-	else if (category == RTW_WLAN_CATEGORY_RADIO_MEAS)
+	else if (category == WLAN_CATEGORY_RADIO_MEASUREMENT)
 		RTW_INFO("RTW_Tx: RRM Action\n");
 #endif
 	else
@@ -7616,22 +7616,22 @@ static int cfg80211_rtw_tdls_mgmt(struct wiphy *wiphy,
 #endif
 
 	switch (txmgmt.action_code) {
-	case TDLS_SETUP_REQUEST:
+	case WLAN_TDLS_SETUP_REQUEST:
 		issue_tdls_setup_req(padapter, &txmgmt, _TRUE);
 		break;
-	case TDLS_SETUP_RESPONSE:
+	case WLAN_TDLS_SETUP_RESPONSE:
 		issue_tdls_setup_rsp(padapter, &txmgmt);
 		break;
-	case TDLS_SETUP_CONFIRM:
+	case WLAN_TDLS_SETUP_CONFIRM:
 		issue_tdls_setup_cfm(padapter, &txmgmt);
 		break;
-	case TDLS_TEARDOWN:
+	case WLAN_TDLS_TEARDOWN:
 		issue_tdls_teardown(padapter, &txmgmt, _TRUE);
 		break;
-	case TDLS_DISCOVERY_REQUEST:
+	case WLAN_TDLS_DISCOVERY_REQUEST:
 		issue_tdls_dis_req(padapter, &txmgmt);
 		break;
-	case TDLS_DISCOVERY_RESPONSE:
+	case WLAN_TDLS_DISCOVERY_RESPONSE:
 		issue_tdls_dis_rsp(padapter, &txmgmt, pmlmeinfo->enc_algo ? _TRUE : _FALSE);
 		break;
 	}

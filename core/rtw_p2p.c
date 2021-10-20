@@ -148,7 +148,7 @@ static void issue_group_disc_req(struct wifidirect_info *pwdinfo, u8 *da)
 	_adapter *padapter = pwdinfo->padapter;
 	struct xmit_priv			*pxmitpriv = &(padapter->xmitpriv);
 	struct mlme_ext_priv	*pmlmeext = &(padapter->mlmeextpriv);
-	unsigned char category = RTW_WLAN_CATEGORY_P2P;/* P2P action frame	 */
+	unsigned char category = WLAN_CATEGORY_VENDOR_SPECIFIC;/* P2P action frame	 */
 	u32	p2poui = cpu_to_be32(P2POUI);
 	u8	oui_subtype = P2P_GO_DISC_REQUEST;
 	u8	dialogToken = 0;
@@ -206,7 +206,7 @@ static void issue_p2p_devdisc_resp(struct wifidirect_info *pwdinfo, u8 *da, u8 s
 	_adapter *padapter = pwdinfo->padapter;
 	struct xmit_priv			*pxmitpriv = &(padapter->xmitpriv);
 	struct mlme_ext_priv	*pmlmeext = &(padapter->mlmeextpriv);
-	unsigned char category = RTW_WLAN_CATEGORY_PUBLIC;
+	unsigned char category = WLAN_CATEGORY_PUBLIC;
 	u8			action = P2P_PUB_ACTION_ACTION;
 	u32			p2poui = cpu_to_be32(P2POUI);
 	u8			oui_subtype = P2P_DEVDISC_RESP;
@@ -272,7 +272,7 @@ static void issue_p2p_devdisc_resp(struct wifidirect_info *pwdinfo, u8 *da, u8 s
 static void issue_p2p_provision_resp(struct wifidirect_info *pwdinfo, u8 *raddr, u8 *frame_body, u16 config_method)
 {
 	_adapter *padapter = pwdinfo->padapter;
-	unsigned char category = RTW_WLAN_CATEGORY_PUBLIC;
+	unsigned char category = WLAN_CATEGORY_PUBLIC;
 	u8			action = P2P_PUB_ACTION_ACTION;
 	u8			dialogToken = frame_body[7];	/*	The Dialog Token of provisioning discovery request frame. */
 	u32			p2poui = cpu_to_be32(P2POUI);
@@ -387,7 +387,7 @@ static void issue_p2p_presence_resp(struct wifidirect_info *pwdinfo, u8 *da, u8 
 	_adapter *padapter = pwdinfo->padapter;
 	struct xmit_priv			*pxmitpriv = &(padapter->xmitpriv);
 	struct mlme_ext_priv	*pmlmeext = &(padapter->mlmeextpriv);
-	unsigned char category = RTW_WLAN_CATEGORY_P2P;/* P2P action frame	 */
+	unsigned char category = WLAN_CATEGORY_VENDOR_SPECIFIC;/* P2P action frame	 */
 	u32	p2poui = cpu_to_be32(P2POUI);
 	u8	oui_subtype = P2P_PRESENCE_RESPONSE;
 	u8 p2pie[MAX_P2P_IE_LEN] = { 0x00 };
@@ -3741,7 +3741,7 @@ u32 rtw_xframe_build_wfd_ie(struct xmit_frame *xframe)
 	u32	wfdielen = 0;
 
 	category = frame_body[0];
-	if (category == RTW_WLAN_CATEGORY_PUBLIC) {
+	if (category == WLAN_CATEGORY_PUBLIC) {
 		action = frame_body[1];
 		if (action == ACT_PUBLIC_VENDOR
 		    && _rtw_memcmp(frame_body + 2, P2P_OUI, 4) == _TRUE
@@ -3778,7 +3778,7 @@ u32 rtw_xframe_build_wfd_ie(struct xmit_frame *xframe)
 			}
 
 		}
-	} else if (category == RTW_WLAN_CATEGORY_P2P) {
+	} else if (category == WLAN_CATEGORY_VENDOR_SPECIFIC) {
 		OUI_Subtype = frame_body[5];
 		dialogToken = frame_body[6];
 
@@ -3820,7 +3820,7 @@ bool rtw_xframe_del_wfd_ie(struct xmit_frame *xframe)
 	uint ies_len = 0;
 
 	category = frame_body[0];
-	if (category == RTW_WLAN_CATEGORY_PUBLIC) {
+	if (category == WLAN_CATEGORY_PUBLIC) {
 		action = frame_body[1];
 		if (action == ACT_PUBLIC_VENDOR
 		    && _rtw_memcmp(frame_body + 2, P2P_OUI, 4) == _TRUE
@@ -3961,7 +3961,7 @@ int rtw_p2p_check_frames(_adapter *padapter, const u8 *buf, u32 len, u8 tx)
 	frame_body = (unsigned char *)(buf + sizeof(struct rtw_ieee80211_hdr_3addr));
 	category = frame_body[0];
 	/* just for check */
-	if (category == RTW_WLAN_CATEGORY_PUBLIC) {
+	if (category == WLAN_CATEGORY_PUBLIC) {
 		action = frame_body[1];
 		if (action == ACT_PUBLIC_VENDOR
 			&& _rtw_memcmp(frame_body + 2, P2P_OUI, 4) == _TRUE
@@ -4298,7 +4298,7 @@ int rtw_p2p_check_frames(_adapter *padapter, const u8 *buf, u32 len, u8 tx)
 
 		}
 
-	} else if (category == RTW_WLAN_CATEGORY_P2P) {
+	} else if (category == WLAN_CATEGORY_VENDOR_SPECIFIC) {
 		OUI_Subtype = frame_body[5];
 		dialogToken = frame_body[6];
 

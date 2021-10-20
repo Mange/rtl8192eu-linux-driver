@@ -282,7 +282,7 @@ u8 rm_add_nb_req(_adapter *padapter, struct sta_info *psta)
 	}
 
 	prm->psta = psta;
-	prm->q.category = RTW_WLAN_CATEGORY_RADIO_MEAS;
+	prm->q.category = WLAN_CATEGORY_RADIO_MEASUREMENT;
 	prm->q.diag_token = pmlmeinfo->dialogToken++;
 	prm->q.m_token = 1;
 
@@ -2279,7 +2279,7 @@ static void rm_dbg_add_meas(_adapter *padapter, char *s)
 		prmpriv->prm_sel = NULL;
 		return;
 	}
-	prm->q.category = RTW_WLAN_CATEGORY_RADIO_MEAS;
+	prm->q.category = WLAN_CATEGORY_RADIO_MEASUREMENT;
 	prm->q.e_id = _MEAS_REQ_IE_; /* 38 */
 
 	if (prm->q.action_code == RM_ACT_RADIO_MEAS_REQ)

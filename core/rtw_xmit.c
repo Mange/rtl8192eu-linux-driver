@@ -1996,7 +1996,7 @@ int rtw_build_tdls_ies(_adapter *padapter, struct xmit_frame *pxmitframe, u8 *pf
 	ptdls_sta = rtw_get_stainfo((&padapter->stapriv), pattrib->dst);
 	if (ptdls_sta == NULL) {
 		switch (ptxmgmt->action_code) {
-		case TDLS_DISCOVERY_REQUEST:
+		case WLAN_TDLS_DISCOVERY_REQUEST:
 		case TUNNELED_PROBE_REQ:
 		case TUNNELED_PROBE_RSP:
 			break;
@@ -2008,33 +2008,33 @@ int rtw_build_tdls_ies(_adapter *padapter, struct xmit_frame *pxmitframe, u8 *pf
 	}
 
 	switch (ptxmgmt->action_code) {
-	case TDLS_SETUP_REQUEST:
+	case WLAN_TDLS_SETUP_REQUEST:
 		rtw_build_tdls_setup_req_ies(padapter, pxmitframe, pframe, ptxmgmt, ptdls_sta);
 		break;
-	case TDLS_SETUP_RESPONSE:
+	case WLAN_TDLS_SETUP_RESPONSE:
 		rtw_build_tdls_setup_rsp_ies(padapter, pxmitframe, pframe, ptxmgmt, ptdls_sta);
 		break;
-	case TDLS_SETUP_CONFIRM:
+	case WLAN_TDLS_SETUP_CONFIRM:
 		rtw_build_tdls_setup_cfm_ies(padapter, pxmitframe, pframe, ptxmgmt, ptdls_sta);
 		break;
-	case TDLS_TEARDOWN:
+	case WLAN_TDLS_TEARDOWN:
 		rtw_build_tdls_teardown_ies(padapter, pxmitframe, pframe, ptxmgmt, ptdls_sta);
 		break;
-	case TDLS_DISCOVERY_REQUEST:
+	case WLAN_TDLS_DISCOVERY_REQUEST:
 		rtw_build_tdls_dis_req_ies(padapter, pxmitframe, pframe, ptxmgmt);
 		break;
-	case TDLS_PEER_TRAFFIC_INDICATION:
+	case WLAN_TDLS_PEER_TRAFFIC_INDICATION:
 		rtw_build_tdls_peer_traffic_indication_ies(padapter, pxmitframe, pframe, ptxmgmt, ptdls_sta);
 		break;
 #ifdef CONFIG_TDLS_CH_SW
-	case TDLS_CHANNEL_SWITCH_REQUEST:
+	case WLAN_TDLS_CHANNEL_SWITCH_REQUEST:
 		rtw_build_tdls_ch_switch_req_ies(padapter, pxmitframe, pframe, ptxmgmt, ptdls_sta);
 		break;
-	case TDLS_CHANNEL_SWITCH_RESPONSE:
+	case WLAN_TDLS_CHANNEL_SWITCH_RESPONSE:
 		rtw_build_tdls_ch_switch_rsp_ies(padapter, pxmitframe, pframe, ptxmgmt, ptdls_sta);
 		break;
 #endif
-	case TDLS_PEER_TRAFFIC_RESPONSE:
+	case WLAN_TDLS_PEER_TRAFFIC_RESPONSE:
 		rtw_build_tdls_peer_traffic_rsp_ies(padapter, pxmitframe, pframe, ptxmgmt, ptdls_sta);
 		break;
 #ifdef CONFIG_WFD
@@ -2073,29 +2073,29 @@ s32 rtw_make_tdls_wlanhdr(_adapter *padapter , u8 *hdr, struct pkt_attrib *pattr
 	set_frame_sub_type(fctrl, pattrib->subtype);
 
 	switch (ptxmgmt->action_code) {
-	case TDLS_SETUP_REQUEST:
-	case TDLS_SETUP_RESPONSE:
-	case TDLS_SETUP_CONFIRM:
-	case TDLS_PEER_TRAFFIC_INDICATION:
-	case TDLS_PEER_PSM_REQUEST:
+	case WLAN_TDLS_SETUP_REQUEST:
+	case WLAN_TDLS_SETUP_RESPONSE:
+	case WLAN_TDLS_SETUP_CONFIRM:
+	case WLAN_TDLS_PEER_TRAFFIC_INDICATION:
+	case WLAN_TDLS_PEER_PSM_REQUEST:
 	case TUNNELED_PROBE_REQ:
 	case TUNNELED_PROBE_RSP:
-	case TDLS_DISCOVERY_REQUEST:
+	case WLAN_TDLS_DISCOVERY_REQUEST:
 		SetToDs(fctrl);
 		memcpy(pwlanhdr->addr1, get_bssid(pmlmepriv), ETH_ALEN);
 		memcpy(pwlanhdr->addr2, pattrib->src, ETH_ALEN);
 		memcpy(pwlanhdr->addr3, pattrib->dst, ETH_ALEN);
 		break;
-	case TDLS_CHANNEL_SWITCH_REQUEST:
-	case TDLS_CHANNEL_SWITCH_RESPONSE:
-	case TDLS_PEER_PSM_RESPONSE:
-	case TDLS_PEER_TRAFFIC_RESPONSE:
+	case WLAN_TDLS_CHANNEL_SWITCH_REQUEST:
+	case WLAN_TDLS_CHANNEL_SWITCH_RESPONSE:
+	case WLAN_TDLS_PEER_PSM_RESPONSE:
+	case WLAN_TDLS_PEER_TRAFFIC_RESPONSE:
 		memcpy(pwlanhdr->addr1, pattrib->dst, ETH_ALEN);
 		memcpy(pwlanhdr->addr2, pattrib->src, ETH_ALEN);
 		memcpy(pwlanhdr->addr3, get_bssid(pmlmepriv), ETH_ALEN);
 		tdls_seq = 1;
 		break;
-	case TDLS_TEARDOWN:
+	case WLAN_TDLS_TEARDOWN:
 		if (ptxmgmt->status_code == _RSON_TDLS_TEAR_UN_RSN_) {
 			memcpy(pwlanhdr->addr1, pattrib->dst, ETH_ALEN);
 			memcpy(pwlanhdr->addr2, pattrib->src, ETH_ALEN);
@@ -2113,7 +2113,7 @@ s32 rtw_make_tdls_wlanhdr(_adapter *padapter , u8 *hdr, struct pkt_attrib *pattr
 	if (pattrib->encrypt)
 		SetPrivacy(fctrl);
 
-	if (ptxmgmt->action_code == TDLS_PEER_TRAFFIC_RESPONSE)
+	if (ptxmgmt->action_code == WLAN_TDLS_PEER_TRAFFIC_RESPONSE)
 		SetPwrMgt(fctrl);
 
 	if (pqospriv->qos_option) {
@@ -4418,7 +4418,7 @@ s32 rtw_monitor_xmit_entry(struct sk_buff *skb, struct net_device *ndev)
 	/* Check DATA/MGNT frames */
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 	frame_ctl = le16_to_cpu(pwlanhdr->frame_ctl);
-	if ((frame_ctl & RTW_IEEE80211_FCTL_FTYPE) == RTW_IEEE80211_FTYPE_DATA) {
+	if ((frame_ctl &  IEEE80211_FCTL_FTYPE) == IEEE80211_FTYPE_DATA) {
 
 		pattrib = &pmgntframe->attrib;
 		update_monitor_frame_attrib(padapter, pattrib);

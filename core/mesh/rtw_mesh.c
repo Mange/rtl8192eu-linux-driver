@@ -1772,7 +1772,7 @@ static int rtw_mesh_check_frames(_adapter *adapter, const u8 **buf, size_t *len,
 	frame_body = *buf + sizeof(struct rtw_ieee80211_hdr_3addr);
 	category = frame_body[0];
 
-	if (category == RTW_WLAN_CATEGORY_SELF_PROTECTED) {
+	if (category == WLAN_CATEGORY_SELF_PROTECTED) {
 		action = frame_body[1];
 		switch (action) {
 		case RTW_ACT_SELF_PROTECTED_MESH_OPEN:
@@ -1845,7 +1845,7 @@ unsigned int on_action_self_protected(_adapter *adapter, union recv_frame *rfram
 		goto exit;
 
 	category = frame_body[0];
-	if (category != RTW_WLAN_CATEGORY_SELF_PROTECTED)
+	if (category != WLAN_CATEGORY_SELF_PROTECTED)
 		goto exit;
 
 	action = frame_body[1];
@@ -1904,7 +1904,7 @@ unsigned int on_action_mesh(_adapter *adapter, union recv_frame *rframe)
 	/* check stainfo exist? */
 
 	category = frame_body[0];
-	if (category != RTW_WLAN_CATEGORY_MESH)
+	if (category != WLAN_CATEGORY_MESH_ACTION)
 		goto exit;
 
 	action = frame_body[1];
@@ -2531,7 +2531,7 @@ static u8 *rtw_mesh_construct_peer_mesh_close(_adapter *adapter, struct mesh_pli
 	set_frame_sub_type(frame, IEEE80211_STYPE_ACTION);
 
 	pos += sizeof(struct rtw_ieee80211_hdr_3addr);
-	*(pos++) = RTW_WLAN_CATEGORY_SELF_PROTECTED;
+	*(pos++) = WLAN_CATEGORY_SELF_PROTECTED;
 	*(pos++) = RTW_ACT_SELF_PROTECTED_MESH_CLOSE;
 
 	pos = rtw_set_ie_mesh_id(pos, NULL, minfo->mesh_id, minfo->mesh_id_len);

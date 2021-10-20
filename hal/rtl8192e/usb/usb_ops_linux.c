@@ -179,7 +179,7 @@ int recvbuf2recvframe(PADAPTER padapter, void *ptr)
 #ifdef CONFIG_RX_PACKET_APPEND_FCS
 		if (check_fwstate(&padapter->mlmepriv, WIFI_MONITOR_STATE) == _FALSE)
 			if ((pattrib->pkt_rpt_type == NORMAL_RX) && rtw_hal_rcr_check(padapter, RCR_APPFCS))
-				pattrib->pkt_len -= IEEE80211_FCS_LEN;
+				pattrib->pkt_len -= FCS_LEN;
 #endif
 
 		if (rtw_os_alloc_recvframe(padapter, precvframe,
