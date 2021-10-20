@@ -862,12 +862,12 @@ struct cfg80211_bss *rtw_cfg80211_inform_bss(_adapter *padapter, struct wlan_net
 	SetSeqNum(pwlanhdr, 0/*pmlmeext->mgnt_seq*/);
 	/* pmlmeext->mgnt_seq++; */
 
-	if (pnetwork->network.Reserved[0] == BSS_TYPE_BCN) { /* WIFI_BEACON */
+	if (pnetwork->network.Reserved[0] == BSS_TYPE_BCN) { /* IEEE80211_STYPE_BEACON */
 		memcpy(pwlanhdr->addr1, bc_addr, ETH_ALEN);
-		set_frame_sub_type(pbuf, WIFI_BEACON);
+		set_frame_sub_type(pbuf, IEEE80211_STYPE_BEACON);
 	} else {
 		memcpy(pwlanhdr->addr1, adapter_mac_addr(padapter), ETH_ALEN);
-		set_frame_sub_type(pbuf, WIFI_PROBERSP);
+		set_frame_sub_type(pbuf, IEEE80211_STYPE_PROBE_RESP);
 	}
 
 	memcpy(pwlanhdr->addr2, pnetwork->network.MacAddress, ETH_ALEN);
@@ -904,7 +904,7 @@ struct cfg80211_bss *rtw_cfg80211_inform_bss(_adapter *padapter, struct wlan_net
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 38))
 #ifndef COMPAT_KERNEL_RELEASE
 	/* patch for cfg80211, update beacon ies to information_elements */
-	if (pnetwork->network.Reserved[0] == BSS_TYPE_BCN) { /* WIFI_BEACON */
+	if (pnetwork->network.Reserved[0] == BSS_TYPE_BCN) { /* IEEE80211_STYPE_BEACON */
 
 		if (bss->len_information_elements != bss->len_beacon_ies) {
 			bss->information_elements = bss->beacon_ies;
@@ -2527,7 +2527,7 @@ u32 rtw_cfg80211_wait_scan_req_empty(_adapter *adapter, u32 timeout_ms)
 	systime start;
 	u32 pass_ms;
 
-	start = rtw_get_current_time();
+	start = jiffies;
 
 	while (rtw_get_passing_time_ms(start) <= timeout_ms) {
 
@@ -2633,7 +2633,7 @@ static void _rtw_cfg80211_surveydone_event_callback(_adapter *padapter, struct c
 	plist = get_next(phead);
 
 	while (1) {
-		if (rtw_end_of_queue_search(phead, plist) == _TRUE)
+		if (phead == plist)
 			break;
 
 		pnetwork = LIST_CONTAINOR(plist, struct wlan_network, list);
@@ -2657,7 +2657,7 @@ static void _rtw_cfg80211_surveydone_event_callback(_adapter *padapter, struct c
 			if (_rtw_memcmp(pnetwork->network.Ssid.Ssid, "Ralink_11n_AP", 13)) {
 				uint ie_len = 0;
 				u8 *p = NULL;
-				p = rtw_get_ie(pnetwork->network.IEs + _BEACON_IE_OFFSET_, _RSN_IE_2_, &ie_len, (pnetwork->network.IELength - _BEACON_IE_OFFSET_));
+				p = rtw_get_ie(pnetwork->network.IEs + _BEACON_IE_OFFSET_, WLAN_EID_RSN, &ie_len, (pnetwork->network.IELength - _BEACON_IE_OFFSET_));
 				RTW_INFO("ie_len=%d\n", ie_len);
 			}
 		}
@@ -3227,7 +3227,7 @@ cancel_ps_deny:
 
 exit:
 	if (pmlmepriv)
-		pmlmepriv->lastscantime = rtw_get_current_time();
+		pmlmepriv->lastscantime = jiffies;
 
 	return ret;
 }
@@ -4344,9 +4344,9 @@ void rtw_cfg80211_indicate_sta_assoc(_adapter *padapter, u8 *pmgmt_frame, uint f
 	{
 		struct station_info sinfo;
 		u8 ie_offset;
-		if (get_frame_sub_type(pmgmt_frame) == WIFI_ASSOCREQ)
+		if (get_frame_sub_type(pmgmt_frame) == IEEE80211_STYPE_ASSOC_REQ)
 			ie_offset = _ASOCREQ_IE_OFFSET_;
-		else /* WIFI_REASSOCREQ */
+		else /* IEEE80211_STYPE_REASSOC_REQ */
 			ie_offset = _REASOCREQ_IE_OFFSET_;
 
 		memset(&sinfo, 0, sizeof(sinfo));
@@ -4416,7 +4416,7 @@ void rtw_cfg80211_indicate_sta_disassoc(_adapter *padapter, const u8 *da, unsign
 
 	SetSeqNum(pwlanhdr, pmlmeext->mgnt_seq);
 	pmlmeext->mgnt_seq++;
-	set_frame_sub_type(pmgmt_frame, WIFI_DEAUTH);
+	set_frame_sub_type(pmgmt_frame, IEEE80211_STYPE_DEAUTH);
 
 	pmgmt_frame += sizeof(struct rtw_ieee80211_hdr_3addr);
 	frame_len = sizeof(struct rtw_ieee80211_hdr_3addr);
@@ -4944,8 +4944,8 @@ static int rtw_add_beacon(_adapter *adapter, const u8 *head, size_t head_len, co
 #endif /* CONFIG_P2P */
 
 	/* pbss_network->IEs will not include p2p_ie, wfd ie */
-	rtw_ies_remove_ie(pbuf, &len, _BEACON_IE_OFFSET_, _VENDOR_SPECIFIC_IE_, P2P_OUI, 4);
-	rtw_ies_remove_ie(pbuf, &len, _BEACON_IE_OFFSET_, _VENDOR_SPECIFIC_IE_, WFD_OUI, 4);
+	rtw_ies_remove_ie(pbuf, &len, _BEACON_IE_OFFSET_, WLAN_EID_VENDOR_SPECIFIC, P2P_OUI, 4);
+	rtw_ies_remove_ie(pbuf, &len, _BEACON_IE_OFFSET_, WLAN_EID_VENDOR_SPECIFIC, WFD_OUI, 4);
 
 	if (rtw_check_beacon_data(adapter, pbuf,  len) == _SUCCESS) {
 #ifdef CONFIG_P2P
@@ -5531,7 +5531,7 @@ static int	cfg80211_rtw_del_station(struct wiphy *wiphy, struct net_device *ndev
 	plist = get_next(phead);
 
 	/* check asoc_queue */
-	while ((rtw_end_of_queue_search(phead, plist)) == _FALSE) {
+	while (phead != plist) {
 		psta = LIST_CONTAINOR(plist, struct sta_info, asoc_list);
 
 		plist = get_next(plist);
@@ -5718,7 +5718,7 @@ struct sta_info *rtw_sta_info_get_by_idx(struct sta_priv *pstapriv, const int id
 	plist = get_next(phead);
 
 	/* check asoc_queue */
-	while ((rtw_end_of_queue_search(phead, plist)) == _FALSE) {
+	while (phead != plist) {
 		if (idx == i)
 			psta = LIST_CONTAINOR(plist, struct sta_info, asoc_list);
 		plist = get_next(plist);
@@ -6380,7 +6380,7 @@ void rtw_cfg80211_issue_p2p_provision_request(_adapter *padapter, const u8 *buf,
 
 	SetSeqNum(pwlanhdr, pmlmeext->mgnt_seq);
 	pmlmeext->mgnt_seq++;
-	set_frame_sub_type(pframe, WIFI_ACTION);
+	set_frame_sub_type(pframe, IEEE80211_STYPE_ACTION);
 
 	pframe += sizeof(struct rtw_ieee80211_hdr_3addr);
 	pattrib->pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
@@ -6438,7 +6438,7 @@ void rtw_cfg80211_issue_p2p_provision_request(_adapter *padapter, const u8 *buf,
 	p2pielen += devinfo_contentlen;
 
 
-	pframe = rtw_set_ie(pframe, _VENDOR_SPECIFIC_IE_, p2pielen, (unsigned char *) p2p_ie, &p2p_ielen);
+	pframe = rtw_set_ie(pframe, WLAN_EID_VENDOR_SPECIFIC, p2pielen, (unsigned char *) p2p_ie, &p2p_ielen);
 	/* p2pielen = build_prov_disc_request_p2p_ie( pwdinfo, pframe, NULL, 0, pwdinfo->tx_prov_disc_info.peerDevAddr); */
 	/* pframe += p2pielen; */
 	pattrib->pktlen += p2p_ielen;
@@ -6473,7 +6473,7 @@ void rtw_cfg80211_issue_p2p_provision_request(_adapter *padapter, const u8 *buf,
 	*(u16 *)(wpsie + wpsielen) = cpu_to_be16(pwdinfo->tx_prov_disc_info.wps_config_method_request);
 	wpsielen += 2;
 
-	pframe = rtw_set_ie(pframe, _VENDOR_SPECIFIC_IE_, wpsielen, (unsigned char *) wpsie, &pattrib->pktlen);
+	pframe = rtw_set_ie(pframe, WLAN_EID_VENDOR_SPECIFIC, wpsielen, (unsigned char *) wpsie, &pattrib->pktlen);
 
 
 #ifdef CONFIG_WFD
@@ -6569,7 +6569,7 @@ void rtw_cfg80211_external_auth_request(_adapter *padapter, union recv_frame *rf
 	cfg80211_external_auth_request(netdev,
 		(struct cfg80211_external_auth_params *)&params, GFP_ATOMIC);
 #elif (KERNEL_VERSION(2, 6, 37) <= LINUX_VERSION_CODE)
-	set_frame_sub_type(frame, WIFI_AUTH);
+	set_frame_sub_type(frame, IEEE80211_STYPE_AUTH);
 
 	memcpy(frame + 4, get_my_bssid(&pmlmeinfo->network), ETH_ALEN);
 	memcpy(frame + 10, adapter_mac_addr(padapter), ETH_ALEN);
@@ -6604,7 +6604,7 @@ inline bool rtw_cfg80211_is_ro_ch_once(_adapter *adapter)
 
 inline void rtw_cfg80211_set_last_ro_ch_time(_adapter *adapter)
 {
-	adapter->cfg80211_wdinfo.last_ro_ch_time = rtw_get_current_time();
+	adapter->cfg80211_wdinfo.last_ro_ch_time = jiffies;
 
 	if (!adapter->cfg80211_wdinfo.last_ro_ch_time)
 		adapter->cfg80211_wdinfo.last_ro_ch_time++;
@@ -6711,7 +6711,7 @@ static s32 cfg80211_rtw_remain_on_channel(struct wiphy *wiphy,
 		RTW_INFO(FUNC_ADPT_FMT" init listen_channel %u\n"
 			, FUNC_ADPT_ARG(padapter), padapter->wdinfo.listen_channel);
 	} else if (rtw_p2p_chk_state(pwdinfo , P2P_STATE_LISTEN)
-		&& (time_after_eq(rtw_get_current_time(), pwdev_priv->probe_resp_ie_update_time)
+		&& (time_after_eq(jiffies, pwdev_priv->probe_resp_ie_update_time)
 			&& rtw_get_passing_time_ms(pwdev_priv->probe_resp_ie_update_time) < 50)
 	) {
 		if (padapter->wdinfo.listen_channel != remain_ch) {
@@ -7247,7 +7247,7 @@ static int cfg80211_rtw_mgmt_tx(struct wiphy *wiphy,
 	u8 is_p2p = 0;
 #endif
 	int type = (-1);
-	systime start = rtw_get_current_time();
+	systime start = jiffies;
 	_adapter *padapter;
 	struct dvobj_priv *dvobj;
 	struct rtw_wdev_priv *pwdev_priv;
@@ -8188,7 +8188,7 @@ u8 *rtw_cfg80211_construct_mesh_beacon_ies(struct wiphy *wiphy, _adapter *adapte
 	*c = WLAN_EID_TIM;
 	*(c + 1) = 4;
 	c += 6;
-	//c = rtw_set_ie(c, _TIM_IE_, 4, NULL, NULL);
+	//c = rtw_set_ie(c, WLAN_EID_DS_PARAMS, 4, NULL, NULL);
 
 	/* Extended Supported Rates */
 	if (n_bitrates > 8)
@@ -8598,9 +8598,9 @@ static void rtw_cfg80211_mpath_set_pinfo(struct rtw_mesh_path *mpath, u8 *next_h
 	pinfo->frame_qlen = mpath->frame_queue_len;
 	pinfo->sn = mpath->sn;
 	pinfo->metric = mpath->metric;
-	if (rtw_time_after(mpath->exp_time, rtw_get_current_time()))
+	if (rtw_time_after(mpath->exp_time, jiffies))
 		pinfo->exptime = rtw_get_remaining_time_ms(mpath->exp_time);
-	pinfo->discovery_timeout = rtw_systime_to_ms(mpath->discovery_timeout);
+	pinfo->discovery_timeout = jiffies_to_msecs(mpath->discovery_timeout);
 	pinfo->discovery_retries = mpath->discovery_retries;
 	if (mpath->flags & RTW_MESH_PATH_ACTIVE)
 		pinfo->flags |= NL80211_MPATH_FLAG_ACTIVE;
@@ -8889,7 +8889,7 @@ static int rtw_cfg80211_set_beacon_wpsp2pie(struct net_device *ndev, char *buf, 
 			memcpy(pmlmepriv->wps_beacon_ie, wps_ie, wps_ielen);
 			pmlmepriv->wps_beacon_ie_len = wps_ielen;
 
-			update_beacon(padapter, _VENDOR_SPECIFIC_IE_, wps_oui, _TRUE);
+			update_beacon(padapter, WLAN_EID_VENDOR_SPECIFIC, wps_oui, _TRUE);
 
 		}
 
@@ -9192,7 +9192,7 @@ int rtw_cfg80211_set_mgnt_wpsp2pie(struct net_device *net, char *buf, int len,
 				ret = rtw_cfg80211_set_probe_resp_wpsp2pie(net, buf, len);
 				#ifdef CONFIG_P2P
 				if (ret == 0)
-					adapter_wdev_data((_adapter *)rtw_netdev_priv(net))->probe_resp_ie_update_time = rtw_get_current_time();
+					adapter_wdev_data((_adapter *)rtw_netdev_priv(net))->probe_resp_ie_update_time = jiffies;
 				#endif
 				break;
 			case 0x4: /* ASSOC_RESP */
@@ -10068,7 +10068,7 @@ int rtw_wdev_alloc(_adapter *padapter, struct wiphy *wiphy)
 	_rtw_spinlock_init(&pwdev_priv->connect_req_lock);
 
 	pwdev_priv->p2p_enabled = _FALSE;
-	pwdev_priv->probe_resp_ie_update_time = rtw_get_current_time();
+	pwdev_priv->probe_resp_ie_update_time = jiffies;
 	pwdev_priv->provdisc_req_issued = _FALSE;
 	rtw_wdev_invit_info_init(&pwdev_priv->invit_info);
 	rtw_wdev_nego_info_init(&pwdev_priv->nego_info);

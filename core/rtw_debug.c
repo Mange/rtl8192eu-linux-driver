@@ -842,7 +842,7 @@ int proc_get_rx_stat(struct seq_file *m, void *v)
 	for (i = 0; i < NUM_STA; i++) {
 		phead = &(pstapriv->sta_hash[i]);
 		plist = get_next(phead);
-		while ((rtw_end_of_queue_search(phead, plist)) == _FALSE) {
+		while (phead != plist) {
 			psta = LIST_CONTAINOR(plist, struct sta_info, hash_list);
 			plist = get_next(plist);
 			pstats = &psta->sta_stats;
@@ -894,7 +894,7 @@ int proc_get_tx_stat(struct seq_file *m, void *v)
 	for (i = 0; i < NUM_STA; i++) {
 		phead = &(pstapriv->sta_hash[i]);
 		plist = get_next(phead);
-		while ((rtw_end_of_queue_search(phead, plist)) == _FALSE) {
+		while (phead != plist) {
 			psta = LIST_CONTAINOR(plist, struct sta_info, hash_list);
 			plist = get_next(plist);
 			if ((_rtw_memcmp(psta->cmn.mac_addr, bc_addr, ETH_ALEN) !=  _TRUE)
@@ -1422,7 +1422,7 @@ int proc_get_survey_info(struct seq_file *m, void *v)
 
 	RTW_PRINT_SEL(m, "%5s  %-17s  %3s  %-3s  %-4s  %-4s  %5s  %32s  %32s\n", "index", "bssid", "ch", "RSSI", "SdBm", "Noise", "age", "flag", ssid_title_str);
 	while (1) {
-		if (rtw_end_of_queue_search(phead, plist) == _TRUE)
+		if (phead == plist)
 			break;
 
 		pnetwork = LIST_CONTAINOR(plist, struct wlan_network, list);
@@ -1817,7 +1817,7 @@ ssize_t proc_set_rate_ctl(struct file *file, const char __user *buffer, size_t c
 		for (i = 0; i < NUM_STA; i++) {
 			phead = &(pstapriv->sta_hash[i]);
 			plist = get_next(phead);
-			while ((rtw_end_of_queue_search(phead, plist)) == _FALSE) {
+			while (phead != plist) {
 				psta = LIST_CONTAINOR(plist, struct sta_info, hash_list);
 				plist = get_next(plist);
 				if ((_rtw_memcmp(psta->cmn.mac_addr, bc_addr, ETH_ALEN) !=  _TRUE)
@@ -2132,7 +2132,7 @@ static u8 sta_linking_test_force_fail = 0;
 
 void rtw_sta_linking_test_set_start(void)
 {
-	sta_linking_test_start_time = rtw_get_current_time();
+	sta_linking_test_start_time = jiffies;
 }
 
 bool rtw_sta_linking_test_wait_done(void)
@@ -3662,7 +3662,7 @@ int proc_get_all_sta_info(struct seq_file *m, void *v)
 		phead = &(pstapriv->sta_hash[i]);
 		plist = get_next(phead);
 
-		while ((rtw_end_of_queue_search(phead, plist)) == _FALSE) {
+		while (phead != plist) {
 			psta = LIST_CONTAINOR(plist, struct sta_info, hash_list);
 
 			plist = get_next(plist);
@@ -5283,7 +5283,7 @@ static int proc_tdls_display_tdls_sta_info(struct seq_file *m)
 	for (i = 0; i < NUM_STA; i++) {
 		phead = &(pstapriv->sta_hash[i]);
 		plist = get_next(phead);
-		while ((rtw_end_of_queue_search(phead, plist)) == _FALSE) {
+		while (phead != plist) {
 			psta = LIST_CONTAINOR(plist, struct sta_info, hash_list);
 			plist = get_next(plist);
 			if (psta->tdls_sta_state != TDLS_STATE_NONE) {
@@ -5722,7 +5722,7 @@ ssize_t proc_set_tx_sa_query(struct file *file, const char __user *buffer, size_
 			phead = &(pstapriv->sta_hash[index]);
 			plist = get_next(phead);
 
-			while ((rtw_end_of_queue_search(phead, plist)) == _FALSE) {
+			while (phead != plist) {
 				psta = LIST_CONTAINOR(plist, struct sta_info, hash_list);
 				plist = get_next(plist);
 				memcpy(&mac_addr[psta->cmn.mac_id][0], psta->cmn.mac_addr, ETH_ALEN);
@@ -5811,7 +5811,7 @@ ssize_t proc_set_tx_deauth(struct file *file, const char __user *buffer, size_t 
 			phead = &(pstapriv->sta_hash[index]);
 			plist = get_next(phead);
 
-			while ((rtw_end_of_queue_search(phead, plist)) == _FALSE) {
+			while (phead != plist) {
 				psta = LIST_CONTAINOR(plist, struct sta_info, hash_list);
 				plist = get_next(plist);
 				memcpy(&mac_addr[psta->cmn.mac_id][0], psta->cmn.mac_addr, ETH_ALEN);

@@ -132,7 +132,7 @@ static void rtw_hal_mcc_build_p2p_noa_attr(PADAPTER padapter, u8 *ie, u32 *ie_le
 		, p2p_noa_attr_ie[p2p_noa_attr_len + 3]);
 
 	p2p_noa_attr_len = p2p_noa_attr_len + 4;
-	rtw_set_ie(ie, _VENDOR_SPECIFIC_IE_, p2p_noa_attr_len, (u8 *)p2p_noa_attr_ie, ie_len);
+	rtw_set_ie(ie, WLAN_EID_VENDOR_SPECIFIC, p2p_noa_attr_len, (u8 *)p2p_noa_attr_ie, ie_len);
 }
 
 
@@ -183,7 +183,7 @@ static void rtw_hal_mcc_update_go_p2p_ie(PADAPTER padapter)
 		RTW_INFO("p2p_go_noa_ie_len:%d\n", pmccadapriv->p2p_go_noa_ie_len);
 		RTW_INFO_DUMP("\n", pmccadapriv->p2p_go_noa_ie, pmccadapriv->p2p_go_noa_ie_len);
 	}
-	update_beacon(padapter, _VENDOR_SPECIFIC_IE_, P2P_OUI, _TRUE);
+	update_beacon(padapter, WLAN_EID_VENDOR_SPECIFIC, P2P_OUI, _TRUE);
 }
 
 /**
@@ -200,7 +200,7 @@ static void rtw_hal_mcc_remove_go_p2p_ie(PADAPTER padapter)
 		return;
 
 	pmccadapriv->p2p_go_noa_ie_len = 0;
-	update_beacon(padapter, _VENDOR_SPECIFIC_IE_, P2P_OUI, _TRUE);
+	update_beacon(padapter, WLAN_EID_VENDOR_SPECIFIC, P2P_OUI, _TRUE);
 }
 
 /* restore IQK value for all interface */
@@ -459,7 +459,7 @@ static void rtw_hal_config_mcc_role_setting(PADAPTER padapter, u8 order)
 			plist = get_next(phead);
 			pmccadapriv->mcc_macid_bitmap = 0;
 	
-			while ((rtw_end_of_queue_search(phead, plist)) == _FALSE) {
+			while (phead != plist) {
 				psta = LIST_CONTAINOR(plist, struct sta_info, asoc_list);
 				plist = get_next(plist);
 				pmccadapriv->mcc_macid_bitmap |= BIT(psta->cmn.mac_id);
@@ -2249,7 +2249,7 @@ static u8 rtw_hal_set_mcc_setting(PADAPTER padapter, u8 status)
 	u8 ret = _FAIL;
 	struct mcc_obj_priv *pmccobjpriv = &(adapter_to_dvobj(padapter)->mcc_objpriv);
 	u8 stop = (status < MCC_SETCMD_STATUS_START_CONNECT) ? _TRUE : _FALSE;
-	u32 start_time = rtw_get_current_time();
+	u32 start_time = jiffies;
 
 	RTW_INFO("===> "FUNC_ADPT_FMT"\n", FUNC_ADPT_ARG(padapter));
 
@@ -2538,7 +2538,7 @@ void rtw_hal_mcc_c2h_handler(PADAPTER padapter, u8 buflen, u8 *tmpBuf)
 	case MCC_RPT_READY:
 		_enter_critical_bh(&pmccobjpriv->mcc_lock, &irqL);
 		/* initialize counter & time */
-		pmccobjpriv->mcc_launch_time = rtw_get_current_time();
+		pmccobjpriv->mcc_launch_time = jiffies;
 		pmccobjpriv->mcc_c2h_status = MCC_RPT_READY;
 		pmccobjpriv->cur_mcc_success_cnt = 0;
 		pmccobjpriv->prev_mcc_success_cnt = 0;
@@ -3236,7 +3236,7 @@ void rtw_hal_mcc_issue_null_data(_adapter *padapter, u8 chbw_allow, u8 ps_mode)
 {
 	struct dvobj_priv *dvobj = adapter_to_dvobj(padapter);
 	_adapter *iface = NULL;
-	systime start = rtw_get_current_time();
+	systime start = jiffies;
 	u8 i = 0;
 
 	if (!MCC_EN(padapter))

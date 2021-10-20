@@ -1376,7 +1376,7 @@ int c2h_iqk_offload_wait(_adapter *adapter, u32 timeout_ms)
 	HAL_DATA_TYPE *hal_data = GET_HAL_DATA(adapter);
 	struct submit_ctx *iqk_sctx = &hal_data->iqk_sctx;
 
-	iqk_sctx->submit_time = rtw_get_current_time();
+	iqk_sctx->submit_time = jiffies;
 	iqk_sctx->timeout_ms = timeout_ms;
 	iqk_sctx->status = RTW_SCTX_SUBMITTED;
 
@@ -1536,7 +1536,7 @@ int hal_read_mac_hidden_rpt(_adapter *adapter)
 	int ret = _FAIL;
 	int ret_fwdl;
 	u8 mac_hidden_rpt[MAC_HIDDEN_RPT_LEN + MAC_HIDDEN_RPT_2_LEN] = {0};
-	systime start = rtw_get_current_time();
+	systime start = jiffies;
 	u32 cnt = 0;
 	u32 timeout_ms = 800;
 	u32 min_cnt = 10;
@@ -1562,7 +1562,7 @@ int hal_read_mac_hidden_rpt(_adapter *adapter)
 		goto mac_hidden_rpt_hdl;
 
 	/* polling for data ready */
-	start = rtw_get_current_time();
+	start = jiffies;
 	do {
 		cnt++;
 		id = rtw_read8(adapter, REG_C2HEVT_MSG_NORMAL);
@@ -2088,7 +2088,7 @@ if (padapter->registrypriv.ht_enable && is_supported_ht(padapter->registrypriv.w
 			}
 		}
 
-		tmp64 = rtw_ht_mcs_set_to_bitmap(psta->htpriv.ht_cap.supp_mcs_set, tx_nss);
+		tmp64 = rtw_ht_mcs_set_to_bitmap(psta->htpriv.ht_cap.mcs.rx_mask, tx_nss);
 		tx_ra_bitmap |= (tmp64 << 12);
 	}
 }
@@ -2249,7 +2249,7 @@ u32 rtw_sec_read_cam(_adapter *adapter, u8 addr)
 
 	rtw_write32(adapter, REG_CAMCMD, CAM_POLLINIG | addr);
 
-	start = rtw_get_current_time();
+	start = jiffies;
 	while (1) {
 		if (rtw_is_surprise_removed(adapter)) {
 			sr = 1;
@@ -2265,7 +2265,7 @@ u32 rtw_sec_read_cam(_adapter *adapter, u8 addr)
 			break;
 		}
 	}
-	end = rtw_get_current_time();
+	end = jiffies;
 
 	rdata = rtw_read32(adapter, REG_CAMREAD);
 
@@ -2292,7 +2292,7 @@ void rtw_sec_write_cam(_adapter *adapter, u8 addr, u32 wdata)
 	rtw_write32(adapter, REG_CAMWRITE, wdata);
 	rtw_write32(adapter, REG_CAMCMD, CAM_POLLINIG | CAM_WRITE | addr);
 
-	start = rtw_get_current_time();
+	start = jiffies;
 	while (1) {
 		if (rtw_is_surprise_removed(adapter)) {
 			sr = 1;
@@ -2308,7 +2308,7 @@ void rtw_sec_write_cam(_adapter *adapter, u8 addr, u32 wdata)
 			break;
 		}
 	}
-	end = rtw_get_current_time();
+	end = jiffies;
 
 	_exit_critical_mutex(mutex, NULL);
 
@@ -3366,7 +3366,7 @@ static void rtw_hal_tsf_update_pause(_adapter *adapter)
 
 		rtw_hal_set_tsf_update(iface, 0);
 		if (iface->mlmeextpriv.tsf_update_required) {
-			iface->mlmeextpriv.tsf_update_pause_stime = rtw_get_current_time();
+			iface->mlmeextpriv.tsf_update_pause_stime = jiffies;
 			if (!iface->mlmeextpriv.tsf_update_pause_stime)
 				iface->mlmeextpriv.tsf_update_pause_stime++;
 		}
@@ -3413,7 +3413,7 @@ void rtw_hal_periodic_tsf_update_chk(_adapter *adapter)
 	u32 restore_ms = 0;
 
 	if (dvobj->periodic_tsf_update_etime) {
-		if (rtw_time_after(rtw_get_current_time(), dvobj->periodic_tsf_update_etime)) {
+		if (rtw_time_after(jiffies, dvobj->periodic_tsf_update_etime)) {
 			/* end for restore status */
 			dvobj->periodic_tsf_update_etime = 0;
 			rtw_hal_rcr_set_chk_bssid(adapter, MLME_ACTION_NONE);
@@ -3448,7 +3448,7 @@ void rtw_hal_periodic_tsf_update_chk(_adapter *adapter)
 	if (!restore_ms)
 		return;
 
-	dvobj->periodic_tsf_update_etime = rtw_get_current_time() + rtw_ms_to_systime(restore_ms);
+	dvobj->periodic_tsf_update_etime = jiffies + msecs_to_jiffies(restore_ms);
 	if (!dvobj->periodic_tsf_update_etime)
 		dvobj->periodic_tsf_update_etime++;
 
@@ -5994,7 +5994,7 @@ static void rtw_hal_construct_P2PBeacon(_adapter *padapter, u8 *pframe, u32 *pLe
 
 	SetSeqNum(pwlanhdr, 0/*pmlmeext->mgnt_seq*/);
 	/* pmlmeext->mgnt_seq++; */
-	set_frame_sub_type(pframe, WIFI_BEACON);
+	set_frame_sub_type(pframe, IEEE80211_STYPE_BEACON);
 
 	pframe += sizeof(struct rtw_ieee80211_hdr_3addr);
 	pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
@@ -6174,14 +6174,14 @@ static void rtw_hal_construct_P2PBeacon(_adapter *padapter, u8 *pframe, u32 *pLe
 	pktlen += 2;
 
 	/* SSID */
-	pframe = rtw_set_ie(pframe, _SSID_IE_, cur_network->Ssid.SsidLength, cur_network->Ssid.Ssid, &pktlen);
+	pframe = rtw_set_ie(pframe, WLAN_EID_SSID, cur_network->Ssid.SsidLength, cur_network->Ssid.Ssid, &pktlen);
 
 	/* supported rates... */
 	rate_len = rtw_get_rateset_len(cur_network->SupportedRates);
-	pframe = rtw_set_ie(pframe, _SUPPORTEDRATES_IE_, ((rate_len > 8) ? 8 : rate_len), cur_network->SupportedRates, &pktlen);
+	pframe = rtw_set_ie(pframe, WLAN_EID_SUPP_RATES, ((rate_len > 8) ? 8 : rate_len), cur_network->SupportedRates, &pktlen);
 
 	/* DS parameter set */
-	pframe = rtw_set_ie(pframe, _DSSET_IE_, 1, (unsigned char *)&(cur_network->Configuration.DSConfig), &pktlen);
+	pframe = rtw_set_ie(pframe, WLAN_EID_DS_PARAMS, 1, (unsigned char *)&(cur_network->Configuration.DSConfig), &pktlen);
 
 	/* if( (pmlmeinfo->state&0x03) == WIFI_FW_ADHOC_STATE) */
 	{
@@ -6190,16 +6190,16 @@ static void rtw_hal_construct_P2PBeacon(_adapter *padapter, u8 *pframe, u32 *pLe
 		/* IBSS Parameter Set... */
 		/* ATIMWindow = cur->Configuration.ATIMWindow; */
 		ATIMWindow = 0;
-		pframe = rtw_set_ie(pframe, _IBSS_PARA_IE_, 2, (unsigned char *)(&ATIMWindow), &pktlen);
+		pframe = rtw_set_ie(pframe, WLAN_EID_IBSS_PARAMS, 2, (unsigned char *)(&ATIMWindow), &pktlen);
 
 		/* ERP IE */
-		pframe = rtw_set_ie(pframe, _ERPINFO_IE_, 1, &erpinfo, &pktlen);
+		pframe = rtw_set_ie(pframe, WLAN_EID_ERP_INFO, 1, &erpinfo, &pktlen);
 	}
 
 
 	/* EXTERNDED SUPPORTED RATE */
 	if (rate_len > 8)
-		pframe = rtw_set_ie(pframe, _EXT_SUPPORTEDRATES_IE_, (rate_len - 8), (cur_network->SupportedRates + 8), &pktlen);
+		pframe = rtw_set_ie(pframe, WLAN_EID_EXT_SUPP_RATES, (rate_len - 8), (cur_network->SupportedRates + 8), &pktlen);
 
 
 	/* todo:HT for adhoc */
@@ -6273,7 +6273,7 @@ static void rtw_hal_construct_P2PProbeRsp(_adapter *padapter, u8 *pframe, u32 *p
 	memcpy(pwlanhdr->addr3, mac, ETH_ALEN);
 
 	SetSeqNum(pwlanhdr, 0);
-	set_frame_sub_type(fctrl, WIFI_PROBERSP);
+	set_frame_sub_type(fctrl, IEEE80211_STYPE_PROBE_RESP);
 
 	pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
 	pframe += pktlen;
@@ -6299,14 +6299,14 @@ static void rtw_hal_construct_P2PProbeRsp(_adapter *padapter, u8 *pframe, u32 *p
 
 
 	/* SSID */
-	pframe = rtw_set_ie(pframe, _SSID_IE_, 7, pwdinfo->p2p_wildcard_ssid, &pktlen);
+	pframe = rtw_set_ie(pframe, WLAN_EID_SSID, 7, pwdinfo->p2p_wildcard_ssid, &pktlen);
 
 	/* supported rates... */
 	/*	Use the OFDM rate in the P2P probe response frame. ( 6(B), 9(B), 12, 18, 24, 36, 48, 54 ) */
-	pframe = rtw_set_ie(pframe, _SUPPORTEDRATES_IE_, 8, pwdinfo->support_rate, &pktlen);
+	pframe = rtw_set_ie(pframe, WLAN_EID_SUPP_RATES, 8, pwdinfo->support_rate, &pktlen);
 
 	/* DS parameter set */
-	pframe = rtw_set_ie(pframe, _DSSET_IE_, 1, (unsigned char *)&pwdinfo->listen_channel, &pktlen);
+	pframe = rtw_set_ie(pframe, WLAN_EID_DS_PARAMS, 1, (unsigned char *)&pwdinfo->listen_channel, &pktlen);
 
 #ifdef CONFIG_IOCTL_CFG80211
 	if (pwdinfo->driver_interface == DRIVER_CFG80211) {
@@ -6520,7 +6520,7 @@ static void rtw_hal_construct_P2PProbeRsp(_adapter *padapter, u8 *pframe, u32 *p
 		wpsielen += 2;
 
 
-		pframe = rtw_set_ie(pframe, _VENDOR_SPECIFIC_IE_, wpsielen, (unsigned char *) wpsie, &pktlen);
+		pframe = rtw_set_ie(pframe, WLAN_EID_VENDOR_SPECIFIC, wpsielen, (unsigned char *) wpsie, &pktlen);
 
 
 		p2pielen = build_probe_resp_p2p_ie(pwdinfo, pframe);
@@ -6596,7 +6596,7 @@ static void rtw_hal_construct_P2PNegoRsp(_adapter *padapter, u8 *pframe, u32 *pL
 	memcpy(pwlanhdr->addr3, adapter_mac_addr(padapter), ETH_ALEN);
 
 	SetSeqNum(pwlanhdr, 0);
-	set_frame_sub_type(pframe, WIFI_ACTION);
+	set_frame_sub_type(pframe, IEEE80211_STYPE_ACTION);
 
 	pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
 	pframe += pktlen;
@@ -6648,7 +6648,7 @@ static void rtw_hal_construct_P2PNegoRsp(_adapter *padapter, u8 *pframe, u32 *pL
 		*(u16 *)(wpsie + wpsielen) = cpu_to_be16(WPS_DPID_PBC);
 	wpsielen += 2;
 
-	pframe = rtw_set_ie(pframe, _VENDOR_SPECIFIC_IE_, wpsielen, (unsigned char *) wpsie, &pktlen);
+	pframe = rtw_set_ie(pframe, WLAN_EID_VENDOR_SPECIFIC, wpsielen, (unsigned char *) wpsie, &pktlen);
 
 
 	/*	P2P IE Section. */
@@ -6930,7 +6930,7 @@ static void rtw_hal_construct_P2PNegoRsp(_adapter *padapter, u8 *pframe, u32 *pL
 
 	}
 
-	pframe = rtw_set_ie(pframe, _VENDOR_SPECIFIC_IE_, p2pielen, (unsigned char *) p2pie, &pktlen);
+	pframe = rtw_set_ie(pframe, WLAN_EID_VENDOR_SPECIFIC, p2pielen, (unsigned char *) p2pie, &pktlen);
 
 #ifdef CONFIG_WFD
 	wfdielen = build_nego_resp_wfd_ie(pwdinfo, pframe);
@@ -6997,7 +6997,7 @@ static void rtw_hal_construct_P2PInviteRsp(_adapter *padapter, u8 *pframe, u32 *
 	memset(pwlanhdr->addr3, 0, ETH_ALEN);
 
 	SetSeqNum(pwlanhdr, 0);
-	set_frame_sub_type(pframe, WIFI_ACTION);
+	set_frame_sub_type(pframe, IEEE80211_STYPE_ACTION);
 
 	pframe += sizeof(struct rtw_ieee80211_hdr_3addr);
 	pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
@@ -7175,7 +7175,7 @@ static void rtw_hal_construct_P2PInviteRsp(_adapter *padapter, u8 *pframe, u32 *
 	}
 #endif
 
-	pframe = rtw_set_ie(pframe, _VENDOR_SPECIFIC_IE_, p2pielen, (unsigned char *) p2pie, &pktlen);
+	pframe = rtw_set_ie(pframe, WLAN_EID_VENDOR_SPECIFIC, p2pielen, (unsigned char *) p2pie, &pktlen);
 
 #ifdef CONFIG_WFD
 	wfdielen = build_invitation_resp_wfd_ie(pwdinfo, pframe);
@@ -7240,7 +7240,7 @@ static void rtw_hal_construct_P2PProvisionDisRsp(_adapter *padapter, u8 *pframe,
 	memcpy(pwlanhdr->addr3, adapter_mac_addr(padapter), ETH_ALEN);
 
 	SetSeqNum(pwlanhdr, 0);
-	set_frame_sub_type(pframe, WIFI_ACTION);
+	set_frame_sub_type(pframe, IEEE80211_STYPE_ACTION);
 
 	pframe += sizeof(struct rtw_ieee80211_hdr_3addr);
 	pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
@@ -7288,7 +7288,7 @@ static void rtw_hal_construct_P2PProvisionDisRsp(_adapter *padapter, u8 *pframe,
 	RTW_PUT_BE16(wpsie + wpsielen, WPS_CM_PUSH_BUTTON);
 	wpsielen += 2;
 
-	pframe = rtw_set_ie(pframe, _VENDOR_SPECIFIC_IE_, wpsielen, (unsigned char *) wpsie, &pktlen);
+	pframe = rtw_set_ie(pframe, WLAN_EID_VENDOR_SPECIFIC, wpsielen, (unsigned char *) wpsie, &pktlen);
 
 #ifdef CONFIG_WFD
 	wfdielen = build_provdisc_resp_wfd_ie(pwdinfo, pframe);
@@ -7405,7 +7405,7 @@ void rtw_hal_construct_beacon(_adapter *padapter,
 
 	SetSeqNum(pwlanhdr, 0/*pmlmeext->mgnt_seq*/);
 	/* pmlmeext->mgnt_seq++; */
-	set_frame_sub_type(pframe, WIFI_BEACON);
+	set_frame_sub_type(pframe, IEEE80211_STYPE_BEACON);
 
 	pframe += sizeof(struct rtw_ieee80211_hdr_3addr);
 	pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
@@ -7438,21 +7438,21 @@ void rtw_hal_construct_beacon(_adapter *padapter,
 	/* below for ad-hoc mode */
 
 	/* SSID */
-	pframe = rtw_set_ie(pframe, _SSID_IE_, cur_network->Ssid.SsidLength, cur_network->Ssid.Ssid, &pktlen);
+	pframe = rtw_set_ie(pframe, WLAN_EID_SSID, cur_network->Ssid.SsidLength, cur_network->Ssid.Ssid, &pktlen);
 
 	/* supported rates... */
 	rate_len = rtw_get_rateset_len(cur_network->SupportedRates);
-	pframe = rtw_set_ie(pframe, _SUPPORTEDRATES_IE_, ((rate_len > 8) ? 8 : rate_len), cur_network->SupportedRates, &pktlen);
+	pframe = rtw_set_ie(pframe, WLAN_EID_SUPP_RATES, ((rate_len > 8) ? 8 : rate_len), cur_network->SupportedRates, &pktlen);
 
 	/* DS parameter set */
-	pframe = rtw_set_ie(pframe, _DSSET_IE_, 1, (unsigned char *)&(cur_network->Configuration.DSConfig), &pktlen);
+	pframe = rtw_set_ie(pframe, WLAN_EID_DS_PARAMS, 1, (unsigned char *)&(cur_network->Configuration.DSConfig), &pktlen);
 
 	if ((pmlmeinfo->state & 0x03) == WIFI_FW_ADHOC_STATE) {
 		u32 ATIMWindow;
 		/* IBSS Parameter Set... */
 		/* ATIMWindow = cur->Configuration.ATIMWindow; */
 		ATIMWindow = 0;
-		pframe = rtw_set_ie(pframe, _IBSS_PARA_IE_, 2, (unsigned char *)(&ATIMWindow), &pktlen);
+		pframe = rtw_set_ie(pframe, WLAN_EID_IBSS_PARAMS, 2, (unsigned char *)(&ATIMWindow), &pktlen);
 	}
 
 
@@ -7461,7 +7461,7 @@ void rtw_hal_construct_beacon(_adapter *padapter,
 
 	/* EXTERNDED SUPPORTED RATE */
 	if (rate_len > 8)
-		pframe = rtw_set_ie(pframe, _EXT_SUPPORTEDRATES_IE_, (rate_len - 8), (cur_network->SupportedRates + 8), &pktlen);
+		pframe = rtw_set_ie(pframe, WLAN_EID_EXT_SUPP_RATES, (rate_len - 8), (cur_network->SupportedRates + 8), &pktlen);
 
 	/* todo:HT for adhoc */
 #endif
@@ -7498,7 +7498,7 @@ static void rtw_hal_construct_PSPoll(_adapter *padapter,
 	fctrl = &(pwlanhdr->frame_ctl);
 	*(fctrl) = 0;
 	SetPwrMgt(fctrl);
-	set_frame_sub_type(pframe, WIFI_PSPOLL);
+	set_frame_sub_type(pframe, (IEEE80211_FTYPE_CTL | IEEE80211_STYPE_PSPOLL));
 
 	/* AID. */
 	set_duration(pframe, (pmlmeinfo->aid | 0xc000));
@@ -7542,7 +7542,7 @@ void rtw_hal_construct_fw_dbg_msg_pkt(
 
 	SetSeqNum(pwlanhdr, 0);
 
-	set_frame_sub_type(pframe, WIFI_DATA);
+	set_frame_sub_type(pframe, (IEEE80211_FTYPE_DATA | IEEE80211_STYPE_DATA));
 
 	pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
 
@@ -7611,7 +7611,7 @@ void rtw_hal_construct_NullFunctionData(
 	if (bQoS == _TRUE) {
 		struct rtw_ieee80211_hdr_3addr_qos *pwlanqoshdr;
 
-		set_frame_sub_type(pframe, WIFI_QOS_DATA_NULL);
+		set_frame_sub_type(pframe, IEEE80211_FTYPE_DATA | IEEE80211_STYPE_QOS_NULLFUNC);
 
 		pwlanqoshdr = (struct rtw_ieee80211_hdr_3addr_qos *)pframe;
 		SetPriority(&pwlanqoshdr->qc, AC);
@@ -7619,7 +7619,7 @@ void rtw_hal_construct_NullFunctionData(
 
 		pktlen = sizeof(struct rtw_ieee80211_hdr_3addr_qos);
 	} else {
-		set_frame_sub_type(pframe, WIFI_DATA_NULL);
+		set_frame_sub_type(pframe, IEEE80211_FTYPE_DATA | IEEE80211_STYPE_NULLFUNC);
 
 		pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
 	}
@@ -7653,7 +7653,7 @@ void rtw_hal_construct_ProbeRsp(_adapter *padapter, u8 *pframe, u32 *pLength,
 	memcpy(pwlanhdr->addr3, bssid, ETH_ALEN);
 
 	SetSeqNum(pwlanhdr, 0);
-	set_frame_sub_type(fctrl, WIFI_PROBERSP);
+	set_frame_sub_type(fctrl, IEEE80211_STYPE_PROBE_RESP);
 
 	pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
 	pframe += pktlen;
@@ -7749,7 +7749,7 @@ static void rtw_hal_construct_ARPRsp(
 	/* ------------------------------------------------------------------------- */
 	/* MAC Header. */
 	/* ------------------------------------------------------------------------- */
-	SetFrameType(fctrl, WIFI_DATA);
+	SetFrameType(fctrl, (IEEE80211_FTYPE_DATA | IEEE80211_STYPE_DATA));
 	/* set_frame_sub_type(fctrl, 0); */
 	SetToDs(fctrl);
 	memcpy(pwlanhdr->addr1, get_my_bssid(&(pmlmeinfo->network)), ETH_ALEN);
@@ -7883,7 +7883,7 @@ static void rtw_hal_construct_na_message(_adapter *padapter,
 	/* ------------------------------------------------------------------------- */
 	/* MAC Header. */
 	/* ------------------------------------------------------------------------- */
-	SetFrameType(fctrl, WIFI_DATA);
+	SetFrameType(fctrl, (IEEE80211_FTYPE_DATA | IEEE80211_STYPE_DATA));
 	SetToDs(fctrl);
 	memcpy(pwlanhdr->addr1,
 		    get_my_bssid(&(pmlmeinfo->network)), ETH_ALEN);
@@ -8054,25 +8054,25 @@ static void rtw_hal_construct_ProbeReq(_adapter *padapter, u8 *pframe,
 	memcpy(pwlanhdr->addr2, mac, ETH_ALEN);
 
 	SetSeqNum(pwlanhdr, 0);
-	set_frame_sub_type(pframe, WIFI_PROBEREQ);
+	set_frame_sub_type(pframe, IEEE80211_STYPE_PROBE_REQ);
 
 	pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
 	pframe += pktlen;
 
 	if (ssid == NULL)
-		pframe = rtw_set_ie(pframe, _SSID_IE_, 0, NULL, &pktlen);
+		pframe = rtw_set_ie(pframe, WLAN_EID_SSID, 0, NULL, &pktlen);
 	else {
 		/* RTW_INFO("%s len:%d\n", ssid->SSID, ssid->SSID_len); */
-		pframe = rtw_set_ie(pframe, _SSID_IE_, ssid->SSID_len, ssid->SSID, &pktlen);
+		pframe = rtw_set_ie(pframe, WLAN_EID_SSID, ssid->SSID_len, ssid->SSID, &pktlen);
 	}
 
 	get_rate_set(padapter, bssrate, &bssrate_len);
 
 	if (bssrate_len > 8) {
-		pframe = rtw_set_ie(pframe, _SUPPORTEDRATES_IE_ , 8, bssrate, &pktlen);
-		pframe = rtw_set_ie(pframe, _EXT_SUPPORTEDRATES_IE_ , (bssrate_len - 8), (bssrate + 8), &pktlen);
+		pframe = rtw_set_ie(pframe, WLAN_EID_SUPP_RATES , 8, bssrate, &pktlen);
+		pframe = rtw_set_ie(pframe, WLAN_EID_EXT_SUPP_RATES , (bssrate_len - 8), (bssrate + 8), &pktlen);
 	} else
-		pframe = rtw_set_ie(pframe, _SUPPORTEDRATES_IE_ , bssrate_len , bssrate, &pktlen);
+		pframe = rtw_set_ie(pframe, WLAN_EID_SUPP_RATES , bssrate_len , bssrate, &pktlen);
 
 	*pLength = pktlen;
 }
@@ -8232,7 +8232,7 @@ static void rtw_hal_construct_GTKRsp(
 	/* ------------------------------------------------------------------------- */
 	/* MAC Header. */
 	/* ------------------------------------------------------------------------- */
-	SetFrameType(fctrl, WIFI_DATA);
+	SetFrameType(fctrl, (IEEE80211_FTYPE_DATA | IEEE80211_STYPE_DATA));
 	/* set_frame_sub_type(fctrl, 0); */
 	SetToDs(fctrl);
 
@@ -9280,7 +9280,7 @@ static u32 _rtw_wow_pattern_read_cam(_adapter *adapter, u8 addr)
 
 	rtw_write32(adapter, REG_WKFMCAM_CMD, BIT_WKFCAM_POLLING_V1 | BIT_WKFCAM_ADDR_V2(addr));
 
-	start = rtw_get_current_time();
+	start = jiffies;
 	while (1) {
 		if (rtw_is_surprise_removed(adapter))
 			break;
@@ -9351,7 +9351,7 @@ static void _rtw_wow_pattern_write_cam(_adapter *adapter, u8 addr, u32 wdata)
 	rtw_write32(adapter, REG_WKFMCAM_RWD, wdata);
 	rtw_write32(adapter, REG_WKFMCAM_CMD, BIT_WKFCAM_POLLING_V1 | BIT_WKFCAM_WE | BIT_WKFCAM_ADDR_V2(addr));
 
-	start = rtw_get_current_time();
+	start = jiffies;
 	while (1) {
 		if (rtw_is_surprise_removed(adapter))
 			break;
@@ -9365,7 +9365,7 @@ static void _rtw_wow_pattern_write_cam(_adapter *adapter, u8 addr, u32 wdata)
 			break;
 		}
 	}
-	end = rtw_get_current_time();
+	end = jiffies;
 
 	_exit_critical_mutex(mutex, NULL);
 
@@ -9418,7 +9418,7 @@ static u8 _rtw_wow_pattern_clean_cam(_adapter *adapter)
 	_enter_critical_mutex(mutex, NULL);
 	rtw_write32(adapter, REG_WKFMCAM_CMD, BIT_WKFCAM_POLLING_V1 | BIT_WKFCAM_CLR_V1);
 
-	start = rtw_get_current_time();
+	start = jiffies;
 	while (1) {
 		if (rtw_is_surprise_removed(adapter))
 			break;
@@ -12442,7 +12442,7 @@ void rtw_dump_rx_dframe_info(_adapter *padapter, void *sel)
 			phead = &(pstapriv->sta_hash[i]);
 			plist = get_next(phead);
 
-			while ((rtw_end_of_queue_search(phead, plist)) == _FALSE) {
+			while (phead != plist) {
 
 				psta = LIST_CONTAINOR(plist, struct sta_info, hash_list);
 				plist = get_next(plist);
@@ -12523,9 +12523,9 @@ void rtw_store_phy_info(_adapter *padapter, union recv_frame *prframe)
 			}
 		}
 #ifdef DBG_RX_DFRAME_RAW_DATA
-		if ((dframe_type == WIFI_DATA_TYPE) || (dframe_type == WIFI_QOS_DATA_TYPE) || (padapter->registrypriv.mp_mode == 1)) {
+		if ((dframe_type == IEEE80211_FTYPE_DATA) || (dframe_type == (IEEE80211_STYPE_QOS_DATA |  IEEE80211_FTYPE_DATA)) || (padapter->registrypriv.mp_mode == 1)) {
 
-			/*RTW_INFO("=>%s WIFI_DATA_TYPE or WIFI_QOS_DATA_TYPE\n", __FUNCTION__);*/
+			/*RTW_INFO("=>%s IEEE80211_FTYPE_DATA or (IEEE80211_STYPE_QOS_DATA |  IEEE80211_FTYPE_DATA)\n", __FUNCTION__);*/
 			if (psta) {
 				if (is_multicast_ether_addr(get_ra(get_recvframe_data(prframe))))
 					psta_dframe_info = &psta->sta_dframe_info_bmc;
@@ -14424,7 +14424,7 @@ u8 rtw_ap_bcn_recovery(_adapter *padapter)
 #ifdef CONFIG_BCN_XMIT_PROTECT
 u8 rtw_ap_bcn_queue_empty_check(_adapter *padapter, u32 txbcn_timer_ms)
 {
-	u32 start_time = rtw_get_current_time();
+	u32 start_time = jiffies;
 	u8 bcn_queue_empty = _FALSE;
 
 	do {
@@ -14585,7 +14585,7 @@ u8 * rtw_hal_set_8812a_vendor_ie(_adapter *padapter , u8 *pframe ,uint *frlen ) 
 		vendor_info[6] = RT_HT_CAP_USE_JAGUAR_CCUT;
 	else
 		vendor_info[6] = RT_HT_CAP_USE_JAGUAR_BCUT;
-	pframe = rtw_set_ie(pframe, _VENDOR_SPECIFIC_IE_,vender_len,vendor_info , frlen);
+	pframe = rtw_set_ie(pframe, WLAN_EID_VENDOR_SPECIFIC,vender_len,vendor_info , frlen);
 	
 	return pframe;
 }

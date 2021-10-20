@@ -569,7 +569,7 @@ u8 init_channel_set(_adapter *padapter, u8 ChannelPlan, RT_CHANNEL_INFO *channel
 
 	#ifdef CONFIG_DFS_MASTER
 	for (i = 0; i < chanset_size; i++)
-		channel_set[i].non_ocp_end_time = rtw_get_current_time();
+		channel_set[i].non_ocp_end_time = jiffies;
 	#endif
 #endif /* CONFIG_IEEE80211_BAND_5GHZ */
 

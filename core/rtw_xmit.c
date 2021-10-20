@@ -347,13 +347,6 @@ exit:
 	return res;
 }
 
-void  rtw_mfree_xmit_priv_lock(struct xmit_priv *pxmitpriv);
-void  rtw_mfree_xmit_priv_lock(struct xmit_priv *pxmitpriv)
-{
-	_rtw_free_sema(&pxmitpriv->xmit_sema);
-}
-
-
 void _rtw_free_xmit_priv(struct xmit_priv *pxmitpriv)
 {
 	int i;
@@ -363,8 +356,6 @@ void _rtw_free_xmit_priv(struct xmit_priv *pxmitpriv)
 
 
 	rtw_hal_free_xmit_priv(padapter);
-
-	rtw_mfree_xmit_priv_lock(pxmitpriv);
 
 	if (pxmitpriv->pxmit_frame_buf == NULL)
 		goto out;
@@ -1167,7 +1158,7 @@ static void set_qos(struct pkt_file *ppktfile, struct pkt_attrib *pattrib)
 	#endif/*CONFIG_IP_R_MONITOR*/
 	pattrib->priority = UserPriority;
 	pattrib->hdrlen = WLAN_HDR_A3_QOS_LEN;
-	pattrib->subtype = WIFI_QOS_DATA_TYPE;
+	pattrib->subtype = (IEEE80211_STYPE_QOS_DATA |  IEEE80211_FTYPE_DATA);
 }
 
 #ifdef CONFIG_TDLS
@@ -1232,11 +1223,11 @@ s32 update_tdls_attrib(_adapter *padapter, struct pkt_attrib *pattrib)
 	if (pqospriv->qos_option &&  psta->qos_option) {
 		pattrib->priority = 4;	/* tdls management frame should be AC_VI */
 		pattrib->hdrlen = WLAN_HDR_A3_QOS_LEN;
-		pattrib->subtype = WIFI_QOS_DATA_TYPE;
+		pattrib->subtype = (IEEE80211_STYPE_QOS_DATA |  IEEE80211_FTYPE_DATA);
 	} else {
 		pattrib->priority = 0;
 		pattrib->hdrlen = WLAN_HDR_A3_LEN;
-		pattrib->subtype = WIFI_DATA_TYPE;
+		pattrib->subtype = IEEE80211_FTYPE_DATA;
 	}
 
 	/* TODO:_lock */
@@ -1499,7 +1490,7 @@ get_sta_info:
 	pattrib->pkt_hdrlen = ETH_HLEN;/* (pattrib->ether_type == 0x8100) ? (14 + 4 ): 14; */ /* vlan tag */
 
 	pattrib->hdrlen = WLAN_HDR_A3_LEN;
-	pattrib->subtype = WIFI_DATA_TYPE;
+	pattrib->subtype = IEEE80211_FTYPE_DATA;
 	pattrib->qos_en = psta->qos_option;
 	pattrib->priority = 0;
 
@@ -1766,7 +1757,7 @@ s32 rtw_make_wlanhdr(_adapter *padapter , u8 *hdr, struct pkt_attrib *pattrib)
 
 	set_frame_sub_type(fctrl, pattrib->subtype);
 
-	if (pattrib->subtype & WIFI_DATA_TYPE) {
+	if (pattrib->subtype & IEEE80211_FTYPE_DATA) {
 		if ((check_fwstate(pmlmepriv,  WIFI_STATION_STATE) == _TRUE)) {
 #ifdef CONFIG_TDLS
 			if (pattrib->direct_link == _TRUE) {
@@ -2805,9 +2796,9 @@ s32 rtw_mgmt_xmitframe_coalesce(_adapter *padapter, _pkt *pkt, struct xmit_frame
 	subtype = get_frame_sub_type(pframe); /* bit(7)~bit(2) */
 
 	/* check if robust mgmt frame */
-	if (subtype != WIFI_DEAUTH && subtype != WIFI_DISASSOC && subtype != WIFI_ACTION)
+	if (subtype != IEEE80211_STYPE_DEAUTH && subtype != IEEE80211_STYPE_DISASSOC && subtype != IEEE80211_STYPE_ACTION)
 		return _SUCCESS;
-	if (subtype == WIFI_ACTION) {
+	if (subtype == IEEE80211_STYPE_ACTION) {
 		category = *(pframe + sizeof(struct rtw_ieee80211_hdr_3addr));
 		if (CATEGORY_IS_NON_ROBUST(category))
 			return _SUCCESS;
@@ -2840,7 +2831,7 @@ s32 rtw_mgmt_xmitframe_coalesce(_adapter *padapter, _pkt *pkt, struct xmit_frame
 	_enter_critical_bh(&padapter->security_key_mutex, &irqL);
 
 	if (bmcst) {
-		if (subtype == WIFI_ACTION && CATEGORY_IS_GROUP_PRIVACY(category)) {
+		if (subtype == IEEE80211_STYPE_ACTION && CATEGORY_IS_GROUP_PRIVACY(category)) {
 			/* broadcast group privacy action frame */
 			#if DBG_MGMT_XMIT_COALESEC_DUMP
 			RTW_INFO(FUNC_ADPT_FMT" broadcast gp action(%u)\n"
@@ -2875,11 +2866,11 @@ s32 rtw_mgmt_xmitframe_coalesce(_adapter *padapter, _pkt *pkt, struct xmit_frame
 				goto xmitframe_coalesce_success;
 
 			#if DBG_MGMT_XMIT_COALESEC_DUMP
-			if (subtype == WIFI_DEAUTH)
+			if (subtype == IEEE80211_STYPE_DEAUTH)
 				RTW_INFO(FUNC_ADPT_FMT" braodcast deauth\n", FUNC_ADPT_ARG(padapter));
-			else if (subtype == WIFI_DISASSOC)
+			else if (subtype == IEEE80211_STYPE_DISASSOC)
 				RTW_INFO(FUNC_ADPT_FMT" braodcast disassoc\n", FUNC_ADPT_ARG(padapter));
-			else if (subtype == WIFI_ACTION) {
+			else if (subtype == IEEE80211_STYPE_ACTION) {
 				RTW_INFO(FUNC_ADPT_FMT" braodcast action(%u)\n"
 					, FUNC_ADPT_ARG(padapter), category);
 			}
@@ -2897,7 +2888,7 @@ s32 rtw_mgmt_xmitframe_coalesce(_adapter *padapter, _pkt *pkt, struct xmit_frame
 			RTW_PUT_LE64(&MME[2], padapter->securitypriv.dot11wBIPtxpn.val);
 
 			/* add MME IE with MIC all zero, MME string doesn't include element id and length */
-			pframe = rtw_set_ie(pframe, _MME_IE_ , 16 , MME, &(pattrib->pktlen));
+			pframe = rtw_set_ie(pframe, WLAN_EID_MMIE  , 16 , MME, &(pattrib->pktlen));
 			pattrib->last_txcmdsz = pattrib->pktlen;
 			/* total frame length - header length */
 			frame_body_len = pattrib->pktlen - sizeof(struct rtw_ieee80211_hdr_3addr);
@@ -2961,13 +2952,13 @@ s32 rtw_mgmt_xmitframe_coalesce(_adapter *padapter, _pkt *pkt, struct xmit_frame
 	else {
 		/* unicast robust mgmt frame */
 		#if DBG_MGMT_XMIT_COALESEC_DUMP
-		if (subtype == WIFI_DEAUTH) {
+		if (subtype == IEEE80211_STYPE_DEAUTH) {
 			RTW_INFO(FUNC_ADPT_FMT" unicast deauth to "MAC_FMT"\n"
 				, FUNC_ADPT_ARG(padapter), MAC_ARG(pattrib->ra));
-		} else if (subtype == WIFI_DISASSOC) {
+		} else if (subtype == IEEE80211_STYPE_DISASSOC) {
 			RTW_INFO(FUNC_ADPT_FMT" unicast disassoc to "MAC_FMT"\n"
 				, FUNC_ADPT_ARG(padapter), MAC_ARG(pattrib->ra));
-		} else if (subtype == WIFI_ACTION) {
+		} else if (subtype == IEEE80211_STYPE_ACTION) {
 			RTW_INFO(FUNC_ADPT_FMT" unicast action(%u) to "MAC_FMT"\n"
 				, FUNC_ADPT_ARG(padapter), category, MAC_ARG(pattrib->ra));
 		}
@@ -3133,7 +3124,7 @@ void rtw_update_protection(_adapter *padapter, u8 *ie, uint ie_len)
 
 	case AUTO_VCS:
 	default:
-		perp = rtw_get_ie(ie, _ERPINFO_IE_, &erp_len, ie_len);
+		perp = rtw_get_ie(ie, WLAN_EID_ERP_INFO, &erp_len, ie_len);
 		if (perp == NULL)
 			pxmitpriv->vcs = NONE_VCS;
 		else {
@@ -3657,7 +3648,7 @@ void rtw_free_xmitframe_queue(struct xmit_priv *pxmitpriv, _queue *pframequeue)
 	phead = get_list_head(pframequeue);
 	plist = get_next(phead);
 
-	while (rtw_end_of_queue_search(phead, plist) == _FALSE) {
+	while (phead != plist) {
 
 		pxmitframe = LIST_CONTAINOR(plist, struct xmit_frame, list);
 
@@ -3689,7 +3680,7 @@ static struct xmit_frame *dequeue_one_xmitframe(struct xmit_priv *pxmitpriv, str
 	xmitframe_phead = get_list_head(pframe_queue);
 	xmitframe_plist = get_next(xmitframe_phead);
 
-	while ((rtw_end_of_queue_search(xmitframe_phead, xmitframe_plist)) == _FALSE) {
+	while (xmitframe_phead != xmitframe_plist) {
 		pxmitframe = LIST_CONTAINOR(xmitframe_plist, struct xmit_frame, list);
 
 		/* xmitframe_plist = get_next(xmitframe_plist); */
@@ -3731,7 +3722,7 @@ static struct xmit_frame *get_one_xmitframe(struct xmit_priv *pxmitpriv, struct 
 	xmitframe_phead = get_list_head(pframe_queue);
 	xmitframe_plist = get_next(xmitframe_phead);
 
-	while ((rtw_end_of_queue_search(xmitframe_phead, xmitframe_plist)) == _FALSE) {
+	while (xmitframe_phead != xmitframe_plist) {
 		pxmitframe = LIST_CONTAINOR(xmitframe_plist, struct xmit_frame, list);
 		break;
 	}
@@ -3774,7 +3765,7 @@ struct xmit_frame *rtw_get_xframe(struct xmit_priv *pxmitpriv, int *num_frame)
 		sta_phead = get_list_head(phwxmit->sta_queue);
 		sta_plist = get_next(sta_phead);
 
-		while ((rtw_end_of_queue_search(sta_phead, sta_plist)) == _FALSE) {
+		while (sta_phead != sta_plist) {
 
 			ptxservq = LIST_CONTAINOR(sta_plist, struct tx_servq, tx_pending);
 			pframe_queue = &ptxservq->sta_pending;
@@ -3840,7 +3831,7 @@ struct xmit_frame *rtw_dequeue_xframe(struct xmit_priv *pxmitpriv, struct hw_xmi
 		sta_phead = get_list_head(phwxmit->sta_queue);
 		sta_plist = get_next(sta_phead);
 
-		while ((rtw_end_of_queue_search(sta_phead, sta_plist)) == _FALSE) {
+		while (sta_phead != sta_plist) {
 
 			ptxservq = LIST_CONTAINOR(sta_plist, struct tx_servq, tx_pending);
 
@@ -4543,14 +4534,14 @@ s32 rtw_xmit(_adapter *padapter, _pkt **ppkt)
 		return -1;
 
 	if (start == 0)
-		start = rtw_get_current_time();
+		start = jiffies;
 
 	pxmitframe = rtw_alloc_xmitframe(pxmitpriv);
 
 	if (rtw_get_passing_time_ms(start) > 2000) {
 		if (drop_cnt)
 			RTW_INFO("DBG_TX_DROP_FRAME %s no more pxmitframe, drop_cnt:%u\n", __FUNCTION__, drop_cnt);
-		start = rtw_get_current_time();
+		start = jiffies;
 		drop_cnt = 0;
 	}
 
@@ -4599,7 +4590,7 @@ s32 rtw_xmit(_adapter *padapter, _pkt **ppkt)
 			_list *list = get_next(&b2u_list);
 			struct xmit_frame *b2uframe;
 
-			while ((rtw_end_of_queue_search(&b2u_list, list)) == _FALSE) {
+			while (&b2u_list != list) {
 				b2uframe = LIST_CONTAINOR(list, struct xmit_frame, list);
 				list = get_next(list);
 				rtw_list_delete(&b2uframe->list);
@@ -4825,9 +4816,9 @@ sint xmitframe_enqueue_for_sleeping_sta(_adapter *padapter, struct xmit_frame *p
 			/* RTW_INFO_DUMP("enqueue, tim=", pstapriv->tim_bitmap, pstapriv->aid_bmp_len); */
 			if (update_tim == _TRUE) {
 				if (is_broadcast_mac_addr(pattrib->ra))
-					_update_beacon(padapter, _TIM_IE_, NULL, _TRUE, "buffer BC");
+					_update_beacon(padapter, WLAN_EID_DS_PARAMS, NULL, _TRUE, "buffer BC");
 				else
-					_update_beacon(padapter, _TIM_IE_, NULL, _TRUE, "buffer MC");
+					_update_beacon(padapter, WLAN_EID_DS_PARAMS, NULL, _TRUE, "buffer MC");
 			} else
 				chk_bmc_sleepq_cmd(padapter);
 
@@ -4894,7 +4885,7 @@ sint xmitframe_enqueue_for_sleeping_sta(_adapter *padapter, struct xmit_frame *p
 				if (update_tim == _TRUE) {
 					/* RTW_INFO("sleepq_len==1, update BCNTIM\n"); */
 					/* upate BCN for TIM IE */
-					_update_beacon(padapter, _TIM_IE_, NULL, _TRUE, "buffer UC");
+					_update_beacon(padapter, WLAN_EID_DS_PARAMS, NULL, _TRUE, "buffer UC");
 				}
 			}
 
@@ -4931,7 +4922,7 @@ static void dequeue_xmitframes_to_sleeping_queue(_adapter *padapter, struct sta_
 	phead = get_list_head(pframequeue);
 	plist = get_next(phead);
 
-	while (rtw_end_of_queue_search(phead, plist) == _FALSE) {
+	while (phead != plist) {
 		pxmitframe = LIST_CONTAINOR(plist, struct xmit_frame, list);
 
 		plist = get_next(plist);
@@ -5029,7 +5020,7 @@ void wakeup_sta_to_xmit(_adapter *padapter, struct sta_info *psta)
 	xmitframe_phead = get_list_head(&psta->sleep_q);
 	xmitframe_plist = get_next(xmitframe_phead);
 
-	while ((rtw_end_of_queue_search(xmitframe_phead, xmitframe_plist)) == _FALSE) {
+	while (xmitframe_phead != xmitframe_plist) {
 		pxmitframe = LIST_CONTAINOR(xmitframe_plist, struct xmit_frame, list);
 
 		xmitframe_plist = get_next(xmitframe_plist);
@@ -5129,7 +5120,7 @@ void wakeup_sta_to_xmit(_adapter *padapter, struct sta_info *psta)
 		xmitframe_phead = get_list_head(&psta_bmc->sleep_q);
 		xmitframe_plist = get_next(xmitframe_phead);
 
-		while ((rtw_end_of_queue_search(xmitframe_phead, xmitframe_plist)) == _FALSE) {
+		while (xmitframe_phead != xmitframe_plist) {
 			pxmitframe = LIST_CONTAINOR(xmitframe_plist, struct xmit_frame, list);
 
 			xmitframe_plist = get_next(xmitframe_plist);
@@ -5179,11 +5170,11 @@ _exit:
 	if (update_mask) {
 		/* update_BCNTIM(padapter); */
 		if ((update_mask & (BIT(0) | BIT(1))) == (BIT(0) | BIT(1)))
-			_update_beacon(padapter, _TIM_IE_, NULL, _TRUE, "clear UC&BMC");
+			_update_beacon(padapter, WLAN_EID_DS_PARAMS, NULL, _TRUE, "clear UC&BMC");
 		else if ((update_mask & BIT(1)) == BIT(1))
-			_update_beacon(padapter, _TIM_IE_, NULL, _TRUE, "clear BMC");
+			_update_beacon(padapter, WLAN_EID_DS_PARAMS, NULL, _TRUE, "clear BMC");
 		else
-			_update_beacon(padapter, _TIM_IE_, NULL, _TRUE, "clear UC");
+			_update_beacon(padapter, WLAN_EID_DS_PARAMS, NULL, _TRUE, "clear UC");
 	}
 
 }
@@ -5204,7 +5195,7 @@ void xmit_delivery_enabled_frames(_adapter *padapter, struct sta_info *psta)
 	xmitframe_phead = get_list_head(&psta->sleep_q);
 	xmitframe_plist = get_next(xmitframe_phead);
 
-	while ((rtw_end_of_queue_search(xmitframe_phead, xmitframe_plist)) == _FALSE) {
+	while (xmitframe_phead != xmitframe_plist) {
 		pxmitframe = LIST_CONTAINOR(xmitframe_plist, struct xmit_frame, list);
 
 		xmitframe_plist = get_next(xmitframe_plist);
@@ -5261,7 +5252,7 @@ void xmit_delivery_enabled_frames(_adapter *padapter, struct sta_info *psta)
 			/* RTW_INFO_DUMP("update_BCNTIM, tim=", pstapriv->tim_bitmap, pstapriv->aid_bmp_len); */
 			/* upate BCN for TIM IE */
 			/* update_BCNTIM(padapter); */
-			update_beacon(padapter, _TIM_IE_, NULL, _TRUE);
+			update_beacon(padapter, WLAN_EID_DS_PARAMS, NULL, _TRUE);
 			/* update_mask = BIT(0); */
 		}
 
@@ -5762,7 +5753,7 @@ u8 rtw_get_tx_desc_backup(_adapter *padapter, u8 hwq, struct rtw_tx_desc_backup 
 void rtw_sctx_init(struct submit_ctx *sctx, int timeout_ms)
 {
 	sctx->timeout_ms = timeout_ms;
-	sctx->submit_time = rtw_get_current_time();
+	sctx->submit_time = jiffies;
 #ifdef PLATFORM_LINUX /* TODO: add condition wating interface for other os */
 	init_completion(&sctx->done);
 #endif
@@ -5829,7 +5820,7 @@ int rtw_ack_tx_wait(struct xmit_priv *pxmitpriv, u32 timeout_ms)
 {
 	struct submit_ctx *pack_tx_ops = &pxmitpriv->ack_tx_ops;
 
-	pack_tx_ops->submit_time = rtw_get_current_time();
+	pack_tx_ops->submit_time = jiffies;
 	pack_tx_ops->timeout_ms = timeout_ms;
 	pack_tx_ops->status = RTW_SCTX_SUBMITTED;
 

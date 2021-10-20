@@ -2299,7 +2299,7 @@ unsigned int mp_ioctl_xmit_packet_hdl(struct oid_par_priv *poid_par_priv)
 
 	fctrl = &(pwlanhdr->frame_ctl);
 	*(fctrl) = 0;
-	set_frame_sub_type(pframe, WIFI_DATA);
+	set_frame_sub_type(pframe, (IEEE80211_FTYPE_DATA | IEEE80211_STYPE_DATA));
 
 	memcpy(pwlanhdr->addr1, pethhdr->h_dest, ETH_ALEN);
 	memcpy(pwlanhdr->addr2, pethhdr->h_source, ETH_ALEN);

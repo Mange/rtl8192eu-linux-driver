@@ -145,8 +145,8 @@ static inline u16 rtw_u16_field_get(const u8 *preq_elem, int shift, BOOLEAN ae)
 #define RTW_PERR_IE_TARGET_SN(x)	rtw_u32_field_get(x, 9, 0)
 #define RTW_PERR_IE_TARGET_RCODE(x)	rtw_u16_field_get(x, 13, 0)
 
-#define RTW_TU_TO_SYSTIME(x)	(rtw_us_to_systime((x) * 1024))
-#define RTW_TU_TO_EXP_TIME(x)	(rtw_get_current_time() + RTW_TU_TO_SYSTIME(x))
+#define RTW_TU_TO_SYSTIME(x)	(usecs_to_jiffies((x) * 1024))
+#define RTW_TU_TO_EXP_TIME(x)	(jiffies + RTW_TU_TO_SYSTIME(x))
 #define RTW_MSEC_TO_TU(x) (x*1000/1024)
 #define RTW_SN_GT(x, y) ((s32)(y - x) < 0)
 #define RTW_SN_LT(x, y) ((s32)(x - y) < 0)
@@ -158,16 +158,16 @@ static inline u32 RTW_SN_DELTA(u32 x, u32 y)
 }
 
 #define rtw_net_traversal_jiffies(adapter) \
-	rtw_ms_to_systime(adapter->mesh_cfg.dot11MeshHWMPnetDiameterTraversalTime)
+	msecs_to_jiffies(adapter->mesh_cfg.dot11MeshHWMPnetDiameterTraversalTime)
 #define rtw_default_lifetime(adapter) \
 	RTW_MSEC_TO_TU(adapter->mesh_cfg.dot11MeshHWMPactivePathTimeout)
 #define rtw_min_preq_int_jiff(adapter) \
-	(rtw_ms_to_systime(adapter->mesh_cfg.dot11MeshHWMPpreqMinInterval))
+	(msecs_to_jiffies(adapter->mesh_cfg.dot11MeshHWMPpreqMinInterval))
 #define rtw_max_preq_retries(adapter) (adapter->mesh_cfg.dot11MeshHWMPmaxPREQretries)
 #define rtw_disc_timeout_jiff(adapter) \
-	rtw_ms_to_systime(adapter->mesh_cfg.min_discovery_timeout)
+	msecs_to_jiffies(adapter->mesh_cfg.min_discovery_timeout)
 #define rtw_root_path_confirmation_jiffies(adapter) \
-	rtw_ms_to_systime(adapter->mesh_cfg.dot11MeshHWMPconfirmationInterval)
+	msecs_to_jiffies(adapter->mesh_cfg.dot11MeshHWMPconfirmationInterval)
 
 static inline BOOLEAN rtw_ether_addr_equal(const u8 *addr1, const u8 *addr2)
 {
@@ -245,7 +245,7 @@ static int rtw_mesh_path_sel_frame_tx(enum rtw_mpath_frame_type mpath_action, u8
 
 	SetSeqNum(pwlanhdr, pmlmeext->mgnt_seq);
 	pmlmeext->mgnt_seq++;
-	set_frame_sub_type(pos, WIFI_ACTION);
+	set_frame_sub_type(pos, IEEE80211_STYPE_ACTION);
 
 	pos += sizeof(struct rtw_ieee80211_hdr_3addr);
 	pattrib->pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
@@ -335,7 +335,7 @@ int rtw_mesh_path_error_tx(_adapter *adapter,
 	u8 *pos, ie_len;
 	u16 *fctrl = NULL;
 
-	if (rtw_time_before(rtw_get_current_time(), minfo->next_perr))
+	if (rtw_time_before(jiffies, minfo->next_perr))
 		return -1;
 
 	pmgntframe = alloc_mgtxmitframe(pxmitpriv);
@@ -358,7 +358,7 @@ int rtw_mesh_path_error_tx(_adapter *adapter,
 
 	SetSeqNum(pwlanhdr, pmlmeext->mgnt_seq);
 	pmlmeext->mgnt_seq++;
-	set_frame_sub_type(pos, WIFI_ACTION);
+	set_frame_sub_type(pos, IEEE80211_STYPE_ACTION);
 
 	pos += sizeof(struct rtw_ieee80211_hdr_3addr);
 	pattrib->pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
@@ -669,11 +669,11 @@ static void rtw_hwmp_preq_frame_process(_adapter *adapter,
 		reply = _TRUE;
 		to_gate_ask = 1;
 		target_metric = 0;
-		if (rtw_time_after(rtw_get_current_time(), minfo->last_sn_update +
+		if (rtw_time_after(jiffies, minfo->last_sn_update +
 					rtw_net_traversal_jiffies(adapter)) ||
-		    rtw_time_before(rtw_get_current_time(), minfo->last_sn_update)) {
+		    rtw_time_before(jiffies, minfo->last_sn_update)) {
 			++minfo->sn;
-			minfo->last_sn_update = rtw_get_current_time();
+			minfo->last_sn_update = jiffies;
 		}
 		target_sn = minfo->sn;
 	} else if (is_broadcast_mac_addr(target_addr) &&
@@ -686,7 +686,7 @@ static void rtw_hwmp_preq_frame_process(_adapter *adapter,
 				target_addr = adapter_mac_addr(adapter);
 				target_sn = ++minfo->sn;
 				target_metric = 0;
-				minfo->last_sn_update = rtw_get_current_time();
+				minfo->last_sn_update = jiffies;
 			}
 
 			if (preq_is_gate) {
@@ -998,9 +998,9 @@ static void rtw_hwmp_rann_frame_process(_adapter *adapter,
 	}
 
 	if ((!(path->flags & (RTW_MESH_PATH_ACTIVE | RTW_MESH_PATH_RESOLVING)) ||
-	     (rtw_time_after(rtw_get_current_time(), path->last_preq_to_root +
+	     (rtw_time_after(jiffies, path->last_preq_to_root +
 				  rtw_root_path_confirmation_jiffies(adapter)) ||
-	     rtw_time_before(rtw_get_current_time(), path->last_preq_to_root))) &&
+	     rtw_time_before(jiffies, path->last_preq_to_root))) &&
 	     !(path->flags & RTW_MESH_PATH_FIXED) && (ttl != 0)) {
 		u8 preq_node_flag = RTW_PREQ_Q_F_START | RTW_PREQ_Q_F_REFRESH;
 
@@ -1022,7 +1022,7 @@ static void rtw_hwmp_rann_frame_process(_adapter *adapter,
 		}
 #endif
 		rtw_mesh_queue_preq(path, preq_node_flag);
-		path->last_preq_to_root = rtw_get_current_time();
+		path->last_preq_to_root = jiffies;
 	}
 
 	path->sn = originator_sn;
@@ -1325,12 +1325,12 @@ void rtw_mesh_queue_preq(struct rtw_mesh_path *path, u8 flags)
 	++minfo->preq_queue_len;
 	exit_critical_bh(&minfo->mesh_preq_queue_lock);
 
-	if (rtw_time_after(rtw_get_current_time(), minfo->last_preq + rtw_min_preq_int_jiff(adapter)))
+	if (rtw_time_after(jiffies, minfo->last_preq + rtw_min_preq_int_jiff(adapter)))
 		rtw_mesh_work(&adapter->mesh_work);
 
-	else if (rtw_time_before(rtw_get_current_time(), minfo->last_preq)) {
+	else if (rtw_time_before(jiffies, minfo->last_preq)) {
 		/* systime wrapped around issue */
-		minfo->last_preq = rtw_get_current_time() - rtw_min_preq_int_jiff(adapter) - 1;
+		minfo->last_preq = jiffies - rtw_min_preq_int_jiff(adapter) - 1;
 		rtw_mesh_work(&adapter->mesh_work);
 	} else
 		rtw_mod_timer(&adapter->mesh_path_timer, minfo->last_preq +
@@ -1372,7 +1372,7 @@ void rtw_mesh_path_start_discovery(_adapter *adapter)
 
 	enter_critical_bh(&minfo->mesh_preq_queue_lock);
 	if (!minfo->preq_queue_len ||
-		rtw_time_before(rtw_get_current_time(), minfo->last_preq +
+		rtw_time_before(jiffies, minfo->last_preq +
 				rtw_min_preq_int_jiff(adapter))) {
 		exit_critical_bh(&minfo->mesh_preq_queue_lock);
 		return;
@@ -1412,13 +1412,13 @@ void rtw_mesh_path_start_discovery(_adapter *adapter)
 		goto enddiscovery;
 	}
 
-	minfo->last_preq = rtw_get_current_time();
+	minfo->last_preq = jiffies;
 
-	if (rtw_time_after(rtw_get_current_time(), minfo->last_sn_update +
+	if (rtw_time_after(jiffies, minfo->last_sn_update +
 				rtw_net_traversal_jiffies(adapter)) ||
-	    rtw_time_before(rtw_get_current_time(), minfo->last_sn_update)) {
+	    rtw_time_before(jiffies, minfo->last_sn_update)) {
 		++minfo->sn;
-		minfo->last_sn_update = rtw_get_current_time();
+		minfo->last_sn_update = jiffies;
 	}
 	lifetime = rtw_default_lifetime(adapter);
 	ttl = mshcfg->element_ttl;
@@ -1448,7 +1448,7 @@ void rtw_mesh_path_start_discovery(_adapter *adapter)
 	rtw_mesh_path_sel_frame_tx(RTW_MPATH_PREQ, flags, adapter_mac_addr(adapter), minfo->sn,
 				   target_flags, path->dst, path->sn, da, 0,
 				   ttl, lifetime, 0, minfo->preq_id++, adapter);
-	rtw_mod_timer(&path->timer, rtw_get_current_time() + path->discovery_timeout);
+	rtw_mod_timer(&path->timer, jiffies + path->discovery_timeout);
 
 enddiscovery:
 	rtw_rcu_read_unlock();
@@ -1496,7 +1496,7 @@ void rtw_mesh_path_timer(void *ctx)
 				  RTW_MESH_PATH_REQ_QUEUED |
 				  RTW_MESH_PATH_ROOT_ADD_CHK |
 				  RTW_MESH_PATH_PEER_AKA);
-		path->exp_time = rtw_get_current_time();
+		path->exp_time = jiffies;
 		exit_critical_bh(&path->state_lock);
 		if (!path->is_gate && rtw_mesh_gate_num(adapter) > 0) {
 			ret = rtw_mesh_path_send_to_gates(path);
@@ -1602,7 +1602,7 @@ void rtw_mesh_work_hdl(_workitem *work)
 	_adapter *adapter = container_of(work, _adapter, mesh_work);
 
 	while(adapter->mesh_info.preq_queue_len) {
-		if (rtw_time_after(rtw_get_current_time(),
+		if (rtw_time_after(jiffies,
 		       adapter->mesh_info.last_preq + rtw_min_preq_int_jiff(adapter)))
 		       /* It will consume preq_queue_len */
 		       rtw_mesh_path_start_discovery(adapter);

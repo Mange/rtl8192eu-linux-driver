@@ -187,8 +187,6 @@ static void _rtw_free_evt_priv(struct evt_priv *pevtpriv)
 
 
 #ifdef CONFIG_EVENT_THREAD_MODE
-	_rtw_free_sema(&(pevtpriv->evt_notify));
-
 	if (pevtpriv->evt_allocated_buf)
 		rtw_mfree(pevtpriv->evt_allocated_buf, MAX_EVTSZ + 4);
 #endif
@@ -215,10 +213,6 @@ static void _rtw_free_cmd_priv(struct cmd_priv *pcmdpriv)
 {
 
 	if (pcmdpriv) {
-		_rtw_free_sema(&(pcmdpriv->cmd_queue_sema));
-		/* _rtw_free_sema(&(pcmdpriv->cmd_done_sema)); */
-		_rtw_free_sema(&(pcmdpriv->start_cmdthread_sema));
-
 		if (pcmdpriv->cmd_allocated_buf)
 			rtw_mfree(pcmdpriv->cmd_allocated_buf, MAX_CMDSZ + CMDBUFF_ALIGN_SZ);
 
@@ -579,7 +573,7 @@ _next:
 			continue;
 		}
 
-		cmd_start_time = rtw_get_current_time();
+		cmd_start_time = jiffies;
 		pcmdpriv->cmd_issued_cnt++;
 
 		if (pcmd->cmdsz > MAX_CMDSZ) {
@@ -895,7 +889,7 @@ u8 rtw_sitesurvey_cmd(_adapter *padapter, struct sitesurvey_parm *pparm)
 	if (res == _SUCCESS) {
 		u32 scan_timeout_ms;
 
-		pmlmepriv->scan_start_time = rtw_get_current_time();
+		pmlmepriv->scan_start_time = jiffies;
 		scan_timeout_ms = rtw_scan_timeout_decision(padapter);
 		mlme_set_scan_to_timer(pmlmepriv,scan_timeout_ms);
 
@@ -1476,7 +1470,7 @@ u8 rtw_joinbss_cmd(_adapter  *padapter, struct wlan_network *pnetwork)
 #ifdef CONFIG_80211N_HT
 	phtpriv->ht_option = _FALSE;
 	if (pregistrypriv->ht_enable && is_supported_ht(pregistrypriv->wireless_mode)) {
-		ptmp = rtw_get_ie(&pnetwork->network.IEs[12], _HT_CAPABILITY_IE_, &tmp_len, pnetwork->network.IELength - 12);
+		ptmp = rtw_get_ie(&pnetwork->network.IEs[12], WLAN_EID_HT_CAPABILITY, &tmp_len, pnetwork->network.IELength - 12);
 		if (ptmp && tmp_len > 0) {
 			/*	Added by Albert 2010/06/23 */
 			/*	For the WEP mode, we will use the bg mode to do the connection to avoid some IOT issue. */
@@ -3237,8 +3231,8 @@ static void dynamic_update_bcn_check(_adapter *padapter)
 				&& _FALSE == atomic_read(&pmlmepriv->olbc_ht)) {
 
 				if (rtw_ht_operation_update(padapter) > 0) {
-					update_beacon(padapter, _HT_CAPABILITY_IE_, NULL, _FALSE);
-					update_beacon(padapter, _HT_ADD_INFO_IE_, NULL, _TRUE);
+					update_beacon(padapter, WLAN_EID_HT_CAPABILITY, NULL, _FALSE);
+					update_beacon(padapter, WLAN_EID_HT_OPERATION, NULL, _TRUE);
 				}
 			}
 #endif /* CONFIG_80211N_HT */
@@ -3251,8 +3245,8 @@ static void dynamic_update_bcn_check(_adapter *padapter)
 			&& _FALSE != atomic_read(&pmlmepriv->olbc_ht)) {
 					
 			if (rtw_ht_operation_update(padapter) > 0) {
-				update_beacon(padapter, _HT_CAPABILITY_IE_, NULL, _FALSE);
-				update_beacon(padapter, _HT_ADD_INFO_IE_, NULL, _TRUE);
+				update_beacon(padapter, WLAN_EID_HT_CAPABILITY, NULL, _FALSE);
+				update_beacon(padapter, WLAN_EID_HT_OPERATION, NULL, _TRUE);
 
 			}
 			atomic_set(&pmlmepriv->olbc, _FALSE);
@@ -4128,7 +4122,7 @@ static void rtw_chk_hi_queue_hdl(_adapter *padapter)
 {
 	struct sta_info *psta_bmc;
 	struct sta_priv *pstapriv = &padapter->stapriv;
-	systime start = rtw_get_current_time();
+	systime start = jiffies;
 	u8 empty = _FALSE;
 
 	psta_bmc = rtw_get_bcmc_stainfo(padapter);
@@ -4153,7 +4147,7 @@ static void rtw_chk_hi_queue_hdl(_adapter *padapter)
 			rtw_tim_map_clear(padapter, pstapriv->sta_dz_bitmap, 0);
 
 			if (update_tim == _TRUE)
-				_update_beacon(padapter, _TIM_IE_, NULL, _TRUE, "bmc sleepq and HIQ empty");
+				_update_beacon(padapter, WLAN_EID_DS_PARAMS, NULL, _TRUE, "bmc sleepq and HIQ empty");
 		} else /* re check again */
 			rtw_chk_hi_queue_cmd(padapter);
 
@@ -5233,7 +5227,7 @@ void session_tracker_chk_for_sta(_adapter *adapter, struct sta_info *sta)
 	phead = &st_ctl->tracker_q.queue;
 	plist = get_next(phead);
 	pnext = get_next(plist);
-	while (rtw_end_of_queue_search(phead, plist) == _FALSE) {
+	while (phead != plist) {
 		st = LIST_CONTAINOR(plist, struct session_tracker, list);
 		plist = pnext;
 		pnext = get_next(pnext);
@@ -5269,7 +5263,7 @@ void session_tracker_chk_for_sta(_adapter *adapter, struct sta_info *sta)
 	_exit_critical_bh(&st_ctl->tracker_q.lock, &irqL);
 
 	plist = get_next(&dlist);
-	while (rtw_end_of_queue_search(&dlist, plist) == _FALSE) {
+	while (&dlist != plist) {
 		st = LIST_CONTAINOR(plist, struct session_tracker, list);
 		plist = get_next(plist);
 		rtw_mfree((u8 *)st, sizeof(struct session_tracker));
@@ -5300,7 +5294,7 @@ void session_tracker_chk_for_adapter(_adapter *adapter)
 		phead = &(stapriv->sta_hash[i]);
 		plist = get_next(phead);
 
-		while ((rtw_end_of_queue_search(phead, plist)) == _FALSE) {
+		while (phead != plist) {
 			sta = LIST_CONTAINOR(plist, struct sta_info, hash_list);
 			plist = get_next(plist);
 
@@ -5358,7 +5352,7 @@ void session_tracker_cmd_hdl(_adapter *adapter, struct st_cmd_parm *parm)
 
 		phead = &st_ctl->tracker_q.queue;
 		plist = get_next(phead);
-		while (rtw_end_of_queue_search(phead, plist) == _FALSE) {
+		while (phead != plist) {
 			st = LIST_CONTAINOR(plist, struct session_tracker, list);
 
 			if (st->local_naddr == local_naddr
@@ -5370,7 +5364,7 @@ void session_tracker_cmd_hdl(_adapter *adapter, struct st_cmd_parm *parm)
 			plist = get_next(plist);
 		}
 
-		if (rtw_end_of_queue_search(phead, plist) == _TRUE)
+		if (phead == plist)
 			st = NULL;
 
 		switch (cmd) {
@@ -5402,7 +5396,7 @@ unlock:
 			st->local_port = local_port;
 			st->remote_naddr = remote_naddr;
 			st->remote_port = remote_port;
-			st->set_time = rtw_get_current_time();
+			st->set_time = jiffies;
 			st->status = ST_STATUS_CHECK;
 
 			_enter_critical_bh(&st_ctl->tracker_q.lock, &irqL);
@@ -5751,7 +5745,7 @@ void rtw_create_ibss_post_hdl(_adapter *padapter, int status)
 				_exit_critical_bh(&(pmlmepriv->scanned_queue.lock), &irqL);
 				goto createbss_cmd_fail;
 			}
-			pwlan->last_scanned = rtw_get_current_time();
+			pwlan->last_scanned = jiffies;
 		} else
 			rtw_list_insert_tail(&(pwlan->list), &pmlmepriv->scanned_queue.queue);
 

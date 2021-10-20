@@ -1952,7 +1952,7 @@ ReadEFuseByte(
 	u32	value32;
 	u8	readbyte;
 	u16	retry;
-	/* systime start=rtw_get_current_time(); */
+	/* systime start=jiffies; */
 
 	if (bPseudoTest) {
 		Efuse_Read1ByteFromFakeContent(Adapter, _offset, pbuf);

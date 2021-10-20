@@ -358,7 +358,7 @@ static inline char *iwe_stream_protocol_process(_adapter *padapter,
 #ifdef CONFIG_80211N_HT
 	/* parsing HT_CAP_IE	 */
 	if(padapter->registrypriv.ht_enable && is_supported_ht(padapter->registrypriv.wireless_mode)) {
-		p = rtw_get_ie(&pnetwork->network.IEs[ie_offset], _HT_CAPABILITY_IE_, &ht_ielen, pnetwork->network.IELength - ie_offset);
+		p = rtw_get_ie(&pnetwork->network.IEs[ie_offset], WLAN_EID_HT_CAPABILITY, &ht_ielen, pnetwork->network.IELength - ie_offset);
 		if (p && ht_ielen > 0)
 			ht_cap = _TRUE;
 	}
@@ -423,12 +423,12 @@ static inline char *iwe_stream_rate_process(_adapter *padapter,
 
 	/* parsing HT_CAP_IE	 */
 	if(is_supported_ht(padapter->registrypriv.wireless_mode)) {
-		p = rtw_get_ie(&pnetwork->network.IEs[ie_offset], _HT_CAPABILITY_IE_, &ht_ielen, pnetwork->network.IELength - ie_offset);
+		p = rtw_get_ie(&pnetwork->network.IEs[ie_offset], WLAN_EID_HT_CAPABILITY, &ht_ielen, pnetwork->network.IELength - ie_offset);
 		if (p && ht_ielen > 0) {
-			struct rtw_ieee80211_ht_cap *pht_capie;
+			struct ieee80211_ht_cap *pht_capie;
 			ht_cap = _TRUE;
-			pht_capie = (struct rtw_ieee80211_ht_cap *)(p + 2);
-			memcpy(&mcs_rate , pht_capie->supp_mcs_set, 2);
+			pht_capie = (struct ieee80211_ht_cap *)(p + 2);
+			memcpy(&mcs_rate , pht_capie->mcs.rx_mask, 2);
 			bw_40MHz = (pht_capie->cap_info & IEEE80211_HT_CAP_SUP_WIDTH_20_40) ? 1 : 0;
 			short_GI = (pht_capie->cap_info & (IEEE80211_HT_CAP_SGI_20 | IEEE80211_HT_CAP_SGI_40)) ? 1 : 0;
 		}
@@ -1093,7 +1093,7 @@ static int rtw_set_wpa_ie(_adapter *padapter, char *pie, unsigned short ielen)
 			while (cnt < ielen) {
 				eid = buf[cnt];
 
-				if ((eid == _VENDOR_SPECIFIC_IE_) && (_rtw_memcmp(&buf[cnt + 2], wps_oui, 4) == _TRUE)) {
+				if ((eid == WLAN_EID_VENDOR_SPECIFIC) && (_rtw_memcmp(&buf[cnt + 2], wps_oui, 4) == _TRUE)) {
 					RTW_INFO("SET WPS_IE\n");
 
 					padapter->securitypriv.wps_ie_len = ((buf[cnt + 1] + 2) < MAX_WPS_IE_LEN) ? (buf[cnt + 1] + 2) : MAX_WPS_IE_LEN;
@@ -1150,7 +1150,7 @@ static int rtw_wx_get_name(struct net_device *dev,
 	if (check_fwstate(pmlmepriv, _FW_LINKED | WIFI_ADHOC_MASTER_STATE) == _TRUE) {
 		/* parsing HT_CAP_IE */
 		if( is_supported_ht(padapter->registrypriv.wireless_mode)&&(padapter->registrypriv.ht_enable)) {
-			p = rtw_get_ie(&pcur_bss->IEs[12], _HT_CAPABILITY_IE_, &ht_ielen, pcur_bss->IELength - 12);
+			p = rtw_get_ie(&pcur_bss->IEs[12], WLAN_EID_HT_CAPABILITY, &ht_ielen, pcur_bss->IELength - 12);
 			if (p && ht_ielen > 0 )
 				ht_cap = _TRUE;
 		}
@@ -1725,7 +1725,7 @@ static int rtw_wx_set_wap(struct net_device *dev,
 
 	while (1) {
 
-		if ((rtw_end_of_queue_search(phead, pmlmepriv->pscanned)) == _TRUE) {
+		if (phead != pmlmepriv->pscanned) {
 #if 0
 			ret = -EINVAL;
 			goto cancel_ps_deny;
@@ -2177,7 +2177,7 @@ static int rtw_wx_get_scan(struct net_device *dev, struct iw_request_info *a,
 	plist = get_next(phead);
 
 	while (1) {
-		if (rtw_end_of_queue_search(phead, plist) == _TRUE)
+		if (phead == plist)
 			break;
 
 		if ((stop - ev) < SCAN_ITEM_SIZE) {
@@ -2317,7 +2317,7 @@ static int rtw_wx_set_essid(struct net_device *dev,
 		pmlmepriv->pscanned = get_next(phead);
 
 		while (1) {
-			if (rtw_end_of_queue_search(phead, pmlmepriv->pscanned) == _TRUE) {
+			if (phead != pmlmepriv->pscanned) {
 #if 0
 				if (check_fwstate(pmlmepriv, WIFI_ADHOC_STATE) == _TRUE) {
 					rtw_set_802_11_ssid(padapter, &ndis_ssid);
@@ -3686,7 +3686,7 @@ static int rtw_get_ap_info(struct net_device *dev,
 	plist = get_next(phead);
 
 	while (1) {
-		if (rtw_end_of_queue_search(phead, plist) == _TRUE)
+		if (phead == plist)
 			break;
 
 
@@ -4241,7 +4241,7 @@ static int rtw_p2p_get_wps_configmethod(struct net_device *dev,
 	plist = get_next(phead);
 
 	while (1) {
-		if (rtw_end_of_queue_search(phead, plist) == _TRUE)
+		if (phead == plist)
 			break;
 
 		pnetwork = LIST_CONTAINOR(plist, struct wlan_network, list);
@@ -4370,7 +4370,7 @@ static int rtw_p2p_get_go_device_address(struct net_device *dev,
 	plist = get_next(phead);
 
 	while (1) {
-		if (rtw_end_of_queue_search(phead, plist) == _TRUE)
+		if (phead == plist)
 			break;
 
 		pnetwork = LIST_CONTAINOR(plist, struct wlan_network, list);
@@ -4456,7 +4456,7 @@ static int rtw_p2p_get_device_type(struct net_device *dev,
 	plist = get_next(phead);
 
 	while (1) {
-		if (rtw_end_of_queue_search(phead, plist) == _TRUE)
+		if (phead == plist)
 			break;
 
 		pnetwork = LIST_CONTAINOR(plist, struct wlan_network, list);
@@ -4530,7 +4530,7 @@ static int rtw_p2p_get_device_name(struct net_device *dev,
 	plist = get_next(phead);
 
 	while (1) {
-		if (rtw_end_of_queue_search(phead, plist) == _TRUE)
+		if (phead == plist)
 			break;
 
 		pnetwork = LIST_CONTAINOR(plist, struct wlan_network, list);
@@ -4600,7 +4600,7 @@ static int rtw_p2p_get_invitation_procedure(struct net_device *dev,
 	plist = get_next(phead);
 
 	while (1) {
-		if (rtw_end_of_queue_search(phead, plist) == _TRUE)
+		if (phead == plist)
 			break;
 
 		pnetwork = LIST_CONTAINOR(plist, struct wlan_network, list);
@@ -4698,7 +4698,7 @@ static int rtw_p2p_connect(struct net_device *dev,
 	plist = get_next(phead);
 
 	while (1) {
-		if (rtw_end_of_queue_search(phead, plist) == _TRUE)
+		if (phead == plist)
 			break;
 
 		pnetwork = LIST_CONTAINOR(plist, struct wlan_network, list);
@@ -4843,7 +4843,7 @@ static int rtw_p2p_invite_req(struct net_device *dev,
 	plist = get_next(phead);
 
 	while (1) {
-		if (rtw_end_of_queue_search(phead, plist) == _TRUE)
+		if (phead == plist)
 			break;
 
 		pnetwork = LIST_CONTAINOR(plist, struct wlan_network, list);
@@ -5100,7 +5100,7 @@ static int rtw_p2p_set_pc(struct net_device *dev,
 	plist = get_next(phead);
 
 	while (1) {
-		if (rtw_end_of_queue_search(phead, plist) == _TRUE)
+		if (phead == plist)
 			break;
 
 		pnetwork = LIST_CONTAINOR(plist, struct wlan_network, list);
@@ -5348,7 +5348,7 @@ static int rtw_p2p_prov_disc(struct net_device *dev,
 	plist = get_next(phead);
 
 	while (1) {
-		if (rtw_end_of_queue_search(phead, plist) == _TRUE)
+		if (phead == plist)
 			break;
 
 		if (uintPeerChannel != 0)
@@ -6177,7 +6177,7 @@ static int rtw_dbg_port(struct net_device *dev,
 				phead = &(pstapriv->sta_hash[i]);
 				plist = get_next(phead);
 
-				while ((rtw_end_of_queue_search(phead, plist)) == _FALSE) {
+				while (phead != plist) {
 					psta = LIST_CONTAINOR(plist, struct sta_info, hash_list);
 
 					plist = get_next(plist);
@@ -7226,7 +7226,7 @@ static int rtw_add_sta(struct net_device *dev, struct ieee_param *param)
 			(WLAN_STA_HT & flags)) {
 			psta->htpriv.ht_option = _TRUE;
 			psta->qos_option = 1;
-			memcpy((void *)&psta->htpriv.ht_cap, (void *)&param->u.add_sta.ht_cap, sizeof(struct rtw_ieee80211_ht_cap));
+			memcpy((void *)&psta->htpriv.ht_cap, (void *)&param->u.add_sta.ht_cap, sizeof(struct ieee80211_ht_cap));
 		} else
 			psta->htpriv.ht_option = _FALSE;
 
@@ -7325,7 +7325,7 @@ static int rtw_ioctl_get_sta_data(struct net_device *dev, struct ieee_param *par
 			u32 sta_set;
 			u8 tx_supp_rates[16];
 			u32 tx_supp_rates_len;
-			struct rtw_ieee80211_ht_cap ht_cap;
+			struct ieee80211_ht_cap ht_cap;
 			u64	rx_pkts;
 			u64	rx_bytes;
 			u64	rx_drops;
@@ -7358,7 +7358,7 @@ static int rtw_ioctl_get_sta_data(struct net_device *dev, struct ieee_param *par
 		memcpy(psta_data->tx_supp_rates, psta->bssrateset, psta->bssratelen);
 #ifdef CONFIG_80211N_HT
 		if(padapter->registrypriv.ht_enable && is_supported_ht(padapter->registrypriv.wireless_mode))
-			memcpy(&psta_data->ht_cap, &psta->htpriv.ht_cap, sizeof(struct rtw_ieee80211_ht_cap));
+			memcpy(&psta_data->ht_cap, &psta->htpriv.ht_cap, sizeof(struct ieee80211_ht_cap));
 #endif /* CONFIG_80211N_HT */
 		psta_data->rx_pkts = psta->sta_stats.rx_data_pkts;
 		psta_data->rx_bytes = psta->sta_stats.rx_bytes;
@@ -7450,7 +7450,7 @@ static int rtw_set_wps_beacon(struct net_device *dev, struct ieee_param *param, 
 
 		memcpy(pmlmepriv->wps_beacon_ie, param->u.bcn_ie.buf, ie_len);
 
-		update_beacon(padapter, _VENDOR_SPECIFIC_IE_, wps_oui, _TRUE);
+		update_beacon(padapter, WLAN_EID_VENDOR_SPECIFIC, wps_oui, _TRUE);
 
 		pmlmeext->bstart_bss = _TRUE;
 
@@ -7833,7 +7833,7 @@ static int rtw_wx_set_priv(struct net_device *dev,
 		int probereq_wpsie_len = len;
 		u8 wps_oui[4] = {0x0, 0x50, 0xf2, 0x04};
 
-		if ((_VENDOR_SPECIFIC_IE_ == probereq_wpsie[0]) &&
+		if ((WLAN_EID_VENDOR_SPECIFIC == probereq_wpsie[0]) &&
 		    (_rtw_memcmp(&probereq_wpsie[2], wps_oui, 4) == _TRUE)) {
 			cp_sz = probereq_wpsie_len > MAX_WPS_IE_LEN ? MAX_WPS_IE_LEN : probereq_wpsie_len;
 
@@ -7960,7 +7960,7 @@ static int rtw_wowlan_ctrl(struct net_device *dev,
 	struct mlme_priv *pmlmepriv = &padapter->mlmepriv;
 	struct sta_info	*psta = NULL;
 	int ret = 0;
-	systime start_time = rtw_get_current_time();
+	systime start_time = jiffies;
 	poidparam.subcode = 0;
 
 	RTW_INFO("+rtw_wowlan_ctrl: %s\n", extra);
@@ -8032,7 +8032,7 @@ static int rtw_wowlan_set_pattern(struct net_device *dev,
 	struct mlme_priv *pmlmepriv = &padapter->mlmepriv;
 	struct wowlan_ioctl_param poidparam;
 	int ret = 0, len = 0, i = 0;
-	systime start_time = rtw_get_current_time();
+	systime start_time = jiffies;
 	u8 input[wrqu->data.length];
 	u8 index = 0;
 
@@ -8103,7 +8103,7 @@ static int rtw_ap_wowlan_ctrl(struct net_device *dev,
 	struct mlme_priv *pmlmepriv = &padapter->mlmepriv;
 	struct sta_info	*psta = NULL;
 	int ret = 0;
-	systime start_time = rtw_get_current_time();
+	systime start_time = jiffies;
 	poidparam.subcode = 0;
 
 	RTW_INFO("+rtw_ap_wowlan_ctrl: %s\n", extra);
@@ -11493,7 +11493,7 @@ static struct xmit_frame *createloopbackpkt(PADAPTER padapter, u32 size)
 	pattrib->ack_policy = 0;
 	/*	pattrib->pkt_hdrlen = ETH_HLEN; */
 	pattrib->hdrlen = WLAN_HDR_A3_LEN;
-	pattrib->subtype = WIFI_DATA;
+	pattrib->subtype = (IEEE80211_FTYPE_DATA | IEEE80211_STYPE_DATA);
 	pattrib->priority = 0;
 	pattrib->qsel = pattrib->priority;
 	/*	do_queue_select(padapter, pattrib); */

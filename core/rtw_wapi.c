@@ -396,7 +396,7 @@ u8 rtw_wapi_is_wai_packet(_adapter *padapter, u8 *pkt_data)
 
 	WAPI_TRACE(WAPI_TX | WAPI_RX, "%s: bFind=%d pTaddr="MAC_FMT"\n", __FUNCTION__, bFind, MAC_ARG(pTaddr));
 
-	if (pkt_data[0] == WIFI_QOS_DATA_TYPE)
+	if (pkt_data[0] == (IEEE80211_STYPE_QOS_DATA |  IEEE80211_FTYPE_DATA))
 		Offset_TypeWAI += 2;
 
 	/* 88b4? */
@@ -569,7 +569,7 @@ void rtw_build_probe_resp_wapi_ie(_adapter *padapter, unsigned char *pframe, str
 
 	WapiSetIE(padapter);
 	WapiIELength = pWapiInfo->wapiIELength;
-	pframe[0] = _WAPI_IE_;
+	pframe[0] = WLAN_EID_BSS_AC_ACCESS_DELAY;
 	pframe[1] = WapiIELength;
 	memcpy(pframe + 2, pWapiInfo->wapiIE, WapiIELength);
 	pframe += WapiIELength + 2;
@@ -591,7 +591,7 @@ void rtw_build_beacon_wapi_ie(_adapter *padapter, unsigned char *pframe, struct 
 
 	WapiSetIE(padapter);
 	WapiIELength = pWapiInfo->wapiIELength;
-	pframe[0] = _WAPI_IE_;
+	pframe[0] = WLAN_EID_BSS_AC_ACCESS_DELAY;
 	pframe[1] = WapiIELength;
 	memcpy(pframe + 2, pWapiInfo->wapiIE, WapiIELength);
 	pframe += WapiIELength + 2;
@@ -627,7 +627,7 @@ void rtw_build_assoc_req_wapi_ie(_adapter *padapter, unsigned char *pframe, stru
 	memcpy(pWapiInfo->wapiIE + WapiIELength, &bkidNum, 2);
 	WapiIELength += 2;
 
-	pframe[0] = _WAPI_IE_;
+	pframe[0] = WLAN_EID_BSS_AC_ACCESS_DELAY;
 	pframe[1] = WapiIELength;
 	memcpy(pframe + 2, pWapiInfo->wapiIE, WapiIELength);
 	pframe += WapiIELength + 2;

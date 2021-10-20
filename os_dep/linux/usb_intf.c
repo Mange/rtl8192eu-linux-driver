@@ -1122,7 +1122,7 @@ static int rtw_resume(struct usb_interface *pusb_intf)
 		}
 	}
 
-	pmlmeext->last_scan_time = rtw_get_current_time();
+	pmlmeext->last_scan_time = jiffies;
 	RTW_INFO("<========  %s return %d\n", __FUNCTION__, ret);
 
 	return ret;

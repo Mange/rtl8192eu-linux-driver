@@ -568,12 +568,12 @@ s32 rtl8192eu_xmitframe_complete(_adapter *padapter, struct xmit_priv *pxmitpriv
 
 	sta_phead = get_list_head(phwxmit->sta_queue);
 	sta_plist = get_next(sta_phead);
-	single_sta_in_queue = rtw_end_of_queue_search(sta_phead, get_next(sta_plist));
+	single_sta_in_queue = (sta_phead == get_next(sta_plist));
 
 	xmitframe_phead = get_list_head(&ptxservq->sta_pending);
 	xmitframe_plist = get_next(xmitframe_phead);
 
-	while (rtw_end_of_queue_search(xmitframe_phead, xmitframe_plist) == _FALSE) {
+	while (xmitframe_phead != xmitframe_plist) {
 		pxmitframe = LIST_CONTAINOR(xmitframe_plist, struct xmit_frame, list);
 		xmitframe_plist = get_next(xmitframe_plist);
 

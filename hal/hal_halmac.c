@@ -3150,7 +3150,7 @@ static int _cpu_sleep(struct dvobj_priv *d, u32 timeout)
 	mac = dvobj_to_halmac(d);
 	api = HALMAC_GET_API(mac);
 
-	start_t = rtw_get_current_time();
+	start_t = jiffies;
 
 	status = _enter_cpu_sleep_mode(d);
 	if (status != HALMAC_RET_SUCCESS) {
@@ -3650,7 +3650,7 @@ int rtw_halmac_txfifo_wait_empty(struct dvobj_priv *d, u32 timeout)
 
 
 	a = dvobj_get_primary_adapter(d);
-	start_time = rtw_get_current_time();
+	start_time = jiffies;
 
 	do {
 		cnt++;

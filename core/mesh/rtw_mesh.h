@@ -155,11 +155,11 @@ enum rtw_mesh_deferred_task_flags {
 #define RTW_MESH_PEER_CONF_DISABLED 0 /* special time value means no confirmation ongoing */
 #if CONFIG_RTW_MESH_PEER_BLACKLIST
 #define IS_PEER_CONF_DISABLED(plink) ((plink)->peer_conf_end_time == RTW_MESH_PEER_CONF_DISABLED)
-#define IS_PEER_CONF_TIMEOUT(plink)(!IS_PEER_CONF_DISABLED(plink) && rtw_time_after(rtw_get_current_time(), (plink)->peer_conf_end_time))
+#define IS_PEER_CONF_TIMEOUT(plink)(!IS_PEER_CONF_DISABLED(plink) && rtw_time_after(jiffies, (plink)->peer_conf_end_time))
 #define SET_PEER_CONF_DISABLED(plink) (plink)->peer_conf_end_time = RTW_MESH_PEER_CONF_DISABLED
 #define SET_PEER_CONF_END_TIME(plink, timeout_ms) \
 	do { \
-		(plink)->peer_conf_end_time = rtw_get_current_time() + rtw_ms_to_systime(timeout_ms); \
+		(plink)->peer_conf_end_time = jiffies + msecs_to_jiffies(timeout_ms); \
 		if ((plink)->peer_conf_end_time == RTW_MESH_PEER_CONF_DISABLED) \
 			(plink)->peer_conf_end_time++; \
 	} while (0)
@@ -173,11 +173,11 @@ enum rtw_mesh_deferred_task_flags {
 #define RTW_MESH_CTO_MGATE_CONF_DISABLED 0 /* special time value means no confirmation ongoing */
 #if CONFIG_RTW_MESH_CTO_MGATE_BLACKLIST
 #define IS_CTO_MGATE_CONF_DISABLED(plink) ((plink)->cto_mgate_conf_end_time == RTW_MESH_CTO_MGATE_CONF_DISABLED)
-#define IS_CTO_MGATE_CONF_TIMEOUT(plink)(!IS_CTO_MGATE_CONF_DISABLED(plink) && rtw_time_after(rtw_get_current_time(), (plink)->cto_mgate_conf_end_time))
+#define IS_CTO_MGATE_CONF_TIMEOUT(plink)(!IS_CTO_MGATE_CONF_DISABLED(plink) && rtw_time_after(jiffies, (plink)->cto_mgate_conf_end_time))
 #define SET_CTO_MGATE_CONF_DISABLED(plink) (plink)->cto_mgate_conf_end_time = RTW_MESH_CTO_MGATE_CONF_DISABLED
 #define SET_CTO_MGATE_CONF_END_TIME(plink, timeout_ms) \
 	do { \
-		(plink)->cto_mgate_conf_end_time = rtw_get_current_time() + rtw_ms_to_systime(timeout_ms); \
+		(plink)->cto_mgate_conf_end_time = jiffies + msecs_to_jiffies(timeout_ms); \
 		if ((plink)->cto_mgate_conf_end_time == RTW_MESH_CTO_MGATE_CONF_DISABLED) \
 			(plink)->cto_mgate_conf_end_time++; \
 	} while (0)

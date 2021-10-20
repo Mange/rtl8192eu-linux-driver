@@ -76,7 +76,7 @@ s32 InitLLTTable8192E(PADAPTER padapter, u8 txpktbuf_bndy)
 	value32 = rtw_read32(padapter, REG_AUTO_LLT);
 
 	rtw_write32(padapter, REG_AUTO_LLT, value32 | BIT_AUTO_INIT_LLT);
-	start = rtw_get_current_time();
+	start = jiffies;
 	while (((value32 = rtw_read32(padapter, REG_AUTO_LLT)) & BIT_AUTO_INIT_LLT)
 	       && ((passing_time = rtw_get_passing_time_ms(start)) < 1000)
 	      )
@@ -367,7 +367,7 @@ static s32 polling_fwdl_chksum(_adapter *adapter, u32 min_cnt, u32 timeout_ms)
 {
 	s32 ret = _FAIL;
 	u32 value32;
-	systime start = rtw_get_current_time();
+	systime start = jiffies;
 	u32 cnt = 0;
 
 	/* polling CheckSum report */
@@ -398,7 +398,7 @@ static s32 _FWFreeToGo8192E(_adapter *adapter, u32 min_cnt, u32 timeout_ms)
 {
 	s32 ret = _FAIL;
 	u32	value32;
-	systime start = rtw_get_current_time();
+	systime start = jiffies;
 	u32 cnt = 0;
 
 	value32 = rtw_read32(adapter, REG_MCUFWDL);
@@ -554,7 +554,7 @@ FirmwareDownload8192E(
 	}
 
 	_FWDownloadEnable_8192E(Adapter, _TRUE);
-	fwdl_start_time = rtw_get_current_time();
+	fwdl_start_time = jiffies;
 	while (!RTW_CANNOT_IO(Adapter)
 	       && (write_fw++ < 3 || rtw_get_passing_time_ms(fwdl_start_time) < 500)) {
 		/* reset FWDL chksum */
@@ -3963,7 +3963,7 @@ u8 SetHwReg8192E(PADAPTER Adapter, u8 variable, u8 *val)
 			u16 val16;
 			u32 reg_200 = 0, reg_204 = 0, reg_214 = 0;
 			u32 init_reg_200 = 0, init_reg_204 = 0, init_reg_214 = 0;
-			systime start = rtw_get_current_time();
+			systime start = jiffies;
 			u32 pass_ms;
 			int i = 0;
 
@@ -4509,7 +4509,7 @@ GetHalDefVar8192E(
 		*((u32 *)pValue) = 8;
 		break;
 	case HW_VAR_BEST_AMPDU_DENSITY:
-		*((u32 *)pValue) = AMPDU_DENSITY_VALUE_7;
+		*((u32 *)pValue) = IEEE80211_HT_MPDU_DENSITY_16;
 		break;
 	default:
 		bResult = GetHalDefVar(Adapter, eVariable, pValue);

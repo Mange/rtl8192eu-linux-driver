@@ -392,7 +392,7 @@ void rtw_rfctl_deinit(_adapter *adapter);
 
 #ifdef CONFIG_DFS_MASTER
 struct rf_ctl_t;
-#define CH_IS_NON_OCP(rt_ch_info) (rtw_time_after((rt_ch_info)->non_ocp_end_time, rtw_get_current_time()))
+#define CH_IS_NON_OCP(rt_ch_info) (rtw_time_after((rt_ch_info)->non_ocp_end_time, jiffies))
 bool rtw_is_cac_reset_needed(struct rf_ctl_t *rfctl, u8 ch, u8 bw, u8 offset);
 bool _rtw_rfctl_overlap_radar_detect_ch(struct rf_ctl_t *rfctl, u8 ch, u8 bw, u8 offset);
 bool rtw_rfctl_overlap_radar_detect_ch(struct rf_ctl_t *rfctl);

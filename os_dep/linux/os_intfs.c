@@ -3485,8 +3485,8 @@ netdev_open_normal_process:
 #endif
 
 #ifdef CONFIG_RTW_CFGVEDNOR_LLSTATS
-	pwrctrlpriv->radio_on_start_time = rtw_get_current_time();
-	pwrctrlpriv->pwr_saving_start_time = rtw_get_current_time();
+	pwrctrlpriv->radio_on_start_time = jiffies;
+	pwrctrlpriv->pwr_saving_start_time = jiffies;
 	pwrctrlpriv->pwr_saving_time = 0;
 	pwrctrlpriv->on_time = 0;
 	pwrctrlpriv->tx_time = 0;
@@ -3607,7 +3607,7 @@ int rtw_ips_pwr_up(_adapter *padapter)
 	struct sreset_priv *psrtpriv = &pHalData->srestpriv;
 #endif/* #ifdef DBG_CONFIG_ERROR_DETECT */
 #endif /* defined(CONFIG_SWLPS_IN_IPS) || defined(CONFIG_FWLPS_IN_IPS) */
-	systime start_time = rtw_get_current_time();
+	systime start_time = jiffies;
 	RTW_INFO("===>  rtw_ips_pwr_up..............\n");
 
 #if defined(CONFIG_SWLPS_IN_IPS) || defined(CONFIG_FWLPS_IN_IPS)
@@ -3628,7 +3628,7 @@ int rtw_ips_pwr_up(_adapter *padapter)
 
 void rtw_ips_pwr_down(_adapter *padapter)
 {
-	systime start_time = rtw_get_current_time();
+	systime start_time = jiffies;
 	RTW_INFO("===> rtw_ips_pwr_down...................\n");
 
 	padapter->net_closed = _TRUE;
@@ -4629,7 +4629,7 @@ int rtw_suspend_common(_adapter *padapter)
 #endif
 
 	int ret = 0;
-	systime start_time = rtw_get_current_time();
+	systime start_time = jiffies;
 
 	RTW_PRINT(" suspend start\n");
 	RTW_INFO("==> %s (%s:%d)\n", __FUNCTION__, current->comm, current->pid);
@@ -5096,7 +5096,7 @@ exit:
 int rtw_resume_common(_adapter *padapter)
 {
 	int ret = 0;
-	systime start_time = rtw_get_current_time();
+	systime start_time = jiffies;
 	struct pwrctrl_priv *pwrpriv = adapter_to_pwrctl(padapter);
 
 	if (pwrpriv->bInSuspend == _FALSE)

@@ -43,7 +43,7 @@ inline void rtw_st_ctl_clear_tracker_q(struct st_ctl_t *st_ctl)
 	_enter_critical_bh(&st_ctl->tracker_q.lock, &irqL);
 	phead = &st_ctl->tracker_q.queue;
 	plist = get_next(phead);
-	while (rtw_end_of_queue_search(phead, plist) == _FALSE) {
+	while (phead != plist) {
 		st = LIST_CONTAINOR(plist, struct session_tracker, list);
 		plist = get_next(plist);
 		rtw_list_delete(&st->list);
@@ -180,7 +180,7 @@ void dump_st_ctl(void *sel, struct st_ctl_t *st_ctl)
 	_enter_critical_bh(&st_ctl->tracker_q.lock, &irqL);
 	phead = &st_ctl->tracker_q.queue;
 	plist = get_next(phead);
-	while (rtw_end_of_queue_search(phead, plist) == _FALSE) {
+	while (phead != plist) {
 		st = LIST_CONTAINOR(plist, struct session_tracker, list);
 		plist = get_next(plist);
 
@@ -358,7 +358,7 @@ void rtw_mfree_all_stainfo(struct sta_priv *pstapriv)
 	phead = get_list_head(&pstapriv->free_sta_queue);
 	plist = get_next(phead);
 
-	while ((rtw_end_of_queue_search(phead, plist)) == _FALSE) {
+	while (phead != plist) {
 		psta = LIST_CONTAINOR(plist, struct sta_info , list);
 		plist = get_next(plist);
 	}
@@ -391,7 +391,7 @@ u32	_rtw_free_sta_priv(struct	sta_priv *pstapriv)
 			phead = &(pstapriv->sta_hash[index]);
 			plist = get_next(phead);
 
-			while ((rtw_end_of_queue_search(phead, plist)) == _FALSE) {
+			while (phead != plist) {
 				int i;
 				psta = LIST_CONTAINOR(plist, struct sta_info , hash_list);
 				plist = get_next(plist);
@@ -803,7 +803,7 @@ void rtw_free_all_stainfo(_adapter *padapter)
 		phead = &(pstapriv->sta_hash[index]);
 		plist = get_next(phead);
 
-		while ((rtw_end_of_queue_search(phead, plist)) == _FALSE) {
+		while (phead != plist) {
 			psta = LIST_CONTAINOR(plist, struct sta_info , hash_list);
 
 			plist = get_next(plist);
@@ -865,7 +865,7 @@ struct sta_info *rtw_get_stainfo(struct sta_priv *pstapriv, const u8 *hwaddr)
 	plist = get_next(phead);
 
 
-	while ((rtw_end_of_queue_search(phead, plist)) == _FALSE) {
+	while (phead != plist) {
 
 		psta = LIST_CONTAINOR(plist, struct sta_info, hash_list);
 
@@ -1026,7 +1026,7 @@ u8 _rtw_access_ctrl(_adapter *adapter, u8 period, const u8 *mac_addr)
 	_enter_critical_bh(&(acl_node_q->lock), &irqL);
 	head = get_list_head(acl_node_q);
 	list = get_next(head);
-	while (rtw_end_of_queue_search(head, list) == _FALSE) {
+	while (head != list) {
 		acl_node = LIST_CONTAINOR(list, struct rtw_wlan_acl_node, list);
 		list = get_next(list);
 

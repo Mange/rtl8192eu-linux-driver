@@ -71,154 +71,40 @@
 #pragma pack(1)
 #endif
 
-enum WIFI_FRAME_TYPE {
-	WIFI_MGT_TYPE  =	(0),
-	WIFI_CTRL_TYPE =	(BIT(2)),
-	WIFI_DATA_TYPE =	(BIT(3)),
-	WIFI_QOS_DATA_TYPE	= (BIT(7) | BIT(3)),	/* !< QoS Data	 */
-};
-
-enum WIFI_FRAME_SUBTYPE {
-
-	/* below is for mgt frame */
-	WIFI_ASSOCREQ       = (0 | WIFI_MGT_TYPE),
-	WIFI_ASSOCRSP       = (BIT(4) | WIFI_MGT_TYPE),
-	WIFI_REASSOCREQ     = (BIT(5) | WIFI_MGT_TYPE),
-	WIFI_REASSOCRSP     = (BIT(5) | BIT(4) | WIFI_MGT_TYPE),
-	WIFI_PROBEREQ       = (BIT(6) | WIFI_MGT_TYPE),
-	WIFI_PROBERSP       = (BIT(6) | BIT(4) | WIFI_MGT_TYPE),
-	WIFI_BEACON         = (BIT(7) | WIFI_MGT_TYPE),
-	WIFI_ATIM           = (BIT(7) | BIT(4) | WIFI_MGT_TYPE),
-	WIFI_DISASSOC       = (BIT(7) | BIT(5) | WIFI_MGT_TYPE),
-	WIFI_AUTH           = (BIT(7) | BIT(5) | BIT(4) | WIFI_MGT_TYPE),
-	WIFI_DEAUTH         = (BIT(7) | BIT(6) | WIFI_MGT_TYPE),
-	WIFI_ACTION         = (BIT(7) | BIT(6) | BIT(4) | WIFI_MGT_TYPE),
-	WIFI_ACTION_NOACK = (BIT(7) | BIT(6) | BIT(5) | WIFI_MGT_TYPE),
-
-	/* below is for control frame */
-	WIFI_BF_REPORT_POLL = (BIT(6) | WIFI_CTRL_TYPE),
-	WIFI_NDPA         = (BIT(6) | BIT(4) | WIFI_CTRL_TYPE),
-	WIFI_BAR            = (BIT(7) | WIFI_CTRL_TYPE),
-	WIFI_PSPOLL         = (BIT(7) | BIT(5) | WIFI_CTRL_TYPE),
-	WIFI_RTS            = (BIT(7) | BIT(5) | BIT(4) | WIFI_CTRL_TYPE),
-	WIFI_CTS            = (BIT(7) | BIT(6) | WIFI_CTRL_TYPE),
-	WIFI_ACK            = (BIT(7) | BIT(6) | BIT(4) | WIFI_CTRL_TYPE),
-	WIFI_CFEND          = (BIT(7) | BIT(6) | BIT(5) | WIFI_CTRL_TYPE),
-	WIFI_CFEND_CFACK    = (BIT(7) | BIT(6) | BIT(5) | BIT(4) | WIFI_CTRL_TYPE),
-
-	/* below is for data frame */
-	WIFI_DATA           = (0 | WIFI_DATA_TYPE),
-	WIFI_DATA_CFACK     = (BIT(4) | WIFI_DATA_TYPE),
-	WIFI_DATA_CFPOLL    = (BIT(5) | WIFI_DATA_TYPE),
-	WIFI_DATA_CFACKPOLL = (BIT(5) | BIT(4) | WIFI_DATA_TYPE),
-	WIFI_DATA_NULL      = (BIT(6) | WIFI_DATA_TYPE),
-	WIFI_CF_ACK         = (BIT(6) | BIT(4) | WIFI_DATA_TYPE),
-	WIFI_CF_POLL        = (BIT(6) | BIT(5) | WIFI_DATA_TYPE),
-	WIFI_CF_ACKPOLL     = (BIT(6) | BIT(5) | BIT(4) | WIFI_DATA_TYPE),
-	WIFI_QOS_DATA_NULL	= (BIT(6) | WIFI_QOS_DATA_TYPE),
-};
-
-enum WIFI_REASON_CODE	{
-	_RSON_RESERVED_					= 0,
-	_RSON_UNSPECIFIED_				= 1,
-	_RSON_AUTH_NO_LONGER_VALID_		= 2,
-	_RSON_DEAUTH_STA_LEAVING_		= 3,
-	_RSON_INACTIVITY_				= 4,
-	_RSON_UNABLE_HANDLE_			= 5,
-	_RSON_CLS2_						= 6,
-	_RSON_CLS3_						= 7,
-	_RSON_DISAOC_STA_LEAVING_		= 8,
-	_RSON_ASOC_NOT_AUTH_			= 9,
-
-	/* WPA reason */
-	_RSON_INVALID_IE_				= 13,
-	_RSON_MIC_FAILURE_				= 14,
-	_RSON_4WAY_HNDSHK_TIMEOUT_		= 15,
-	_RSON_GROUP_KEY_UPDATE_TIMEOUT_	= 16,
-	_RSON_DIFF_IE_					= 17,
-	_RSON_MLTCST_CIPHER_NOT_VALID_	= 18,
-	_RSON_UNICST_CIPHER_NOT_VALID_	= 19,
-	_RSON_AKMP_NOT_VALID_			= 20,
-	_RSON_UNSUPPORT_RSNE_VER_		= 21,
-	_RSON_INVALID_RSNE_CAP_			= 22,
-	_RSON_IEEE_802DOT1X_AUTH_FAIL_	= 23,
-
-	/* belowing are Realtek definition */
-	_RSON_PMK_NOT_AVAILABLE_		= 24,
-	_RSON_TDLS_TEAR_TOOFAR_			= 25,
-	_RSON_TDLS_TEAR_UN_RSN_			= 26,
-};
+/*ieee80211 management */
+#define WIFI_ACTION_NOACK (BIT(7) | BIT(6) | BIT(5) | IEEE80211_FTYPE_MGMT)
+/* below is for control frame */
+#define WIFI_NDPA (BIT(6) | BIT(4) | IEEE80211_FTYPE_CTL)
 
 /* Reason codes (IEEE 802.11-2007, 7.3.1.7, Table 7-22) */
-
-enum WIFI_STATUS_CODE {
-	_STATS_SUCCESSFUL_			= 0,
-	_STATS_FAILURE_				= 1,
-	_STATS_SEC_DISABLED_		= 5,
-	_STATS_NOT_IN_SAME_BSS_		= 7,
-	_STATS_CAP_FAIL_			= 10,
-	_STATS_NO_ASOC_				= 11,
-	_STATS_OTHER_				= 12,
-	_STATS_NO_SUPP_ALG_			= 13,
-	_STATS_OUT_OF_AUTH_SEQ_		= 14,
-	_STATS_CHALLENGE_FAIL_		= 15,
-	_STATS_AUTH_TIMEOUT_		= 16,
-	_STATS_UNABLE_HANDLE_STA_	= 17,
-	_STATS_RATE_FAIL_			= 18,
-	_STATS_REFUSED_TEMPORARILY_ = 30,
-	_STATS_DECLINE_REQ_			= 37,
-	_STATS_INVALID_PARAMETERS_	= 38,
-	_STATS_INVALID_RSNIE_		= 72,
+enum {
+	_STATS_REFUSED_TEMPORARILY_ = 30, /* Code-22-65535 reserved */
 };
-
 /* IEEE 802.11r */
 #define WLAN_STATUS_INVALID_PMKID 53
 
-enum WIFI_REG_DOMAIN {
-	DOMAIN_FCC		= 1,
-	DOMAIN_IC		= 2,
-	DOMAIN_ETSI		= 3,
-	DOMAIN_SPAIN	= 4,
-	DOMAIN_FRANCE	= 5,
-	DOMAIN_MKK		= 6,
-	DOMAIN_ISRAEL	= 7,
-	DOMAIN_MKK1		= 8,
-	DOMAIN_MKK2		= 9,
-	DOMAIN_MKK3		= 10,
-	DOMAIN_MAX
-};
-
-#define _TO_DS_		BIT(8)
-#define _FROM_DS_	BIT(9)
-#define _MORE_FRAG_	BIT(10)
-#define _RETRY_		BIT(11)
-#define _PWRMGT_	BIT(12)
-#define _MORE_DATA_	BIT(13)
-#define _PRIVACY_	BIT(14)
-#define _ORDER_			BIT(15)
-
 #define SetToDs(pbuf)	\
 	do	{	\
-		*(unsigned short *)(pbuf) |= cpu_to_le16(_TO_DS_); \
+		*(unsigned short *)(pbuf) |= cpu_to_le16(IEEE80211_FCTL_TODS); \
 	} while (0)
 
-#define GetToDs(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(_TO_DS_)) != 0)
+#define GetToDs(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(IEEE80211_FCTL_TODS)) != 0)
 
 #define ClearToDs(pbuf)	\
 	do	{	\
-		*(unsigned short *)(pbuf) &= (~cpu_to_le16(_TO_DS_)); \
+		*(unsigned short *)(pbuf) &= (~cpu_to_le16(IEEE80211_FCTL_TODS)); \
 	} while (0)
 
 #define SetFrDs(pbuf)	\
 	do	{	\
-		*(unsigned short *)(pbuf) |= cpu_to_le16(_FROM_DS_); \
+		*(unsigned short *)(pbuf) |= cpu_to_le16(IEEE80211_FCTL_FROMDS); \
 	} while (0)
 
-#define GetFrDs(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(_FROM_DS_)) != 0)
+#define GetFrDs(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(IEEE80211_FCTL_FROMDS)) != 0)
 
 #define ClearFrDs(pbuf)	\
 	do	{	\
-		*(unsigned short *)(pbuf) &= (~cpu_to_le16(_FROM_DS_)); \
+		*(unsigned short *)(pbuf) &= (~cpu_to_le16(IEEE80211_FCTL_FROMDS)); \
 	} while (0)
 
 #define get_tofr_ds(pframe)	((GetToDs(pframe) << 1) | GetFrDs(pframe))
@@ -226,66 +112,61 @@ enum WIFI_REG_DOMAIN {
 
 #define SetMFrag(pbuf)	\
 	do	{	\
-		*(unsigned short *)(pbuf) |= cpu_to_le16(_MORE_FRAG_); \
+		*(unsigned short *)(pbuf) |= cpu_to_le16(IEEE80211_FCTL_MOREFRAGS); \
 	} while (0)
 
-#define GetMFrag(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(_MORE_FRAG_)) != 0)
+#define GetMFrag(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(IEEE80211_FCTL_MOREFRAGS)) != 0)
 
 #define ClearMFrag(pbuf)	\
 	do	{	\
-		*(unsigned short *)(pbuf) &= (~cpu_to_le16(_MORE_FRAG_)); \
+		*(unsigned short *)(pbuf) &= (~cpu_to_le16(IEEE80211_FCTL_MOREFRAGS)); \
 	} while (0)
 
-#define SetRetry(pbuf)	\
-	do	{	\
-		*(unsigned short *)(pbuf) |= cpu_to_le16(_RETRY_); \
-	} while (0)
-
-#define GetRetry(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(_RETRY_)) != 0)
+#define GetRetry(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(IEEE80211_FCTL_RETRY)) != 0)
 
 #define ClearRetry(pbuf)	\
 	do	{	\
-		*(unsigned short *)(pbuf) &= (~cpu_to_le16(_RETRY_)); \
+		*(unsigned short *)(pbuf) &= (~cpu_to_le16(IEEE80211_FCTL_RETRY)); \
 	} while (0)
 
 #define SetPwrMgt(pbuf)	\
 	do	{	\
-		*(unsigned short *)(pbuf) |= cpu_to_le16(_PWRMGT_); \
+		*(unsigned short *)(pbuf) |= cpu_to_le16(IEEE80211_FCTL_PM); \
 	} while (0)
 
-#define GetPwrMgt(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(_PWRMGT_)) != 0)
+#define GetPwrMgt(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(IEEE80211_FCTL_PM)) != 0)
 
 #define ClearPwrMgt(pbuf)	\
 	do	{	\
-		*(unsigned short *)(pbuf) &= (~cpu_to_le16(_PWRMGT_)); \
+		*(unsigned short *)(pbuf) &= (~cpu_to_le16(IEEE80211_FCTL_PM)); \
 	} while (0)
 
 #define SetMData(pbuf)	\
 	do	{	\
-		*(unsigned short *)(pbuf) |= cpu_to_le16(_MORE_DATA_); \
+		*(unsigned short *)(pbuf) |= cpu_to_le16(IEEE80211_FCTL_MOREDATA); \
 	} while (0)
 
-#define GetMData(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(_MORE_DATA_)) != 0)
+#define GetMData(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(IEEE80211_FCTL_MOREDATA)) != 0)
 
 #define ClearMData(pbuf)	\
 	do	{	\
-		*(unsigned short *)(pbuf) &= (~cpu_to_le16(_MORE_DATA_)); \
+		*(unsigned short *)(pbuf) &= (~cpu_to_le16(IEEE80211_FCTL_MOREDATA)); \
 	} while (0)
 
 #define SetPrivacy(pbuf)	\
 	do	{	\
-		*(unsigned short *)(pbuf) |= cpu_to_le16(_PRIVACY_); \
+		*(unsigned short *)(pbuf) |= cpu_to_le16(IEEE80211_FCTL_PROTECTED); \
 	} while (0)
 
-#define GetPrivacy(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(_PRIVACY_)) != 0)
+#define GetPrivacy(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(IEEE80211_FCTL_PROTECTED)) != 0)
 
 #define ClearPrivacy(pbuf)	\
 	do	{	\
-		*(unsigned short *)(pbuf) &= (~cpu_to_le16(_PRIVACY_)); \
+		*(unsigned short *)(pbuf) &= (~cpu_to_le16(IEEE80211_FCTL_PROTECTED)); \
 	} while (0)
 
 
-#define GetOrder(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(_ORDER_)) != 0)
+#define GetOrder(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(IEEE80211_FCTL_ORDER)) != 0)
 
 #define GetFrameType(pbuf)	(le16_to_cpu(*(unsigned short *)(pbuf)) & (BIT(3) | BIT(2)))
 
@@ -378,54 +259,6 @@ __inline static unsigned char *get_ta(unsigned char *pframe)
 }
 
 /* can't apply to mesh mode */
-__inline static unsigned char *get_da(unsigned char *pframe)
-{
-	unsigned char	*da;
-	unsigned int	to_fr_ds	= (GetToDs(pframe) << 1) | GetFrDs(pframe);
-
-	switch (to_fr_ds) {
-	case 0x00:	/* ToDs=0, FromDs=0 */
-		da = GetAddr1Ptr(pframe);
-		break;
-	case 0x01:	/* ToDs=0, FromDs=1 */
-		da = GetAddr1Ptr(pframe);
-		break;
-	case 0x02:	/* ToDs=1, FromDs=0 */
-		da = GetAddr3Ptr(pframe);
-		break;
-	default:	/* ToDs=1, FromDs=1 */
-		da = GetAddr3Ptr(pframe);
-		break;
-	}
-
-	return da;
-}
-
-/* can't apply to mesh mode */
-__inline static unsigned char *get_sa(unsigned char *pframe)
-{
-	unsigned char	*sa;
-	unsigned int	to_fr_ds	= (GetToDs(pframe) << 1) | GetFrDs(pframe);
-
-	switch (to_fr_ds) {
-	case 0x00:	/* ToDs=0, FromDs=0 */
-		sa = get_addr2_ptr(pframe);
-		break;
-	case 0x01:	/* ToDs=0, FromDs=1 */
-		sa = GetAddr3Ptr(pframe);
-		break;
-	case 0x02:	/* ToDs=1, FromDs=0 */
-		sa = get_addr2_ptr(pframe);
-		break;
-	default:	/* ToDs=1, FromDs=1 */
-		sa = GetAddr4Ptr(pframe);
-		break;
-	}
-
-	return sa;
-}
-
-/* can't apply to mesh mode */
 __inline static unsigned char *get_hdr_bssid(unsigned char *pframe)
 {
 	unsigned char	*sa = NULL;
@@ -452,21 +285,21 @@ __inline static unsigned char *get_hdr_bssid(unsigned char *pframe)
 
 __inline static int IsFrameTypeCtrl(unsigned char *pframe)
 {
-	if (WIFI_CTRL_TYPE == GetFrameType(pframe))
+	if (IEEE80211_FTYPE_CTL == GetFrameType(pframe))
 		return _TRUE;
 	else
 		return _FALSE;
 }
 static inline int IsFrameTypeMgnt(unsigned char *pframe)
 {
-	if (GetFrameType(pframe) == WIFI_MGT_TYPE)
+	if (GetFrameType(pframe) == IEEE80211_FTYPE_MGMT)
 		return _TRUE;
 	else
 		return _FALSE;
 }
 static inline int IsFrameTypeData(unsigned char *pframe)
 {
-	if (GetFrameType(pframe) == WIFI_DATA_TYPE)
+	if (GetFrameType(pframe) == IEEE80211_FTYPE_DATA)
 		return _TRUE;
 	else
 		return _FALSE;
@@ -500,47 +333,6 @@ static inline int IsFrameTypeData(unsigned char *pframe)
 #define _PUBLIC_ACTION_IE_OFFSET_	8
 
 #define _FIXED_IE_LENGTH_			_BEACON_IE_OFFSET_
-
-#define _SSID_IE_				0
-#define _SUPPORTEDRATES_IE_	1
-#define _DSSET_IE_				3
-#define _TIM_IE_					5
-#define _IBSS_PARA_IE_			6
-#define _COUNTRY_IE_			7
-#define _CHLGETXT_IE_			16
-#define _SUPPORTED_CH_IE_		36
-#define _CH_SWTICH_ANNOUNCE_	37	/* Secondary Channel Offset */
-#define	_MEAS_REQ_IE_		38
-#define	_MEAS_RSP_IE_		39
-#define _RSN_IE_2_				48
-#define _SSN_IE_1_					221
-#define _ERPINFO_IE_			42
-#define _EXT_SUPPORTEDRATES_IE_	50
-
-#define _HT_CAPABILITY_IE_			45
-#define _MDIE_					54
-#define _FTIE_					55
-#define _TIMEOUT_ITVL_IE_			56
-#define _SRC_IE_				59
-#define _HT_EXTRA_INFO_IE_			61
-#define _HT_ADD_INFO_IE_			61 /* _HT_EXTRA_INFO_IE_ */
-#define _WAPI_IE_				68
-#define _EID_RRM_EN_CAP_IE_			70
-
-
-/* #define EID_BSSCoexistence			72 */ /* 20/40 BSS Coexistence
- * #define EID_BSSIntolerantChlReport	73 */
-#define _RIC_Descriptor_IE_			75
-#ifdef CONFIG_IEEE80211W
-#define _MME_IE_					76 /* 802.11w Management MIC element */
-#endif /* CONFIG_IEEE80211W */
-#define _LINK_ID_IE_					101
-#define _CH_SWITCH_TIMING_		104
-#define _PTI_BUFFER_STATUS_		106
-#define _EXT_CAP_IE_				127
-#define _VENDOR_SPECIFIC_IE_		221
-
-#define	_RESERVED47_				47
 
 typedef	enum _ELEMENT_ID {
 	EID_SsId					= 0, /* service set identifier (0:32) */
@@ -685,50 +477,17 @@ typedef	enum _ELEMENT_ID {
 
 #define set_order_bit(pbuf)	\
 		do	{	\
-			*(unsigned short *)(pbuf) |= cpu_to_le16(_ORDER_); \
+			*(unsigned short *)(pbuf) |= cpu_to_le16(IEEE80211_FCTL_ORDER); \
 		} while (0)
 
 
 
-#define GetOrderBit(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(_ORDER_)) != 0)
+#define GetOrderBit(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(IEEE80211_FCTL_ORDER)) != 0)
 
 #define ACT_CAT_VENDOR				0x7F/* 127 */
 
 /**
- * struct rtw_ieee80211_bar - HT Block Ack Request
- *
- * This structure refers to "HT BlockAckReq" as
- * described in 802.11n draft section 7.2.1.7.1
- */
-#if defined(PLATFORM_LINUX) || defined(CONFIG_RTL8712FW)
-struct rtw_ieee80211_bar {
-	unsigned short frame_control;
-	unsigned short duration;
-	unsigned char ra[6];
-	unsigned char ta[6];
-	unsigned short control;
-	unsigned short start_seq_num;
-} __attribute__((packed));
-#endif
-
-/**
-* struct rtw_ieee80211_ht_cap - HT capabilities
-*
-* This structure refers to "HT capabilities element" as
-* described in 802.11n draft section 7.3.2.52
-*/
-
-struct rtw_ieee80211_ht_cap {
-	unsigned short	cap_info;
-	unsigned char	ampdu_params_info;
-	unsigned char	supp_mcs_set[16];
-	unsigned short	extended_ht_cap_info;
-	unsigned int		tx_BF_cap_info;
-	unsigned char	       antenna_selection_info;
-} __attribute__((packed));
-
-/**
- * struct rtw_ieee80211_ht_cap - HT additional information
+ * struct ieee80211_ht_cap - HT additional information
  *
  * This structure refers to "HT information element" as
  * described in 802.11n draft section 7.3.2.53
@@ -782,31 +541,7 @@ struct ADDBA_request {
 	unsigned short	BA_starting_seqctrl;
 }  __attribute__((packed));
 
-typedef enum _HT_CAP_AMPDU_FACTOR {
-	MAX_AMPDU_FACTOR_8K		= 0,
-	MAX_AMPDU_FACTOR_16K	= 1,
-	MAX_AMPDU_FACTOR_32K	= 2,
-	MAX_AMPDU_FACTOR_64K	= 3,
-} HT_CAP_AMPDU_FACTOR;
 
-typedef enum _VHT_CAP_AMPDU_FACTOR {
-	MAX_AMPDU_FACTOR_128K = 4,
-	MAX_AMPDU_FACTOR_256K = 5,
-	MAX_AMPDU_FACTOR_512K = 6,
-	MAX_AMPDU_FACTOR_1M = 7,
-} VHT_CAP_AMPDU_FACTOR;
-
-
-typedef enum _HT_CAP_AMPDU_DENSITY {
-	AMPDU_DENSITY_VALUE_0 = 0 , /* For no restriction */
-	AMPDU_DENSITY_VALUE_1 = 1 , /* For 1/4 us */
-	AMPDU_DENSITY_VALUE_2 = 2 , /* For 1/2 us */
-	AMPDU_DENSITY_VALUE_3 = 3 , /* For 1 us */
-	AMPDU_DENSITY_VALUE_4 = 4 , /* For 2 us */
-	AMPDU_DENSITY_VALUE_5 = 5 , /* For 4 us */
-	AMPDU_DENSITY_VALUE_6 = 6 , /* For 8 us */
-	AMPDU_DENSITY_VALUE_7 = 7 , /* For 16 us */
-} HT_CAP_AMPDU_DENSITY;
 
 /* 802.11n HT capabilities masks */
 #define IEEE80211_HT_CAP_RX_STBC_1R 0x0100
@@ -822,41 +557,8 @@ typedef enum _HT_CAP_AMPDU_DENSITY {
     #define IEEE80211_MAX_AMPDU_BUF 0x40
 #endif
 
-/* Spatial Multiplexing Power Save Modes */
-#define WLAN_HT_CAP_SM_PS_STATIC		0
-#define WLAN_HT_CAP_SM_PS_DYNAMIC	1
-#define WLAN_HT_CAP_SM_PS_INVALID	2
-#define WLAN_HT_CAP_SM_PS_DISABLED	3
-
-
-#define OP_MODE_PURE                    0
-#define OP_MODE_MAY_BE_LEGACY_STAS      1
-#define OP_MODE_20MHZ_HT_STA_ASSOCED    2
-#define OP_MODE_MIXED                   3
-
-#define HT_INFO_HT_PARAM_SECONDARY_CHNL_OFF_MASK	((u8) BIT(0) | BIT(1))
-#define HT_INFO_HT_PARAM_SECONDARY_CHNL_ABOVE		((u8) BIT(0))
-#define HT_INFO_HT_PARAM_SECONDARY_CHNL_BELOW		((u8) BIT(0) | BIT(1))
-#define HT_INFO_HT_PARAM_REC_TRANS_CHNL_WIDTH		((u8) BIT(2))
-#define HT_INFO_HT_PARAM_RIFS_MODE			((u8) BIT(3))
-#define HT_INFO_HT_PARAM_CTRL_ACCESS_ONLY		((u8) BIT(4))
-#define HT_INFO_HT_PARAM_SRV_INTERVAL_GRANULARITY	((u8) BIT(5))
-
 #define HT_INFO_OPERATION_MODE_OP_MODE_MASK	\
 	((u16) (0x0001 | 0x0002))
-#define HT_INFO_OPERATION_MODE_OP_MODE_OFFSET		0
-#define HT_INFO_OPERATION_MODE_NON_GF_DEVS_PRESENT	((u8) BIT(2))
-#define HT_INFO_OPERATION_MODE_TRANSMIT_BURST_LIMIT	((u8) BIT(3))
-#define HT_INFO_OPERATION_MODE_NON_HT_STA_PRESENT	((u8) BIT(4))
-
-#define HT_INFO_STBC_PARAM_DUAL_BEACON			((u16) BIT(6))
-#define HT_INFO_STBC_PARAM_DUAL_STBC_PROTECT		((u16) BIT(7))
-#define HT_INFO_STBC_PARAM_SECONDARY_BCN		((u16) BIT(8))
-#define HT_INFO_STBC_PARAM_LSIG_TXOP_PROTECT_ALLOWED	((u16) BIT(9))
-#define HT_INFO_STBC_PARAM_PCO_ACTIVE			((u16) BIT(10))
-#define HT_INFO_STBC_PARAM_PCO_PHASE			((u16) BIT(11))
-
-
 
 /* #endif */
 

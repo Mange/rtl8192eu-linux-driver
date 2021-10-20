@@ -733,7 +733,7 @@ u16 rtw_get_cur_max_rate(_adapter *adapter)
 		max_rate = rtw_mcs_rate(rf_type
 			, (psta->cmn.bw_mode == CHANNEL_WIDTH_40) ? 1 : 0
 			, short_GI
-			, psta->htpriv.ht_cap.supp_mcs_set
+			, psta->htpriv.ht_cap.mcs.rx_mask
 		);
 	}
 #ifdef CONFIG_80211AC_VHT

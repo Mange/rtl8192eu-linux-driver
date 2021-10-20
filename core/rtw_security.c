@@ -829,7 +829,7 @@ u32 rtw_tkip_decrypt(_adapter *padapter, u8 *precvframe)
 					res = _FAIL;
 
 					if (start == 0)
-						start = rtw_get_current_time();
+						start = jiffies;
 
 					if (is_broadcast_mac_addr(prxattrib->ra))
 						no_gkey_bc_cnt++;
@@ -841,7 +841,7 @@ u32 rtw_tkip_decrypt(_adapter *padapter, u8 *precvframe)
 							RTW_PRINT(FUNC_ADPT_FMT" no_gkey_bc_cnt:%u, no_gkey_mc_cnt:%u\n",
 								FUNC_ADPT_ARG(padapter), no_gkey_bc_cnt, no_gkey_mc_cnt);
 						}
-						start = rtw_get_current_time();
+						start = jiffies;
 						no_gkey_bc_cnt = 0;
 						no_gkey_mc_cnt = 0;
 					}
@@ -1180,7 +1180,7 @@ static void construct_mic_iv(
 		mic_iv[1] = 0x00;
 #if defined(CONFIG_IEEE80211W) || defined(CONFIG_RTW_MESH)
 	/* 802.11w management frame should set management bit(4) */
-	if (frtype == WIFI_MGT_TYPE)
+	if (frtype == IEEE80211_FTYPE_MGMT)
 		mic_iv[1] |= BIT(4);
 #endif
 	for (i = 2; i < 8; i++)
@@ -1214,7 +1214,7 @@ static void construct_mic_header1(
 	mic_header1[1] = (u8)((header_length - 2) % 256);
 #if defined(CONFIG_IEEE80211W) || defined(CONFIG_RTW_MESH)
 	/* 802.11w management frame don't AND subtype bits 4,5,6 of frame control field */
-	if (frtype == WIFI_MGT_TYPE)
+	if (frtype == IEEE80211_FTYPE_MGMT)
 		mic_header1[2] = mpdu[0];
 	else
 #endif
@@ -1315,7 +1315,7 @@ static void construct_ctr_preload(
 		ctr_preload[1] = mpdu[24] & 0x0f;
 #if defined(CONFIG_IEEE80211W) || defined(CONFIG_RTW_MESH)
 	/* 802.11w management frame should set management bit(4) */
-	if (frtype == WIFI_MGT_TYPE)
+	if (frtype == IEEE80211_FTYPE_MGMT)
 		ctr_preload[1] |= BIT(4);
 #endif
 	for (i = 2; i < 8; i++)
@@ -1383,15 +1383,15 @@ static sint aes_cipher(u8 *key, uint	hdrlen,
 		a4_exists = 1;
 
 	if (
-		((frtype | frsubtype) == WIFI_DATA_CFACK) ||
-		((frtype | frsubtype) == WIFI_DATA_CFPOLL) ||
-		((frtype | frsubtype) == WIFI_DATA_CFACKPOLL)) {
+		((frtype | frsubtype) == (IEEE80211_FTYPE_DATA | IEEE80211_STYPE_DATA_CFACK)) ||
+		((frtype | frsubtype) == (IEEE80211_FTYPE_DATA |  IEEE80211_STYPE_DATA_CFPOLL)) ||
+		((frtype | frsubtype) == (IEEE80211_FTYPE_DATA | IEEE80211_STYPE_DATA_CFACKPOLL))) {
 		qc_exists = 1;
 		if (hdrlen != WLAN_HDR_A3_QOS_LEN && hdrlen != WLAN_HDR_A4_QOS_LEN)
 			hdrlen += 2;
 	}
 	/* add for CONFIG_IEEE80211W, none 11w also can use */
-	else if ((frtype == WIFI_DATA) &&
+	else if ((frtype == (IEEE80211_FTYPE_DATA | IEEE80211_STYPE_DATA)) &&
 		 ((frsubtype == 0x08) ||
 		  (frsubtype == 0x09) ||
 		  (frsubtype == 0x0a) ||
@@ -1702,14 +1702,14 @@ static sint aes_decipher(u8 *key, uint	hdrlen,
 		a4_exists = 1;
 
 	if (
-		((frtype | frsubtype) == WIFI_DATA_CFACK) ||
-		((frtype | frsubtype) == WIFI_DATA_CFPOLL) ||
-		((frtype | frsubtype) == WIFI_DATA_CFACKPOLL)) {
+		((frtype | frsubtype) == (IEEE80211_FTYPE_DATA | IEEE80211_STYPE_DATA_CFACK)) ||
+		((frtype | frsubtype) == (IEEE80211_FTYPE_DATA |  IEEE80211_STYPE_DATA_CFPOLL)) ||
+		((frtype | frsubtype) == (IEEE80211_FTYPE_DATA | IEEE80211_STYPE_DATA_CFACKPOLL))) {
 		qc_exists = 1;
 		if (hdrlen != WLAN_HDR_A3_QOS_LEN && hdrlen != WLAN_HDR_A4_QOS_LEN)
 			hdrlen += 2;
 	} /* only for data packet . add for CONFIG_IEEE80211W, none 11w also can use */
-	else if ((frtype == WIFI_DATA) &&
+	else if ((frtype == (IEEE80211_FTYPE_DATA | IEEE80211_STYPE_DATA)) &&
 		 ((frsubtype == 0x08) ||
 		  (frsubtype == 0x09) ||
 		  (frsubtype == 0x0a) ||
@@ -1950,7 +1950,7 @@ u32	rtw_aes_decrypt(_adapter *padapter, u8 *precvframe)
 					res = _FAIL;
 
 					if (start == 0)
-						start = rtw_get_current_time();
+						start = jiffies;
 
 					if (is_broadcast_mac_addr(prxattrib->ra))
 						no_gkey_bc_cnt++;
@@ -1962,7 +1962,7 @@ u32	rtw_aes_decrypt(_adapter *padapter, u8 *precvframe)
 							RTW_PRINT(FUNC_ADPT_FMT" no_gkey_bc_cnt:%u, no_gkey_mc_cnt:%u\n",
 								FUNC_ADPT_ARG(padapter), no_gkey_bc_cnt, no_gkey_mc_cnt);
 						}
-						start = rtw_get_current_time();
+						start = jiffies;
 						no_gkey_bc_cnt = 0;
 						no_gkey_mc_cnt = 0;
 					}
@@ -2045,7 +2045,7 @@ u32	rtw_BIP_verify(_adapter *padapter, u8 *whdr_pos, sint flen
 	u8 mic[16];
 
 	mme = whdr_pos + flen - 18;
-	if (*mme != _MME_IE_)
+	if (*mme != WLAN_EID_MMIE )
 		return RTW_RX_HANDLED;
 
 	/* copy key index */

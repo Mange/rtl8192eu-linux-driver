@@ -347,7 +347,7 @@ static u8 *build_wlan_hdr(_adapter *padapter, struct xmit_frame *pmgntframe,
 	pmlmeext->mgnt_seq++;
 	SetFragNum(pframe, 0);
 
-	set_frame_sub_type(pframe, WIFI_ACTION);
+	set_frame_sub_type(pframe, IEEE80211_STYPE_ACTION);
 
 	pframe += sizeof(struct rtw_ieee80211_hdr_3addr);
 	pattr->pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
@@ -410,7 +410,7 @@ int issue_null_reply(struct rm_obj *prm)
 		return _FALSE;
 	}
 	pattr = &pmgntframe->attrib;
-	pframe = build_wlan_hdr(padapter, pmgntframe, prm->psta, WIFI_ACTION);
+	pframe = build_wlan_hdr(padapter, pmgntframe, prm->psta, IEEE80211_STYPE_ACTION);
 	pframe = rtw_set_fixed_ie(pframe, 3, &prm->p.category, &pattr->pktlen);
 
 	my_len = 0;
@@ -1082,7 +1082,7 @@ static u8 *rm_gen_bcn_detail_elem(_adapter *padapter, u8 *pframe,
 #if (RM_MORE_DBG_MSG)
 			RTW_INFO("RM: bcn_req_ssid\n");
 #endif
-			pframe = rtw_set_ie(pframe, _SSID_IE_,
+			pframe = rtw_set_ie(pframe, WLAN_EID_SSID,
 				pbss->Ssid.SsidLength,
 				pbss->Ssid.Ssid, &my_len);
 			break;
@@ -1423,7 +1423,7 @@ static int retrieve_scan_result(struct rm_obj *prm)
 	/* search scan queue to find requested SSID */
 	while (1) {
 
-		if (rtw_end_of_queue_search(phead, plist) == _TRUE)
+		if (phead == plist)
 			break;
 
 		pnetwork = LIST_CONTAINOR(plist, struct wlan_network, list);
@@ -1556,7 +1556,7 @@ int issue_beacon_rep(struct rm_obj *prm)
 		}
 		pattr = &pmgntframe->attrib;
 		pframe = build_wlan_hdr(padapter,
-			pmgntframe, prm->psta, WIFI_ACTION);
+			pmgntframe, prm->psta, IEEE80211_STYPE_ACTION);
 		pframe = rtw_set_fixed_ie(pframe,
 			3, &prm->p.category, &pattr->pktlen);
 
@@ -1600,7 +1600,7 @@ int issue_nb_req(struct rm_obj *prm)
 		return _FALSE;
 	}
 	pattr = &pmgntframe->attrib;
-	pframe = build_wlan_hdr(padapter, pmgntframe, psta, WIFI_ACTION);
+	pframe = build_wlan_hdr(padapter, pmgntframe, psta, IEEE80211_STYPE_ACTION);
 	pframe = rtw_set_fixed_ie(pframe,
 		3, &prm->q.category, &pattr->pktlen);
 
@@ -1743,7 +1743,7 @@ int issue_radio_meas_req(struct rm_obj *prm)
 		return _FALSE;
 	}
 	pattr = &pmgntframe->attrib;
-	pframe = build_wlan_hdr(padapter, pmgntframe, prm->psta, WIFI_ACTION);
+	pframe = build_wlan_hdr(padapter, pmgntframe, prm->psta, IEEE80211_STYPE_ACTION);
 	pframe = rtw_set_fixed_ie(pframe, 3, &prm->q.category, &pattr->pktlen);
 
 	/* repeat */
@@ -1917,7 +1917,7 @@ int issue_radio_meas_rep(struct rm_obj *prm)
 		return _FALSE;
 	}
 	pattr = &pmgntframe->attrib;
-	pframe = build_wlan_hdr(padapter, pmgntframe, psta, WIFI_ACTION);
+	pframe = build_wlan_hdr(padapter, pmgntframe, psta, IEEE80211_STYPE_ACTION);
 	pframe = rtw_set_fixed_ie(pframe, 3,
 		&prm->p.category, &pattr->pktlen);
 
@@ -2050,7 +2050,7 @@ void rm_dbg_list_sta(_adapter *padapter, char *s)
 		phead = &(pstapriv->sta_hash[i]);
 		plist = get_next(phead);
 
-		while ((rtw_end_of_queue_search(phead, plist)) == _FALSE) {
+		while (phead != plist) {
 			psta = LIST_CONTAINOR(plist,
 				struct sta_info, hash_list);
 
@@ -2106,7 +2106,7 @@ struct sta_info *rm_get_sta(_adapter *padapter, u16 aid, u8* pbssid)
 		phead = &(pstapriv->sta_hash[i]);
 		plist = get_next(phead);
 
-		while ((rtw_end_of_queue_search(phead, plist)) == _FALSE) {
+		while (phead != plist) {
 			psta = LIST_CONTAINOR(plist,
 				struct sta_info, hash_list);
 
@@ -2395,7 +2395,7 @@ static void rm_dbg_list_meas(_adapter *padapter, char *s)
 	plist = get_next(phead);
 	meas_amount = 0;
 
-	while ((rtw_end_of_queue_search(phead, plist)) == _FALSE) {
+	while (phead != plist) {
 		prm = LIST_CONTAINOR(plist, struct rm_obj, list);
 		meas_amount++;
 		plist = get_next(plist);

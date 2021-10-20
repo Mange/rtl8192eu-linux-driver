@@ -158,14 +158,6 @@ exit:
 
 }
 
-void rtw_mfree_recv_priv_lock(struct recv_priv *precvpriv);
-void rtw_mfree_recv_priv_lock(struct recv_priv *precvpriv)
-{
-#ifdef CONFIG_RECV_THREAD_MODE
-	_rtw_free_sema(&precvpriv->recv_sema);
-#endif
-}
-
 void _rtw_free_recv_priv(struct recv_priv *precvpriv)
 {
 	_adapter	*padapter = precvpriv->adapter;
@@ -353,7 +345,7 @@ void rtw_free_recvframe_queue(_queue *pframequeue,  _queue *pfree_recv_queue)
 	phead = get_list_head(pframequeue);
 	plist = get_next(phead);
 
-	while (rtw_end_of_queue_search(phead, plist) == _FALSE) {
+	while (phead != plist) {
 		precvframe = LIST_CONTAINOR(plist, union recv_frame, u);
 
 		plist = get_next(plist);
@@ -592,7 +584,7 @@ union recv_frame *decryptor(_adapter *padapter, union recv_frame *precv_frame)
 	}
 
 	if (prxattrib->encrypt && !prxattrib->bdecrypted) {
-		if (GetFrameType(get_recvframe_data(precv_frame)) == WIFI_DATA
+		if (GetFrameType(get_recvframe_data(precv_frame)) == (IEEE80211_FTYPE_DATA | IEEE80211_STYPE_DATA)
 			#ifdef CONFIG_CONCURRENT_MODE
 			&& !is_multicast_ether_addr(prxattrib->ra) /* bc/mc packets may use sw decryption for concurrent mode */
 			#endif
@@ -1018,14 +1010,14 @@ sint OnTDLS(_adapter *adapter, union recv_frame *precv_frame)
 		return ret;
 	}
 
-	ptdls_sta = rtw_get_stainfo(pstapriv, get_sa(ptr));
+	ptdls_sta = rtw_get_stainfo(pstapriv, ieee80211_get_SA((struct ieee80211_hdr *)ptr));
 	if (ptdls_sta == NULL) {
 		switch (*paction) {
 		case TDLS_SETUP_REQUEST:
 		case TDLS_DISCOVERY_REQUEST:
 			break;
 		default:
-			RTW_INFO("[TDLS] %s - Direct Link Peer = "MAC_FMT" not found for action = %d\n", __func__, MAC_ARG(get_sa(ptr)), *paction);
+			RTW_INFO("[TDLS] %s - Direct Link Peer = "MAC_FMT" not found for action = %d\n", __func__, MAC_ARG(ieee80211_get_SA((struct ieee80211_hdr *)ptr)), *paction);
 			ret = _FAIL;
 			goto exit;
 		}
@@ -1119,7 +1111,7 @@ void count_rx_stats(_adapter *padapter, union recv_frame *prframe, struct sta_in
 
 		pstats = &psta->sta_stats;
 
-		pstats->last_rx_time = rtw_get_current_time();
+		pstats->last_rx_time = jiffies;
 		pstats->rx_data_pkts++;
 		pstats->rx_bytes += sz;
 		if (is_broadcast_mac_addr(pattrib->ra)) {
@@ -1248,7 +1240,7 @@ sint sta2sta_data_frame(
 				process_pwrbit_data(adapter, precv_frame, ptdls_sta);
 
 				/* if NULL-frame, check pwrbit */
-				if ((get_frame_sub_type(ptr) & WIFI_DATA_NULL) == WIFI_DATA_NULL) {
+				if ((get_frame_sub_type(ptr) & IEEE80211_FTYPE_DATA | IEEE80211_STYPE_NULLFUNC) == IEEE80211_FTYPE_DATA | IEEE80211_STYPE_NULLFUNC) {
 					/* NULL-frame with pwrbit=1, buffer_STA should buffer frames for sleep_STA */
 					if (GetPwrMgt(ptr)) {
 						/* it would be triggered when we are off channel and receiving NULL DATA */
@@ -1270,7 +1262,7 @@ sint sta2sta_data_frame(
 					goto exit;
 				}
 
-				if ((get_frame_sub_type(ptr) & WIFI_QOS_DATA_TYPE) == WIFI_QOS_DATA_TYPE)
+				if ((get_frame_sub_type(ptr) & (IEEE80211_STYPE_QOS_DATA |  IEEE80211_FTYPE_DATA)) == (IEEE80211_STYPE_QOS_DATA |  IEEE80211_FTYPE_DATA))
 					process_wmmps_data(adapter, precv_frame, ptdls_sta);
 
 				ptdls_sta->tdls_sta_state &= ~(TDLS_WAIT_PTR_STATE);
@@ -1404,7 +1396,7 @@ sint ap2sta_data_frame(
 			goto exit;
 		}
 
-		/*if ((get_frame_sub_type(ptr) & WIFI_QOS_DATA_TYPE) == WIFI_QOS_DATA_TYPE) {
+		/*if ((get_frame_sub_type(ptr) & (IEEE80211_STYPE_QOS_DATA |  IEEE80211_FTYPE_DATA)) == (IEEE80211_STYPE_QOS_DATA |  IEEE80211_FTYPE_DATA)) {
 		}
 		*/
 
@@ -1450,7 +1442,7 @@ sint ap2sta_data_frame(
 				/* RTW_INFO("After send deauth , %u ms has elapsed.\n", rtw_get_passing_time_ms(send_issue_deauth_time)); */
 
 				if (rtw_get_passing_time_ms(send_issue_deauth_time) > 10000 || send_issue_deauth_time == 0) {
-					send_issue_deauth_time = rtw_get_current_time();
+					send_issue_deauth_time = jiffies;
 
 					RTW_INFO("issue_deauth to the ap=" MAC_FMT " for the reason(7)\n", MAC_ARG(pattrib->bssid));
 
@@ -1508,7 +1500,7 @@ sint sta2ap_data_frame(
 
 		process_pwrbit_data(adapter, precv_frame, *psta);
 
-		if ((get_frame_sub_type(ptr) & WIFI_QOS_DATA_TYPE) == WIFI_QOS_DATA_TYPE)
+		if ((get_frame_sub_type(ptr) & (IEEE80211_STYPE_QOS_DATA |  IEEE80211_FTYPE_DATA)) == (IEEE80211_STYPE_QOS_DATA |  IEEE80211_FTYPE_DATA))
 			process_wmmps_data(adapter, precv_frame, *psta);
 
 		if (get_frame_sub_type(ptr) & BIT(6)) {
@@ -1569,7 +1561,7 @@ sint validate_recv_ctrl_frame(_adapter *padapter, union recv_frame *precv_frame)
 
 	/* RTW_INFO("+validate_recv_ctrl_frame\n"); */
 
-	if (GetFrameType(pframe) != WIFI_CTRL_TYPE)
+	if (GetFrameType(pframe) != IEEE80211_FTYPE_CTL)
 		return _FAIL;
 
 	/* receive the frames that ra(a1) is my address */
@@ -1581,11 +1573,11 @@ sint validate_recv_ctrl_frame(_adapter *padapter, union recv_frame *precv_frame)
 		return _FAIL;
 
 	/* for rx pkt statistics */
-	psta->sta_stats.last_rx_time = rtw_get_current_time();
+	psta->sta_stats.last_rx_time = jiffies;
 	psta->sta_stats.rx_ctrl_pkts++;
 
 	/* only handle ps-poll */
-	if (get_frame_sub_type(pframe) == WIFI_PSPOLL) {
+	if (get_frame_sub_type(pframe) == (IEEE80211_FTYPE_CTL | IEEE80211_STYPE_PSPOLL)) {
 #ifdef CONFIG_AP_MODE
 		u16 aid;
 		u8 wmmps_ac = 0;
@@ -1635,7 +1627,7 @@ sint validate_recv_ctrl_frame(_adapter *padapter, union recv_frame *precv_frame)
 			xmitframe_phead = get_list_head(&psta->sleep_q);
 			xmitframe_plist = get_next(xmitframe_phead);
 
-			if ((rtw_end_of_queue_search(xmitframe_phead, xmitframe_plist)) == _FALSE) {
+			if (xmitframe_phead != xmitframe_plist) {
 				pxmitframe = LIST_CONTAINOR(xmitframe_plist, struct xmit_frame, list);
 
 				xmitframe_plist = get_next(xmitframe_plist);
@@ -1670,7 +1662,7 @@ sint validate_recv_ctrl_frame(_adapter *padapter, union recv_frame *precv_frame)
 
 					/* upate BCN for TIM IE */
 					/* update_BCNTIM(padapter);		 */
-					update_beacon(padapter, _TIM_IE_, NULL, _TRUE);
+					update_beacon(padapter, WLAN_EID_DS_PARAMS, NULL, _TRUE);
 				}
 
 				/* _exit_critical_bh(&psta->sleep_q.lock, &irqL); */
@@ -1696,7 +1688,7 @@ sint validate_recv_ctrl_frame(_adapter *padapter, union recv_frame *precv_frame)
 
 					/* upate BCN for TIM IE */
 					/* update_BCNTIM(padapter); */
-					update_beacon(padapter, _TIM_IE_, NULL, _TRUE);
+					update_beacon(padapter, WLAN_EID_DS_PARAMS, NULL, _TRUE);
 				}
 			}
 		}
@@ -1705,7 +1697,7 @@ sint validate_recv_ctrl_frame(_adapter *padapter, union recv_frame *precv_frame)
 #ifdef CONFIG_BEAMFORMING
 		rtw_beamforming_get_ndpa_frame(padapter, precv_frame);
 #endif/*CONFIG_BEAMFORMING*/
-	} else if (get_frame_sub_type(pframe) == WIFI_BAR) {
+	} else if (get_frame_sub_type(pframe) == IEEE80211_STYPE_BACK_REQ) {
 		rtw_process_bar_frame(padapter, precv_frame);
 	}
 
@@ -1754,15 +1746,15 @@ static sint validate_mgmt_protect(_adapter *adapter, union recv_frame *precv_fra
 	is_bmc = is_multicast_ether_addr(GetAddr1Ptr(ptr));
 
 #if DBG_VALIDATE_MGMT_PROTECT
-	if (subtype == WIFI_DEAUTH) {
+	if (subtype == IEEE80211_STYPE_DEAUTH) {
 		RTW_INFO(FUNC_ADPT_FMT" bmc:%u, deauth, privacy:%u, encrypt:%u, bdecrypted:%u\n"
 			, FUNC_ADPT_ARG(adapter)
 			, is_bmc, pattrib->privacy, pattrib->encrypt, pattrib->bdecrypted);
-	} else if (subtype == WIFI_DISASSOC) {
+	} else if (subtype == IEEE80211_STYPE_DISASSOC) {
 		RTW_INFO(FUNC_ADPT_FMT" bmc:%u, disassoc, privacy:%u, encrypt:%u, bdecrypted:%u\n"
 			, FUNC_ADPT_ARG(adapter)
 			, is_bmc, pattrib->privacy, pattrib->encrypt, pattrib->bdecrypted);
-	} if (subtype == WIFI_ACTION) {
+	} if (subtype == IEEE80211_STYPE_ACTION) {
 		if (pattrib->privacy) {
 			RTW_INFO(FUNC_ADPT_FMT" bmc:%u, action(?), privacy:%u, encrypt:%u, bdecrypted:%u\n"
 				, FUNC_ADPT_ARG(adapter)
@@ -1782,12 +1774,12 @@ static sint validate_mgmt_protect(_adapter *adapter, union recv_frame *precv_fra
 			goto exit;
 		}
 
-		if (subtype == WIFI_ACTION)
+		if (subtype == IEEE80211_STYPE_ACTION)
 			category = *(ptr + sizeof(struct rtw_ieee80211_hdr_3addr));
 
 		if (is_bmc) {
 			/* broadcast cases */
-			if (subtype == WIFI_ACTION) {
+			if (subtype == IEEE80211_STYPE_ACTION) {
 				if (CATEGORY_IS_GROUP_PRIVACY(category)) {
 					/* drop broadcast group privacy action frame without encryption */
 					#if DBG_VALIDATE_MGMT_PROTECT
@@ -1801,7 +1793,7 @@ static sint validate_mgmt_protect(_adapter *adapter, union recv_frame *precv_fra
 					goto bip_verify;
 				}
 			}
-			if (subtype == WIFI_DEAUTH || subtype == WIFI_DISASSOC) {
+			if (subtype == IEEE80211_STYPE_DEAUTH || subtype == IEEE80211_STYPE_DISASSOC) {
 				/* broadcast deauth or disassoc frame need BIP check */
 				goto bip_verify;
 			}
@@ -1810,13 +1802,13 @@ static sint validate_mgmt_protect(_adapter *adapter, union recv_frame *precv_fra
 		} else {
 			/* unicast cases */
 			#ifdef CONFIG_IEEE80211W
-			if (subtype == WIFI_DEAUTH || subtype == WIFI_DISASSOC) {
+			if (subtype == IEEE80211_STYPE_DEAUTH || subtype == IEEE80211_STYPE_DISASSOC) {
 				if (!MLME_IS_MESH(adapter)) {
 					unsigned short reason = le16_to_cpu(*(unsigned short *)(ptr + WLAN_HDR_A3_LEN));
 
 					#if DBG_VALIDATE_MGMT_PROTECT
 					RTW_INFO(FUNC_ADPT_FMT" unicast %s, reason=%d w/o encrypt\n"
-						, FUNC_ADPT_ARG(adapter), subtype == WIFI_DEAUTH ? "deauth" : "disassoc", reason);
+						, FUNC_ADPT_ARG(adapter), subtype == IEEE80211_STYPE_DEAUTH ? "deauth" : "disassoc", reason);
 					#endif
 					if (reason == 6 || reason == 7) {
 						/* issue sa query request */
@@ -1827,7 +1819,7 @@ static sint validate_mgmt_protect(_adapter *adapter, union recv_frame *precv_fra
 			}
 			#endif
 
-			if (subtype == WIFI_ACTION && CATEGORY_IS_ROBUST(category)) {
+			if (subtype == IEEE80211_STYPE_ACTION && CATEGORY_IS_ROBUST(category)) {
 				if (psta->bpairwise_key_installed == _TRUE) {
 					#if DBG_VALIDATE_MGMT_PROTECT
 					RTW_INFO(FUNC_ADPT_FMT" unicast robust action(%d) w/o encrypt\n"
@@ -1965,13 +1957,13 @@ sint validate_recv_mgnt_frame(PADAPTER padapter, union recv_frame *precv_frame)
 
 	/* for rx pkt statistics */
 	if (psta) {
-		psta->sta_stats.last_rx_time = rtw_get_current_time();
+		psta->sta_stats.last_rx_time = jiffies;
 		psta->sta_stats.rx_mgnt_pkts++;
-		if (get_frame_sub_type(precv_frame->u.hdr.rx_data) == WIFI_BEACON)
+		if (get_frame_sub_type(precv_frame->u.hdr.rx_data) == IEEE80211_STYPE_BEACON)
 			psta->sta_stats.rx_beacon_pkts++;
-		else if (get_frame_sub_type(precv_frame->u.hdr.rx_data) == WIFI_PROBEREQ)
+		else if (get_frame_sub_type(precv_frame->u.hdr.rx_data) == IEEE80211_STYPE_PROBE_REQ)
 			psta->sta_stats.rx_probereq_pkts++;
-		else if (get_frame_sub_type(precv_frame->u.hdr.rx_data) == WIFI_PROBERSP) {
+		else if (get_frame_sub_type(precv_frame->u.hdr.rx_data) == IEEE80211_STYPE_PROBE_RESP) {
 			if (_rtw_memcmp(adapter_mac_addr(padapter), GetAddr1Ptr(precv_frame->u.hdr.rx_data), ETH_ALEN) == _TRUE)
 				psta->sta_stats.rx_probersp_pkts++;
 			else if (is_broadcast_mac_addr(GetAddr1Ptr(precv_frame->u.hdr.rx_data))
@@ -1988,8 +1980,8 @@ sint validate_recv_mgnt_frame(PADAPTER padapter, union recv_frame *precv_frame)
 		struct recv_stat *prxstat = (struct recv_stat *)  precv_frame->u.hdr.rx_head ;
 		u8 *pda, *psa, *pbssid, *ptr;
 		ptr = precv_frame->u.hdr.rx_data;
-		pda = get_da(ptr);
-		psa = get_sa(ptr);
+		pda = ieee80211_get_DA((struct ieee80211_hdr *)ptr);
+		psa = ieee80211_get_SA((struct ieee80211_hdr *)ptr);
 		pbssid = get_hdr_bssid(ptr);
 
 
@@ -2298,14 +2290,14 @@ sint validate_recv_frame(_adapter *adapter, union recv_frame *precv_frame)
 		rtw_hal_get_def_var(adapter, HAL_DEF_DBG_DUMP_RXPKT, &(bDumpRxPkt));
 		if (bDumpRxPkt == 1) /* dump all rx packets */
 			dump_rx_packet(ptr);
-		else if ((bDumpRxPkt == 2) && (type == WIFI_MGT_TYPE))
+		else if ((bDumpRxPkt == 2) && (type == IEEE80211_FTYPE_MGMT))
 			dump_rx_packet(ptr);
-		else if ((bDumpRxPkt == 3) && (type == WIFI_DATA_TYPE))
+		else if ((bDumpRxPkt == 3) && (type == IEEE80211_FTYPE_DATA))
 			dump_rx_packet(ptr);
 	}
 #endif
 	switch (type) {
-	case WIFI_MGT_TYPE: /* mgnt */
+	case IEEE80211_FTYPE_MGMT: /* mgnt */
 		DBG_COUNTER(adapter->rx_logs.core_rx_pre_mgmt);
 		retval = validate_recv_mgnt_frame(adapter, precv_frame);
 		if (retval == _FAIL) {
@@ -2313,7 +2305,7 @@ sint validate_recv_frame(_adapter *adapter, union recv_frame *precv_frame)
 		}
 		retval = _FAIL; /* only data frame return _SUCCESS */
 		break;
-	case WIFI_CTRL_TYPE: /* ctrl */
+	case IEEE80211_FTYPE_CTL: /* ctrl */
 		DBG_COUNTER(adapter->rx_logs.core_rx_pre_ctrl);
 		retval = validate_recv_ctrl_frame(adapter, precv_frame);
 		if (retval == _FAIL) {
@@ -2321,7 +2313,7 @@ sint validate_recv_frame(_adapter *adapter, union recv_frame *precv_frame)
 		}
 		retval = _FAIL; /* only data frame return _SUCCESS */
 		break;
-	case WIFI_DATA_TYPE: /* data */
+	case IEEE80211_FTYPE_DATA: /* data */
 		DBG_COUNTER(adapter->rx_logs.core_rx_pre_data);
 #ifdef CONFIG_WAPI_SUPPORT
 		if (pattrib->qos)
@@ -2700,7 +2692,7 @@ union recv_frame *recvframe_defrag(_adapter *adapter, _queue *defrag_q)
 
 	data = get_recvframe_data(prframe);
 
-	while (rtw_end_of_queue_search(phead, plist) == _FALSE) {
+	while (phead != plist) {
 		pnextrframe = LIST_CONTAINOR(plist, union recv_frame , u);
 		pnfhdr = &pnextrframe->u.hdr;
 
@@ -2773,7 +2765,7 @@ union recv_frame *recvframe_chk_defrag(PADAPTER padapter, union recv_frame *prec
 	psta = rtw_get_stainfo(pstapriv, psta_addr);
 	if (psta == NULL) {
 		u8 type = GetFrameType(pfhdr->rx_data);
-		if (type != WIFI_DATA_TYPE) {
+		if (type != IEEE80211_FTYPE_DATA) {
 			psta = rtw_get_bcmc_stainfo(padapter);
 			if (psta)
 				pdefrag_q = &psta->sta_recvpriv.defrag_q;
@@ -2948,7 +2940,7 @@ static void recv_free_fwd_resource(_adapter *adapter, struct xmit_frame *fwd_fra
 		_list *list;
 
 		list = get_next(b2u_list);
-		while (rtw_end_of_queue_search(b2u_list, list) == _FALSE) {
+		while (b2u_list != list) {
 			b2uframe = LIST_CONTAINOR(list, struct xmit_frame, list);
 			list = get_next(list);
 			rtw_list_delete(&b2uframe->list);
@@ -2982,7 +2974,7 @@ static void recv_fwd_pkt_hdl(_adapter *adapter, _pkt *pkt
 		_list *list = get_next(b2u_list);
 		struct xmit_frame *b2uframe;
 
-		while (rtw_end_of_queue_search(b2u_list, list) == _FALSE) {
+		while (b2u_list != list) {
 			b2uframe = LIST_CONTAINOR(list, struct xmit_frame, list);
 			list = get_next(list);
 			rtw_list_delete(&b2uframe->list);
@@ -3322,7 +3314,7 @@ static int enqueue_reorder_recvframe(struct recv_reorder_ctrl *preorder_ctrl, un
 	phead = get_list_head(ppending_recvframe_queue);
 	plist = get_next(phead);
 
-	while (rtw_end_of_queue_search(phead, plist) == _FALSE) {
+	while (phead != plist) {
 		pnextrframe = LIST_CONTAINOR(plist, union recv_frame, u);
 		pnextattrib = &pnextrframe->u.hdr.attrib;
 
@@ -3828,9 +3820,9 @@ int mp_recv_frame(_adapter *padapter, union recv_frame *rframe)
 			pattrib->privacy = GetPrivacy(ptr);
 			pattrib->order = GetOrder(ptr);
 
-			if (type == WIFI_DATA_TYPE) {
-				pda = get_da(ptr);
-				psa = get_sa(ptr);
+			if (type == IEEE80211_FTYPE_DATA) {
+				pda = ieee80211_get_DA((struct ieee80211_hdr *)ptr);
+				psa = ieee80211_get_SA((struct ieee80211_hdr *)ptr);
 				pbssid = get_hdr_bssid(ptr);
 
 				memcpy(pattrib->dst, pda, ETH_ALEN);
@@ -4439,7 +4431,7 @@ int recv_func(_adapter *padapter, union recv_frame *rframe)
 		{}
 #ifdef CONFIG_CUSTOMER_ALIBABA_GENERAL
 	type = GetFrameType(ptr);
-	if ((type == WIFI_DATA_TYPE)&& check_fwstate(mlmepriv, WIFI_STATION_STATE)) {
+	if ((type == IEEE80211_FTYPE_DATA)&& check_fwstate(mlmepriv, WIFI_STATION_STATE)) {
 		struct wlan_network *cur_network = &(mlmepriv->cur_network);
 		if ( _rtw_memcmp(get_addr2_ptr(ptr), cur_network->network.MacAddress, ETH_ALEN)==0) {
 			recv_frame_monitor(padapter, rframe);
@@ -4803,7 +4795,7 @@ void rx_query_phy_status(
 
 		if ((start_time == 0) || (rtw_get_passing_time_ms(start_time) > 5000)) {
 			RTW_PRINT("Warning!!! %s: Confilc mac addr!!\n", __func__);
-			start_time = rtw_get_current_time();
+			start_time = jiffies;
 		}
 		precvpriv->dbg_rx_conflic_mac_addr_cnt++;
 	} else {
@@ -4825,7 +4817,7 @@ void rx_query_phy_status(
 		&& _rtw_memcmp(ra, adapter_mac_addr(padapter), ETH_ALEN);
 
 	pkt_info.is_packet_beacon = pkt_info.is_packet_match_bssid
-				 && (get_frame_sub_type(wlanhdr) == WIFI_BEACON);
+				 && (get_frame_sub_type(wlanhdr) == IEEE80211_STYPE_BEACON);
 
 	if (psta && IsFrameTypeData(wlanhdr)) {
 		if (is_ra_bmc)
@@ -4947,7 +4939,7 @@ bypass_concurrent_hdl:
 #endif /* CONFIG_CONCURRENT_MODE */
 	if (primary_padapter->registrypriv.mp_mode != 1) {
 		/* skip unnecessary bmc data frame for primary adapter */
-		if (ra_is_bmc == _TRUE && GetFrameType(pbuf) == WIFI_DATA_TYPE
+		if (ra_is_bmc == _TRUE && GetFrameType(pbuf) == IEEE80211_FTYPE_DATA
 			&& !adapter_allow_bmc_data_rx(precvframe->u.hdr.adapter)
 		) {
 			rtw_free_recvframe(precvframe, &precvframe->u.hdr.adapter->recvpriv.free_recv_queue);
