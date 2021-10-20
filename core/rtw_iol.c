@@ -118,7 +118,6 @@ int _rtw_IOL_append_WB_cmd(struct xmit_frame *xmit_frame, u16 addr, u8 value, u8
 {
 	struct ioreg_cfg cmd = {8, IOREG_CMD_WB_REG, 0x0, 0x0, 0x0};
 
-	/* RTW_PUT_LE16((u8*)&cmd.address, addr);	 */
 	/* RTW_PUT_LE32((u8*)&cmd.value, (u32)value);	 */
 	cmd.address = cpu_to_le16(addr);
 	cmd.data = cpu_to_le32(value);
@@ -138,7 +137,6 @@ int _rtw_IOL_append_WW_cmd(struct xmit_frame *xmit_frame, u16 addr, u16 value, u
 {
 	struct ioreg_cfg cmd = {8, IOREG_CMD_WW_REG, 0x0, 0x0, 0x0};
 
-	/* RTW_PUT_LE16((u8*)&cmd.address, addr);	 */
 	/* RTW_PUT_LE32((u8*)&cmd.value, (u32)value);	 */
 	cmd.address = cpu_to_le16(addr);
 	cmd.data = cpu_to_le32(value);
@@ -158,7 +156,6 @@ int _rtw_IOL_append_WD_cmd(struct xmit_frame *xmit_frame, u16 addr, u32 value, u
 {
 	struct ioreg_cfg cmd = {8, IOREG_CMD_WD_REG, 0x0, 0x0, 0x0};
 
-	/* RTW_PUT_LE16((u8*)&cmd.address, addr);	 */
 	/* RTW_PUT_LE32((u8*)&cmd.value, (u32)value);	 */
 	cmd.address = cpu_to_le16(addr);
 	cmd.data = cpu_to_le32(value);
@@ -179,7 +176,6 @@ int _rtw_IOL_append_WRF_cmd(struct xmit_frame *xmit_frame, u8 rf_path, u16 addr,
 {
 	struct ioreg_cfg cmd = {8, IOREG_CMD_W_RF, 0x0, 0x0, 0x0};
 
-	/* RTW_PUT_LE16((u8*)&cmd.address, addr);	 */
 	/* RTW_PUT_LE32((u8*)&cmd.value, (u32)value);	 */
 	cmd.address = (rf_path << 8) | ((addr) & 0xFF);
 	cmd.data = cpu_to_le32(value);
@@ -201,7 +197,6 @@ int _rtw_IOL_append_WRF_cmd(struct xmit_frame *xmit_frame, u8 rf_path, u16 addr,
 int rtw_IOL_append_DELAY_US_cmd(struct xmit_frame *xmit_frame, u16 us)
 {
 	struct ioreg_cfg cmd = {4, IOREG_CMD_DELAY_US, 0x0, 0x0, 0x0};
-	/* RTW_PUT_LE16((u8*)&cmd.address, us);	 */
 	cmd.address = cpu_to_le16(us);
 
 	/* RTW_INFO("%s %u\n", __FUNCTION__, us); */
@@ -212,7 +207,6 @@ int rtw_IOL_append_DELAY_MS_cmd(struct xmit_frame *xmit_frame, u16 ms)
 {
 	struct ioreg_cfg cmd = {4, IOREG_CMD_DELAY_US, 0x0, 0x0, 0x0};
 
-	/* RTW_PUT_LE16((u8*)&cmd.address, ms);	 */
 	cmd.address = cpu_to_le16(ms);
 
 	/* RTW_INFO("%s %u\n", __FUNCTION__, ms); */

@@ -6411,8 +6411,7 @@ void rtw_cfg80211_issue_p2p_provision_request(_adapter *padapter, const u8 *buf,
 	p2p_ie[p2pielen++] = P2P_ATTR_CAPABILITY;
 
 	/*	Length: */
-	/* *(u16*) ( p2pie + p2pielen ) = cpu_to_le16( 0x0002 ); */
-	RTW_PUT_LE16(p2p_ie + p2pielen, 0x0002);
+	*(u16*) ( p2p_ie + p2pielen ) = cpu_to_le16( 0x0002 );
 	p2pielen += 2;
 
 	/*	Value: */
@@ -6429,8 +6428,7 @@ void rtw_cfg80211_issue_p2p_provision_request(_adapter *padapter, const u8 *buf,
 	/*	Length: */
 	/*	21->P2P Device Address (6bytes) + Config Methods (2bytes) + Primary Device Type (8bytes)  */
 	/*	+ NumofSecondDevType (1byte) + WPS Device Name ID field (2bytes) + WPS Device Name Len field (2bytes) */
-	/* *(u16*) ( p2pie + p2pielen ) = cpu_to_le16( 21 + pwdinfo->device_name_len ); */
-	RTW_PUT_LE16(p2p_ie + p2pielen, devinfo_contentlen);
+	*(u16*) (p2p_ie + p2pielen) = cpu_to_le16(devinfo_contentlen);
 	p2pielen += 2;
 
 	/*	Value: */
@@ -8158,7 +8156,7 @@ u8 *rtw_cfg80211_construct_mesh_beacon_ies(struct wiphy *wiphy, _adapter *adapte
 	c = ies + 8;
 
 	/* beacon interval */
-	RTW_PUT_LE16(c , setup->beacon_interval);
+	*((u16 *)c) = cpu_to_le16(setup->beacon_interval);
 	c += 2;
 
 	/* capability */
@@ -8208,7 +8206,7 @@ u8 *rtw_cfg80211_construct_mesh_beacon_ies(struct wiphy *wiphy, _adapter *adapte
 		memset(ht_op, 0, HT_OP_IE_LEN);
 
 		/* WLAN_EID_HT_CAPABILITY */
-		RTW_PUT_LE16(HT_CAP_ELE_CAP_INFO(ht_cap), sta_ht_cap->cap);
+		*(u16 *) (HT_CAP_ELE_CAP_INFO(ht_cap)) = cpu_to_le16(sta_ht_cap->cap);
 		SET_HT_CAP_ELE_MAX_AMPDU_LEN_EXP(ht_cap, sta_ht_cap->ampdu_factor);
 		SET_HT_CAP_ELE_MIN_MPDU_S_SPACE(ht_cap, sta_ht_cap->ampdu_density);
 		memcpy(HT_CAP_ELE_SUP_MCS_SET(ht_cap), &sta_ht_cap->mcs, 16);

@@ -4321,7 +4321,7 @@ int rtw_rsn_sync_pmkid(_adapter *adapter, u8 *ie, uint ie_len, int i_ent)
 	} else
 		info.pmkid_cnt = 0; /* update new pmkid_cnt */
 
-	RTW_PUT_LE16(info.pmkid_list - 2, info.pmkid_cnt);
+	*(u16 *)(info.pmkid_list - 2) = cpu_to_le16(info.pmkid_cnt);
 	if (info.gmcs)
 		memcpy(info.pmkid_list + 16 * info.pmkid_cnt, gm_cs, 4);
 

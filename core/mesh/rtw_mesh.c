@@ -85,19 +85,19 @@ inline u8 *rtw_set_ie_mpm(u8 *buf, u32 *buf_len
 	u8 data[24] = {0};
 	u8 *pos = data;
 
-	RTW_PUT_LE16(pos, proto_id);
+	*(u16 *) (pos) = cpu_to_le16(proto_id);
 	pos += 2;
 
-	RTW_PUT_LE16(pos, llid);
+	*(u16 *) (pos) = cpu_to_le16(llid);
 	pos += 2;
 
 	if (plid) {
-		RTW_PUT_LE16(pos, *plid);
+		*(u16 *) (pos) = cpu_to_le16(*plid));
 		pos += 2;
 	}
 
 	if (reason) {
-		RTW_PUT_LE16(pos, *reason);
+		*(u16 *) (pos) = cpu_to_le16(*reason));
 		pos += 2;
 	}
 
