@@ -51,10 +51,6 @@ PHY_QueryBBReg8192E(
 {
 	u32	ReturnValue = 0, OriginalValue, BitShift;
 
-#if (DISABLE_BB_RF == 1)
-	return 0;
-#endif
-
 	/* RTW_INFO("--->PHY_QueryBBReg8812(): RegAddr(%#x), BitMask(%#x)\n", RegAddr, BitMask); */
 
 
@@ -76,10 +72,6 @@ PHY_SetBBReg8192E(
 )
 {
 	u4Byte			OriginalValue, BitShift;
-
-#if (DISABLE_BB_RF == 1)
-	return;
-#endif
 
 	if (BitMask != bMaskDWord) {
 		/* if not "double word" write */
@@ -230,10 +222,6 @@ PHY_QueryRFReg8192E(
 {
 	u32				Original_Value, Readback_Value, BitShift;
 
-#if (DISABLE_BB_RF == 1)
-	return 0;
-#endif
-
 	Original_Value = phy_RFSerialRead(Adapter, eRFPath, RegAddr);
 
 	BitShift =  PHY_CalculateBitShift(BitMask);
@@ -252,9 +240,6 @@ PHY_SetRFReg8192E(
 )
 {
 	u32			Original_Value, BitShift;
-#if (DISABLE_BB_RF == 1)
-	return;
-#endif
 
 	if (BitMask == 0)
 		return;

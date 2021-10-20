@@ -870,21 +870,17 @@ u32 rtl8192eu_hal_init(PADAPTER Adapter)
 	pHalData->current_channel = 6;/* default set to 6 */
 
 	HAL_INIT_PROFILE_TAG(HAL_INIT_STAGES_MAC);
-#if (HAL_MAC_ENABLE == 1)
 	status = PHY_MACConfig8192E(Adapter);
 	if (status == _FAIL)
 		goto exit;
-#endif
 
 	HAL_INIT_PROFILE_TAG(HAL_INIT_STAGES_BB);
-#if (HAL_BB_ENABLE == 1)
 	status = PHY_BBConfig8192E(Adapter);
 	if (status == _FAIL)
 		goto exit;
-#endif
 
 	HAL_INIT_PROFILE_TAG(HAL_INIT_STAGES_RF);
-#if (HAL_RF_ENABLE == 1)
+
 	status = PHY_RFConfig8192E(Adapter);
 	if (status == _FAIL)
 		goto exit;
@@ -975,7 +971,6 @@ u32 rtl8192eu_hal_init(PADAPTER Adapter)
 #endif /* CONFIG_RTW_LED */
 
 	_BBTurnOnBlock_8192E(Adapter);
-#endif
 
 	/*  */
 	/* Joseph Note: Keep RfRegChnlVal for later use. */

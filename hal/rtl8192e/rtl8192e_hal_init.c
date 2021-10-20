@@ -3633,10 +3633,6 @@ VOID _InitBeaconMaxError_8192E(
 /* Set CCK and OFDM Block "ON" */
 void _BBTurnOnBlock_8192E(PADAPTER padapter)
 {
-#if (DISABLE_BB_RF)
-	return;
-#endif
-
 	phy_set_bb_reg(padapter, rFPGA0_RFMOD, bCCKEn, 0x1);
 	phy_set_bb_reg(padapter, rFPGA0_RFMOD, bOFDMEn, 0x1);
 }
@@ -3647,11 +3643,7 @@ hal_ReadRFType_8192E(
 {
 	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(Adapter);
 
-#if DISABLE_BB_RF
-	pHalData->rf_chip = RF_PSEUDO_11N;
-#else
 	pHalData->rf_chip = RF_6052;
-#endif
 
 	pHalData->BandSet = BAND_ON_2_4G;
 

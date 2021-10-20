@@ -2070,10 +2070,6 @@ void phy_set_rf_path_switch_8192e(
 	/* HAL_DATA_TYPE	*hal_data = GET_HAL_DATA(((PADAPTER)adapter)); */
 #endif
 
-#if DISABLE_BB_RF
-	return;
-#endif
-
 #if !(DM_ODM_SUPPORT_TYPE & ODM_AP)
 
 	_phy_set_rf_path_switch_8192e(adapter, is_main, true);
@@ -2123,9 +2119,6 @@ boolean phy_query_rf_path_switch_8192e(
 {
 	HAL_DATA_TYPE	*hal_data = GET_HAL_DATA(((PADAPTER)adapter));
 
-#if DISABLE_BB_RF
-	return true;
-#endif
 #if !(DM_ODM_SUPPORT_TYPE & ODM_AP)
 	if (IS_2T2R(hal_data->VersionID))
 		return _phy_query_rf_path_switch_8192e(adapter, true);

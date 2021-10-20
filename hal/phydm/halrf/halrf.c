@@ -760,9 +760,6 @@ void halrf_segment_iqk_trigger(void *dm_void, boolean clear,
 		return;
 #endif
 
-#if DISABLE_BB_RF
-	return;
-#endif
 	if (iqk_info->rfk_forbidden)
 		return;
 
@@ -1330,10 +1327,6 @@ void halrf_iqk_trigger(void *dm_void, boolean is_recovery)
 	if (!(rf->rf_supportability & HAL_RF_IQK))
 		return;
 
-#if DISABLE_BB_RF
-	return;
-#endif
-
 	if (iqk_info->rfk_forbidden)
 		return;
 
@@ -1483,9 +1476,6 @@ void halrf_lck_trigger(void *dm_void)
 	if (!(rf->rf_supportability & HAL_RF_LCK))
 		return;
 
-#if DISABLE_BB_RF
-	return;
-#endif
 	if (iqk_info->rfk_forbidden)
 		return;
 	while (*dm->is_scan_in_process) {
