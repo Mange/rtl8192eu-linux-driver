@@ -811,7 +811,7 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 					if (*((unsigned char *)&iph->daddr + 3) == 0xff) {
 						/* L2 is unicast but L3 is broadcast, make L2 bacome broadcast */
 						RTW_INFO("NAT25: Set DA as boardcast\n");
-						memset(skb->data, 0xff, ETH_ALEN);
+						eth_broadcast_addr(skb->data);
 					} else {
 						/* forward unknow IP packet to upper TCP/IP */
 						RTW_INFO("NAT25: Replace DA with BR's MAC\n");
