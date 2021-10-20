@@ -755,13 +755,13 @@ static int wpa_set_auth_algs(struct net_device *dev, u32 value)
 	_adapter *padapter = (_adapter *) rtw_netdev_priv(dev);
 	int ret = 0;
 
-	if ((value & AUTH_ALG_SHARED_KEY) && (value & AUTH_ALG_OPEN_SYSTEM)) {
-		RTW_INFO("wpa_set_auth_algs, AUTH_ALG_SHARED_KEY and  AUTH_ALG_OPEN_SYSTEM [value:0x%x]\n", value);
+	if ((value & IW_AUTH_ALG_SHARED_KEY) && (value & IW_AUTH_ALG_OPEN_SYSTEM)) {
+		RTW_INFO("wpa_set_auth_algs, IW_AUTH_ALG_SHARED_KEY and  IW_AUTH_ALG_OPEN_SYSTEM [value:0x%x]\n", value);
 		padapter->securitypriv.ndisencryptstatus = Ndis802_11Encryption1Enabled;
 		padapter->securitypriv.ndisauthtype = Ndis802_11AuthModeAutoSwitch;
 		padapter->securitypriv.dot11AuthAlgrthm = dot11AuthAlgrthm_Auto;
-	} else if (value & AUTH_ALG_SHARED_KEY) {
-		RTW_INFO("wpa_set_auth_algs, AUTH_ALG_SHARED_KEY  [value:0x%x]\n", value);
+	} else if (value & IW_AUTH_ALG_SHARED_KEY) {
+		RTW_INFO("wpa_set_auth_algs, IW_AUTH_ALG_SHARED_KEY  [value:0x%x]\n", value);
 		padapter->securitypriv.ndisencryptstatus = Ndis802_11Encryption1Enabled;
 
 #ifdef CONFIG_PLATFORM_MT53XX
@@ -771,8 +771,8 @@ static int wpa_set_auth_algs(struct net_device *dev, u32 value)
 		padapter->securitypriv.ndisauthtype = Ndis802_11AuthModeShared;
 		padapter->securitypriv.dot11AuthAlgrthm = dot11AuthAlgrthm_Shared;
 #endif
-	} else if (value & AUTH_ALG_OPEN_SYSTEM) {
-		RTW_INFO("wpa_set_auth_algs, AUTH_ALG_OPEN_SYSTEM\n");
+	} else if (value & IW_AUTH_ALG_OPEN_SYSTEM) {
+		RTW_INFO("wpa_set_auth_algs, IW_AUTH_ALG_OPEN_SYSTEM\n");
 		/* padapter->securitypriv.ndisencryptstatus = Ndis802_11EncryptionDisabled; */
 		if (padapter->securitypriv.ndisauthtype < Ndis802_11AuthModeWPAPSK) {
 #ifdef CONFIG_PLATFORM_MT53XX
@@ -784,8 +784,8 @@ static int wpa_set_auth_algs(struct net_device *dev, u32 value)
 #endif
 		}
 
-	} else if (value & AUTH_ALG_LEAP)
-		RTW_INFO("wpa_set_auth_algs, AUTH_ALG_LEAP\n");
+	} else if (value & IW_AUTH_ALG_LEAP)
+		RTW_INFO("wpa_set_auth_algs, IW_AUTH_ALG_LEAP\n");
 	else {
 		RTW_INFO("wpa_set_auth_algs, error!\n");
 		ret = -EINVAL;
