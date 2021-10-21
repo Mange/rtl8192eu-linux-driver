@@ -219,7 +219,7 @@ struct wpa_eapol_key {
 	/* followed by key_data_length bytes of key_data */
 };
 
-typedef enum _RATEID_IDX_ {
+enum RATEID_IDX {
 	RATEID_IDX_BGN_40M_2SS = 0,
 	RATEID_IDX_BGN_40M_1SS = 1,
 	RATEID_IDX_BGN_20M_2SS_BN = 2,
@@ -235,9 +235,9 @@ typedef enum _RATEID_IDX_ {
 	RATEID_IDX_MIX2 = 12,
 	RATEID_IDX_VHT_3SS = 13,
 	RATEID_IDX_BGN_3SS = 14,
-} RATEID_IDX, *PRATEID_IDX;
+};
 
-typedef enum _RATR_TABLE_MODE {
+enum RATR_TABLE_MODE {
 	RATR_INX_WIRELESS_NGB = 0,	/* BGN 40 Mhz 2SS 1SS */
 	RATR_INX_WIRELESS_NG = 1,		/* GN or N */
 	RATR_INX_WIRELESS_NB = 2,		/* BGN 20 Mhz 2SS 1SS  or BN */
@@ -247,7 +247,7 @@ typedef enum _RATR_TABLE_MODE {
 	RATR_INX_WIRELESS_B = 6,
 	RATR_INX_WIRELESS_MC = 7,
 	RATR_INX_WIRELESS_AC_N = 8,
-} RATR_TABLE_MODE, *PRATR_TABLE_MODE;
+};
 
 
 enum NETWORK_TYPE {
@@ -300,7 +300,7 @@ enum NETWORK_TYPE {
 
 
 
-typedef struct ieee_param {
+struct ieee_param {
 	u32 cmd;
 	u8 sta_addr[ETH_ALEN];
 	union {
@@ -341,14 +341,14 @@ typedef struct ieee_param {
 #endif
 
 	} u;
-} ieee_param;
+};
 
 #ifdef CONFIG_AP_MODE
-typedef struct ieee_param_ex {
+struct ieee_param_ex {
 	u32 cmd;
 	u8 sta_addr[ETH_ALEN];
 	u8 data[0];
-} ieee_param_ex;
+};
 
 struct sta_data {
 	u16 aid;
@@ -432,24 +432,6 @@ struct ieee80211_snap_hdr {
 	|| reason == WLAN_REASON_ACTIVE_ROAM \
 	|| reason == WLAN_REASON_SA_QUERY_TIMEOUT \
 	)
-
-#define IEEE80211_MGMT_HDR_LEN 24
-#define IEEE80211_DATA_HDR3_LEN 24
-#define IEEE80211_DATA_HDR4_LEN 30
-
-
-#define IEEE80211_STATMASK_SIGNAL (1<<0)
-#define IEEE80211_STATMASK_RSSI (1<<1)
-#define IEEE80211_STATMASK_NOISE (1<<2)
-#define IEEE80211_STATMASK_RATE (1<<3)
-#define IEEE80211_STATMASK_WEMASK 0x7
-
-
-#define IEEE80211_CCK_MODULATION    (1<<0)
-#define IEEE80211_OFDM_MODULATION   (1<<1)
-
-#define IEEE80211_24GHZ_BAND     (1<<0)
-#define IEEE80211_52GHZ_BAND     (1<<1)
 
 #define IEEE80211_CCK_RATE_LEN		4
 #define IEEE80211_NUM_OFDM_RATESLEN	8
@@ -788,45 +770,6 @@ join_res:
 > 0: TID
 */
 
-enum ieee80211_state {
-
-	/* the card is not linked at all */
-	IEEE80211_NOLINK = 0,
-
-	/* IEEE80211_ASSOCIATING* are for BSS client mode
-	 * the driver shall not perform RX filtering unless
-	 * the state is LINKED.
-	 * The driver shall just check for the state LINKED and
-	 * defaults to NOLINK for ALL the other states (including
-	 * LINKED_SCANNING)
-	 */
-
-	/* the association procedure will start (wq scheduling)*/
-	IEEE80211_ASSOCIATING,
-	IEEE80211_ASSOCIATING_RETRY,
-
-	/* the association procedure is sending AUTH request*/
-	IEEE80211_ASSOCIATING_AUTHENTICATING,
-
-	/* the association procedure has successfully authentcated
-	 * and is sending association request
-	 */
-	IEEE80211_ASSOCIATING_AUTHENTICATED,
-
-	/* the link is ok. the card associated to a BSS or linked
-	 * to a ibss cell or acting as an AP and creating the bss
-	 */
-	IEEE80211_LINKED,
-
-	/* same as LINKED, but the driver shall apply RX filter
-	 * rules as we are in NO_LINK mode. As the card is still
-	 * logically linked, but it is doing a syncro site survey
-	 * then it will be back to LINKED state.
-	 */
-	IEEE80211_LINKED_SCANNING,
-
-};
-
 #define DEFAULT_MAX_SCAN_AGE (15 * HZ)
 #define DEFAULT_FTS 2346
 #define MAC_FMT "%02x:%02x:%02x:%02x:%02x:%02x"
@@ -857,13 +800,6 @@ extern __inline int is_zero_mac_addr(const u8 *addr)
 
 #define CFG_IEEE80211_RESERVE_FCS (1<<0)
 #define CFG_IEEE80211_COMPUTE_FCS (1<<1)
-
-typedef struct tx_pending_t {
-	int frag;
-	struct ieee80211_txb *txb;
-} tx_pending_t;
-
-
 
 #define TID_NUM	16
 
@@ -1087,9 +1023,9 @@ struct rtw_ieee802_11_elems {
 #endif
 };
 
-typedef enum { ParseOK = 0, ParseUnknown = 1, ParseFailed = -1 } ParseRes;
+enum ParseRes { ParseOK = 0, ParseUnknown = 1, ParseFailed = -1 };
 
-ParseRes rtw_ieee802_11_parse_elems(u8 *start, uint len,
+enum ParseRes rtw_ieee802_11_parse_elems(u8 *start, uint len,
 				struct rtw_ieee802_11_elems *elems,
 				int show_errors);
 

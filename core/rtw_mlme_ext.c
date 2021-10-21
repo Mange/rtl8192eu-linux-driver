@@ -2447,7 +2447,7 @@ unsigned int OnAssocReq(_adapter *padapter, union recv_frame *precv_frame)
 	}
 
 
-	if (pkt_len < IEEE80211_3ADDR_LEN + ie_offset) {
+	if (pkt_len < sizeof(struct ieee80211_hdr_3addr) + ie_offset) {
 		RTW_INFO("handle_assoc(reassoc=%d) - too short payload (len=%lu)"
 			 "\n", reassoc, (unsigned long)pkt_len);
 		return _FAIL;
@@ -2501,8 +2501,8 @@ unsigned int OnAssocReq(_adapter *padapter, union recv_frame *precv_frame)
 	}
 
 	/* now parse all ieee802_11 ie to point to elems */
-	left = pkt_len - (IEEE80211_3ADDR_LEN + ie_offset);
-	pos = pframe + (IEEE80211_3ADDR_LEN + ie_offset);
+	left = pkt_len - (sizeof(struct ieee80211_hdr_3addr) + ie_offset);
+	pos = pframe + (sizeof(struct ieee80211_hdr_3addr) + ie_offset);
 	if (rtw_ieee802_11_parse_elems(pos, left, &elems, 1) == ParseFailed) {
 		RTW_INFO("STA " MAC_FMT " sent invalid association request\n",
 			 MAC_ARG(pstat->cmn.mac_addr));
