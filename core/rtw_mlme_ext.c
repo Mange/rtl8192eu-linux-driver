@@ -2847,14 +2847,14 @@ unsigned int OnAssocRsp(_adapter *padapter, union recv_frame *precv_frame)
 			break;
 
 #ifdef CONFIG_80211AC_VHT
-		case EID_VHTCapability:
+		case WLAN_EID_VHT_CAPABILITY:
 			VHT_caps_handler(padapter, pIE);
 #ifdef ROKU_PRIVATE
 			VHT_caps_handler_infra_ap(padapter, pIE);
 #endif /* ROKU_PRIVATE */
 			break;
 
-		case EID_VHTOperation:
+		case WLAN_EID_VHT_OPERATION:
 			VHT_operation_handler(padapter, pIE);
 			break;
 #endif
@@ -8857,7 +8857,7 @@ void issue_asocrsp(_adapter *padapter, unsigned short status, struct sta_info *p
 		u32 ie_len = 0;
 
 		/* FILL VHT CAP IE */
-		pbuf = rtw_get_ie(ie + _BEACON_IE_OFFSET_, EID_VHTCapability, &ie_len, (pnetwork->IELength - _BEACON_IE_OFFSET_));
+		pbuf = rtw_get_ie(ie + _BEACON_IE_OFFSET_, WLAN_EID_VHT_CAPABILITY, &ie_len, (pnetwork->IELength - _BEACON_IE_OFFSET_));
 		if (pbuf && ie_len > 0) {
 			memcpy(pframe, pbuf, ie_len + 2);
 			pframe += (ie_len + 2);
@@ -8865,7 +8865,7 @@ void issue_asocrsp(_adapter *padapter, unsigned short status, struct sta_info *p
 		}
 
 		/* FILL VHT OPERATION IE */
-		pbuf = rtw_get_ie(ie + _BEACON_IE_OFFSET_, EID_VHTOperation, &ie_len, (pnetwork->IELength - _BEACON_IE_OFFSET_));
+		pbuf = rtw_get_ie(ie + _BEACON_IE_OFFSET_, WLAN_EID_VHT_OPERATION, &ie_len, (pnetwork->IELength - _BEACON_IE_OFFSET_));
 		if (pbuf && ie_len > 0) {
 			memcpy(pframe, pbuf, ie_len + 2);
 			pframe += (ie_len + 2);
@@ -9052,7 +9052,7 @@ void _issue_assocreq(_adapter *padapter, u8 is_reassoc)
 	if (pmlmeext->cur_channel > 14) {
 		pow_cap_ele[0] = 13;	/* Minimum transmit power capability */
 		pow_cap_ele[1] = 21;	/* Maximum transmit power capability */
-		pframe = rtw_set_ie(pframe, EID_PowerCap, 2, pow_cap_ele, &(pattrib->pktlen));
+		pframe = rtw_set_ie(pframe, WLAN_EID_PWR_CAPABILITY, 2, pow_cap_ele, &(pattrib->pktlen));
 
 		/* supported channels */
 		while (sup_ch_idx < rfctl->max_chan_nums && rfctl->channel_set[sup_ch_idx].ChannelNum != 0) {
@@ -9066,7 +9066,7 @@ void _issue_assocreq(_adapter *padapter, u8 is_reassoc)
 			}
 			sup_ch_idx++;
 		}
-		pframe = rtw_set_ie(pframe, EID_SupportedChannels, idx_5g, sup_ch, &(pattrib->pktlen));
+		pframe = rtw_set_ie(pframe, WLAN_EID_SUPPORTED_CHANNELS, idx_5g, sup_ch, &(pattrib->pktlen));
 	}
 #endif /* CONFIG_DFS */
 
@@ -9183,7 +9183,7 @@ void _issue_assocreq(_adapter *padapter, u8 is_reassoc)
 			}
 			break;
 
-		case EID_WPA2:
+		case WLAN_EID_RSN:
 #ifdef CONFIG_RTW_80211R
 			if ((is_reassoc) && (rtw_ft_roam(padapter))) {
 				rtw_ft_update_rsnie(padapter, _TRUE, pattrib, &pframe);
@@ -9199,36 +9199,36 @@ void _issue_assocreq(_adapter *padapter, u8 is_reassoc)
 				}
 #endif /* CONFIG_IOCTL_CFG80211 */
 
-				pframe = rtw_set_ie(pframe, EID_WPA2, pIE->Length, pIE->data, &(pattrib->pktlen));
+				pframe = rtw_set_ie(pframe, WLAN_EID_RSN, pIE->Length, pIE->data, &(pattrib->pktlen));
 			}
 			break;
 #ifdef CONFIG_80211N_HT
-		case EID_HTCapability:
+		case WLAN_EID_HT_CAPABILITY:
 			if (padapter->mlmepriv.htpriv.ht_option == _TRUE) {
 				if (!(is_ap_in_tkip(padapter))) {
 					memcpy(&(pmlmeinfo->HT_caps), pIE->data, sizeof(struct HT_caps_element));
 
 					pmlmeinfo->HT_caps.u.HT_cap_element.HT_caps_info = cpu_to_le16(pmlmeinfo->HT_caps.u.HT_cap_element.HT_caps_info);
 
-					pframe = rtw_set_ie(pframe, EID_HTCapability, pIE->Length , (u8 *)(&(pmlmeinfo->HT_caps)), &(pattrib->pktlen));
+					pframe = rtw_set_ie(pframe, WLAN_EID_HT_CAPABILITY, pIE->Length , (u8 *)(&(pmlmeinfo->HT_caps)), &(pattrib->pktlen));
 				}
 			}
 			break;
 
-		case EID_EXTCapability:
+		case WLAN_EID_EXT_CAPABILITY:
 			if (padapter->mlmepriv.htpriv.ht_option == _TRUE)
-				pframe = rtw_set_ie(pframe, EID_EXTCapability, pIE->Length, pIE->data, &(pattrib->pktlen));
+				pframe = rtw_set_ie(pframe, WLAN_EID_EXT_CAPABILITY, pIE->Length, pIE->data, &(pattrib->pktlen));
 			break;
 #endif /* CONFIG_80211N_HT */
 #ifdef CONFIG_80211AC_VHT
-		case EID_VHTCapability:
+		case WLAN_EID_VHT_CAPABILITY:
 			if (padapter->mlmepriv.vhtpriv.vht_option == _TRUE)
-				pframe = rtw_set_ie(pframe, EID_VHTCapability, pIE->Length, pIE->data, &(pattrib->pktlen));
+				pframe = rtw_set_ie(pframe, WLAN_EID_VHT_CAPABILITY, pIE->Length, pIE->data, &(pattrib->pktlen));
 			break;
 
-		case EID_OpModeNotification:
+		case WLAN_EID_OPMODE_NOTIF:
 			if (padapter->mlmepriv.vhtpriv.vht_option == _TRUE)
-				pframe = rtw_set_ie(pframe, EID_OpModeNotification, pIE->Length, pIE->data, &(pattrib->pktlen));
+				pframe = rtw_set_ie(pframe, WLAN_EID_OPMODE_NOTIF, pIE->Length, pIE->data, &(pattrib->pktlen));
 			break;
 #endif /* CONFIG_80211AC_VHT */
 		default:
@@ -10433,7 +10433,7 @@ void issue_action_BSSCoexistPacket(_adapter *padapter)
 
 		iedata |= BIT(2);/* 20 MHz BSS Width Request */
 
-		pframe = rtw_set_ie(pframe, EID_BSSCoexistence,  1, &iedata, &(pattrib->pktlen));
+		pframe = rtw_set_ie(pframe, WLAN_EID_BSS_COEX_2040,  1, &iedata, &(pattrib->pktlen));
 
 	}
 
@@ -10496,7 +10496,7 @@ void issue_action_BSSCoexistPacket(_adapter *padapter)
 					}
 				}
 
-				pframe = rtw_set_ie(pframe, EID_BSSIntolerantChlReport, k, InfoContent, &(pattrib->pktlen));
+				pframe = rtw_set_ie(pframe, WLAN_EID_BSS_INTOLERANT_CHL_REPORT, k, InfoContent, &(pattrib->pktlen));
 
 			}
 
@@ -13327,14 +13327,14 @@ u8 rtw_ft_update_rsnie(
 	u8 *pie;
 	u32 len;
 
-	pie = rtw_get_ie(pft_roam->updated_ft_ies, EID_WPA2, &len,
+	pie = rtw_get_ie(pft_roam->updated_ft_ies, WLAN_EID_RSN, &len,
 			pft_roam->updated_ft_ies_len);
 
 	if (!bwrite)
 		return (pie)?_SUCCESS:_FAIL;
 
 	if (pie) {
-		*pframe = rtw_set_ie(((u8 *)*pframe), EID_WPA2, len,
+		*pframe = rtw_set_ie(((u8 *)*pframe), WLAN_EID_RSN, len,
 						pie+2, &(pattrib->pktlen));
 	} else
 		return _FAIL;
@@ -14021,11 +14021,11 @@ u8 join_cmd_hdl(_adapter *padapter, u8 *pbuf)
 #endif /* CONFIG_80211N_HT */
 
 #ifdef CONFIG_80211AC_VHT
-		case EID_VHTCapability: /* Get VHT Cap IE. */
+		case WLAN_EID_VHT_CAPABILITY: /* Get VHT Cap IE. */
 			pmlmeinfo->VHT_enable = 1;
 			break;
 
-		case EID_VHTOperation: /* Get VHT Operation IE. */
+		case WLAN_EID_VHT_OPERATION: /* Get VHT Operation IE. */
 			break;
 #endif /* CONFIG_80211AC_VHT */
 		default:

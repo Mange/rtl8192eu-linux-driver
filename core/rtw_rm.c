@@ -1103,11 +1103,11 @@ static u8 *rm_gen_bcn_detail_elem(_adapter *padapter, u8 *pframe,
 					continue;
 #if (RM_MORE_DBG_MSG)
 				switch (eid) {
-				case EID_QBSSLoad:
-					RTW_INFO("RM: EID_QBSSLoad\n");
+				case WLAN_EID_QBSS_LOAD:
+					RTW_INFO("RM: WLAN_EID_QBSS_LOAD\n");
 					break;
-				case EID_HTCapability:
-					RTW_INFO("RM: EID_HTCapability\n");
+				case WLAN_EID_HT_CAPABILITY:
+					RTW_INFO("RM: WLAN_EID_HT_CAPABILITY\n");
 					break;
 				case _MDIE_:
 					RTW_INFO("RM: EID_MobilityDomain\n");
@@ -1220,7 +1220,7 @@ static u8 *rm_bcn_rep_fill_scan_resule (struct rm_obj *prm,
 
 	my_len = 0;
 	/* meas ID */
-	val8 = EID_MeasureReport;
+	val8 = WLAN_EID_MEASURE_REPORT;
 	pframe = rtw_set_fixed_ie(pframe, 1, &val8, &my_len);
 
 	/* remember position form elelment length */

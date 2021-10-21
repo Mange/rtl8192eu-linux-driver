@@ -763,7 +763,7 @@ u32	rtw_build_vht_operation_ie(_adapter *padapter, u8 *pbuf, u8 channel)
 
 	memcpy(operation + 3, pvhtpriv->vht_mcs_map, 2);
 
-	rtw_set_ie(pbuf, EID_VHTOperation, 5, operation, &len);
+	rtw_set_ie(pbuf, WLAN_EID_VHT_OPERATION, 5, operation, &len);
 
 	return len;
 }
@@ -786,7 +786,7 @@ u32	rtw_build_vht_op_mode_notify_ie(_adapter *padapter, u8 *pbuf, u8 bw)
 
 	pvhtpriv->vht_op_mode_notify = opmode;
 
-	pbuf = rtw_set_ie(pbuf, EID_OpModeNotification, 1, &opmode, &len);
+	pbuf = rtw_set_ie(pbuf, WLAN_EID_OPMODE_NOTIF, 1, &opmode, &len);
 
 	return len;
 }
@@ -926,7 +926,7 @@ u32	rtw_build_vht_cap_ie(_adapter *padapter, u8 *pbuf)
 	SET_VHT_CAPABILITY_ELE_MCS_RX_HIGHEST_RATE(pcap, HighestRate); /* indicate we support highest rx rate is 600Mbps. */
 	SET_VHT_CAPABILITY_ELE_MCS_TX_HIGHEST_RATE(pcap, HighestRate); /* indicate we support highest tx rate is 600Mbps. */
 
-	pbuf = rtw_set_ie(pbuf, EID_VHTCapability, 12, pcap, &len);
+	pbuf = rtw_set_ie(pbuf, WLAN_EID_VHT_CAPABILITY, 12, pcap, &len);
 
 	return len;
 }
@@ -948,10 +948,10 @@ u32 rtw_restructure_vht_ie(_adapter *padapter, u8 *in_ie, u8 *out_ie, uint in_le
 	ht_op_ie = rtw_get_ie(in_ie + 12, WLAN_EID_HT_OPERATION, &ielen, in_len - 12);
 	if (!ht_op_ie || ielen != HT_OP_IE_LEN)
 		goto exit;
-	vht_cap_ie = rtw_get_ie(in_ie + 12, EID_VHTCapability, &ielen, in_len - 12);
+	vht_cap_ie = rtw_get_ie(in_ie + 12, WLAN_EID_VHT_CAPABILITY, &ielen, in_len - 12);
 	if (!vht_cap_ie || ielen != VHT_CAP_IE_LEN)
 		goto exit;
-	vht_op_ie = rtw_get_ie(in_ie + 12, EID_VHTOperation, &ielen, in_len - 12);
+	vht_op_ie = rtw_get_ie(in_ie + 12, WLAN_EID_VHT_OPERATION, &ielen, in_len - 12);
 	if (!vht_op_ie || ielen != VHT_OP_IE_LEN)
 		goto exit;
 
@@ -961,7 +961,7 @@ u32 rtw_restructure_vht_ie(_adapter *padapter, u8 *in_ie, u8 *out_ie, uint in_le
 
 	/* VHT Operation element */
 	out_vht_op_ie = out_ie + *pout_len;
-	rtw_set_ie(out_vht_op_ie, EID_VHTOperation, VHT_OP_IE_LEN, vht_op_ie + 2 , pout_len);
+	rtw_set_ie(out_vht_op_ie, WLAN_EID_VHT_OPERATION, VHT_OP_IE_LEN, vht_op_ie + 2 , pout_len);
 
 	/* get primary channel from HT_OP_IE */
 	oper_ch = GET_HT_OP_ELE_PRI_CHL(ht_op_ie + 2);
@@ -1072,7 +1072,7 @@ void rtw_vht_ies_attach(_adapter *padapter, WLAN_BSSID_EX *pnetwork)
 	sint ie_len = 0;
 	u8 *p = NULL;
 
-	p = rtw_get_ie(pnetwork->IEs + _BEACON_IE_OFFSET_, EID_VHTCapability, &ie_len,
+	p = rtw_get_ie(pnetwork->IEs + _BEACON_IE_OFFSET_, WLAN_EID_VHT_CAPABILITY, &ie_len,
 			(pnetwork->IELength - _BEACON_IE_OFFSET_));
 	if (p && ie_len > 0)
 		return;
@@ -1082,7 +1082,7 @@ void rtw_vht_ies_attach(_adapter *padapter, WLAN_BSSID_EX *pnetwork)
 	/* VHT Operation mode notifiy bit in Extended IE (127) */
 	SET_EXT_CAPABILITY_ELE_OP_MODE_NOTIF(pmlmepriv->ext_capab_ie_data, 1);
 	pmlmepriv->ext_capab_ie_len = 10;
-	rtw_set_ie(pnetwork->IEs + pnetwork->IELength, EID_EXTCapability, 8, pmlmepriv->ext_capab_ie_data, &len);
+	rtw_set_ie(pnetwork->IEs + pnetwork->IELength, WLAN_EID_EXT_CAPABILITY, 8, pmlmepriv->ext_capab_ie_data, &len);
 	pnetwork->IELength += pmlmepriv->ext_capab_ie_len;
 
 	/* VHT Capabilities element */
@@ -1103,9 +1103,9 @@ void rtw_vht_ies_detach(_adapter *padapter, WLAN_BSSID_EX *pnetwork)
 {
 	struct mlme_priv *pmlmepriv = &(padapter->mlmepriv);
 
-	rtw_remove_bcn_ie(padapter, pnetwork, EID_EXTCapability);
-	rtw_remove_bcn_ie(padapter, pnetwork, EID_VHTCapability);
-	rtw_remove_bcn_ie(padapter, pnetwork, EID_VHTOperation);
+	rtw_remove_bcn_ie(padapter, pnetwork, WLAN_EID_EXT_CAPABILITY);
+	rtw_remove_bcn_ie(padapter, pnetwork, WLAN_EID_VHT_CAPABILITY);
+	rtw_remove_bcn_ie(padapter, pnetwork, WLAN_EID_VHT_OPERATION);
 
 	pmlmepriv->vhtpriv.vht_option = _FALSE;
 }
@@ -1123,7 +1123,7 @@ void rtw_check_for_vht20(_adapter *adapter, u8 *ies, int ies_len)
 		int vht_op_ielen;
 
 		RTW_INFO(FUNC_ADPT_FMT" vht80 is not allowed without ht40\n", FUNC_ADPT_ARG(adapter));
-		vht_op_ie = rtw_get_ie(ies, EID_VHTOperation, &vht_op_ielen, ies_len);
+		vht_op_ie = rtw_get_ie(ies, WLAN_EID_VHT_OPERATION, &vht_op_ielen, ies_len);
 		if (vht_op_ie && vht_op_ielen) {
 			RTW_INFO(FUNC_ADPT_FMT" switch to vht20\n", FUNC_ADPT_ARG(adapter));
 			SET_VHT_OPERATION_ELE_CHL_WIDTH(vht_op_ie + 2, 0);

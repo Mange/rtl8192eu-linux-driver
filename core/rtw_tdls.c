@@ -664,7 +664,7 @@ void rtw_tdls_process_vht_op_mode_notify(_adapter *padapter, struct sta_info *pt
 
 u8 *rtw_tdls_set_aid(_adapter *padapter, u8 *pframe, struct pkt_attrib *pattrib)
 {
-	return rtw_set_ie(pframe, EID_AID, 2, (u8 *)&(padapter->mlmepriv.cur_network.aid), &(pattrib->pktlen));
+	return rtw_set_ie(pframe, WLAN_EID_AID, 2, (u8 *)&(padapter->mlmepriv.cur_network.aid), &(pattrib->pktlen));
 }
 
 u8 *rtw_tdls_set_vht_cap(_adapter *padapter, u8 *pframe, struct pkt_attrib *pattrib)
@@ -777,10 +777,10 @@ u8 *rtw_tdls_set_timeout_interval(struct tdls_txmgmt *ptxmgmt, u8 *pframe, struc
 	int len = 0;
 
 	if (ptxmgmt->len > 0)
-		p = rtw_get_ie(ptxmgmt->buf, WLAN_EID_TIMEOUT_INTERVAL, &len, ptxmgmt->len);
+		p = rtw_get_ie(ptxmgmt->buf, WLAN_WLAN_EID_TIMEOUT_INTERVAL_INTERVAL, &len, ptxmgmt->len);
 
 	if (p != NULL)
-		return rtw_set_ie(pframe, WLAN_EID_TIMEOUT_INTERVAL, len, p + 2, &(pattrib->pktlen));
+		return rtw_set_ie(pframe, WLAN_WLAN_EID_TIMEOUT_INTERVAL_INTERVAL, len, p + 2, &(pattrib->pktlen));
 	else {
 		/* Timeout interval */
 		timeout_itvl[0] = 0x02;
@@ -789,7 +789,7 @@ u8 *rtw_tdls_set_timeout_interval(struct tdls_txmgmt *ptxmgmt, u8 *pframe, struc
 		else
 			memcpy(timeout_itvl + 1, (u8 *)(&ptdls_sta->TDLS_PeerKey_Lifetime), 4);
 
-		return rtw_set_ie(pframe, WLAN_EID_TIMEOUT_INTERVAL, 5, timeout_itvl, &(pattrib->pktlen));
+		return rtw_set_ie(pframe, WLAN_WLAN_EID_TIMEOUT_INTERVAL_INTERVAL, 5, timeout_itvl, &(pattrib->pktlen));
 	}
 }
 
@@ -802,7 +802,7 @@ u8 *rtw_tdls_set_bss_coexist(_adapter *padapter, u8 *pframe, struct pkt_attrib *
 
 	/* Information Bit should be set by TDLS test plan 5.9 */
 	iedata |= BIT(0);
-	return rtw_set_ie(pframe, EID_BSSCoexistence, 1, &iedata, &(pattrib->pktlen));
+	return rtw_set_ie(pframe, WLAN_EID_BSS_COEX_2040, 1, &iedata, &(pattrib->pktlen));
 }
 
 u8 *rtw_tdls_set_payload_type(u8 *pframe, struct pkt_attrib *pattrib)
@@ -843,7 +843,7 @@ u8 *rtw_tdls_set_reg_class(u8 *pframe, struct pkt_attrib *pattrib, struct sta_in
 
 u8 *rtw_tdls_set_second_channel_offset(u8 *pframe, struct pkt_attrib *pattrib, u8 ch_offset)
 {
-	return rtw_set_ie(pframe, EID_SecondaryChnlOffset , 1, &ch_offset, &(pattrib->pktlen));
+	return rtw_set_ie(pframe, WLAN_EID_SECONDARY_CHANNEL_OFFSET , 1, &ch_offset, &(pattrib->pktlen));
 }
 
 u8 *rtw_tdls_set_capability(_adapter *padapter, u8 *pframe, struct pkt_attrib *pattrib)
@@ -1949,7 +1949,7 @@ sint On_TDLS_Setup_Req(_adapter *padapter, union recv_frame *precv_frame, struct
 				if (prx_pkt_attrib->encrypt)
 					memcpy(SNonce, (ptr + j + 52), 32);
 				break;
-			case WLAN_EID_TIMEOUT_INTERVAL:
+			case WLAN_WLAN_EID_TIMEOUT_INTERVAL_INTERVAL:
 				if (prx_pkt_attrib->encrypt)
 					timeout_interval = cpu_to_le32(*(u32 *)(ptr + j + 3));
 				break;
@@ -1961,13 +1961,13 @@ sint On_TDLS_Setup_Req(_adapter *padapter, union recv_frame *precv_frame, struct
 				break;
 #endif
 #ifdef CONFIG_80211AC_VHT
-			case EID_AID:
+			case WLAN_EID_AID:
 				break;
-			case EID_VHTCapability:
+			case WLAN_EID_VHT_CAPABILITY:
 				rtw_tdls_process_vht_cap(padapter, ptdls_sta, pIE->data, pIE->Length);
 				break;
 #endif
-			case EID_BSSCoexistence:
+			case WLAN_EID_BSS_COEX_2040:
 				break;
 			case WLAN_EID_LINK_ID:
 				if (_rtw_memcmp(get_bssid(pmlmepriv), pIE->data, 6) == _FALSE)
@@ -2128,7 +2128,7 @@ int On_TDLS_Setup_Rsp(_adapter *padapter, union recv_frame *precv_frame, struct 
 			pftie = (u8 *)pIE;
 			memcpy(ANonce, (ptr + j + 20), 32);
 			break;
-		case WLAN_EID_TIMEOUT_INTERVAL:
+		case WLAN_WLAN_EID_TIMEOUT_INTERVAL_INTERVAL:
 			ptimeout_ie = (u8 *)pIE;
 			timeout_interval = cpu_to_le32(*(u32 *)(ptimeout_ie + 3));
 			break;
@@ -2140,17 +2140,17 @@ int On_TDLS_Setup_Rsp(_adapter *padapter, union recv_frame *precv_frame, struct 
 			break;
 #endif
 #ifdef CONFIG_80211AC_VHT
-		case EID_AID:
+		case WLAN_EID_AID:
 			/* todo in the future if necessary */
 			break;
-		case EID_VHTCapability:
+		case WLAN_EID_VHT_CAPABILITY:
 			rtw_tdls_process_vht_cap(padapter, ptdls_sta, pIE->data, pIE->Length);
 			break;
-		case EID_OpModeNotification:
+		case WLAN_EID_OPMODE_NOTIF:
 			rtw_tdls_process_vht_op_mode_notify(padapter, ptdls_sta, pIE->data, pIE->Length);
 			break;
 #endif
-		case EID_BSSCoexistence:
+		case WLAN_EID_BSS_COEX_2040:
 			break;
 		case WLAN_EID_LINK_ID:
 			plinkid_ie = (u8 *)pIE;
@@ -2274,7 +2274,7 @@ int On_TDLS_Setup_Cfm(_adapter *padapter, union recv_frame *precv_frame, struct 
 		case WLAN_EID_FAST_BSS_TRANSITION:
 			pftie = (u8 *)pIE;
 			break;
-		case WLAN_EID_TIMEOUT_INTERVAL:
+		case WLAN_WLAN_EID_TIMEOUT_INTERVAL_INTERVAL:
 			ptimeout_ie = (u8 *)pIE;
 			break;
 #ifdef CONFIG_80211N_HT
@@ -2282,10 +2282,10 @@ int On_TDLS_Setup_Cfm(_adapter *padapter, union recv_frame *precv_frame, struct 
 			break;
 #endif
 #ifdef CONFIG_80211AC_VHT
-		case EID_VHTOperation:
+		case WLAN_EID_VHT_OPERATION:
 			rtw_tdls_process_vht_operation(padapter, ptdls_sta, pIE->data, pIE->Length);
 			break;
-		case EID_OpModeNotification:
+		case WLAN_EID_OPMODE_NOTIF:
 			rtw_tdls_process_vht_op_mode_notify(padapter, ptdls_sta, pIE->data, pIE->Length);
 			break;
 #endif
@@ -2559,7 +2559,7 @@ sint On_TDLS_Ch_Switch_Req(_adapter *padapter, union recv_frame *precv_frame, st
 		pIE = (PNDIS_802_11_VARIABLE_IEs)(ptr + j);
 
 		switch (pIE->ElementID) {
-		case EID_SecondaryChnlOffset:
+		case WLAN_EID_SECONDARY_CHANNEL_OFFSET:
 			switch (*(pIE->data)) {
 			case EXTCHNL_OFFSET_UPPER:
 				pchsw_info->ch_offset = HAL_PRIME_CHNL_OFFSET_LOWER;

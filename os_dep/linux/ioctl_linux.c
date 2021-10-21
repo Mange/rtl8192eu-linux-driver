@@ -367,7 +367,7 @@ static inline char *iwe_stream_protocol_process(_adapter *padapter,
 #ifdef CONFIG_80211AC_VHT
 	/* parsing VHT_CAP_IE */
 	if(padapter->registrypriv.wireless_mode & WIRELESS_11AC) {
-		p = rtw_get_ie(&pnetwork->network.IEs[ie_offset], EID_VHTCapability, &vht_ielen, pnetwork->network.IELength - ie_offset);
+		p = rtw_get_ie(&pnetwork->network.IEs[ie_offset], WLAN_EID_VHT_CAPABILITY, &vht_ielen, pnetwork->network.IELength - ie_offset);
 		if (p && vht_ielen > 0)
 			vht_cap = _TRUE;
 	}
@@ -436,7 +436,7 @@ static inline char *iwe_stream_rate_process(_adapter *padapter,
 #ifdef CONFIG_80211AC_VHT
 	/* parsing VHT_CAP_IE */
 	if(padapter->registrypriv.wireless_mode & WIRELESS_11AC){
-		p = rtw_get_ie(&pnetwork->network.IEs[ie_offset], EID_VHTCapability, &vht_ielen, pnetwork->network.IELength - ie_offset);
+		p = rtw_get_ie(&pnetwork->network.IEs[ie_offset], WLAN_EID_VHT_CAPABILITY, &vht_ielen, pnetwork->network.IELength - ie_offset);
 		if (p && vht_ielen > 0) {
 			u8	mcs_map[2];
 

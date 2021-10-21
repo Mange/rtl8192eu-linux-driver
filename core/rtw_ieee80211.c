@@ -1776,13 +1776,13 @@ void rtw_ies_get_chbw(u8 *ies, int ies_len, u8 *ch, u8 *bw, u8 *offset, u8 ht, u
 		u8 *ht_cap_ie, *ht_op_ie;
 		int ht_cap_ielen, ht_op_ielen;
 
-		ht_cap_ie = rtw_get_ie(ies, EID_HTCapability, &ht_cap_ielen, ies_len);
+		ht_cap_ie = rtw_get_ie(ies, WLAN_EID_HT_CAPABILITY, &ht_cap_ielen, ies_len);
 		if (ht_cap_ie && ht_cap_ielen) {
 			if (GET_HT_CAP_ELE_CHL_WIDTH(ht_cap_ie + 2))
 				*bw = CHANNEL_WIDTH_40;
 		}
 
-		ht_op_ie = rtw_get_ie(ies, EID_HTInfo, &ht_op_ielen, ies_len);
+		ht_op_ie = rtw_get_ie(ies, WLAN_EID_HT_OPERATION, &ht_op_ielen, ies_len);
 		if (ht_op_ie && ht_op_ielen) {
 			if (*ch == 0)
 				*ch = GET_HT_OP_ELE_PRI_CHL(ht_op_ie + 2);
@@ -1811,7 +1811,7 @@ void rtw_ies_get_chbw(u8 *ies, int ies_len, u8 *ch, u8 *bw, u8 *offset, u8 ht, u
 			u8 *vht_op_ie;
 			int vht_op_ielen;
 
-			vht_op_ie = rtw_get_ie(ies, EID_VHTOperation, &vht_op_ielen, ies_len);
+			vht_op_ie = rtw_get_ie(ies, WLAN_EID_VHT_OPERATION, &vht_op_ielen, ies_len);
 			if (vht_op_ie && vht_op_ielen) {
 				if (GET_VHT_OPERATION_ELE_CHL_WIDTH(vht_op_ie + 2) >= 1)
 					*bw = CHANNEL_WIDTH_80;

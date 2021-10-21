@@ -2691,7 +2691,7 @@ void update_beacon_info(_adapter *padapter, u8 *pframe, uint pkt_len, struct sta
 			bwmode_update_check(padapter, pIE);
 			break;
 #ifdef CONFIG_80211AC_VHT
-		case EID_OpModeNotification:
+		case WLAN_EID_OPMODE_NOTIF:
 			rtw_process_vht_op_mode_notify(padapter, pIE->data, psta);
 			break;
 #endif /* CONFIG_80211AC_VHT */
@@ -3254,7 +3254,7 @@ unsigned char get_vht_mu_bfer_cap(u8 *pframe, uint len)
 
 		switch (pIE->ElementID) {
 
-		case EID_VHTCapability:
+		case WLAN_EID_VHT_CAPABILITY:
 			mu_bfer = GET_VHT_CAPABILITY_ELE_MU_BFER(pIE->data);
 			break;
 		default:
