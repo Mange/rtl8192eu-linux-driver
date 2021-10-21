@@ -754,17 +754,17 @@ u8 *rtw_tdls_set_ftie(struct tdls_txmgmt *ptxmgmt, u8 *pframe, struct pkt_attrib
 	int len = 0;
 
 	if (ptxmgmt->len > 0)
-		p = rtw_get_ie(ptxmgmt->buf, _FTIE_, &len, ptxmgmt->len);
+		p = rtw_get_ie(ptxmgmt->buf, WLAN_EID_FAST_BSS_TRANSITION, &len, ptxmgmt->len);
 
 	if (p != NULL)
-		return rtw_set_ie(pframe, _FTIE_, len, p + 2, &(pattrib->pktlen));
+		return rtw_set_ie(pframe, WLAN_EID_FAST_BSS_TRANSITION, len, p + 2, &(pattrib->pktlen));
 	else {
 		if (ANonce != NULL)
 			memcpy(FTIE.Anonce, ANonce, WPA_NONCE_LEN);
 		if (SNonce != NULL)
 			memcpy(FTIE.Snonce, SNonce, WPA_NONCE_LEN);
 
-		return rtw_set_ie(pframe, _FTIE_, TDLS_FTIE_DATA_LEN,
+		return rtw_set_ie(pframe, WLAN_EID_FAST_BSS_TRANSITION, TDLS_FTIE_DATA_LEN,
 						  (u8 *)FTIE.data, &(pattrib->pktlen));
 	}
 }
@@ -881,7 +881,7 @@ u8 *rtw_tdls_set_supported_rate(_adapter *padapter, u8 *pframe, struct pkt_attri
 
 u8 *rtw_tdls_set_sup_reg_class(u8 *pframe, struct pkt_attrib *pattrib)
 {
-	return rtw_set_ie(pframe, _SRC_IE_ , sizeof(TDLS_SRC), TDLS_SRC, &(pattrib->pktlen));
+	return rtw_set_ie(pframe, WLAN_EID_SUPPORTED_REGULATORY_CLASSES , sizeof(TDLS_SRC), TDLS_SRC, &(pattrib->pktlen));
 }
 
 u8 *rtw_tdls_set_linkid(_adapter *padapter, u8 *pframe, struct pkt_attrib *pattrib, u8 init)
@@ -900,7 +900,7 @@ u8 *rtw_tdls_set_linkid(_adapter *padapter, u8 *pframe, struct pkt_attrib *pattr
 		memcpy((link_id_addr + 6), pattrib->dst, 6);
 		memcpy((link_id_addr + 12), pattrib->src, 6);
 	}
-	return rtw_set_ie(pframe, _LINK_ID_IE_, 18, link_id_addr, &(pattrib->pktlen));
+	return rtw_set_ie(pframe, WLAN_EID_LINK_ID, 18, link_id_addr, &(pattrib->pktlen));
 }
 
 #ifdef CONFIG_TDLS_CH_SW
@@ -924,7 +924,7 @@ u8 *rtw_tdls_set_ch_sw(u8 *pframe, struct pkt_attrib *pattrib, struct sta_info *
 	memcpy(ch_switch_timing, &switch_time, 2);
 	memcpy(ch_switch_timing + 2, &switch_timeout, 2);
 
-	return rtw_set_ie(pframe, _CH_SWITCH_TIMING_,  4, ch_switch_timing, &(pattrib->pktlen));
+	return rtw_set_ie(pframe, WLAN_EID_CHAN_SWITCH_TIMING,  4, ch_switch_timing, &(pattrib->pktlen));
 }
 
 void rtw_tdls_set_ch_sw_oper_control(_adapter *padapter, u8 enable)
@@ -1945,7 +1945,7 @@ sint On_TDLS_Setup_Req(_adapter *padapter, union recv_frame *precv_frame, struct
 				break;
 			case WLAN_EID_VENDOR_SPECIFIC:
 				break;
-			case _FTIE_:
+			case WLAN_EID_FAST_BSS_TRANSITION:
 				if (prx_pkt_attrib->encrypt)
 					memcpy(SNonce, (ptr + j + 52), 32);
 				break;
@@ -1953,7 +1953,7 @@ sint On_TDLS_Setup_Req(_adapter *padapter, union recv_frame *precv_frame, struct
 				if (prx_pkt_attrib->encrypt)
 					timeout_interval = cpu_to_le32(*(u32 *)(ptr + j + 3));
 				break;
-			case _RIC_Descriptor_IE_:
+			case WLAN_EID_RIC_DESCRIPTOR:
 				break;
 #ifdef CONFIG_80211N_HT
 			case WLAN_EID_HT_CAPABILITY:
@@ -1969,7 +1969,7 @@ sint On_TDLS_Setup_Req(_adapter *padapter, union recv_frame *precv_frame, struct
 #endif
 			case EID_BSSCoexistence:
 				break;
-			case _LINK_ID_IE_:
+			case WLAN_EID_LINK_ID:
 				if (_rtw_memcmp(get_bssid(pmlmepriv), pIE->data, 6) == _FALSE)
 					txmgmt.status_code = _STATS_NOT_IN_SAME_BSS_;
 				break;
@@ -2124,7 +2124,7 @@ int On_TDLS_Setup_Rsp(_adapter *padapter, union recv_frame *precv_frame, struct 
 					ptdls_sta->qos_option = _TRUE;
 			}
 			break;
-		case _FTIE_:
+		case WLAN_EID_FAST_BSS_TRANSITION:
 			pftie = (u8 *)pIE;
 			memcpy(ANonce, (ptr + j + 20), 32);
 			break;
@@ -2132,7 +2132,7 @@ int On_TDLS_Setup_Rsp(_adapter *padapter, union recv_frame *precv_frame, struct 
 			ptimeout_ie = (u8 *)pIE;
 			timeout_interval = cpu_to_le32(*(u32 *)(ptimeout_ie + 3));
 			break;
-		case _RIC_Descriptor_IE_:
+		case WLAN_EID_RIC_DESCRIPTOR:
 			break;
 #ifdef CONFIG_80211N_HT
 		case WLAN_EID_HT_CAPABILITY:
@@ -2152,7 +2152,7 @@ int On_TDLS_Setup_Rsp(_adapter *padapter, union recv_frame *precv_frame, struct 
 #endif
 		case EID_BSSCoexistence:
 			break;
-		case _LINK_ID_IE_:
+		case WLAN_EID_LINK_ID:
 			plinkid_ie = (u8 *)pIE;
 			break;
 		default:
@@ -2271,7 +2271,7 @@ int On_TDLS_Setup_Cfm(_adapter *padapter, union recv_frame *precv_frame, struct 
 				ptdls_sta->qos_option = _TRUE;
 			}
 			break;
-		case _FTIE_:
+		case WLAN_EID_FAST_BSS_TRANSITION:
 			pftie = (u8 *)pIE;
 			break;
 		case WLAN_EID_TIMEOUT_INTERVAL:
@@ -2289,7 +2289,7 @@ int On_TDLS_Setup_Cfm(_adapter *padapter, union recv_frame *precv_frame, struct 
 			rtw_tdls_process_vht_op_mode_notify(padapter, ptdls_sta, pIE->data, pIE->Length);
 			break;
 #endif
-		case _LINK_ID_IE_:
+		case WLAN_EID_LINK_ID:
 			plinkid_ie = (u8 *)pIE;
 			break;
 		default:
@@ -2371,7 +2371,7 @@ int On_TDLS_Dis_Req(_adapter *padapter, union recv_frame *precv_frame)
 		pIE = (PNDIS_802_11_VARIABLE_IEs)(ptr + j);
 
 		switch (pIE->ElementID) {
-		case _LINK_ID_IE_:
+		case WLAN_EID_LINK_ID:
 			psta_ap = rtw_get_stainfo(pstapriv, pIE->data);
 			if (psta_ap == NULL)
 				goto exit;
@@ -2574,9 +2574,9 @@ sint On_TDLS_Ch_Switch_Req(_adapter *padapter, union recv_frame *precv_frame, st
 				break;
 			}
 			break;
-		case _LINK_ID_IE_:
+		case WLAN_EID_LINK_ID:
 			break;
-		case _CH_SWITCH_TIMING_:
+		case WLAN_EID_CHAN_SWITCH_TIMING:
 			ptdls_sta->ch_switch_time = (RTW_GET_LE16(pIE->data) >= TDLS_CH_SWITCH_TIME * 1000) ?
 				RTW_GET_LE16(pIE->data) : TDLS_CH_SWITCH_TIME * 1000;
 			ptdls_sta->ch_switch_timeout = (RTW_GET_LE16(pIE->data + 2) >= TDLS_CH_SWITCH_TIMEOUT * 1000) ?
@@ -2672,9 +2672,9 @@ sint On_TDLS_Ch_Switch_Rsp(_adapter *padapter, union recv_frame *precv_frame, st
 		pIE = (PNDIS_802_11_VARIABLE_IEs)(ptr + j);
 
 		switch (pIE->ElementID) {
-		case _LINK_ID_IE_:
+		case WLAN_EID_LINK_ID:
 			break;
-		case _CH_SWITCH_TIMING_:
+		case WLAN_EID_CHAN_SWITCH_TIMING:
 			memcpy(&switch_time, pIE->data, 2);
 			if (switch_time > ptdls_sta->ch_switch_time)
 				memcpy(&ptdls_sta->ch_switch_time, &switch_time, 2);
@@ -3144,7 +3144,7 @@ void rtw_build_tdls_peer_traffic_indication_ies(_adapter *padapter, struct xmit_
 		AC_queue = BIT(2);
 	if (ptdls_sta->uapsd_vo & BIT(1))
 		AC_queue = BIT(3);
-	pframe = rtw_set_ie(pframe, _PTI_BUFFER_STATUS_, 1, &AC_queue, &(pattrib->pktlen));
+	pframe = rtw_set_ie(pframe, WLAN_EID_PU_BUFFER_STATUS, 1, &AC_queue, &(pattrib->pktlen));
 
 }
 

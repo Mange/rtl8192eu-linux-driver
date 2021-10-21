@@ -4350,15 +4350,15 @@ sint rtw_restruct_sec_ie(_adapter *adapter, u8 *out_ie)
 	uint	ndisauthmode = psecuritypriv->ndisauthtype;
 
 	if ((ndisauthmode == Ndis802_11AuthModeWPA) || (ndisauthmode == Ndis802_11AuthModeWPAPSK))
-		authmode = _WPA_IE_ID_;
+		authmode = WLAN_EID_VENDOR_SPECIFIC;
 	if ((ndisauthmode == Ndis802_11AuthModeWPA2) || (ndisauthmode == Ndis802_11AuthModeWPA2PSK))
-		authmode = _WPA2_IE_ID_;
+		authmode = WLAN_EID_RSN;
 
 	if (check_fwstate(pmlmepriv, WIFI_UNDER_WPS)) {
 		memcpy(out_ie, psecuritypriv->wps_ie, psecuritypriv->wps_ie_len);
 		ielength = psecuritypriv->wps_ie_len;
 
-	} else if ((authmode == _WPA_IE_ID_) || (authmode == _WPA2_IE_ID_)) {
+	} else if ((authmode == WLAN_EID_VENDOR_SPECIFIC) || (authmode == WLAN_EID_RSN)) {
 		/* copy RSN or SSN		 */
 		memcpy(out_ie, psecuritypriv->supplicant_ie, psecuritypriv->supplicant_ie[1] + 2);
 		/* debug for CONFIG_IEEE80211W

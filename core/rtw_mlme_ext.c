@@ -13372,9 +13372,9 @@ static u8 rtw_ft_update_ftie(
 	u8 *pie;
 	u32 len;
 
-	if ((pie = rtw_get_ie(pft_roam->updated_ft_ies, _FTIE_, &len,
+	if ((pie = rtw_get_ie(pft_roam->updated_ft_ies, WLAN_EID_FAST_BSS_TRANSITION, &len,
 				pft_roam->updated_ft_ies_len)) != NULL) {
-		*pframe = rtw_set_ie(*pframe, _FTIE_, len ,
+		*pframe = rtw_set_ie(*pframe, WLAN_EID_FAST_BSS_TRANSITION, len ,
 					(pie+2), &(pattrib->pktlen));
 	} else
 		return _FAIL;

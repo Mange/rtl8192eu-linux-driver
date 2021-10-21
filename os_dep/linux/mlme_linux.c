@@ -187,7 +187,7 @@ void rtw_report_sec_ie(_adapter *adapter, u8 authmode, u8 *sec_ie)
 
 
 	buff = NULL;
-	if (authmode == _WPA_IE_ID_) {
+	if (authmode == WLAN_EID_VENDOR_SPECIFIC) {
 
 		buff = rtw_zmalloc(IW_CUSTOM_MAX);
 		if (NULL == buff) {
