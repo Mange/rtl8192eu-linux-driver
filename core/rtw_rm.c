@@ -812,7 +812,7 @@ int rm_recv_radio_mens_req(_adapter *padapter,
 	RTW_INFO("RM: meas_type = %d\n", prm->q.m_type);
 #endif
 
-	if (prm->q.e_id != _MEAS_REQ_IE_) /* 38 */
+	if (prm->q.e_id != WLAN_EID_MEASURE_REQUEST) /* 38 */
 		return _FALSE;
 
 	switch (prm->q.m_type) {
@@ -894,7 +894,7 @@ int rm_recv_radio_mens_rep(_adapter *padapter,
 	RTW_INFO("RM: meas_mode = %d\n", prm->p.m_mode);
 	RTW_INFO("RM: meas_type = %d\n", prm->p.m_type);
 #endif
-	if (prm->p.e_id != _MEAS_RSP_IE_) /* 39 */
+	if (prm->p.e_id != WLAN_EID_MEASURE_REPORT) /* 39 */
 		return _FALSE;
 
 	RTW_INFO("RM: recv %s\n", rm_type_rep_name(prm->p.m_type));
@@ -2280,7 +2280,7 @@ static void rm_dbg_add_meas(_adapter *padapter, char *s)
 		return;
 	}
 	prm->q.category = WLAN_CATEGORY_RADIO_MEASUREMENT;
-	prm->q.e_id = _MEAS_REQ_IE_; /* 38 */
+	prm->q.e_id = WLAN_EID_MEASURE_REQUEST; /* 38 */
 
 	if (prm->q.action_code == RM_ACT_RADIO_MEAS_REQ)
 		sprintf(pstr(s), "\nAdd rmid=%x, meas_type=%s ok\n",

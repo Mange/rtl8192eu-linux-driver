@@ -718,7 +718,7 @@ u8 *rtw_tdls_set_sup_ch(_adapter *adapter, u8 *pframe, struct pkt_attrib *pattri
 		ch_set_idx++;
 	}
 
-	return rtw_set_ie(pframe, _SUPPORTED_CH_IE_, sup_ch_idx, sup_ch, &(pattrib->pktlen));
+	return rtw_set_ie(pframe, WLAN_EID_SUPPORTED_CHANNELS, sup_ch_idx, sup_ch, &(pattrib->pktlen));
 }
 
 u8 *rtw_tdls_set_rsnie(struct tdls_txmgmt *ptxmgmt, u8 *pframe, struct pkt_attrib *pattrib,  int init, struct sta_info *ptdls_sta)
@@ -1914,7 +1914,7 @@ sint On_TDLS_Setup_Req(_adapter *padapter, union recv_frame *precv_frame, struct
 				memcpy(supportRate, pIE->data, pIE->Length);
 				supportRateNum = pIE->Length;
 				break;
-			case _COUNTRY_IE_:
+			case WLAN_EID_COUNTRY:
 				break;
 			case WLAN_EID_EXT_SUPP_RATES:
 				if (supportRateNum < sizeof(supportRate)) {
@@ -1922,7 +1922,7 @@ sint On_TDLS_Setup_Req(_adapter *padapter, union recv_frame *precv_frame, struct
 					supportRateNum += pIE->Length;
 				}
 				break;
-			case _SUPPORTED_CH_IE_:
+			case WLAN_EID_SUPPORTED_CHANNELS:
 				break;
 			case WLAN_EID_RSN:
 				rsnie_included = 1;
@@ -2096,7 +2096,7 @@ int On_TDLS_Setup_Rsp(_adapter *padapter, union recv_frame *precv_frame, struct 
 			memcpy(supportRate, pIE->data, pIE->Length);
 			supportRateNum = pIE->Length;
 			break;
-		case _COUNTRY_IE_:
+		case WLAN_EID_COUNTRY:
 			break;
 		case WLAN_EID_EXT_SUPP_RATES:
 			if (supportRateNum < sizeof(supportRate)) {
@@ -2104,7 +2104,7 @@ int On_TDLS_Setup_Rsp(_adapter *padapter, union recv_frame *precv_frame, struct 
 				supportRateNum += pIE->Length;
 			}
 			break;
-		case _SUPPORTED_CH_IE_:
+		case WLAN_EID_SUPPORTED_CHANNELS:
 			break;
 		case WLAN_EID_RSN:
 			prsnie = (u8 *)pIE;

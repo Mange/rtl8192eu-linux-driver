@@ -2732,7 +2732,7 @@ void process_csa_ie(_adapter *padapter, u8 *ies, uint ies_len)
 		pIE = (PNDIS_802_11_VARIABLE_IEs)(ies + i);
 
 		switch (pIE->ElementID) {
-		case _CH_SWTICH_ANNOUNCE_:
+		case WLAN_EID_CHANNEL_SWITCH:
 			ch = *(pIE->data + 1);
 			break;
 		default:
