@@ -90,22 +90,12 @@ enum {
 
 #define GetToDs(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(IEEE80211_FCTL_TODS)) != 0)
 
-#define ClearToDs(pbuf)	\
-	do	{	\
-		*(unsigned short *)(pbuf) &= (~cpu_to_le16(IEEE80211_FCTL_TODS)); \
-	} while (0)
-
 #define SetFrDs(pbuf)	\
 	do	{	\
 		*(unsigned short *)(pbuf) |= cpu_to_le16(IEEE80211_FCTL_FROMDS); \
 	} while (0)
 
 #define GetFrDs(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(IEEE80211_FCTL_FROMDS)) != 0)
-
-#define ClearFrDs(pbuf)	\
-	do	{	\
-		*(unsigned short *)(pbuf) &= (~cpu_to_le16(IEEE80211_FCTL_FROMDS)); \
-	} while (0)
 
 #define get_tofr_ds(pframe)	((GetToDs(pframe) << 1) | GetFrDs(pframe))
 
@@ -159,12 +149,6 @@ enum {
 	} while (0)
 
 #define GetPrivacy(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(IEEE80211_FCTL_PROTECTED)) != 0)
-
-#define ClearPrivacy(pbuf)	\
-	do	{	\
-		*(unsigned short *)(pbuf) &= (~cpu_to_le16(IEEE80211_FCTL_PROTECTED)); \
-	} while (0)
-
 
 #define GetOrder(pbuf)	(((*(unsigned short *)(pbuf)) & le16_to_cpu(IEEE80211_FCTL_ORDER)) != 0)
 
