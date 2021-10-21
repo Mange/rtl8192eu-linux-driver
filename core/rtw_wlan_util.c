@@ -2263,7 +2263,7 @@ int check_ielen(u8 *start, uint len)
 
 int validate_beacon_len(u8 *pframe, u32 len)
 {
-	u8 ie_offset = _BEACON_IE_OFFSET_ + sizeof(struct rtw_ieee80211_hdr_3addr);
+	u8 ie_offset = _BEACON_IE_OFFSET_ + sizeof(struct ieee80211_hdr_3addr);
 
 	if (len < ie_offset) {
 		RTW_INFO("%s: incorrect beacon length(%d)\n", __func__, len);
@@ -2422,7 +2422,7 @@ void rtw_debug_rx_bcn(_adapter *adapter, u8 *pframe, u32 packet_len)
 {
 	struct mlme_ext_priv *pmlmeext = &adapter->mlmeextpriv;
 	struct mlme_ext_info *mlmeinfo = &(pmlmeext->mlmext_info);
-	u16 sn = ((struct rtw_ieee80211_hdr_3addr *)pframe)->seq_ctl >> 4;
+	u16 sn = ((struct ieee80211_hdr_3addr *)pframe)->seq_ctl >> 4;
 	u64 tsf, tsf_offset;
 	u8 dtim_cnt, dtim_period, tim_bmap, tim_pvbit;
 
@@ -2468,8 +2468,8 @@ int rtw_get_bcn_keys(ADAPTER *Adapter, u8 *pframe, u32 packet_len,
 	capability = le16_to_cpu(*(unsigned short *)(pframe + WLAN_HDR_A3_LEN + 10));
 
 	/* checking IEs */
-	left = packet_len - sizeof(struct rtw_ieee80211_hdr_3addr) - _BEACON_IE_OFFSET_;
-	pos = pframe + sizeof(struct rtw_ieee80211_hdr_3addr) + _BEACON_IE_OFFSET_;
+	left = packet_len - sizeof(struct ieee80211_hdr_3addr) - _BEACON_IE_OFFSET_;
+	pos = pframe + sizeof(struct ieee80211_hdr_3addr) + _BEACON_IE_OFFSET_;
 	if (rtw_ieee802_11_parse_elems(pos, left, &elems, 1) == ParseFailed)
 		return _FALSE;
 
@@ -3585,7 +3585,7 @@ void update_TSF(struct mlme_ext_priv *pmlmeext, u8 *pframe, uint len)
 	u8 *pIE;
 	u32 *pbuf;
 
-	pIE = pframe + sizeof(struct rtw_ieee80211_hdr_3addr);
+	pIE = pframe + sizeof(struct ieee80211_hdr_3addr);
 	pbuf = (u32 *)pIE;
 
 	pmlmeext->TSFValue = le32_to_cpu(*(pbuf + 1));
@@ -4178,7 +4178,7 @@ unsigned int setup_beacon_frame(_adapter *padapter, unsigned char *beacon_frame)
 	unsigned short				ATIMWindow;
 	unsigned char					*pframe;
 	struct tx_desc				*ptxdesc;
-	struct rtw_ieee80211_hdr	*pwlanhdr;
+	struct ieee80211_hdr	*pwlanhdr;
 	unsigned short				*fctrl;
 	unsigned int					rate_len, len = 0;
 	struct xmit_priv			*pxmitpriv = &(padapter->xmitpriv);
@@ -4191,9 +4191,9 @@ unsigned int setup_beacon_frame(_adapter *padapter, unsigned char *beacon_frame)
 
 	pframe = beacon_frame + TXDESC_SIZE;
 
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl =&pwlanhdr->frame_control;
 	*(fctrl) = 0;
 
 	memcpy(pwlanhdr->addr1, bc_addr, ETH_ALEN);
@@ -4202,8 +4202,8 @@ unsigned int setup_beacon_frame(_adapter *padapter, unsigned char *beacon_frame)
 
 	set_frame_sub_type(pframe, IEEE80211_STYPE_BEACON);
 
-	pframe += sizeof(struct rtw_ieee80211_hdr_3addr);
-	len = sizeof(struct rtw_ieee80211_hdr_3addr);
+	pframe += sizeof(struct ieee80211_hdr_3addr);
+	len = sizeof(struct ieee80211_hdr_3addr);
 
 	/* timestamp will be inserted by hardware */
 	pframe += 8;

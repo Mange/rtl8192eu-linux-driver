@@ -216,10 +216,10 @@ static int rtw_mesh_path_sel_frame_tx(enum rtw_mpath_frame_type mpath_action, u8
 	struct xmit_priv *pxmitpriv = &(adapter->xmitpriv);
 	struct mlme_ext_priv *pmlmeext = &(adapter->mlmeextpriv);
 	struct xmit_frame *pmgntframe = NULL;
-	struct rtw_ieee80211_hdr *pwlanhdr = NULL;
+	struct ieee80211_hdr *pwlanhdr = NULL;
 	struct pkt_attrib *pattrib = NULL;
 	u8 category = WLAN_CATEGORY_MESH_ACTION;
-	u8 action = RTW_ACT_MESH_HWMP_PATH_SELECTION;
+	u8 action = WLAN_MESH_ACTION_HWMP_PATH_SELECTION;
 	u16 *fctrl = NULL;
 	u8 *pos, ie_len;
 
@@ -233,10 +233,10 @@ static int rtw_mesh_path_sel_frame_tx(enum rtw_mpath_frame_type mpath_action, u8
 	memset(pmgntframe->buf_addr, 0, WLANHDR_OFFSET + TXDESC_OFFSET);
 
 	pos = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pos;
+	pwlanhdr = (struct ieee80211_hdr *)pos;
 
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl =&pwlanhdr->frame_control;
 	*(fctrl) = 0;
 
 	memcpy(pwlanhdr->addr1, da, ETH_ALEN);
@@ -247,8 +247,8 @@ static int rtw_mesh_path_sel_frame_tx(enum rtw_mpath_frame_type mpath_action, u8
 	pmlmeext->mgnt_seq++;
 	set_frame_sub_type(pos, IEEE80211_STYPE_ACTION);
 
-	pos += sizeof(struct rtw_ieee80211_hdr_3addr);
-	pattrib->pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
+	pos += sizeof(struct ieee80211_hdr_3addr);
+	pattrib->pktlen = sizeof(struct ieee80211_hdr_3addr);
 
 	pos = rtw_set_fixed_ie(pos, 1, &(category), &(pattrib->pktlen));
 	pos = rtw_set_fixed_ie(pos, 1, &(action), &(pattrib->pktlen));
@@ -268,7 +268,7 @@ static int rtw_mesh_path_sel_frame_tx(enum rtw_mpath_frame_type mpath_action, u8
 		break;
 	case RTW_MPATH_RANN:
 		RTW_HWMP_DBG("sending RANN from "MAC_FMT"\n", MAC_ARG(originator_addr));
-		ie_len = sizeof(struct rtw_ieee80211_rann_ie);
+		ie_len = sizeof(struct ieee80211_rann_ie);
 		pattrib->pktlen += (ie_len + 2);
 		*pos++ = WLAN_EID_RANN;
 		break;
@@ -327,11 +327,11 @@ int rtw_mesh_path_error_tx(_adapter *adapter,
 	struct xmit_priv *pxmitpriv = &(adapter->xmitpriv);
 	struct mlme_ext_priv *pmlmeext = &(adapter->mlmeextpriv);
 	struct xmit_frame *pmgntframe = NULL;
-	struct rtw_ieee80211_hdr *pwlanhdr = NULL;
+	struct ieee80211_hdr *pwlanhdr = NULL;
 	struct pkt_attrib *pattrib = NULL;
 	struct rtw_mesh_info *minfo = &adapter->mesh_info;
 	u8 category = WLAN_CATEGORY_MESH_ACTION;
-	u8 action = RTW_ACT_MESH_HWMP_PATH_SELECTION;
+	u8 action = WLAN_MESH_ACTION_HWMP_PATH_SELECTION;
 	u8 *pos, ie_len;
 	u16 *fctrl = NULL;
 
@@ -347,9 +347,9 @@ int rtw_mesh_path_error_tx(_adapter *adapter,
 	memset(pmgntframe->buf_addr, 0, WLANHDR_OFFSET + TXDESC_OFFSET);
 
 	pos = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pos;
+	pwlanhdr = (struct ieee80211_hdr *)pos;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl =&pwlanhdr->frame_control;
 	*(fctrl) = 0;
 
 	memcpy(pwlanhdr->addr1, ra, ETH_ALEN);
@@ -360,8 +360,8 @@ int rtw_mesh_path_error_tx(_adapter *adapter,
 	pmlmeext->mgnt_seq++;
 	set_frame_sub_type(pos, IEEE80211_STYPE_ACTION);
 
-	pos += sizeof(struct rtw_ieee80211_hdr_3addr);
-	pattrib->pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
+	pos += sizeof(struct ieee80211_hdr_3addr);
+	pattrib->pktlen = sizeof(struct ieee80211_hdr_3addr);
 
 	pos = rtw_set_fixed_ie(pos, 1, &(category), &(pattrib->pktlen));
 	pos = rtw_set_fixed_ie(pos, 1, &(action), &(pattrib->pktlen));
@@ -622,7 +622,7 @@ void rtw_ieee80211s_update_metric(_adapter *adapter, u8 mac_id,
 }
 
 static void rtw_hwmp_preq_frame_process(_adapter *adapter,
-					struct rtw_ieee80211_hdr_3addr *mgmt,
+					struct ieee80211_hdr_3addr *mgmt,
 					const u8 *preq_elem, u32 originator_metric)
 {
 	struct rtw_mesh_info *minfo = &adapter->mesh_info;
@@ -805,7 +805,7 @@ rtw_next_hop_deref_protected(struct rtw_mesh_path *path)
 }
 
 static void rtw_hwmp_prep_frame_process(_adapter *adapter,
-					struct rtw_ieee80211_hdr_3addr *mgmt,
+					struct ieee80211_hdr_3addr *mgmt,
 					const u8 *prep_elem, u32 metric)
 {
 	struct rtw_mesh_cfg *mshcfg = &adapter->mesh_cfg;
@@ -887,7 +887,7 @@ fail:
 }
 
 static void rtw_hwmp_perr_frame_process(_adapter *adapter,
-					struct rtw_ieee80211_hdr_3addr *mgmt,
+					struct ieee80211_hdr_3addr *mgmt,
 					const u8 *perr_elem)
 {
 	struct rtw_mesh_cfg *mshcfg = &adapter->mesh_cfg;
@@ -942,8 +942,8 @@ endperr:
 }
 
 static void rtw_hwmp_rann_frame_process(_adapter *adapter,
-					struct rtw_ieee80211_hdr_3addr *mgmt,
-					const struct rtw_ieee80211_rann_ie *rann)
+					struct ieee80211_hdr_3addr *mgmt,
+					const struct ieee80211_rann_ie *rann)
 {
 	struct sta_info *sta;
 	struct sta_priv *pstapriv = &adapter->stapriv;
@@ -1060,7 +1060,7 @@ static void rtw_hwmp_rann_frame_process(_adapter *adapter,
 }
 
 static u32 rtw_hwmp_route_info_get(_adapter *adapter,
-				   struct rtw_ieee80211_hdr_3addr *mgmt,
+				   struct ieee80211_hdr_3addr *mgmt,
 				   const u8 *hwmp_ie, enum rtw_mpath_frame_type action)
 {
 	struct rtw_mesh_path *path;
@@ -1227,8 +1227,8 @@ void rtw_mesh_rx_path_sel_frame(_adapter *adapter, union recv_frame *rframe)
 	struct rx_pkt_attrib *attrib = &rframe->u.hdr.attrib;
 	u8 *pframe = rframe->u.hdr.rx_data, *start;
 	uint frame_len = rframe->u.hdr.len, left;
-	struct rtw_ieee80211_hdr_3addr *frame_hdr = (struct rtw_ieee80211_hdr_3addr *)pframe;
-	u8 *frame_body = (u8 *)(pframe + sizeof(struct rtw_ieee80211_hdr_3addr));
+	struct ieee80211_hdr_3addr *frame_hdr = (struct ieee80211_hdr_3addr *)pframe;
+	u8 *frame_body = (u8 *)(pframe + sizeof(struct ieee80211_hdr_3addr));
 	ParseRes parse_res;
 
 	plink = rtw_mesh_plink_get(adapter, get_addr2_ptr(pframe));
@@ -1238,7 +1238,7 @@ void rtw_mesh_rx_path_sel_frame(_adapter *adapter, union recv_frame *rframe)
 	rtw_mesh_rx_hwmp_frame_cnts(adapter, get_addr2_ptr(pframe));
 
 	/* Mesh action frame IE offset = 2 */
-	attrib->hdrlen = sizeof(struct rtw_ieee80211_hdr_3addr);
+	attrib->hdrlen = sizeof(struct ieee80211_hdr_3addr);
 	left = frame_len - attrib->hdrlen - attrib->iv_len - attrib->icv_len - 2;
 	start = pframe + attrib->hdrlen + 2;
 
@@ -1277,7 +1277,7 @@ void rtw_mesh_rx_path_sel_frame(_adapter *adapter, union recv_frame *rframe)
 		rtw_hwmp_perr_frame_process(adapter, frame_hdr, elems.perr);
 	}
 	if (elems.rann)
-		rtw_hwmp_rann_frame_process(adapter, frame_hdr, (struct rtw_ieee80211_rann_ie *)elems.rann);
+		rtw_hwmp_rann_frame_process(adapter, frame_hdr, (struct ieee80211_rann_ie *)elems.rann);
 }
 
 void rtw_mesh_queue_preq(struct rtw_mesh_path *path, u8 flags)

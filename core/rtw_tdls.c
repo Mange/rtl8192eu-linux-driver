@@ -282,7 +282,7 @@ int _issue_nulldata_to_TDLS_peer_STA(_adapter *padapter, unsigned char *da, unsi
 	struct xmit_frame			*pmgntframe;
 	struct pkt_attrib			*pattrib;
 	unsigned char					*pframe;
-	struct rtw_ieee80211_hdr	*pwlanhdr;
+	struct ieee80211_hdr	*pwlanhdr;
 	unsigned short				*fctrl, *qc;
 	struct xmit_priv			*pxmitpriv = &(padapter->xmitpriv);
 	struct mlme_ext_priv	*pmlmeext = &(padapter->mlmeextpriv);
@@ -305,9 +305,9 @@ int _issue_nulldata_to_TDLS_peer_STA(_adapter *padapter, unsigned char *da, unsi
 	memset(pmgntframe->buf_addr, 0, WLANHDR_OFFSET + TXDESC_OFFSET);
 
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl =&pwlanhdr->frame_control;
 	*(fctrl) = 0;
 
 	if (power_mode)
@@ -329,8 +329,8 @@ int _issue_nulldata_to_TDLS_peer_STA(_adapter *padapter, unsigned char *da, unsi
 	pmlmeext->mgnt_seq++;
 	set_frame_sub_type(pframe, IEEE80211_FTYPE_DATA | IEEE80211_STYPE_QOS_NULLFUNC);
 
-	pframe += sizeof(struct rtw_ieee80211_hdr_3addr_qos);
-	pattrib->pktlen = sizeof(struct rtw_ieee80211_hdr_3addr_qos);
+	pframe += sizeof(struct ieee80211_qos_hdr);
+	pattrib->pktlen = sizeof(struct ieee80211_qos_hdr);
 
 	pattrib->last_txcmdsz = pattrib->pktlen;
 
@@ -1505,7 +1505,7 @@ int issue_tdls_dis_rsp(_adapter *padapter, struct tdls_txmgmt *ptxmgmt, u8 priva
 	struct xmit_frame		*pmgntframe;
 	struct pkt_attrib		*pattrib;
 	unsigned char			*pframe;
-	struct rtw_ieee80211_hdr	*pwlanhdr;
+	struct ieee80211_hdr	*pwlanhdr;
 	unsigned short		*fctrl;
 	struct xmit_priv		*pxmitpriv = &(padapter->xmitpriv);
 	struct mlme_ext_priv	*pmlmeext = &(padapter->mlmeextpriv);
@@ -1523,9 +1523,9 @@ int issue_tdls_dis_rsp(_adapter *padapter, struct tdls_txmgmt *ptxmgmt, u8 priva
 	memset(pmgntframe->buf_addr, 0, WLANHDR_OFFSET + TXDESC_OFFSET);
 
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl =&pwlanhdr->frame_control;
 	*(fctrl) = 0;
 
 	/* unicast probe request frame */
@@ -1540,8 +1540,8 @@ int issue_tdls_dis_rsp(_adapter *padapter, struct tdls_txmgmt *ptxmgmt, u8 priva
 	pmlmeext->mgnt_seq++;
 	set_frame_sub_type(pframe, IEEE80211_STYPE_ACTION);
 
-	pframe += sizeof(struct rtw_ieee80211_hdr_3addr);
-	pattrib->pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
+	pframe += sizeof(struct ieee80211_hdr_3addr);
+	pattrib->pktlen = sizeof(struct ieee80211_hdr_3addr);
 
 	rtw_build_tdls_dis_rsp_ies(padapter, pmgntframe, pframe, ptxmgmt, privacy);
 

@@ -3331,8 +3331,8 @@ void rtw_process_public_act_bsscoex(_adapter *padapter, u8 *pframe, uint frame_l
 	struct sta_priv *pstapriv = &padapter->stapriv;
 	u8 beacon_updated = _FALSE;
 	struct mlme_priv *pmlmepriv = &(padapter->mlmepriv);
-	u8 *frame_body = pframe + sizeof(struct rtw_ieee80211_hdr_3addr);
-	uint frame_body_len = frame_len - sizeof(struct rtw_ieee80211_hdr_3addr);
+	u8 *frame_body = pframe + sizeof(struct ieee80211_hdr_3addr);
+	uint frame_body_len = frame_len - sizeof(struct ieee80211_hdr_3addr);
 	u8 category, action;
 
 	psta = rtw_get_stainfo(pstapriv, get_addr2_ptr(pframe));

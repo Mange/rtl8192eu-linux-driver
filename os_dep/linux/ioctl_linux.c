@@ -11427,7 +11427,7 @@ static struct xmit_frame *createloopbackpkt(PADAPTER padapter, u32 size)
 	struct pkt_attrib *pattrib;
 	struct tx_desc *desc;
 	u8 *pkt_start, *pkt_end, *ptr;
-	struct rtw_ieee80211_hdr *hdr;
+	struct ieee80211_hdr *hdr;
 	bool bmcast;
 	_irqL irqL;
 
@@ -11532,8 +11532,8 @@ static struct xmit_frame *createloopbackpkt(PADAPTER padapter, u32 size)
 	pkt_end = pkt_start + pattrib->last_txcmdsz;
 
 	/* 3 5.1. make wlan header, make_wlanhdr() */
-	hdr = (struct rtw_ieee80211_hdr *)pkt_start;
-	set_frame_sub_type(&hdr->frame_ctl, pattrib->subtype);
+	hdr = (struct ieee80211_hdr *)pkt_start;
+	set_frame_sub_type(&hdr->frame_control, pattrib->subtype);
 	memcpy(hdr->addr1, pattrib->dst, ETH_ALEN); /* DA */
 	memcpy(hdr->addr2, pattrib->src, ETH_ALEN); /* SA */
 	memcpy(hdr->addr3, get_bssid(&padapter->mlmepriv), ETH_ALEN); /* RA, BSSID */

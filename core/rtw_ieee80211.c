@@ -2775,12 +2775,12 @@ u16 rtw_mcs_rate(u8 rf_type, u8 bw_40MHz, u8 short_GI, unsigned char *MCS_rate)
 
 int rtw_action_frame_parse(const u8 *frame, u32 frame_len, u8 *category, u8 *action)
 {
-	const u8 *frame_body = frame + sizeof(struct rtw_ieee80211_hdr_3addr);
+	const u8 *frame_body = frame + sizeof(struct ieee80211_hdr_3addr);
 	u16 fc;
 	u8 c;
 	u8 a = ACT_PUBLIC_MAX;
 
-	fc = le16_to_cpu(((struct rtw_ieee80211_hdr_3addr *)frame)->frame_ctl);
+	fc = le16_to_cpu(((struct ieee80211_hdr_3addr *)frame)->frame_control);
 
 	if ((fc & ( IEEE80211_FCTL_FTYPE | IEEE80211_FCTL_STYPE))
 	    != (IEEE80211_FTYPE_MGMT | IEEE80211_STYPE_ACTION)
@@ -2802,31 +2802,5 @@ int rtw_action_frame_parse(const u8 *frame, u32 frame_len, u8 *category, u8 *act
 		*action = a;
 
 	return _TRUE;
-}
-
-static const char *_action_public_str[] = {
-	"ACT_PUB_BSSCOEXIST",
-	"ACT_PUB_DSE_ENABLE",
-	"ACT_PUB_DSE_DEENABLE",
-	"ACT_PUB_DSE_REG_LOCATION",
-	"ACT_PUB_EXT_CHL_SWITCH",
-	"ACT_PUB_DSE_MSR_REQ",
-	"ACT_PUB_DSE_MSR_RPRT",
-	"ACT_PUB_MP",
-	"ACT_PUB_DSE_PWR_CONSTRAINT",
-	"ACT_PUB_VENDOR",
-	"ACT_PUB_GAS_INITIAL_REQ",
-	"ACT_PUB_GAS_INITIAL_RSP",
-	"ACT_PUB_GAS_COMEBACK_REQ",
-	"ACT_PUB_GAS_COMEBACK_RSP",
-	"ACT_PUB_TDLS_DISCOVERY_RSP",
-	"ACT_PUB_LOCATION_TRACK",
-	"ACT_PUB_RSVD",
-};
-
-const char *action_public_str(u8 action)
-{
-	action = (action >= ACT_PUBLIC_MAX) ? ACT_PUBLIC_MAX : action;
-	return _action_public_str[action];
 }
 

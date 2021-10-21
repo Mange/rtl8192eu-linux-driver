@@ -1830,7 +1830,7 @@ void SetPacketTx(PADAPTER padapter)
 {
 	u8 *ptr, *pkt_start, *pkt_end;
 	u32 pkt_size, i;
-	struct rtw_ieee80211_hdr *hdr;
+	struct ieee80211_hdr *hdr;
 	u8 payload;
 	bool bmcast;
 	struct pkt_attrib *pattrib;
@@ -1943,8 +1943,8 @@ void SetPacketTx(PADAPTER padapter)
 #endif
 
 	/* 3 4. make wlan header, make_wlanhdr() */
-	hdr = (struct rtw_ieee80211_hdr *)pkt_start;
-	set_frame_sub_type(&hdr->frame_ctl, pattrib->subtype);
+	hdr = (struct ieee80211_hdr *)pkt_start;
+	set_frame_sub_type(&hdr->frame_control, pattrib->subtype);
 
 	memcpy(hdr->addr1, pattrib->dst, ETH_ALEN); /* DA */
 	memcpy(hdr->addr2, pattrib->src, ETH_ALEN); /* SA */

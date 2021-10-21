@@ -5955,7 +5955,7 @@ static void rtw_hal_construct_P2PBeacon(_adapter *padapter, u8 *pframe, u32 *pLe
 	/* struct xmit_frame	*pmgntframe; */
 	/* struct pkt_attrib	*pattrib; */
 	/* unsigned char	*pframe; */
-	struct rtw_ieee80211_hdr *pwlanhdr;
+	struct ieee80211_hdr *pwlanhdr;
 	unsigned short *fctrl;
 	unsigned int	rate_len;
 	struct xmit_priv	*pxmitpriv = &(padapter->xmitpriv);
@@ -5981,10 +5981,10 @@ static void rtw_hal_construct_P2PBeacon(_adapter *padapter, u8 *pframe, u32 *pLe
 	/*	_enter_critical_bh(&pmlmepriv->bcn_update_lock, &irqL);
 	 * #endif */ /* #if defined (CONFIG_AP_MODE) && defined (CONFIG_NATIVEAP_MLME) */
 
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl =&pwlanhdr->frame_control;
 	*(fctrl) = 0;
 
 	eth_broadcast_addr(pwlanhdr->addr1);
@@ -5995,8 +5995,8 @@ static void rtw_hal_construct_P2PBeacon(_adapter *padapter, u8 *pframe, u32 *pLe
 	/* pmlmeext->mgnt_seq++; */
 	set_frame_sub_type(pframe, IEEE80211_STYPE_BEACON);
 
-	pframe += sizeof(struct rtw_ieee80211_hdr_3addr);
-	pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
+	pframe += sizeof(struct ieee80211_hdr_3addr);
+	pktlen = sizeof(struct ieee80211_hdr_3addr);
 
 	if ((pmlmeinfo->state & 0x03) == WIFI_FW_AP_STATE) {
 		/* RTW_INFO("ie len=%d\n", cur_network->IELength); */
@@ -6112,8 +6112,8 @@ static void rtw_hal_construct_P2PBeacon(_adapter *padapter, u8 *pframe, u32 *pLe
 			u8 *wps_ie;
 			uint wps_ielen;
 			u8 sr = 0;
-			wps_ie = rtw_get_wps_ie(pmgntframe->buf_addr + TXDESC_OFFSET + sizeof(struct rtw_ieee80211_hdr_3addr) + _BEACON_IE_OFFSET_,
-				pattrib->pktlen - sizeof(struct rtw_ieee80211_hdr_3addr) - _BEACON_IE_OFFSET_, NULL, &wps_ielen);
+			wps_ie = rtw_get_wps_ie(pmgntframe->buf_addr + TXDESC_OFFSET + sizeof(struct ieee80211_hdr_3addr) + _BEACON_IE_OFFSET_,
+				pattrib->pktlen - sizeof(struct ieee80211_hdr_3addr) - _BEACON_IE_OFFSET_, NULL, &wps_ielen);
 			if (wps_ie && wps_ielen > 0)
 				rtw_get_wps_attr_content(wps_ie,  wps_ielen, WPS_ATTR_SELECTED_REGISTRAR, (u8 *)(&sr), NULL);
 			if (sr != 0)
@@ -6231,7 +6231,7 @@ static void rtw_hal_construct_P2PProbeRsp(_adapter *padapter, u8 *pframe, u32 *p
 	/* struct xmit_frame			*pmgntframe; */
 	/* struct pkt_attrib			*pattrib; */
 	/* unsigned char					*pframe; */
-	struct rtw_ieee80211_hdr	*pwlanhdr;
+	struct ieee80211_hdr	*pwlanhdr;
 	unsigned short				*fctrl;
 	unsigned char					*mac;
 	struct xmit_priv	*pxmitpriv = &(padapter->xmitpriv);
@@ -6257,11 +6257,11 @@ static void rtw_hal_construct_P2PProbeRsp(_adapter *padapter, u8 *pframe, u32 *p
 	u8 dbgbufLen = 0, index = 0;
 
 	RTW_INFO("%s\n", __FUNCTION__);
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 
 	mac = adapter_mac_addr(padapter);
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl =&pwlanhdr->frame_control;
 	*(fctrl) = 0;
 
 	/* DA filled by FW */
@@ -6274,7 +6274,7 @@ static void rtw_hal_construct_P2PProbeRsp(_adapter *padapter, u8 *pframe, u32 *p
 	SetSeqNum(pwlanhdr, 0);
 	set_frame_sub_type(fctrl, IEEE80211_STYPE_PROBE_RESP);
 
-	pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
+	pktlen = sizeof(struct ieee80211_hdr_3addr);
 	pframe += pktlen;
 
 
@@ -6567,7 +6567,7 @@ static void rtw_hal_construct_P2PNegoRsp(_adapter *padapter, u8 *pframe, u32 *pL
 	/* struct xmit_frame			*pmgntframe; */
 	/* struct pkt_attrib			*pattrib; */
 	/* unsigned char					*pframe; */
-	struct rtw_ieee80211_hdr	*pwlanhdr;
+	struct ieee80211_hdr	*pwlanhdr;
 	unsigned short				*fctrl;
 	struct xmit_priv			*pxmitpriv = &(padapter->xmitpriv);
 	struct mlme_ext_priv	*pmlmeext = &(padapter->mlmeextpriv);
@@ -6584,9 +6584,9 @@ static void rtw_hal_construct_P2PNegoRsp(_adapter *padapter, u8 *pframe, u32 *pL
 	u8 dbgbufLen = 0, index = 0;
 
 	RTW_INFO("%s\n", __FUNCTION__);
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl =&pwlanhdr->frame_control;
 	*(fctrl) = 0;
 
 	/* RA, filled by FW */
@@ -6597,7 +6597,7 @@ static void rtw_hal_construct_P2PNegoRsp(_adapter *padapter, u8 *pframe, u32 *pL
 	SetSeqNum(pwlanhdr, 0);
 	set_frame_sub_type(pframe, IEEE80211_STYPE_ACTION);
 
-	pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
+	pktlen = sizeof(struct ieee80211_hdr_3addr);
 	pframe += pktlen;
 
 	pframe = rtw_set_fixed_ie(pframe, 1, &(category), &(pktlen));
@@ -6970,7 +6970,7 @@ static void rtw_hal_construct_P2PInviteRsp(_adapter *padapter, u8 *pframe, u32 *
 	/* struct xmit_frame			*pmgntframe; */
 	/* struct pkt_attrib			*pattrib; */
 	/* unsigned char					*pframe; */
-	struct rtw_ieee80211_hdr	*pwlanhdr;
+	struct ieee80211_hdr	*pwlanhdr;
 	unsigned short				*fctrl;
 	struct xmit_priv			*pxmitpriv = &(padapter->xmitpriv);
 	struct mlme_ext_priv	*pmlmeext = &(padapter->mlmeextpriv);
@@ -6983,9 +6983,9 @@ static void rtw_hal_construct_P2PInviteRsp(_adapter *padapter, u8 *pframe, u32 *
 
 
 	RTW_INFO("%s\n", __FUNCTION__);
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl =&pwlanhdr->frame_control;
 	*(fctrl) = 0;
 
 	/* RA fill by FW */
@@ -6998,8 +6998,8 @@ static void rtw_hal_construct_P2PInviteRsp(_adapter *padapter, u8 *pframe, u32 *
 	SetSeqNum(pwlanhdr, 0);
 	set_frame_sub_type(pframe, IEEE80211_STYPE_ACTION);
 
-	pframe += sizeof(struct rtw_ieee80211_hdr_3addr);
-	pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
+	pframe += sizeof(struct ieee80211_hdr_3addr);
+	pktlen = sizeof(struct ieee80211_hdr_3addr);
 
 	pframe = rtw_set_fixed_ie(pframe, 1, &(category), &(pktlen));
 	pframe = rtw_set_fixed_ie(pframe, 1, &(action), &(pktlen));
@@ -7215,7 +7215,7 @@ static void rtw_hal_construct_P2PProvisionDisRsp(_adapter *padapter, u8 *pframe,
 	/* struct xmit_frame			*pmgntframe; */
 	/* struct pkt_attrib			*pattrib; */
 	/* unsigned char					*pframe; */
-	struct rtw_ieee80211_hdr	*pwlanhdr;
+	struct ieee80211_hdr	*pwlanhdr;
 	unsigned short				*fctrl;
 	struct xmit_priv			*pxmitpriv = &(padapter->xmitpriv);
 	struct mlme_ext_priv	*pmlmeext = &(padapter->mlmeextpriv);
@@ -7228,9 +7228,9 @@ static void rtw_hal_construct_P2PProvisionDisRsp(_adapter *padapter, u8 *pframe,
 
 	RTW_INFO("%s\n", __FUNCTION__);
 
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl =&pwlanhdr->frame_control;
 	*(fctrl) = 0;
 
 	/* RA filled by FW */
@@ -7241,8 +7241,8 @@ static void rtw_hal_construct_P2PProvisionDisRsp(_adapter *padapter, u8 *pframe,
 	SetSeqNum(pwlanhdr, 0);
 	set_frame_sub_type(pframe, IEEE80211_STYPE_ACTION);
 
-	pframe += sizeof(struct rtw_ieee80211_hdr_3addr);
-	pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
+	pframe += sizeof(struct ieee80211_hdr_3addr);
+	pktlen = sizeof(struct ieee80211_hdr_3addr);
 
 	pframe = rtw_set_fixed_ie(pframe, 1, &(category), &(pktlen));
 	pframe = rtw_set_fixed_ie(pframe, 1, &(action), &(pktlen));
@@ -7382,7 +7382,7 @@ u8 rtw_hal_set_p2p_wowlan_offload_cmd(_adapter *adapter)
 void rtw_hal_construct_beacon(_adapter *padapter,
 				     u8 *pframe, u32 *pLength)
 {
-	struct rtw_ieee80211_hdr	*pwlanhdr;
+	struct ieee80211_hdr	*pwlanhdr;
 	u16					*fctrl;
 	u32					rate_len, pktlen;
 	struct mlme_ext_priv	*pmlmeext = &(padapter->mlmeextpriv);
@@ -7391,9 +7391,9 @@ void rtw_hal_construct_beacon(_adapter *padapter,
 
 	/* RTW_INFO("%s\n", __FUNCTION__); */
 
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl =&pwlanhdr->frame_control;
 	*(fctrl) = 0;
 
 	eth_broadcast_addr(pwlanhdr->addr1);
@@ -7404,8 +7404,8 @@ void rtw_hal_construct_beacon(_adapter *padapter,
 	/* pmlmeext->mgnt_seq++; */
 	set_frame_sub_type(pframe, IEEE80211_STYPE_BEACON);
 
-	pframe += sizeof(struct rtw_ieee80211_hdr_3addr);
-	pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
+	pframe += sizeof(struct ieee80211_hdr_3addr);
+	pktlen = sizeof(struct ieee80211_hdr_3addr);
 
 	/* timestamp will be inserted by hardware */
 	pframe += 8;
@@ -7481,7 +7481,7 @@ _ConstructBeacon:
 static void rtw_hal_construct_PSPoll(_adapter *padapter,
 				     u8 *pframe, u32 *pLength)
 {
-	struct rtw_ieee80211_hdr	*pwlanhdr;
+	struct ieee80211_hdr	*pwlanhdr;
 	u16					*fctrl;
 	u32					pktlen;
 	struct mlme_ext_priv	*pmlmeext = &(padapter->mlmeextpriv);
@@ -7489,10 +7489,10 @@ static void rtw_hal_construct_PSPoll(_adapter *padapter,
 
 	/* RTW_INFO("%s\n", __FUNCTION__); */
 
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 
 	/* Frame control. */
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl =&pwlanhdr->frame_control;
 	*(fctrl) = 0;
 	SetPwrMgt(fctrl);
 	set_frame_sub_type(pframe, (IEEE80211_FTYPE_CTL | IEEE80211_STYPE_PSPOLL));
@@ -7516,7 +7516,7 @@ void rtw_hal_construct_fw_dbg_msg_pkt(
 	u8		*pframe,
 	u32		*plength)
 {
-	struct rtw_ieee80211_hdr	*pwlanhdr;
+	struct ieee80211_hdr	*pwlanhdr;
 	u16						*fctrl;
 	u32						pktlen;
 	struct mlme_priv		*pmlmepriv = &padapter->mlmepriv;
@@ -7526,9 +7526,9 @@ void rtw_hal_construct_fw_dbg_msg_pkt(
 
 	/* RTW_INFO("%s:%d\n", __FUNCTION__, bForcePowerSave); */
 
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 
-	fctrl = &pwlanhdr->frame_ctl;
+	fctrl =&pwlanhdr->frame_control;
 	*(fctrl) = 0;
 
 	eth_broadcast_addr(pwlanhdr->addr1);
@@ -7539,7 +7539,7 @@ void rtw_hal_construct_fw_dbg_msg_pkt(
 
 	set_frame_sub_type(pframe, (IEEE80211_FTYPE_DATA | IEEE80211_STYPE_DATA));
 
-	pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
+	pktlen = sizeof(struct ieee80211_hdr_3addr);
 
 	*plength = pktlen;
 }
@@ -7554,7 +7554,7 @@ void rtw_hal_construct_NullFunctionData(
 	u8		bEosp,
 	u8		bForcePowerSave)
 {
-	struct rtw_ieee80211_hdr	*pwlanhdr;
+	struct ieee80211_hdr	*pwlanhdr;
 	u16						*fctrl;
 	u32						pktlen;
 	struct mlme_priv		*pmlmepriv = &padapter->mlmepriv;
@@ -7566,9 +7566,9 @@ void rtw_hal_construct_NullFunctionData(
 
 	/* RTW_INFO("%s:%d\n", __FUNCTION__, bForcePowerSave); */
 
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 
-	fctrl = &pwlanhdr->frame_ctl;
+	fctrl =&pwlanhdr->frame_control;
 	*(fctrl) = 0;
 	if (bForcePowerSave)
 		SetPwrMgt(fctrl);
@@ -7604,19 +7604,19 @@ void rtw_hal_construct_NullFunctionData(
 	set_duration(pwlanhdr, 0);
 
 	if (bQoS == _TRUE) {
-		struct rtw_ieee80211_hdr_3addr_qos *pwlanqoshdr;
+		struct ieee80211_qos_hdr *pwlanqoshdr;
 
 		set_frame_sub_type(pframe, IEEE80211_FTYPE_DATA | IEEE80211_STYPE_QOS_NULLFUNC);
 
-		pwlanqoshdr = (struct rtw_ieee80211_hdr_3addr_qos *)pframe;
-		SetPriority(&pwlanqoshdr->qc, AC);
-		SetEOSP(&pwlanqoshdr->qc, bEosp);
+		pwlanqoshdr = (struct ieee80211_qos_hdr *)pframe;
+		SetPriority(&pwlanqoshdr->qos_ctrl, AC);
+		SetEOSP(&pwlanqoshdr->qos_ctrl, bEosp);
 
-		pktlen = sizeof(struct rtw_ieee80211_hdr_3addr_qos);
+		pktlen = sizeof(struct ieee80211_qos_hdr);
 	} else {
 		set_frame_sub_type(pframe, IEEE80211_FTYPE_DATA | IEEE80211_STYPE_NULLFUNC);
 
-		pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
+		pktlen = sizeof(struct ieee80211_hdr_3addr);
 	}
 
 	*pLength = pktlen;
@@ -7625,7 +7625,7 @@ void rtw_hal_construct_NullFunctionData(
 void rtw_hal_construct_ProbeRsp(_adapter *padapter, u8 *pframe, u32 *pLength,
 				BOOLEAN bHideSSID)
 {
-	struct rtw_ieee80211_hdr	*pwlanhdr;
+	struct ieee80211_hdr	*pwlanhdr;
 	u16					*fctrl;
 	u8					*mac, *bssid, *sta_addr;
 	u32					pktlen;
@@ -7635,13 +7635,13 @@ void rtw_hal_construct_ProbeRsp(_adapter *padapter, u8 *pframe, u32 *pLength,
 
 	/*RTW_INFO("%s\n", __FUNCTION__);*/
 
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 
 	mac = adapter_mac_addr(padapter);
 	bssid = cur_network->MacAddress;
 	sta_addr = get_my_bssid(&pmlmeinfo->network);
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl =&pwlanhdr->frame_control;
 	*(fctrl) = 0;
 	memcpy(pwlanhdr->addr1, sta_addr, ETH_ALEN);
 	memcpy(pwlanhdr->addr2, mac, ETH_ALEN);
@@ -7650,7 +7650,7 @@ void rtw_hal_construct_ProbeRsp(_adapter *padapter, u8 *pframe, u32 *pLength,
 	SetSeqNum(pwlanhdr, 0);
 	set_frame_sub_type(fctrl, IEEE80211_STYPE_PROBE_RESP);
 
-	pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
+	pktlen = sizeof(struct ieee80211_hdr_3addr);
 	pframe += pktlen;
 
 	if (cur_network->IELength > MAX_IE_SZ)
@@ -7669,7 +7669,7 @@ static void rtw_hal_append_tkip_mic(PADAPTER padapter,
 {
 	struct mlme_ext_priv	*pmlmeext = &(padapter->mlmeextpriv);
 	struct mlme_ext_info	*pmlmeinfo = &(pmlmeext->mlmext_info);
-	struct rtw_ieee80211_hdr	*pwlanhdr;
+	struct ieee80211_hdr	*pwlanhdr;
 	struct mic_data	micdata;
 	struct sta_info	*psta = NULL;
 	int res = 0;
@@ -7682,7 +7682,7 @@ static void rtw_hal_append_tkip_mic(PADAPTER padapter,
 
 	RTW_INFO("%s(): Add MIC, offset: %d\n", __func__, offset);
 
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 
 	psta = rtw_get_stainfo(&padapter->stapriv,
 			get_my_bssid(&(pmlmeinfo->network)));
@@ -7721,7 +7721,7 @@ static void rtw_hal_construct_ARPRsp(
 	u8			*pIPAddress
 )
 {
-	struct rtw_ieee80211_hdr	*pwlanhdr;
+	struct ieee80211_hdr	*pwlanhdr;
 	u16	*fctrl;
 	u32	pktlen;
 	struct mlme_priv	*pmlmepriv = &padapter->mlmepriv;
@@ -7736,9 +7736,9 @@ static void rtw_hal_construct_ARPRsp(
 	u8	EncryptionHeadOverhead = 0, arp_offset = 0;
 	/* RTW_INFO("%s:%d\n", __FUNCTION__, bForcePowerSave); */
 
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 
-	fctrl = &pwlanhdr->frame_ctl;
+	fctrl =&pwlanhdr->frame_control;
 	*(fctrl) = 0;
 
 	/* ------------------------------------------------------------------------- */
@@ -7848,7 +7848,7 @@ static void rtw_hal_construct_ARPRsp(
 static void rtw_hal_construct_na_message(_adapter *padapter,
 				     u8 *pframe, u32 *pLength)
 {
-	struct rtw_ieee80211_hdr *pwlanhdr = NULL;
+	struct ieee80211_hdr *pwlanhdr = NULL;
 	struct mlme_priv	*pmlmepriv = &padapter->mlmepriv;
 	struct wlan_network	*cur_network = &pmlmepriv->cur_network;
 	struct mlme_ext_priv	*pmlmeext = &padapter->mlmeextpriv;
@@ -7870,9 +7870,9 @@ static void rtw_hal_construct_na_message(_adapter *padapter,
 	u8 EncryptionHeadOverhead = 0, na_msg_offset = 0;
 	/* RTW_INFO("%s:%d\n", __FUNCTION__, bForcePowerSave); */
 
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 
-	fctrl = &pwlanhdr->frame_ctl;
+	fctrl =&pwlanhdr->frame_control;
 	*(fctrl) = 0;
 
 	/* ------------------------------------------------------------------------- */
@@ -8025,7 +8025,7 @@ static void rtw_hal_construct_ndp_info(_adapter *padapter,
 static void rtw_hal_construct_ProbeReq(_adapter *padapter, u8 *pframe,
 				       u32 *pLength, pno_ssid_t *ssid)
 {
-	struct rtw_ieee80211_hdr	*pwlanhdr;
+	struct ieee80211_hdr	*pwlanhdr;
 	u16				*fctrl;
 	u32				pktlen;
 	unsigned char			*mac;
@@ -8036,10 +8036,10 @@ static void rtw_hal_construct_ProbeReq(_adapter *padapter, u8 *pframe,
 	struct mlme_ext_info	*pmlmeinfo = &(pmlmeext->mlmext_info);
 	int	bssrate_len = 0;
 
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 	mac = adapter_mac_addr(padapter);
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl =&pwlanhdr->frame_control;
 	*(fctrl) = 0;
 
 	eth_broadcast_addr(pwlanhdr->addr1);
@@ -8050,7 +8050,7 @@ static void rtw_hal_construct_ProbeReq(_adapter *padapter, u8 *pframe,
 	SetSeqNum(pwlanhdr, 0);
 	set_frame_sub_type(pframe, IEEE80211_STYPE_PROBE_REQ);
 
-	pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
+	pktlen = sizeof(struct ieee80211_hdr_3addr);
 	pframe += pktlen;
 
 	if (ssid == NULL)
@@ -8204,7 +8204,7 @@ static void rtw_hal_construct_GTKRsp(
 	u32		*pLength
 )
 {
-	struct rtw_ieee80211_hdr	*pwlanhdr;
+	struct ieee80211_hdr	*pwlanhdr;
 	u16	*fctrl;
 	u32	pktlen;
 	struct mlme_priv	*pmlmepriv = &padapter->mlmepriv;
@@ -8218,9 +8218,9 @@ static void rtw_hal_construct_GTKRsp(
 	u8	EncryptionHeadOverhead = 0;
 	/* RTW_INFO("%s:%d\n", __FUNCTION__, bForcePowerSave); */
 
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 
-	fctrl = &pwlanhdr->frame_ctl;
+	fctrl =&pwlanhdr->frame_control;
 	*(fctrl) = 0;
 
 	/* ------------------------------------------------------------------------- */

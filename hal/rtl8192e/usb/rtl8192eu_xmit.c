@@ -923,7 +923,7 @@ s32 rtl8192eu_hostap_mgnt_xmit_entry(_adapter *padapter, _pkt *pkt)
 	struct urb *urb;
 	unsigned char *pxmitbuf;
 	struct tx_desc *ptxdesc;
-	struct rtw_ieee80211_hdr *tx_hdr;
+	struct ieee80211_hdr *tx_hdr;
 	struct hostapd_priv *phostapdpriv = padapter->phostapdpriv;
 	struct net_device *pnetdev = padapter->pnetdev;
 	HAL_DATA_TYPE *pHalData = GET_HAL_DATA(padapter);
@@ -935,8 +935,8 @@ s32 rtl8192eu_hostap_mgnt_xmit_entry(_adapter *padapter, _pkt *pkt)
 	skb = pkt;
 
 	len = skb->len;
-	tx_hdr = (struct rtw_ieee80211_hdr *)(skb->data);
-	fc = le16_to_cpu(tx_hdr->frame_ctl);
+	tx_hdr = (struct ieee80211_hdr *)(skb->data);
+	fc = le16_to_cpu(tx_hdr->frame_control);
 	bmcst = is_multicast_ether_addr(tx_hdr->addr1);
 
 	if ((fc &  IEEE80211_FCTL_FTYPE) != IEEE80211_FTYPE_MGMT)

@@ -2041,7 +2041,7 @@ u32	rtw_BIP_verify(_adapter *padapter, u8 *whdr_pos, sint flen
 	uint len, ori_len;
 	u16 pkt_keyid = 0;
 	u64 pkt_ipn = 0;
-	struct rtw_ieee80211_hdr *pwlanhdr;
+	struct ieee80211_hdr *pwlanhdr;
 	u8 mic[16];
 
 	mme = whdr_pos + flen - 18;
@@ -2073,7 +2073,7 @@ u32	rtw_BIP_verify(_adapter *padapter, u8 *whdr_pos, sint flen
 	}
 
 	/* mapping to wlan header */
-	pwlanhdr = (struct rtw_ieee80211_hdr *)whdr_pos;
+	pwlanhdr = (struct ieee80211_hdr *)whdr_pos;
 
 	/* save the frame body + MME */
 	memcpy(BIP_AAD + BIP_AAD_SIZE, whdr_pos + WLAN_HDR_A3_LEN, flen - WLAN_HDR_A3_LEN);
@@ -2085,7 +2085,7 @@ u32	rtw_BIP_verify(_adapter *padapter, u8 *whdr_pos, sint flen
 	memset(mme + 10, 0, 8);
 
 	/* conscruct AAD, copy frame control field */
-	memcpy(BIP_AAD, &pwlanhdr->frame_ctl, 2);
+	memcpy(BIP_AAD, &pwlanhdr->frame_control, 2);
 	ClearRetry(BIP_AAD);
 	ClearPwrMgt(BIP_AAD);
 	ClearMData(BIP_AAD);

@@ -319,7 +319,7 @@ static u8 *build_wlan_hdr(_adapter *padapter, struct xmit_frame *pmgntframe,
 	u8 *pframe;
 	u16 *fctrl;
 	struct pkt_attrib *pattr;
-	struct rtw_ieee80211_hdr *pwlanhdr;
+	struct ieee80211_hdr *pwlanhdr;
 	struct mlme_ext_priv *pmlmeext = &padapter->mlmeextpriv;
 	struct mlme_ext_info *pmlmeinfo = &pmlmeext->mlmext_info;
 
@@ -331,9 +331,9 @@ static u8 *build_wlan_hdr(_adapter *padapter, struct xmit_frame *pmgntframe,
 	memset(pmgntframe->buf_addr, 0, WLANHDR_OFFSET + TXDESC_OFFSET);
 
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl =&pwlanhdr->frame_control;
 	*(fctrl) = 0;
 
 	memcpy(pwlanhdr->addr1, psta->cmn.mac_addr, ETH_ALEN);
@@ -349,8 +349,8 @@ static u8 *build_wlan_hdr(_adapter *padapter, struct xmit_frame *pmgntframe,
 
 	set_frame_sub_type(pframe, IEEE80211_STYPE_ACTION);
 
-	pframe += sizeof(struct rtw_ieee80211_hdr_3addr);
-	pattr->pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
+	pframe += sizeof(struct ieee80211_hdr_3addr);
+	pattr->pktlen = sizeof(struct ieee80211_hdr_3addr);
 
 	return pframe;
 }
@@ -763,7 +763,7 @@ int rm_recv_radio_mens_req(_adapter *padapter,
 	struct rm_obj *prm;
 	struct rm_priv *prmpriv = &padapter->rmpriv;
 	u8 *pdiag_body = (u8 *)(precv_frame->u.hdr.rx_data +
-		sizeof(struct rtw_ieee80211_hdr_3addr));
+		sizeof(struct ieee80211_hdr_3addr));
 	u8 *pmeas_body = &pdiag_body[5];
 	u8 rmid, update = 0;
 
@@ -863,7 +863,7 @@ int rm_recv_radio_mens_rep(_adapter *padapter,
 	struct rm_obj *prm;
 	u32 rmid;
 	u8 *pdiag_body = (u8 *)(precv_frame->u.hdr.rx_data +
-		sizeof(struct rtw_ieee80211_hdr_3addr));
+		sizeof(struct ieee80211_hdr_3addr));
 	u8 *pmeas_body = &pdiag_body[3];
 
 
@@ -907,7 +907,7 @@ int rm_radio_mens_nb_rep(_adapter *padapter,
 	union recv_frame *precv_frame, struct sta_info *psta)
 {
 	u8 *pdiag_body = (u8 *)(precv_frame->u.hdr.rx_data +
-		sizeof(struct rtw_ieee80211_hdr_3addr));
+		sizeof(struct ieee80211_hdr_3addr));
 	u8 *pmeas_body = &pdiag_body[3];
 	u32 len = precv_frame->u.hdr.len;
 	u32 rmid;
@@ -938,7 +938,7 @@ int rm_radio_mens_nb_rep(_adapter *padapter,
 #ifdef CONFIG_LAYER2_ROAMING
 	if (rtw_wnm_btm_candidates_survey(padapter
 			,(pdiag_body + 3)
-			,(len - sizeof(struct rtw_ieee80211_hdr_3addr))
+			,(len - sizeof(struct ieee80211_hdr_3addr))
 			,_FALSE) == _FAIL)
 		return _FALSE;
 #endif
@@ -954,7 +954,7 @@ unsigned int rm_on_action(_adapter *padapter, union recv_frame *precv_frame)
 	u8 *pframe_body = NULL;
 	u8 action_code = 0;
 	u8 diag_token = 0;
-	struct rtw_ieee80211_hdr_3addr *whdr;
+	struct ieee80211_hdr_3addr *whdr;
 	struct sta_info *psta;
 
 
@@ -965,7 +965,7 @@ unsigned int rm_on_action(_adapter *padapter, union recv_frame *precv_frame)
 		GetAddr1Ptr(pframe), ETH_ALEN))
 		goto exit;
 
-	whdr = (struct rtw_ieee80211_hdr_3addr *)pframe;
+	whdr = (struct ieee80211_hdr_3addr *)pframe;
 	RTW_INFO("RM: %s bssid = " MAC_FMT "\n",
 		__func__, MAC_ARG(whdr->addr2));
 
@@ -977,7 +977,7 @@ unsigned int rm_on_action(_adapter *padapter, union recv_frame *precv_frame)
         }
 
 	pframe_body = (unsigned char *)(pframe +
-		sizeof(struct rtw_ieee80211_hdr_3addr));
+		sizeof(struct ieee80211_hdr_3addr));
 
 	/* Figure 8-438 radio measurement request frame Action field format */
 	/* Category = pframe_body[0] = 5 (Radio Measurement) */

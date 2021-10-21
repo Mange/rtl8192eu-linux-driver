@@ -1720,12 +1720,12 @@ s32 rtw_make_wlanhdr(_adapter *padapter , u8 *hdr, struct pkt_attrib *pattrib)
 {
 	u16 *qc;
 
-	struct rtw_ieee80211_hdr *pwlanhdr = (struct rtw_ieee80211_hdr *)hdr;
+	struct ieee80211_hdr *pwlanhdr = (struct ieee80211_hdr *)hdr;
 	struct mlme_priv *pmlmepriv = &padapter->mlmepriv;
 	struct qos_priv *pqospriv = &pmlmepriv->qospriv;
 	u8 qos_option = _FALSE;
 	sint res = _SUCCESS;
-	u16 *fctrl = &pwlanhdr->frame_ctl;
+	u16 *fctrl =&pwlanhdr->frame_control;
 
 	/* struct sta_info *psta; */
 
@@ -2057,7 +2057,7 @@ exit:
 s32 rtw_make_tdls_wlanhdr(_adapter *padapter , u8 *hdr, struct pkt_attrib *pattrib, struct tdls_txmgmt *ptxmgmt)
 {
 	u16 *qc;
-	struct rtw_ieee80211_hdr *pwlanhdr = (struct rtw_ieee80211_hdr *)hdr;
+	struct ieee80211_hdr *pwlanhdr = (struct ieee80211_hdr *)hdr;
 	struct mlme_priv *pmlmepriv = &padapter->mlmepriv;
 	struct qos_priv *pqospriv = &pmlmepriv->qospriv;
 	struct sta_priv	*pstapriv = &padapter->stapriv;
@@ -2065,7 +2065,7 @@ s32 rtw_make_tdls_wlanhdr(_adapter *padapter , u8 *hdr, struct pkt_attrib *pattr
 	u8 tdls_seq = 0, baddr[ETH_ALEN] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
 
 	sint res = _SUCCESS;
-	u16 *fctrl = &pwlanhdr->frame_ctl;
+	u16 *fctrl =&pwlanhdr->frame_control;
 
 
 	memset(hdr, 0, WLANHDR_OFFSET);
@@ -2777,7 +2777,7 @@ s32 rtw_mgmt_xmitframe_coalesce(_adapter *padapter, _pkt *pkt, struct xmit_frame
 
 	struct mlme_ext_priv	*pmlmeext = &padapter->mlmeextpriv;
 	struct mlme_priv	*pmlmepriv = &padapter->mlmepriv;
-	struct rtw_ieee80211_hdr	*pwlanhdr;
+	struct ieee80211_hdr	*pwlanhdr;
 	u8 MME[_MME_IE_LENGTH_];
 
 	_irqL irqL;
@@ -2792,14 +2792,14 @@ s32 rtw_mgmt_xmitframe_coalesce(_adapter *padapter, _pkt *pkt, struct xmit_frame
 	}
 
 	mem_start = pframe = (u8 *)(pxmitframe->buf_addr) + TXDESC_OFFSET;
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 	subtype = get_frame_sub_type(pframe); /* bit(7)~bit(2) */
 
 	/* check if robust mgmt frame */
 	if (subtype != IEEE80211_STYPE_DEAUTH && subtype != IEEE80211_STYPE_DISASSOC && subtype != IEEE80211_STYPE_ACTION)
 		return _SUCCESS;
 	if (subtype == IEEE80211_STYPE_ACTION) {
-		category = *(pframe + sizeof(struct rtw_ieee80211_hdr_3addr));
+		category = *(pframe + sizeof(struct ieee80211_hdr_3addr));
 		if (CATEGORY_IS_NON_ROBUST(category))
 			return _SUCCESS;
 	}
@@ -2878,7 +2878,7 @@ s32 rtw_mgmt_xmitframe_coalesce(_adapter *padapter, _pkt *pkt, struct xmit_frame
 
 			memset(MME, 0, _MME_IE_LENGTH_);
 
-			MGMT_body = pframe + sizeof(struct rtw_ieee80211_hdr_3addr);
+			MGMT_body = pframe + sizeof(struct ieee80211_hdr_3addr);
 			pframe += pattrib->pktlen;
 
 			/* octent 0 and 1 is key index ,BIP keyid is 4 or 5, LSB only need octent 0 */
@@ -2891,10 +2891,10 @@ s32 rtw_mgmt_xmitframe_coalesce(_adapter *padapter, _pkt *pkt, struct xmit_frame
 			pframe = rtw_set_ie(pframe, WLAN_EID_MMIE  , 16 , MME, &(pattrib->pktlen));
 			pattrib->last_txcmdsz = pattrib->pktlen;
 			/* total frame length - header length */
-			frame_body_len = pattrib->pktlen - sizeof(struct rtw_ieee80211_hdr_3addr);
+			frame_body_len = pattrib->pktlen - sizeof(struct ieee80211_hdr_3addr);
 
 			/* conscruct AAD, copy frame control field */
-			memcpy(BIP_AAD, &pwlanhdr->frame_ctl, 2);
+			memcpy(BIP_AAD, &pwlanhdr->frame_control, 2);
 			ClearRetry(BIP_AAD);
 			ClearPwrMgt(BIP_AAD);
 			ClearMData(BIP_AAD);
@@ -4371,7 +4371,7 @@ s32 rtw_monitor_xmit_entry(struct sk_buff *skb, struct net_device *ndev)
 	struct ieee80211_radiotap_header rtap_hdr;
 	_adapter *padapter = (_adapter *)rtw_netdev_priv(ndev);
 	struct pkt_file pktfile;
-	struct rtw_ieee80211_hdr *pwlanhdr;
+	struct ieee80211_hdr *pwlanhdr;
 	struct pkt_attrib	*pattrib;
 	struct xmit_frame		*pmgntframe;
 	struct mlme_ext_priv	*pmlmeext = &(padapter->mlmeextpriv);
@@ -4416,8 +4416,8 @@ s32 rtw_monitor_xmit_entry(struct sk_buff *skb, struct net_device *ndev)
 
 
 	/* Check DATA/MGNT frames */
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
-	frame_ctl = le16_to_cpu(pwlanhdr->frame_ctl);
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
+	frame_ctl = le16_to_cpu(pwlanhdr->frame_control);
 	if ((frame_ctl &  IEEE80211_FCTL_FTYPE) == IEEE80211_FTYPE_DATA) {
 
 		pattrib = &pmgntframe->attrib;
