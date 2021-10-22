@@ -898,8 +898,6 @@ enum rtw_ieee80211_wnm_actioncode {
 };
 #endif
 
-#define WME_OUI_TYPE 2
-
 #define WME_OUI_SUBTYPE_INFORMATION_ELEMENT 0
 #define WME_OUI_SUBTYPE_PARAMETER_ELEMENT 1
 #define WME_OUI_SUBTYPE_TSPEC_ELEMENT 2

@@ -1214,13 +1214,13 @@ static int rtw_ieee802_11_parse_vendor_specific(u8 *pos, uint elen,
 		/* Microsoft/Wi-Fi information elements are further typed and
 		 * subtyped */
 		switch (pos[3]) {
-		case 1:
+		case WLAN_OUI_TYPE_MICROSOFT_WPA:
 			/* Microsoft OUI (00:50:F2) with OUI Type 1:
 			 * real WPA information element */
 			elems->wpa_ie = pos;
 			elems->wpa_ie_len = elen;
 			break;
-		case WME_OUI_TYPE: /* this is a Wi-Fi WME info. element */
+		case WLAN_OUI_TYPE_MICROSOFT_WMM: /* this is a Wi-Fi WME info. element */
 			if (elen < 5) {
 				RTW_DBG("short WME "
 					"information element ignored "
@@ -1246,7 +1246,7 @@ static int rtw_ieee802_11_parse_vendor_specific(u8 *pos, uint elen,
 				return -1;
 			}
 			break;
-		case 4:
+		case WLAN_OUI_TYPE_MICROSOFT_WPS:
 			/* Wi-Fi Protected Setup (WPS) IE */
 			elems->wps_ie = pos;
 			elems->wps_ie_len = elen;
