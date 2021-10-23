@@ -123,14 +123,6 @@ static void rtw_hal_mcc_build_p2p_noa_attr(PADAPTER padapter, u8 *ie, u32 *ie_le
 
 	/* NoA Start Time (4 bytes) unit: microseconds */
 	RTW_PUT_LE32(p2p_noa_attr_ie + p2p_noa_attr_len, pmccadapriv->noa_start_time);
-	if (0)
-		RTW_INFO("indxe:%d, start_time=0x%02x:0x%02x:0x%02x:0x%02x\n"
-		, noa_index
-		, p2p_noa_attr_ie[p2p_noa_attr_len]
-		, p2p_noa_attr_ie[p2p_noa_attr_len + 1]
-		, p2p_noa_attr_ie[p2p_noa_attr_len + 2]
-		, p2p_noa_attr_ie[p2p_noa_attr_len + 3]);
-
 	p2p_noa_attr_len = p2p_noa_attr_len + 4;
 	rtw_set_ie(ie, WLAN_EID_VENDOR_SPECIFIC, p2p_noa_attr_len, (u8 *)p2p_noa_attr_ie, ie_len);
 }
@@ -158,9 +150,6 @@ static void rtw_hal_mcc_update_go_p2p_ie(PADAPTER padapter)
 		pos = pmccadapriv->p2p_go_noa_ie + pmccadapriv->p2p_go_noa_ie_len - 15;
 		/* 0~255 */
 		(*pos) = ((*pos) + 1) % 256;
-		if (0)
-			RTW_INFO("indxe:%d\n", (*pos));
-
 
 		/* update duration */
 		noa_duration = mcc_switch_channel_policy_table[mccobjpriv->policy_index][MCC_DURATION_IDX] * TU;
@@ -170,19 +159,8 @@ static void rtw_hal_mcc_update_go_p2p_ie(PADAPTER padapter)
 		/* update start time */
 		pos = pmccadapriv->p2p_go_noa_ie + pmccadapriv->p2p_go_noa_ie_len - 4;
 		RTW_PUT_LE32(pos, pmccadapriv->noa_start_time);
-		if (0)
-			RTW_INFO("start_time=0x%02x:0x%02x:0x%02x:0x%02x\n"
-			, ((u8*)(pos))[0]
-			, ((u8*)(pos))[1]
-			, ((u8*)(pos))[2]
-			, ((u8*)(pos))[3]);
-
 	}
 
-	if (0) {
-		RTW_INFO("p2p_go_noa_ie_len:%d\n", pmccadapriv->p2p_go_noa_ie_len);
-		RTW_INFO_DUMP("\n", pmccadapriv->p2p_go_noa_ie, pmccadapriv->p2p_go_noa_ie_len);
-	}
 	update_beacon(padapter, WLAN_EID_VENDOR_SPECIFIC, P2P_OUI, _TRUE);
 }
 
@@ -227,8 +205,6 @@ void rtw_hal_mcc_restore_iqk_val(PADAPTER padapter)
 		}
 	}
 
-	if (0)
-		dump_iqk_val_table(padapter);
 }
 
 u8 rtw_hal_check_mcc_status(PADAPTER padapter, u8 mcc_status)
@@ -903,16 +879,7 @@ static u8 rtw_hal_mcc_update_timing_parameters(PADAPTER padapter, u8 force_updat
 			pmccadapriv = &iface->mcc_adapterpriv;
 			if (pmccadapriv->role == MCC_ROLE_MAX)
 				continue;
-#if 0
-			if (pmccadapriv->order == 0) {
-				pmccadapriv->mcc_duration = mcc_duration;
-			} else if (pmccadapriv->order == 1) {
-				pmccadapriv->mcc_duration = mcc_interval - mcc_duration;
-			} else {
-				RTW_INFO("[MCC] not support >= 3 interface\n");
-				rtw_warn_on(1);
-			}
-#endif
+
 			RTW_INFO("********************\n");
 			RTW_INFO(FUNC_ADPT_FMT": order:%d, role:%d\n",
 				FUNC_ADPT_ARG(iface), pmccadapriv->order, pmccadapriv->role);
@@ -2404,14 +2371,6 @@ static void rtw_hal_mcc_sw_ch_fw_notify_hdl(PADAPTER padapter)
 
 	rtw_hal_mcc_check_case_not_limit_traffic(cur_iface, next_iface);
 
-	if (0) {
-		RTW_INFO("order:%d, mcc_tx_stop:%d, mcc_tp:%d\n",
-			cur_mccadapriv->order, cur_mccadapriv->mcc_tx_stop, cur_mccadapriv->mcc_tp);
-		dump_os_queue(0, cur_iface);
-		RTW_INFO("order:%d, mcc_tx_stop:%d, mcc_tp:%d\n",
-			next_mccadapriv->order, next_mccadapriv->mcc_tx_stop, next_mccadapriv->mcc_tp);
-		dump_os_queue(0, next_iface);
-	}
 }
 
 static void rtw_hal_mcc_update_noa_start_time_hdl(PADAPTER padapter, u8 buflen, u8 *tmpBuf)
@@ -2439,18 +2398,6 @@ static void rtw_hal_mcc_update_noa_start_time_hdl(PADAPTER padapter, u8 buflen, 
 			/* convert GO TBTT from FW to noa_start_time(TU convert to mircosecond) */
 			pmccadapriv->noa_start_time = RTW_GET_LE32(tmpBuf + 2) + noa_start_time_offset * TU;
 
-			if (0) {
-				RTW_INFO("TBTT:0x%02x\n", RTW_GET_LE32(tmpBuf + 2));
-				RTW_INFO("noa_tsf_sync_offset:%d, noa_start_time_offset:%d\n", noa_tsf_sync_offset, noa_start_time_offset);
-				RTW_INFO(FUNC_ADPT_FMT"buf=0x%02x:0x%02x:0x%02x:0x%02x, noa_start_time=0x%02x\n"
-					, FUNC_ADPT_ARG(iface)
-					, tmpBuf[2]
-					, tmpBuf[3]
-					, tmpBuf[4]
-					, tmpBuf[5]
-					,pmccadapriv->noa_start_time);
-				}
-
 			rtw_hal_mcc_update_go_p2p_ie(iface);
 
 			break;
@@ -2473,9 +2420,6 @@ static void rtw_hal_mcc_rpt_tsf_hdl(PADAPTER padapter, u8 buflen, u8 *tmpBuf)
 	mccadapriv = &iface->mcc_adapterpriv;
 	mccadapriv->tsf = RTW_GET_LE64(tmpBuf + 2);
 
-
-	if (0)
-		RTW_INFO(FUNC_ADPT_FMT" TSF(order:%d):0x%02llx\n", FUNC_ADPT_ARG(iface), mccadapriv->order, mccadapriv->tsf);
 
 	if (mccadapriv->order == (MAX_MCC_NUM - 1))
 		rtw_sctx_done(&mcc_tsf_req_sctx);
@@ -2514,9 +2458,6 @@ void rtw_hal_mcc_c2h_handler(PADAPTER padapter, u8 buflen, u8 *tmpBuf)
 	rtw_set_oper_bw(cur_adapter, cur_bw);
 	rtw_set_oper_choffset(cur_adapter, cur_ch_offset);
 
-	if (0)
-		RTW_INFO("%d,order:%d,TSF:0x%llx\n", tmpBuf[0], tmpBuf[1], RTW_GET_LE64(tmpBuf + 2));
-	
 	switch (pmccobjpriv->mcc_c2h_status) {
 	case MCC_RPT_SUCCESS:
 		_enter_critical_bh(&pmccobjpriv->mcc_lock, &irqL);
@@ -2831,9 +2772,6 @@ inline void rtw_hal_mcc_calc_tx_bytes_from_kernel(PADAPTER padapter, u32 len)
 	if (MCC_EN(padapter)) {
 		if (rtw_hal_check_mcc_status(padapter, MCC_STATUS_DOING_MCC)) {
 			pmccadapriv->mcc_tx_bytes_from_kernel += len;
-			if (0)
-				RTW_INFO("%s(order:%d): mcc tx bytes from kernel:%lld\n"
-					, __func__, pmccadapriv->order, pmccadapriv->mcc_tx_bytes_from_kernel);
 		}
 	}
 }
@@ -2851,10 +2789,6 @@ inline void rtw_hal_mcc_calc_tx_bytes_to_port(PADAPTER padapter, u32 len)
 
 		if (rtw_hal_check_mcc_status(padapter, MCC_STATUS_DOING_MCC)) {
 			pmccadapriv->mcc_tx_bytes_to_port += len;
-			if (0)
-				RTW_INFO("%s(order:%d): mcc tx bytes to port:%d, mcc target tx bytes to port:%d\n"
-					, __func__, pmccadapriv->order, pmccadapriv->mcc_tx_bytes_to_port
-					, pmccadapriv->mcc_target_tx_bytes_to_port);
 		}
 	}
 }

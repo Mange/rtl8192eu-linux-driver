@@ -222,29 +222,6 @@ VOID hal_set_syson_reg_8710b(PADAPTER padapter, u32 regaddr, u32 bitmask, u32 da
 /* EFuse */
 u8 GetEEPROMSize8710B(PADAPTER padapter);
 
-#if 0
-void Hal_InitPGData(PADAPTER padapter, u8 *PROMContent);
-void Hal_EfuseParseIDCode(PADAPTER padapter, u8 *hwinfo);
-void Hal_EfuseParseTxPowerInfo_8710B(PADAPTER padapter,
-				     u8 *PROMContent, BOOLEAN AutoLoadFail);
-void Hal_EfuseParseEEPROMVer_8710B(PADAPTER padapter,
-				   u8 *hwinfo, BOOLEAN AutoLoadFail);
-void Hal_EfuseParsePackageType_8710B(PADAPTER pAdapter,
-				     u8 *hwinfo, BOOLEAN AutoLoadFail);
-void Hal_EfuseParseChnlPlan_8710B(PADAPTER padapter,
-				  u8 *hwinfo, BOOLEAN AutoLoadFail);
-void Hal_EfuseParseCustomerID_8710B(PADAPTER padapter,
-				    u8 *hwinfo, BOOLEAN AutoLoadFail);
-void Hal_EfuseParseAntennaDiversity_8710B(PADAPTER padapter,
-		u8 *hwinfo, BOOLEAN AutoLoadFail);
-void Hal_EfuseParseXtal_8710B(PADAPTER pAdapter,
-			      u8 *hwinfo, u8 AutoLoadFail);
-void Hal_EfuseParseThermalMeter_8710B(PADAPTER padapter,
-				      u8 *hwinfo, u8 AutoLoadFail);
-VOID Hal_EfuseParseBoardType_8710B(PADAPTER Adapter,
-				   u8	*PROMContent, BOOLEAN AutoloadFail);
-#endif
-
 void rtl8710b_set_hal_ops(struct hal_ops *pHalFunc);
 void init_hal_spec_8710b(_adapter *adapter);
 u8 SetHwReg8710B(PADAPTER padapter, u8 variable, u8 *val);

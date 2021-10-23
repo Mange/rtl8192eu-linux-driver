@@ -375,72 +375,6 @@ u8 phydm_pwr_2_percent(s8 ant_power)
 
 #if (DM_ODM_SUPPORT_TYPE & ODM_WIN)
 
-#if 0 /*(DM_ODM_SUPPORT_TYPE == ODM_CE)*/
-s32 phydm_signal_scale_mapping_92c_series(struct dm_struct *dm, s32 curr_sig)
-{
-	s32 ret_sig = 0;
-
-#if (DEV_BUS_TYPE == RT_PCI_INTERFACE)
-	if (dm->support_interface == ODM_ITRF_PCIE) {
-		/* step 1. Scale mapping. */
-		if (curr_sig >= 61 && curr_sig <= 100)
-			ret_sig = 90 + ((curr_sig - 60) / 4);
-		else if (curr_sig >= 41 && curr_sig <= 60)
-			ret_sig = 78 + ((curr_sig - 40) / 2);
-		else if (curr_sig >= 31 && curr_sig <= 40)
-			ret_sig = 66 + (curr_sig - 30);
-		else if (curr_sig >= 21 && curr_sig <= 30)
-			ret_sig = 54 + (curr_sig - 20);
-		else if (curr_sig >= 5 && curr_sig <= 20)
-			ret_sig = 42 + (((curr_sig - 5) * 2) / 3);
-		else if (curr_sig == 4)
-			ret_sig = 36;
-		else if (curr_sig == 3)
-			ret_sig = 27;
-		else if (curr_sig == 2)
-			ret_sig = 18;
-		else if (curr_sig == 1)
-			ret_sig = 9;
-		else
-			ret_sig = curr_sig;
-	}
-#endif
-
-#if ((DEV_BUS_TYPE == RT_USB_INTERFACE) || (DEV_BUS_TYPE == RT_SDIO_INTERFACE))
-	if (dm->support_interface == ODM_ITRF_USB ||
-	    dm->support_interface == ODM_ITRF_SDIO) {
-		if (curr_sig >= 51 && curr_sig <= 100)
-			ret_sig = 100;
-		else if (curr_sig >= 41 && curr_sig <= 50)
-			ret_sig = 80 + ((curr_sig - 40) * 2);
-		else if (curr_sig >= 31 && curr_sig <= 40)
-			ret_sig = 66 + (curr_sig - 30);
-		else if (curr_sig >= 21 && curr_sig <= 30)
-			ret_sig = 54 + (curr_sig - 20);
-		else if (curr_sig >= 10 && curr_sig <= 20)
-			ret_sig = 42 + (((curr_sig - 10) * 2) / 3);
-		else if (curr_sig >= 5 && curr_sig <= 9)
-			ret_sig = 22 + (((curr_sig - 5) * 3) / 2);
-		else if (curr_sig >= 1 && curr_sig <= 4)
-			ret_sig = 6 + (((curr_sig - 1) * 3) / 2);
-		else
-			ret_sig = curr_sig;
-	}
-
-#endif
-	return ret_sig;
-}
-
-s32 phydm_signal_scale_mapping(struct dm_struct *dm, s32 curr_sig)
-{
-#ifdef CONFIG_SIGNAL_SCALE_MAPPING
-	return phydm_signal_scale_mapping_92c_series(dm, curr_sig);
-#else
-	return curr_sig;
-#endif
-}
-#endif
-
 void phydm_process_signal_strength(struct dm_struct *dm,
 				   struct phydm_phyinfo_struct *phy_info,
 				   struct phydm_perpkt_info_struct *pktinfo)
@@ -972,9 +906,6 @@ void phydm_phy_sts_n_parsing(struct dm_struct *dm,
 		#endif
 			sq = phydm_get_signal_quality(phy_info, dm, phy_sts);
 
-#if 0
-		/* @dbg_print("cck sq = %d\n", sq); */
-#endif
 		phy_info->signal_quality = sq;
 		phy_info->rx_mimo_signal_quality[RF_PATH_A] = sq;
 		phy_info->rx_mimo_signal_quality[RF_PATH_B] = -1;
@@ -1139,9 +1070,6 @@ void phydm_get_sq(struct dm_struct *dm, struct phydm_phyinfo_struct *phy_info,
 		}
 	}
 
-#if 0
-	/* @dbg_print("cck sq = %d\n", sq); */
-#endif
 	phy_info->signal_quality = sq;
 }
 
@@ -1569,11 +1497,6 @@ void phydm_process_rssi_for_dm(struct dm_struct *dm,
 			  rssi_all, rssi_t->ofdm_pkt_cnt, rssi_t->cck_pkt_cnt);
 	}
 
-#if 0
-	/* @dbg_print("ofdm_pkt=%d, weighting=%d\n", ofdm_pkt_cnt, weighting);*/
-	/* @dbg_print("rssi_ofdm_tmp=%d, rssi_all=%d, rssi_cck_tmp=%d\n", */
-	/*	rssi_ofdm_tmp, rssi_all, rssi_cck_tmp); */
-#endif
 }
 #endif
 
@@ -1843,15 +1766,6 @@ void phydm_common_phy_info_3rd(s8 rx_power, u8 channel, boolean is_beamformed,
 	phy_info->signal_quality = signal_quality; /* signal quality */
 	phy_info->band_width = bandwidth; /* @bandwidth */
 
-#if 0
-	/* @if (pktinfo->is_packet_match_bssid) */
-	{
-		dbg_print("rx_pwdb_all = %d, rx_power = %d, recv_signal_power = %d\n", phy_info->rx_pwdb_all, phy_info->rx_power, phy_info->recv_signal_power);
-		dbg_print("signal_quality = %d\n", phy_info->signal_quality);
-		dbg_print("is_beamformed = %d, is_mu_packet = %d, rx_count = %d\n", phy_info->is_beamformed, phy_info->is_mu_packet, phy_info->rx_count + 1);
-		dbg_print("channel = %d, rxsc = %d, band_width = %d\n", channel, rxsc, bandwidth);
-	}
-#endif
 }
 
 void phydm_get_physts_jarguar3_0(struct dm_struct *dm, u8 *phy_status_inf,
@@ -2486,10 +2400,6 @@ void phydm_print_phy_sts_jgr2(struct dm_struct *dm, u8 *phy_status_inf,
 	}
 
 	dbg->show_phy_sts_cnt++;
-	#if 0
-	dbg_print("cnt=%d, max=%d\n",
-		  dbg->show_phy_sts_cnt, dbg->show_phy_sts_max_cnt);
-	#endif
 
 	if (dbg->show_phy_sts_max_cnt != SHOW_PHY_STATUS_UNLIMITED) {
 		if (dbg->show_phy_sts_cnt > dbg->show_phy_sts_max_cnt)
@@ -2608,21 +2518,6 @@ void phydm_set_per_path_phy_info(u8 rx_path, s8 pwr, s8 rx_evm, s8 cfo_tail,
 	phy_info->rx_snr[rx_path] = rx_snr >> 1;
 	phy_info->ant_idx[rx_path] = ant_idx;
 
-#if 0
-	if (!pktinfo->is_packet_match_bssid)
-		return;
-
-	dbg_print("path (%d)--------\n", rx_path);
-	dbg_print("rx_pwr = %d, Signal strength = %d\n",
-		  phy_info->rx_pwr[rx_path],
-		  phy_info->rx_mimo_signal_strength[rx_path]);
-	dbg_print("evm_dbm = %d, Signal quality = %d\n",
-		  phy_info->rx_mimo_evm_dbm[rx_path],
-		  phy_info->rx_mimo_signal_quality[rx_path]);
-	dbg_print("CFO = %d, SNR = %d\n",
-		  phy_info->cfo_tail[rx_path], phy_info->rx_snr[rx_path]);
-
-#endif
 }
 
 void phydm_set_common_phy_info(s8 rx_power, u8 channel, boolean is_beamformed,
@@ -2642,21 +2537,6 @@ void phydm_set_common_phy_info(s8 rx_power, u8 channel, boolean is_beamformed,
 	phy_info->signal_quality = signal_quality; /* signal quality */
 	phy_info->band_width = bandwidth; /* @bandwidth */
 
-#if 0
-	if (!pktinfo->is_packet_match_bssid)
-		return;
-
-	dbg_print("rx_pwdb_all = %d, rx_power = %d, recv_signal_power = %d\n",
-		  phy_info->rx_pwdb_all, phy_info->rx_power,
-		  phy_info->recv_signal_power);
-	dbg_print("signal_quality = %d\n", phy_info->signal_quality);
-	dbg_print("is_beamformed = %d, is_mu_packet = %d, rx_count = %d\n",
-		  phy_info->is_beamformed, phy_info->is_mu_packet,
-		  phy_info->rx_count + 1);
-	dbg_print("channel = %d, rxsc = %d, band_width = %d\n", channel,
-		  rxsc, bandwidth);
-
-#endif
 }
 
 void phydm_get_phy_sts_type0(struct dm_struct *dm, u8 *phy_status_inf,
@@ -3024,17 +2904,6 @@ void phydm_process_rssi_for_dm_2nd_type(struct dm_struct *dm,
 		rssi_t->rssi_acc = MA_ACC(rssi_t->rssi_acc, rssi_db, RSSI_MA);
 		rssi_t->rssi = (s8)GET_MA_VAL(rssi_t->rssi_acc, RSSI_MA);
 	}
-
-	#if 0
-	PHYDM_DBG(dm, DBG_TMP, "RSSI[%d]{A,B,C,D}={%d, %d, %d, %d} AVG=%d\n",
-		  pktinfo->station_id,
-		  phy_info->rx_mimo_signal_strength[0],
-		  phy_info->rx_mimo_signal_strength[1],
-		  phy_info->rx_mimo_signal_strength[2],
-		  phy_info->rx_mimo_signal_strength[3], rssi_db);
-	PHYDM_DBG(dm, DBG_TMP, "rssi_acc = %d, rssi=%d\n",
-		  rssi_t->rssi_acc, rssi_t->rssi);
-	#endif
 
 	if (pktinfo->is_cck_rate)
 		rssi_t->rssi_cck = (s8)rssi_db;

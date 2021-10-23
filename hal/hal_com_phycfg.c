@@ -2212,9 +2212,6 @@ PHY_GetTxPowerIndexBase(
 
 	*bIn24G = phy_GetChnlIndex(Channel, &chnlIdx);
 
-	if (0)
-		RTW_INFO("[%s] Channel Index: %d\n", (*bIn24G ? "2.4G" : "5G"), chnlIdx);
-
 	if (*bIn24G) {
 		if (IS_CCK_RATE(Rate)) {
 			/* CCK-nTX */
@@ -3146,15 +3143,6 @@ PHY_GetTxPowerLimit(_adapter *adapter
 	}
 
 exit:
-
-	if (0) {
-		if (final_bw != bw && (IS_HT_RATE(rate) || IS_VHT_RATE(rate)))
-			RTW_INFO("%s min_lmt: %s ch%u -> %s ch%u\n"
-				, MGN_RATE_STR(rate)
-				, ch_width_str(bw), cch
-				, ch_width_str(final_bw), final_cch);
-	}
-
 	return min_lmt;
 }
 
@@ -3284,12 +3272,6 @@ static void phy_txpwr_lmt_cross_ref_ht_vht(_adapter *adapter)
 							else if (tlrs == TXPWR_LMT_RS_VHT && ref_tlrs == TXPWR_LMT_RS_HT)
 								vht_ref_ht_5g_20_40++;
 
-							if (0)
-								RTW_INFO("reg:%s, bw:%u, ch:%u, %s-%uT ref %s-%uT\n"
-									, ent->regd_name, bw, channel
-									, txpwr_lmt_rs_str(tlrs), ntx_idx + 1
-									, txpwr_lmt_rs_str(ref_tlrs), ntx_idx + 1);
-
 							ent->lmt_5g[bw][tlrs - 1][channel][ntx_idx] =
 								ent->lmt_5g[bw][ref_tlrs - 1][channel][ntx_idx];
 						}
@@ -3298,11 +3280,6 @@ static void phy_txpwr_lmt_cross_ref_ht_vht(_adapter *adapter)
 				}
 			}
 		}
-	}
-
-	if (0) {
-		RTW_INFO("ht_ref_vht_5g_20_40:%d, ht_has_ref_5g_20_40:%d\n", ht_ref_vht_5g_20_40, ht_has_ref_5g_20_40);
-		RTW_INFO("vht_ref_ht_5g_20_40:%d, vht_has_ref_5g_20_40:%d\n", vht_ref_ht_5g_20_40, vht_has_ref_5g_20_40);
 	}
 
 	/* 5G 20M&40M HT all come from VHT*/
@@ -3577,10 +3554,6 @@ phy_set_tx_power_limit(
 	u8 ntx_idx;
 	s8 powerLimit = 0, prevPowerLimit, channelIndex;
 	s8 ww_lmt_val = phy_txpwr_ww_lmt_value(Adapter);
-
-	if (0)
-		RTW_INFO("Index of power limit table [regulation %s][band %s][bw %s][rate section %s][ntx %s][chnl %s][val %s]\n"
-			, Regulation, Band, Bandwidth, RateSection, ntx, Channel, PowerLimit);
 
 	if (GetU1ByteIntegerFromStringInDecimal((char *)Channel, &channel) == _FALSE
 		|| GetS1ByteIntegerFromStringInDecimal((char *)PowerLimit, &powerLimit) == _FALSE
@@ -4880,25 +4853,6 @@ PHY_ConfigRFWithTxPwrTrackParaFile(
 		}
 	} else
 		RTW_INFO("%s(): No File %s, Load from HWImg Array!\n", __FUNCTION__, pFileName);
-#if 0
-	for (i = 0; i < DELTA_SWINGIDX_SIZE; ++i) {
-		RTW_INFO("pRFCalibrateInfo->delta_swing_table_idx_2ga_p[%d] = %d\n", i, pRFCalibrateInfo->delta_swing_table_idx_2ga_p[i]);
-		RTW_INFO("pRFCalibrateInfo->delta_swing_table_idx_2ga_n[%d] = %d\n", i, pRFCalibrateInfo->delta_swing_table_idx_2ga_n[i]);
-		RTW_INFO("pRFCalibrateInfo->delta_swing_table_idx_2gb_p[%d] = %d\n", i, pRFCalibrateInfo->delta_swing_table_idx_2gb_p[i]);
-		RTW_INFO("pRFCalibrateInfo->delta_swing_table_idx_2gb_n[%d] = %d\n", i, pRFCalibrateInfo->delta_swing_table_idx_2gb_n[i]);
-		RTW_INFO("pRFCalibrateInfo->delta_swing_table_idx_2g_cck_a_p[%d] = %d\n", i, pRFCalibrateInfo->delta_swing_table_idx_2g_cck_a_p[i]);
-		RTW_INFO("pRFCalibrateInfo->delta_swing_table_idx_2g_cck_a_n[%d] = %d\n", i, pRFCalibrateInfo->delta_swing_table_idx_2g_cck_a_n[i]);
-		RTW_INFO("pRFCalibrateInfo->delta_swing_table_idx_2g_cck_b_p[%d] = %d\n", i, pRFCalibrateInfo->delta_swing_table_idx_2g_cck_b_p[i]);
-		RTW_INFO("pRFCalibrateInfo->delta_swing_table_idx_2g_cck_b_n[%d] = %d\n", i, pRFCalibrateInfo->delta_swing_table_idx_2g_cck_b_n[i]);
-
-		for (j = 0; j < 3; ++j) {
-			RTW_INFO("pRFCalibrateInfo->delta_swing_table_idx_5ga_p[%d][%d] = %d\n", j, i, pRFCalibrateInfo->delta_swing_table_idx_5ga_p[j][i]);
-			RTW_INFO("pRFCalibrateInfo->delta_swing_table_idx_5ga_n[%d][%d] = %d\n", j, i, pRFCalibrateInfo->delta_swing_table_idx_5ga_n[j][i]);
-			RTW_INFO("pRFCalibrateInfo->delta_swing_table_idx_5gb_p[%d][%d] = %d\n", j, i, pRFCalibrateInfo->delta_swing_table_idx_5gb_p[j][i]);
-			RTW_INFO("pRFCalibrateInfo->delta_swing_table_idx_5gb_n[%d][%d] = %d\n", j, i, pRFCalibrateInfo->delta_swing_table_idx_5gb_n[j][i]);
-		}
-	}
-#endif
 	return rtStatus;
 }
 

@@ -797,10 +797,6 @@ void	rtw_hal_set_chnl_bw(_adapter *padapter, u8 channel, enum channel_width Band
 	if (rtw_mp_mode_check(padapter) == _FALSE)
 #endif
 	{
-		#if 0
-		if (cch_160 != 0)
-			cch_80 = rtw_get_scch_by_cch_offset(cch_160, CHANNEL_WIDTH_160, Offset80);
-		#endif
 		if (cch_80 != 0)
 			cch_40 = rtw_get_scch_by_cch_offset(cch_80, CHANNEL_WIDTH_80, Offset80);
 		if (cch_40 != 0)
@@ -810,11 +806,6 @@ void	rtw_hal_set_chnl_bw(_adapter *padapter, u8 channel, enum channel_width Band
 	pHalData->cch_80 = cch_80;
 	pHalData->cch_40 = cch_40;
 	pHalData->cch_20 = cch_20;
-
-	if (0)
-		RTW_INFO("%s cch:%u, %s, offset40:%u, offset80:%u (%u, %u, %u)\n", __func__
-			, channel, ch_width_str(Bandwidth), Offset40, Offset80
-			, pHalData->cch_80, pHalData->cch_40, pHalData->cch_20);
 
 	padapter->hal_func.set_chnl_bw_handler(padapter, channel, Bandwidth, Offset40, Offset80);
 	pHalData->current_band_type = channel > 14 ? BAND_ON_5G:BAND_ON_2_4G;

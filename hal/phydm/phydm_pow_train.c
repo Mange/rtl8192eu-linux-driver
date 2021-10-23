@@ -78,23 +78,7 @@ void phydm_update_power_training_state(void *dm_void)
 		crc_ok_cnt = dm->phy_dbg_info.num_qry_phy_status_ofdm +
 			     dm->phy_dbg_info.num_qry_phy_status_cck;
 		cca_cnt = fa_cnt->cnt_cca_all;
-#if 0
-		if (crc_ok_cnt > cca_cnt) { /*invalid situation*/
-			pt_score_tmp = KEEP_PRE_PT_SCORE;
-			return;
-		} else if ((crc_ok_cnt + (crc_ok_cnt >> 1)) <= cca_cnt) {
-		/* @???crc_ok <= (2/3)*cca */
-			pt_score_tmp = DISABLE_PT_SCORE;
-			dm->is_disable_power_training = true;
-		} else if ((crc_ok_cnt + (crc_ok_cnt >> 2)) <= cca_cnt) {
-		/* @???crc_ok <= (4/5)*cca */
-			pt_score_tmp = KEEP_PRE_PT_SCORE;
-		} else {
-		/* @???crc_ok > (4/5)*cca */
-			pt_score_tmp = ENABLE_PT_SCORE;
-			dm->is_disable_power_training = false;
-		}
-#endif
+
 		if (ccx->nhm_ratio > 10) {
 			pt_score_tmp = DISABLE_PT_SCORE;
 			dm->is_disable_power_training = true;

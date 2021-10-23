@@ -599,9 +599,6 @@ static bool match_io_sniff_en(_adapter *adapter
 		|| (sniff->type == RTW_IO_SNIFF_TYPE_DIS && (mask & val) != mask)
 	) {
 		ret = 1;
-		if (0)
-			RTW_INFO(FUNC_ADPT_FMT" addr:0x%x len:%u val:0x%x i:%d sniff_len:%u shift:%u mask:0x%x\n"
-				, FUNC_ADPT_ARG(adapter), addr, len, val, i, sniff_len, shift, mask);
 	}
 
 exit:
@@ -721,15 +718,6 @@ bool match_rf_write_sniff_ranges(_adapter *adapter, u8 path, u32 addr, u32 mask)
 u8 dbg_rtw_sd_f0_read8(_adapter *adapter, u32 addr, const char *caller, const int line)
 {
 	u8 val = _rtw_sd_f0_read8(adapter, addr);
-
-#if 0
-	const struct rtw_io_sniff_ent *ent = match_read_sniff(adapter, addr, 1, val);
-
-	if (ent) {
-		RTW_INFO("DBG_IO %s:%d rtw_sd_f0_read8(0x%04x) return 0x%02x %s\n"
-			, caller, line, addr, val, rtw_io_sniff_ent_get_tag(ent));
-	}
-#endif
 
 	return val;
 }

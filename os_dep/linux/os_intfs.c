@@ -1245,20 +1245,6 @@ static int rtw_net_set_mac_address(struct net_device *pnetdev, void *addr)
 	memcpy(adapter_mac_addr(padapter), sa->sa_data, ETH_ALEN); /* set mac addr to adapter */
 	memcpy(pnetdev->dev_addr, sa->sa_data, ETH_ALEN); /* set mac addr to net_device */
 
-#if 0
-	if (rtw_is_hw_init_completed(padapter)) {
-		rtw_ps_deny(padapter, PS_DENY_IOCTL);
-		LeaveAllPowerSaveModeDirect(padapter); /* leave PS mode for guaranteeing to access hw register successfully */
-
-#ifdef CONFIG_MI_WITH_MBSSID_CAM
-		rtw_hal_change_macaddr_mbid(padapter, sa->sa_data);
-#else
-		rtw_hal_set_hwreg(padapter, HW_VAR_MAC_ADDR, sa->sa_data); /* set mac addr to mac register */
-#endif
-
-		rtw_ps_deny_cancel(padapter, PS_DENY_IOCTL);
-	}
-#else
 	rtw_ps_deny(padapter, PS_DENY_IOCTL);
 	LeaveAllPowerSaveModeDirect(padapter); /* leave PS mode for guaranteeing to access hw register successfully */
 #ifdef CONFIG_MI_WITH_MBSSID_CAM
@@ -1267,7 +1253,6 @@ static int rtw_net_set_mac_address(struct net_device *pnetdev, void *addr)
 	rtw_hal_set_hwreg(padapter, HW_VAR_MAC_ADDR, sa->sa_data); /* set mac addr to mac register */
 #endif
 	rtw_ps_deny_cancel(padapter, PS_DENY_IOCTL);
-#endif
 
 	RTW_INFO(FUNC_ADPT_FMT": Set Mac Addr to "MAC_FMT" Successfully\n"
 		 , FUNC_ADPT_ARG(padapter), MAC_ARG(sa->sa_data));
@@ -2655,10 +2640,6 @@ int _netdev_vir_if_open(struct net_device *pnetdev)
 
 	if (padapter->bup == _FALSE && primary_padapter->bup == _TRUE &&
 	    rtw_is_hw_init_completed(primary_padapter)) {
-#if 0 /*#ifdef CONFIG_MI_WITH_MBSSID_CAM*/
-		rtw_hal_set_hwreg(padapter, HW_VAR_MAC_ADDR, adapter_mac_addr(padapter)); /* set mac addr to mac register */
-#endif
-
 	}
 
 	if (padapter->bup == _FALSE) {
@@ -3405,9 +3386,6 @@ int _netdev_open(struct net_device *pnetdev)
 		if (status == _FAIL) {
 			goto netdev_open_error;
 		}
-#if 0/*#ifdef CONFIG_MI_WITH_MBSSID_CAM*/
-		rtw_hal_set_hwreg(padapter, HW_VAR_MAC_ADDR, adapter_mac_addr(padapter)); /* set mac addr to mac register */
-#endif
 
 		RTW_INFO("MAC Address = "MAC_FMT"\n", MAC_ARG(pnetdev->dev_addr));
 
@@ -3577,9 +3555,7 @@ int  ips_netdrv_open(_adapter *padapter)
 		goto netdev_open_error;
 	}
 #endif
-#if 0
-	rtw_mi_set_mac_addr(padapter);
-#endif
+
 #ifndef RTW_HALMAC
 	rtw_intf_start(padapter);
 #endif /* !RTW_HALMAC */

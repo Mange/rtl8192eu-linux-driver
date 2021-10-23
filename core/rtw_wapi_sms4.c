@@ -290,65 +290,6 @@ void SecCalculateMicSMS4(
 	u8        *MicBuffer
 )
 {
-#if 0
-	struct ieee80211_hdr_3addr_qos *header;
-	u8 TempBuf[34], TempLen = 32, MicLen, QosOffset, *IV;
-	u16 *pTemp, fc;
-
-	WAPI_TRACE(WAPI_TX | WAPI_RX, "=========>%s\n", __FUNCTION__);
-
-	header = (struct ieee80211_hdr_3addr_qos *)pHeader;
-	memset(TempBuf, 0, 34);
-	memcpy(TempBuf, pHeader, 2); /* FrameCtrl */
-	pTemp = (u16 *)TempBuf;
-	*pTemp &= 0xc78f;       /* bit4,5,6,11,12,13 */
-
-	memcpy((TempBuf + 2), (pHeader + 4), 12); /* Addr1, Addr2 */
-	memcpy((TempBuf + 14), (pHeader + 22), 2); /* SeqCtrl */
-	pTemp = (u16 *)(TempBuf + 14);
-	*pTemp &= 0x000f;
-
-	memcpy((TempBuf + 16), (pHeader + 16), 6); /* Addr3 */
-
-	fc = le16_to_cpu(header->frame_control);
-
-
-
-	if (GetFrDs((u16 *)&fc) && GetToDs((u16 *)&fc)) {
-		memcpy((TempBuf + 22), (pHeader + 24), 6);
-		QosOffset = 30;
-	} else {
-		memset((TempBuf + 22), 0, 6);
-		QosOffset = 24;
-	}
-
-	if ((fc & 0x0088) == 0x0088) {
-		memcpy((TempBuf + 28), (pHeader + QosOffset), 2);
-		TempLen += 2;
-		/* IV = pHeader + QosOffset + 2 + SNAP_SIZE + sizeof(u16) + 2; */
-		IV = pHeader + QosOffset + 2 + 2;
-	} else {
-		IV = pHeader + QosOffset + 2;
-		/* IV = pHeader + QosOffset + SNAP_SIZE + sizeof(u16) + 2; */
-	}
-
-	TempBuf[TempLen - 1] = (u8)(DataLen & 0xff);
-	TempBuf[TempLen - 2] = (u8)((DataLen & 0xff00) >> 8);
-	TempBuf[TempLen - 4] = KeyIdx;
-
-	WAPI_DATA(WAPI_TX, "CalculateMic - KEY", MicKey, 16);
-	WAPI_DATA(WAPI_TX, "CalculateMic - IV", IV, 16);
-	WAPI_DATA(WAPI_TX, "CalculateMic - TempBuf", TempBuf, TempLen);
-	WAPI_DATA(WAPI_TX, "CalculateMic - pData", pData, DataLen);
-
-	WapiSMS4CalculateMic(MicKey, IV, TempBuf, TempLen,
-			     pData, DataLen, MicBuffer, &MicLen);
-
-	if (MicLen != 16)
-		WAPI_TRACE(WAPI_ERR, "%s: MIC Length Error!!\n", __FUNCTION__);
-
-	WAPI_TRACE(WAPI_TX | WAPI_RX, "<=========%s\n", __FUNCTION__);
-#endif
 }
 
 /* AddCount: 1 or 2.
@@ -465,30 +406,6 @@ u8 WapiCheckPnInSwDecrypt(
 {
 	u8				ret = false;
 
-#if 0
-	struct ieee80211_hdr_3addr_qos *header;
-	u16				fc;
-	u8				*pDaddr, *pTaddr, *pRaddr;
-
-	header = (struct ieee80211_hdr_3addr_qos *)pskb->data;
-	pTaddr = header->addr2;
-	pRaddr = header->addr1;
-	fc = le16_to_cpu(header->frame_control);
-
-	if (GetToDs(&fc))
-		pDaddr = header->addr3;
-	else
-		pDaddr = header->addr1;
-
-	if ((_rtw_memcmp(pRaddr, padapter->pnetdev->dev_addr, ETH_ALEN) == 0)
-	    &&	!(pDaddr)
-	    && (GetFrameType(&fc) == (IEEE80211_STYPE_QOS_DATA |  IEEE80211_FTYPE_DATA)))
-		/* && ieee->pHTInfo->bCurrentHTSupport && */
-		/* ieee->pHTInfo->bCurRxReorderEnable) */
-		ret = false;
-	else
-		ret = true;
-#endif
 	WAPI_TRACE(WAPI_RX, "%s: return %d\n", __FUNCTION__, ret);
 	return ret;
 }
@@ -507,81 +424,6 @@ int SecSMS4HeaderFillIV(_adapter *padapter, u8 *pxmitframe)
 	WAPI_TRACE(WAPI_TX, "=========>%s\n", __FUNCTION__);
 
 	return ret;
-#if 0
-	hdr_len = sMacHdrLng;
-	if (GetFrameType(pskb->data) == (IEEE80211_STYPE_QOS_DATA |  IEEE80211_FTYPE_DATA))
-		hdr_len += 2;
-	/* hdr_len += SNAP_SIZE + sizeof(u16); */
-
-	pos = skb_push(pskb, padapter->wapiInfo.extra_prefix_len);
-	memmove(pos, pos + padapter->wapiInfo.extra_prefix_len, hdr_len);
-
-	pSecHeader = pskb->data + hdr_len;
-	pWapiExt = (PWLAN_HEADER_WAPI_EXTENSION)pSecHeader;
-	pRA = pskb->data + 4;
-
-	WAPI_DATA(WAPI_TX, "FillIV - Before Fill IV", pskb->data, pskb->len);
-
-	/* Address 1 is always receiver's address */
-	if (is_multicast_ether_addr(pRA)) {
-		if (!pWapiInfo->wapiTxMsk.bTxEnable) {
-			WAPI_TRACE(WAPI_ERR, "%s: bTxEnable = 0!!\n", __FUNCTION__);
-			return -2;
-		}
-		if (pWapiInfo->wapiTxMsk.keyId <= 1) {
-			pWapiExt->KeyIdx = pWapiInfo->wapiTxMsk.keyId;
-			pWapiExt->Reserved = 0;
-			bPNOverflow = WapiIncreasePN(pWapiInfo->lastTxMulticastPN, 1);
-			memcpy(pWapiExt->PN, pWapiInfo->lastTxMulticastPN, 16);
-			if (bPNOverflow) {
-				/* Update MSK Notification. */
-				WAPI_TRACE(WAPI_ERR, "===============>%s():multicast PN overflow\n", __FUNCTION__);
-				rtw_wapi_app_event_handler(padapter, NULL, 0, pRA, false, false, true, 0, false);
-			}
-		} else {
-			WAPI_TRACE(WAPI_ERR, "%s: Invalid Wapi Multicast KeyIdx!!\n", __FUNCTION__);
-			ret = -3;
-		}
-	} else {
-		list_for_each_entry(pWapiSta, &pWapiInfo->wapiSTAUsedList, list) {
-			if (!memcmp(pWapiSta->PeerMacAddr, pRA, 6)) {
-				bFindMatchPeer = true;
-				break;
-			}
-		}
-		if (bFindMatchPeer) {
-			if ((!pWapiSta->wapiUskUpdate.bTxEnable) && (!pWapiSta->wapiUsk.bTxEnable)) {
-				WAPI_TRACE(WAPI_ERR, "%s: bTxEnable = 0!!\n", __FUNCTION__);
-				return -4;
-			}
-			if (pWapiSta->wapiUsk.keyId <= 1) {
-				if (pWapiSta->wapiUskUpdate.bTxEnable)
-					pWapiExt->KeyIdx = pWapiSta->wapiUskUpdate.keyId;
-				else
-					pWapiExt->KeyIdx = pWapiSta->wapiUsk.keyId;
-
-				pWapiExt->Reserved = 0;
-				bPNOverflow = WapiIncreasePN(pWapiSta->lastTxUnicastPN, 2);
-				memcpy(pWapiExt->PN, pWapiSta->lastTxUnicastPN, 16);
-				if (bPNOverflow) {
-					/* Update USK Notification. */
-					WAPI_TRACE(WAPI_ERR, "===============>%s():unicast PN overflow\n", __FUNCTION__);
-					rtw_wapi_app_event_handler(padapter, NULL, 0, pWapiSta->PeerMacAddr, false, true, false, 0, false);
-				}
-			} else {
-				WAPI_TRACE(WAPI_ERR, "%s: Invalid Wapi Unicast KeyIdx!!\n", __FUNCTION__);
-				ret = -5;
-			}
-		} else {
-			WAPI_TRACE(WAPI_ERR, "%s: Can not find Peer Sta "MAC_FMT"!!\n", __FUNCTION__, MAC_ARG(pRA));
-			ret = -6;
-		}
-	}
-
-	WAPI_DATA(WAPI_TX, "FillIV - After Fill IV", pskb->data, pskb->len);
-	WAPI_TRACE(WAPI_TX, "<=========%s\n", __FUNCTION__);
-	return ret;
-#endif
 }
 
 /* WAPI SW Enc: must have done Coalesce! */

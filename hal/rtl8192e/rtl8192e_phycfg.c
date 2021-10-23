@@ -462,16 +462,6 @@ PHY_GetTxPowerLevel8192E(
 	OUT s32		*powerlevel
 )
 {
-#if 0
-	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(Adapter);
-	PMGNT_INFO		pMgntInfo = &(Adapter->MgntInfo);
-	s4Byte			TxPwrDbm = 13;
-
-	if (pMgntInfo->ClientConfigPwrInDbm != UNSPECIFIED_PWR_DBM)
-		*powerlevel = pMgntInfo->ClientConfigPwrInDbm;
-	else
-		*powerlevel = TxPwrDbm;
-#endif
 }
 
 VOID
@@ -1144,15 +1134,7 @@ PHY_HandleSwChnlAndSetBW8192E(
 	}
 
 	if (bSetBandWidth) {
-#if 0
-		if (bInitialzed == _FALSE) {
-			bInitialzed = _TRUE;
-			pHalData->bSetChnlBW = _TRUE;
-		} else if ((pHalData->current_channel_bw != ChnlWidth) || (pHalData->nCur40MhzPrimeSC != ExtChnlOffsetOf40MHz) || (pHalData->CurrentCenterFrequencyIndex1 != CenterFrequencyIndex1))
-			pHalData->bSetChnlBW = _TRUE;
-#else
 		pHalData->bSetChnlBW = _TRUE;
-#endif
 	}
 
 	if (!pHalData->bSetChnlBW && !pHalData->bSwChnl) {
@@ -1169,25 +1151,8 @@ PHY_HandleSwChnlAndSetBW8192E(
 
 	if (pHalData->bSetChnlBW) {
 		pHalData->current_channel_bw = ChnlWidth;
-#if 0
-		if (ExtChnlOffsetOf40MHz == EXTCHNL_OFFSET_LOWER)
-			pHalData->nCur40MhzPrimeSC = HAL_PRIME_CHNL_OFFSET_UPPER;
-		else if (ExtChnlOffsetOf40MHz == EXTCHNL_OFFSET_UPPER)
-			pHalData->nCur40MhzPrimeSC = HAL_PRIME_CHNL_OFFSET_LOWER;
-		else
-			pHalData->nCur40MhzPrimeSC = HAL_PRIME_CHNL_OFFSET_DONT_CARE;
-
-		if (ExtChnlOffsetOf80MHz == EXTCHNL_OFFSET_LOWER)
-			pHalData->nCur80MhzPrimeSC = HAL_PRIME_CHNL_OFFSET_UPPER;
-		else if (ExtChnlOffsetOf80MHz == EXTCHNL_OFFSET_UPPER)
-			pHalData->nCur80MhzPrimeSC = HAL_PRIME_CHNL_OFFSET_LOWER;
-		else
-			pHalData->nCur80MhzPrimeSC = HAL_PRIME_CHNL_OFFSET_DONT_CARE;
-#else
 		pHalData->nCur40MhzPrimeSC = ExtChnlOffsetOf40MHz;
 		pHalData->nCur80MhzPrimeSC = ExtChnlOffsetOf80MHz;
-#endif
-
 		pHalData->CurrentCenterFrequencyIndex1 = CenterFrequencyIndex1;
 	}
 

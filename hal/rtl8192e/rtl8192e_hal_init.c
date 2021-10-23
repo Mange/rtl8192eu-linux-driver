@@ -944,15 +944,6 @@ Hal_ReadPAType_8192E(
 			pHalData->ExternalPA_2G  = (GetRegAmplifierType2G(Adapter) & ODM_BOARD_EXT_PA)  ? 1 : 0;
 			pHalData->ExternalLNA_2G = (GetRegAmplifierType2G(Adapter) & ODM_BOARD_EXT_LNA) ? 1 : 0;
 		}
-#if 0
-		if (GetRegAmplifierType5G(Adapter) == 0) { /*  AUTO */
-			pHalData->external_pa_5g = ((pHalData->PAType_5G & BIT1) && (pHalData->PAType_5G & BIT0)) ? 1 : 0;
-			pHalData->external_lna_5g = ((pHalData->LNAType_5G & BIT7) && (pHalData->LNAType_5G & BIT3)) ? 1 : 0;	/*  5G only now.			 */
-		} else {
-			pHalData->external_pa_5g  = (GetRegAmplifierType5G(Adapter) & ODM_BOARD_EXT_PA_5G)  ? 1 : 0;
-			pHalData->external_lna_5g = (GetRegAmplifierType5G(Adapter) & ODM_BOARD_EXT_LNA_5G) ? 1 : 0;
-		}
-#endif
 
 	} else {
 		pHalData->ExternalPA_2G  = EEPROM_Default_PAType;
@@ -967,15 +958,6 @@ Hal_ReadPAType_8192E(
 			pHalData->ExternalPA_2G  = (GetRegAmplifierType2G(Adapter) & ODM_BOARD_EXT_PA)  ? 1 : 0;
 			pHalData->ExternalLNA_2G = (GetRegAmplifierType2G(Adapter) & ODM_BOARD_EXT_LNA) ? 1 : 0;
 		}
-#if 0
-		if (GetRegAmplifierType5G(Adapter) == 0) { /*  AUTO */
-			pHalData->external_pa_5g  = 0;
-			pHalData->external_lna_5g = 0;
-		} else {
-			pHalData->external_pa_5g  = (GetRegAmplifierType5G(Adapter) & ODM_BOARD_EXT_PA_5G)  ? 1 : 0;
-			pHalData->external_lna_5g = (GetRegAmplifierType5G(Adapter) & ODM_BOARD_EXT_LNA_5G) ? 1 : 0;
-		}
-#endif
 
 	}
 	RTW_INFO("pHalData->ExternalPA_2G = %d , pHalData->ExternalLNA_2G = %d\n",  pHalData->ExternalPA_2G, pHalData->ExternalLNA_2G);
@@ -1825,378 +1807,6 @@ rtl8192E_Efuse_PgPacketRead(IN	PADAPTER	pAdapter,
 
 	return ret;
 }
-#if 0
-int
-hal_EfusePgPacketWrite_8192E(IN	PADAPTER	pAdapter,
-			     IN	u8			offset,
-			     IN	u8			word_en,
-			     IN	u8			*data,
-			     IN	BOOLEAN		bPseudoTest)
-{
-	u8 WriteState = PG_STATE_HEADER;
-
-	int bContinual = _TRUE, bDataEmpty = _TRUE;
-	/* int bResult = _TRUE; */
-	u16	efuse_addr = 0;
-	u8	efuse_data;
-
-	u8	pg_header = 0, pg_header_temp = 0;
-
-	u8	tmp_word_cnts = 0, target_word_cnts = 0;
-	u8	tmp_header, match_word_en, tmp_word_en;
-
-	PGPKT_STRUCT target_pkt;
-	PGPKT_STRUCT tmp_pkt;
-
-	u8	originaldata[sizeof(u8) * 8];
-	u8	tmpindex = 0, badworden = 0x0F;
-
-	static int	repeat_times = 0;
-
-	BOOLEAN		bExtendedHeader = _FALSE;
-	u8	efuseType = EFUSE_WIFI;
-
-	/*  */
-	/* <Roger_Notes> Efuse has been pre-programmed dummy 5Bytes at the end of Efuse by CP. */
-	/* So we have to prevent unexpected data string connection, which will cause */
-	/* incorrect data auto-load from HW. The total size is equal or smaller than 498bytes */
-	/* (i.e., offset 0~497, and dummy 1bytes) expected after CP test. */
-	/* 2009.02.19. */
-	/*  */
-	if (Efuse_GetCurrentSize(pAdapter, efuseType, bPseudoTest) >= (EFUSE_REAL_CONTENT_LEN_8192E-EFUSE_OOB_PROTECT_BYTES_8192E)) {
-		RTW_INFO("hal_EfusePgPacketWrite_8812A() error: %x >= %x\n", Efuse_GetCurrentSize(pAdapter, efuseType, bPseudoTest), (EFUSE_REAL_CONTENT_LEN_8192E-EFUSE_OOB_PROTECT_BYTES_8192E));
-		return _FALSE;
-	}
-
-	/* Init the 8 bytes content as 0xff */
-	target_pkt.offset = offset;
-	target_pkt.word_en = word_en;
-	/* Initial the value to avoid compile warning */
-	tmp_pkt.offset = 0;
-	tmp_pkt.word_en = 0;
-
-	/* RTW_INFO("hal_EfusePgPacketWrite_8812A target offset 0x%x word_en 0x%x\n", target_pkt.offset, target_pkt.word_en); */
-
-	memset((PVOID)target_pkt.data, 0xFF, sizeof(u8) * 8);
-
-	efuse_WordEnableDataRead(word_en, data, target_pkt.data);
-	target_word_cnts = Efuse_CalculateWordCnts(target_pkt.word_en);
-
-	/* efuse_reg_ctrl(pAdapter,_TRUE); */ /* power on */
-	/* RTW_INFO("EFUSE Power ON\n"); */
-
-	/*  */
-	/* <Roger_Notes> Efuse has been pre-programmed dummy 5Bytes at the end of Efuse by CP. */
-	/* So we have to prevent unexpected data string connection, which will cause */
-	/* incorrect data auto-load from HW. Dummy 1bytes is additional. */
-	/* 2009.02.19. */
-	/*  */
-	while (bContinual && (efuse_addr  < (EFUSE_REAL_CONTENT_LEN_8192E-EFUSE_OOB_PROTECT_BYTES_8192E))) {
-		if (WriteState == PG_STATE_HEADER) {
-			bDataEmpty = _TRUE;
-			badworden = 0x0F;
-			/* ************	so ******************* */
-			/* RTW_INFO("EFUSE PG_STATE_HEADER\n"); */
-			if (efuse_OneByteRead(pAdapter, efuse_addr , &efuse_data, bPseudoTest) &&
-			    (efuse_data != 0xFF)) {
-				if ((efuse_data & 0x1F) == 0x0F) {	/* extended header */
-					tmp_header = efuse_data;
-					efuse_addr++;
-					efuse_OneByteRead(pAdapter, efuse_addr , &efuse_data, bPseudoTest);
-					if ((efuse_data & 0x0F) == 0x0F) { /* wren fail */
-						efuse_addr++;
-						continue;
-					} else {
-						tmp_pkt.offset = ((tmp_header & 0xE0) >> 5) | ((efuse_data & 0xF0) >> 1);
-						tmp_pkt.word_en = efuse_data & 0x0F;
-					}
-				} else {
-					tmp_header	=  efuse_data;
-					tmp_pkt.offset	= (tmp_header >> 4) & 0x0F;
-					tmp_pkt.word_en = tmp_header & 0x0F;
-				}
-				tmp_word_cnts =  Efuse_CalculateWordCnts(tmp_pkt.word_en);
-
-				/* RTW_INFO("section offset 0x%x worden 0x%x\n", tmp_pkt.offset, tmp_pkt.word_en); */
-
-				/* ************	so-1 ******************* */
-				if (tmp_pkt.offset  != target_pkt.offset) {
-					efuse_addr = efuse_addr + (tmp_word_cnts * 2) + 1; /* Next pg_packet */
-#if (EFUSE_ERROE_HANDLE == 1)
-					WriteState = PG_STATE_HEADER;
-#endif
-				} else {	/* write the same offset */
-					/* RTW_INFO("hal_EfusePgPacketWrite_8812A section offset the same\n"); */
-					/* ************	so-2 ******************* */
-					for (tmpindex = 0 ; tmpindex < (tmp_word_cnts * 2) ; tmpindex++) {
-						if (efuse_OneByteRead(pAdapter, (efuse_addr + 1 + tmpindex) , &efuse_data, bPseudoTest) && (efuse_data != 0xFF))
-							bDataEmpty = _FALSE;
-					}
-					/* ************	so-2-1 ******************* */
-					if (bDataEmpty == _FALSE) {
-						/* RTW_INFO("hal_EfusePgPacketWrite_8812A section offset the same and data is NOT empty\n"); */
-
-						efuse_addr = efuse_addr + (tmp_word_cnts * 2) + 1; /* Next pg_packet										 */
-#if (EFUSE_ERROE_HANDLE == 1)
-						WriteState = PG_STATE_HEADER;
-#endif
-					} else {
-						/* ************  so-2-2 ******************* */
-						/* RTW_INFO("hal_EfusePgPacketWrite_8812A section data empty\n"); */
-						match_word_en = 0x0F;			/* same bit as original wren */
-						if (!((target_pkt.word_en & BIT0) | (tmp_pkt.word_en & BIT0)))
-							match_word_en &= (~BIT0);
-						if (!((target_pkt.word_en & BIT1) | (tmp_pkt.word_en & BIT1)))
-							match_word_en &= (~BIT1);
-						if (!((target_pkt.word_en & BIT2) | (tmp_pkt.word_en & BIT2)))
-							match_word_en &= (~BIT2);
-						if (!((target_pkt.word_en & BIT3) | (tmp_pkt.word_en & BIT3)))
-							match_word_en &= (~BIT3);
-
-						/* ************	so-2-2-A ******************* */
-						if ((match_word_en & 0x0F) != 0x0F) {
-							badworden = Efuse_WordEnableDataWrite(pAdapter, efuse_addr + 1, tmp_pkt.word_en , target_pkt.data, bPseudoTest);
-
-							/* ************	so-2-2-A-1 ******************* */
-							/* ############################ */
-							if (0x0F != (badworden & 0x0F)) {
-								u8	reorg_offset = offset;
-								u8	reorg_worden = badworden;
-								Efuse_PgPacketWrite(pAdapter, reorg_offset, reorg_worden, target_pkt.data, bPseudoTest);
-							}
-							/* ############################ */
-
-							tmp_word_en = 0x0F;	/* not the same bit as original wren */
-							if ((target_pkt.word_en & BIT0) ^ (match_word_en & BIT0))
-								tmp_word_en &= (~BIT0);
-							if ((target_pkt.word_en & BIT1) ^ (match_word_en & BIT1))
-								tmp_word_en &=	(~BIT1);
-							if ((target_pkt.word_en & BIT2) ^ (match_word_en & BIT2))
-								tmp_word_en &= (~BIT2);
-							if ((target_pkt.word_en & BIT3) ^ (match_word_en & BIT3))
-								tmp_word_en &= (~BIT3);
-
-							/* ************	so-2-2-A-2 *******************	 */
-							if ((tmp_word_en & 0x0F) != 0x0F) {
-								/* reorganize other pg packet
-								* efuse_addr = efuse_addr + (2*tmp_word_cnts) +1; */ /* next pg packet addr							 */
-								efuse_addr = Efuse_GetCurrentSize(pAdapter, efuseType, bPseudoTest);
-								/* =========================== */
-								target_pkt.offset = offset;
-								target_pkt.word_en = tmp_word_en;
-								/* =========================== */
-							} else
-								bContinual = _FALSE;
-#if (EFUSE_ERROE_HANDLE == 1)
-							WriteState = PG_STATE_HEADER;
-							repeat_times++;
-							if (repeat_times > EFUSE_REPEAT_THRESHOLD_) {
-								bContinual = _FALSE;
-								/* bResult = _FALSE; */
-							}
-#endif
-						} else { /* ************  so-2-2-B ******************* */
-							/* reorganize other pg packet						 */
-							efuse_addr = efuse_addr + (2 * tmp_word_cnts) + 1; /* next pg packet addr							 */
-							/* =========================== */
-							target_pkt.offset = offset;
-							target_pkt.word_en = target_pkt.word_en;
-							/* ===========================			 */
-#if (EFUSE_ERROE_HANDLE == 1)
-							WriteState = PG_STATE_HEADER;
-#endif
-						}
-					}
-				}
-				RTW_INFO("EFUSE PG_STATE_HEADER-1\n");
-			} else {	/* ************	s1: header == oxff	******************* */
-				bExtendedHeader = _FALSE;
-
-				if (target_pkt.offset >= EFUSE_MAX_SECTION_BASE) {
-					pg_header = ((target_pkt.offset & 0x07) << 5) | 0x0F;
-
-					/* RTW_INFO("hal_EfusePgPacketWrite_8812A extended pg_header[2:0] |0x0F 0x%x\n", pg_header); */
-
-					efuse_OneByteWrite(pAdapter, efuse_addr, pg_header, bPseudoTest);
-					phy_set_mac_reg(pAdapter, EFUSE_TEST, BIT26, 0);
-
-					efuse_OneByteRead(pAdapter, efuse_addr, &tmp_header, bPseudoTest);
-					phy_set_mac_reg(pAdapter, EFUSE_TEST, BIT26, 1);
-
-					while (tmp_header == 0xFF) {
-						/* RTW_INFO("hal_EfusePgPacketWrite_8812A extended pg_header[2:0] wirte fail\n"); */
-
-						repeat_times++;
-
-						if (repeat_times > EFUSE_REPEAT_THRESHOLD_) {
-							bContinual = _FALSE;
-							/* bResult = _FALSE; */
-							efuse_addr++;
-							break;
-						}
-						efuse_OneByteWrite(pAdapter, efuse_addr, pg_header, bPseudoTest);
-						efuse_OneByteRead(pAdapter, efuse_addr, &tmp_header, bPseudoTest);
-					}
-
-					if (!bContinual)
-						break;
-
-					if (tmp_header == pg_header) {
-						efuse_addr++;
-						pg_header_temp = pg_header;
-						pg_header = ((target_pkt.offset & 0x78) << 1) | target_pkt.word_en;
-
-						/* RTW_INFO("hal_EfusePgPacketWrite_8812A extended pg_header[6:3] | worden 0x%x word_en 0x%x\n", pg_header, target_pkt.word_en); */
-
-						efuse_OneByteWrite(pAdapter, efuse_addr, pg_header, bPseudoTest);
-						phy_set_mac_reg(pAdapter, EFUSE_TEST, BIT26, 0);
-
-						efuse_OneByteRead(pAdapter, efuse_addr, &tmp_header, bPseudoTest);
-						phy_set_mac_reg(pAdapter, EFUSE_TEST, BIT26, 1);
-
-						while (tmp_header == 0xFF) {
-							repeat_times++;
-
-							if (repeat_times > EFUSE_REPEAT_THRESHOLD_) {
-								bContinual = _FALSE;
-								/* bResult = _FALSE; */
-								break;
-							}
-							efuse_OneByteWrite(pAdapter, efuse_addr, pg_header, bPseudoTest);
-							efuse_OneByteRead(pAdapter, efuse_addr, &tmp_header, bPseudoTest);
-						}
-
-						if (!bContinual)
-							break;
-
-						if ((tmp_header & 0x0F) == 0x0F) { /* wren PG fail */
-							repeat_times++;
-
-							if (repeat_times > EFUSE_REPEAT_THRESHOLD_) {
-								bContinual = _FALSE;
-								/* bResult = _FALSE; */
-								break;
-							} else {
-								efuse_addr++;
-								continue;
-							}
-						} else if (pg_header != tmp_header) {	/* offset PG fail						 */
-							bExtendedHeader = _TRUE;
-							tmp_pkt.offset = ((pg_header_temp & 0xE0) >> 5) | ((tmp_header & 0xF0) >> 1);
-							tmp_pkt.word_en =  tmp_header & 0x0F;
-							tmp_word_cnts =  Efuse_CalculateWordCnts(tmp_pkt.word_en);
-						}
-					} else if ((tmp_header & 0x1F) == 0x0F) {	/* wrong extended header */
-						efuse_addr += 2;
-						continue;
-					}
-				} else {
-					pg_header = ((target_pkt.offset << 4) & 0xf0) | target_pkt.word_en;
-					efuse_OneByteWrite(pAdapter, efuse_addr, pg_header, bPseudoTest);
-					efuse_OneByteRead(pAdapter, efuse_addr, &tmp_header, bPseudoTest);
-				}
-
-				if (tmp_header == pg_header) {
-					/* ************  s1-1*******************								 */
-					WriteState = PG_STATE_DATA;
-				}
-#if (EFUSE_ERROE_HANDLE == 1)
-				else if (tmp_header == 0xFF) { /* ************	s1-3: if Write or read func doesn't work *******************		 */
-					/* efuse_addr doesn't change */
-					WriteState = PG_STATE_HEADER;
-					repeat_times++;
-					if (repeat_times > EFUSE_REPEAT_THRESHOLD_) {
-						bContinual = _FALSE;
-						/* bResult = _FALSE; */
-					}
-				}
-#endif
-				else {
-					/* ************  s1-2 : fixed the header procedure *******************							 */
-					if (!bExtendedHeader) {
-						tmp_pkt.offset = (tmp_header >> 4) & 0x0F;
-						tmp_pkt.word_en =  tmp_header & 0x0F;
-						tmp_word_cnts =  Efuse_CalculateWordCnts(tmp_pkt.word_en);
-					}
-
-					/* ************	s1-2-A :cover the exist data ******************* */
-					memset(originaldata, 0xff, sizeof(u8) * 8);
-
-					if (Efuse_PgPacketRead(pAdapter, tmp_pkt.offset, originaldata, bPseudoTest)) {
-						/* check if data exist					 */
-						/* efuse_reg_ctrl(pAdapter,_TRUE); */ /* power on */
-						badworden = Efuse_WordEnableDataWrite(pAdapter, efuse_addr + 1, tmp_pkt.word_en, originaldata, bPseudoTest);
-						/* ############################ */
-						if (0x0F != (badworden & 0x0F)) {
-							u8	reorg_offset = tmp_pkt.offset;
-							u8	reorg_worden = badworden;
-							Efuse_PgPacketWrite(pAdapter, reorg_offset, reorg_worden, originaldata, bPseudoTest);
-							efuse_addr = Efuse_GetCurrentSize(pAdapter, efuseType, bPseudoTest);
-						}
-						/* ############################ */
-						else {
-							efuse_addr = efuse_addr + (tmp_word_cnts * 2) + 1; /* Next pg_packet							 */
-						}
-					}
-					/* ************  s1-2-B: wrong address******************* */
-					else {
-						efuse_addr = efuse_addr + (tmp_word_cnts * 2) + 1; /* Next pg_packet */
-					}
-
-#if (EFUSE_ERROE_HANDLE == 1)
-					WriteState = PG_STATE_HEADER;
-					repeat_times++;
-					if (repeat_times > EFUSE_REPEAT_THRESHOLD_) {
-						bContinual = _FALSE;
-						/* bResult = _FALSE; */
-					}
-#endif
-
-					/* RTW_INFO("EFUSE PG_STATE_HEADER-2\n"); */
-				}
-
-			}
-
-		}
-		/* write data state */
-		else if (WriteState == PG_STATE_DATA) {
-			/* ************	s1-1  ******************* */
-			/* RTW_INFO("EFUSE PG_STATE_DATA\n"); */
-			badworden = 0x0f;
-			badworden = Efuse_WordEnableDataWrite(pAdapter, efuse_addr + 1, target_pkt.word_en, target_pkt.data, bPseudoTest);
-			if ((badworden & 0x0F) == 0x0F) {
-				/* ************  s1-1-A ******************* */
-				bContinual = _FALSE;
-			} else {
-				/* reorganize other pg packet */ /* ************  s1-1-B ******************* */
-				efuse_addr = efuse_addr + (2 * target_word_cnts) + 1; /* next pg packet addr */
-
-				/* =========================== */
-				target_pkt.offset = offset;
-				target_pkt.word_en = badworden;
-				target_word_cnts = Efuse_CalculateWordCnts(target_pkt.word_en);
-				/* ===========================			 */
-#if (EFUSE_ERROE_HANDLE == 1)
-				WriteState = PG_STATE_HEADER;
-				repeat_times++;
-				if (repeat_times > EFUSE_REPEAT_THRESHOLD_) {
-					bContinual = _FALSE;
-					/* bResult = _FALSE; */
-				}
-#endif
-				/* RTW_INFO("EFUSE PG_STATE_HEADER-3\n"); */
-			}
-		}
-	}
-
-	if (efuse_addr  >= (EFUSE_REAL_CONTENT_LEN_8192E-EFUSE_OOB_PROTECT_BYTES_8192E))
-		RTW_INFO("hal_EfusePgPacketWrite_8812A(): efuse_addr(%#x) Out of size!!\n", efuse_addr);
-	/* efuse_reg_ctrl(pAdapter,_FALSE); */ /* power off */
-
-	return _TRUE;
-}
-#else
-
 BOOLEAN efuse_PgPacketCheck(
 	PADAPTER	pAdapter,
 	u8		efuseType,
@@ -2793,9 +2403,6 @@ hal_EfusePgPacketWrite_8192E(IN	PADAPTER	pAdapter,
 	return _TRUE;
 }
 
-#endif
-
-
 static int
 rtl8192E_Efuse_PgPacketWrite(IN	PADAPTER	pAdapter,
 			     IN	u8			offset,
@@ -2849,13 +2456,6 @@ static void hw_var_set_monitor(PADAPTER Adapter, u8 variable, u8 *val)
 		/* Append FCS */
 		rcr_bits |= RCR_APPFCS;
 #endif
-#if 0
-		/*
-		   CRC and ICV packet will drop in recvbuf2recvframe()
-		   We no turn on it.
-		 */
-		rcr_bits |= (RCR_ACRC32 | RCR_AICV);
-#endif
 
 		rtw_hal_get_hwreg(Adapter, HW_VAR_RCR, (u8 *)&pHalData->rcr_backup);
 		rtw_hal_set_hwreg(Adapter, HW_VAR_RCR, (u8 *)&rcr_bits);
@@ -2864,10 +2464,6 @@ static void hw_var_set_monitor(PADAPTER Adapter, u8 variable, u8 *val)
 		value_rxfltmap2 = 0xFFFF;
 		rtw_write16(Adapter, REG_RXFLTMAP2, value_rxfltmap2);
 
-#if 0
-		/* tx pause */
-		rtw_write8(padapter, REG_TXPAUSE, 0xFF);
-#endif
 	} else {
 		/* do nothing */
 	}
@@ -3753,19 +3349,6 @@ u8 SetHwReg8192E(PADAPTER Adapter, u8 variable, u8 *val)
 		rtw_write8(Adapter, REG_RESP_SIFS_OFDM_8192E, val[0]);
 
 	}
-#if 0
-	{
-		/* SIFS_Timer = 0x0a0a0808; */
-		/* RESP_SIFS for CCK */
-
-		rtw_write8(Adapter, REG_RESP_SIFS_CCK, val[0]);	/*  SIFS_T2T_CCK (0x08) */
-		rtw_write8(Adapter, REG_RESP_SIFS_CCK + 1, val[1]);	/*  SIFS_R2T_CCK(0x08) */
-		/* RESP_SIFS for OFDM */
-		rtw_write8(Adapter, REG_RESP_SIFS_OFDM, val[2]); /* SIFS_T2T_OFDM (0x0a) */
-		rtw_write8(Adapter, REG_RESP_SIFS_OFDM + 1, val[3]); /* SIFS_R2T_OFDM(0x0a) */
-
-	}
-#endif
 	break;
 	case HW_VAR_ACK_PREAMBLE: {
 		u8	regTmp;

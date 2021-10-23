@@ -732,18 +732,7 @@ __PACK struct phy_sts_rpt_jgr3_type1 {
 	u8 paid_msb : 1;
 #endif
 	u16 rsvd_4;
-#if 0
-	/*@
-	u8		rsvd_4;
-#if (ODM_ENDIAN_TYPE == ODM_ENDIAN_LITTLE)
-	u8		rsvd_5: 6;
-	u8		rf_mode: 2;
-#else
-	u8		rf_mode: 2;
-	u8		rsvd_5: 6;
-#endif
-*/
-#endif
+
 	/* @DW4 : Offset 16 */
 	s8 rxevm[4]; /* s(8,1) */
 

@@ -779,12 +779,6 @@ void halbtc8192e2ant_dec_bt_pwr(IN struct btc_coexist *btcoexist,
 {
 	coex_dm->cur_bt_dec_pwr_lvl = dec_bt_pwr_lvl;
 
-	if (!force_exec) {
-#if 0	/* work around, avoid h2c command fail. */
-		if (coex_dm->pre_bt_dec_pwr_lvl == coex_dm->cur_bt_dec_pwr_lvl)
-			return;
-#endif
-	}
 	halbtc8192e2ant_set_fw_dec_bt_pwr(btcoexist,
 					  coex_dm->cur_bt_dec_pwr_lvl);
 
@@ -3703,12 +3697,6 @@ void ex_halbtc8192e2ant_display_coex_info(IN struct btc_coexist *btcoexist)
 	CL_SPRINTF(cli_buf, BT_TMP_BUF_SIZE, "\r\n %-35s = %s/", "WifibHiPri",
 		(coex_sta->wifi_is_high_pri_task ? "Yes" : "No"));
 	CL_PRINTF(cli_buf);
-
-#if 0
-		CL_SPRINTF(cli_buf, BT_TMP_BUF_SIZE, "\r\n %-35s = %s/", "test patch version",
-			"20161003_v3");
-		CL_PRINTF(cli_buf);
-#endif
 
 	/* wifi status */
 	CL_SPRINTF(cli_buf, BT_TMP_BUF_SIZE, "\r\n %-35s",

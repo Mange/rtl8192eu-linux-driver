@@ -412,8 +412,6 @@ void rtw_acs_current_info_dump(void *sel, _adapter *adapter)
 	}
 
 	_RTW_PRINT_SEL(sel, "Current BW %s\n", ch_width_str(bw));
-	if (0)
-		_RTW_PRINT_SEL(sel, "Current IGI 0x%02x\n", rtw_phydm_get_cur_igi(adapter));
 	_RTW_PRINT_SEL(sel, "CLM:%d, NHM:%d\n\n",
 		hal_data->acs.cur_ch_clm_ratio, hal_data->acs.cur_ch_nhm_ratio);
 }

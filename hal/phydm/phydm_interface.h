@@ -92,21 +92,6 @@ enum phydm_halmac_param {
 #define _bit_all(_name)			BIT_##_name
 #define _bit_ic(_name, _ic)		BIT_##_name##_ic
 
-/* @_cat: implemented by Token-Pasting Operator. */
-#if 0
-#define _cat(_name, _ic_type, _func) \
-	(                            \
-		_func##_all(_name))
-#endif
-
-#if 0
-
-#define ODM_REG_DIG_11N		0xC50
-#define ODM_REG_DIG_11AC	0xDDD
-
-ODM_REG(DIG,_pdm_odm)
-#endif
-
 #if defined(DM_ODM_CE_MAC80211)
 #define ODM_BIT(name, dm)				\
 	((dm->support_ic_type & ODM_IC_11N_SERIES) ?	\
@@ -322,15 +307,6 @@ void phydm_macid2sta_idx_table(struct dm_struct *dm, u8 entry_idx,
 void phydm_add_interrupt_mask_handler(struct dm_struct *dm, u8 interrupt_type);
 
 void phydm_enable_rx_related_interrupt_handler(struct dm_struct *dm);
-
-#if 0
-boolean
-phydm_get_txbf_en(
-	struct dm_struct		*dm,
-	u16		mac_id,
-	u8		i
-);
-#endif
 
 void phydm_iqk_wait(struct dm_struct *dm, u32 timeout);
 

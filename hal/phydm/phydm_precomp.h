@@ -438,14 +438,6 @@ rtw_phydm_cfg_phy_para(
 	#include "rtl8721d/phydm_rtl8721d.h"
 	#include "rtl8721d/hal8721dreg.h"
 	#include <hal_data.h>
-	#if 0
-	#if (DM_ODM_SUPPORT_TYPE == ODM_AP)
-		#include "halrf/rtl8721d/halrf_dpk_8721d.h"
-	#endif
-	#if (DM_ODM_SUPPORT_TYPE == ODM_CE)
-		#include "rtl8721d_hal.h"
-	#endif
-	#endif
 #endif
 #if (RTL8195B_SUPPORT == 1)
 	#include "halrf/rtl8195b/halrf_8195b.h"

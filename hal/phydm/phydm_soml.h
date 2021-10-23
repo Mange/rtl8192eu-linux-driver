@@ -44,17 +44,6 @@
 #define HT_ORDER_TYPE		3
 #define VHT_ORDER_TYPE		4
 
-#if 0
-#define CFO_QPSK_TH			20
-#define CFO_QAM16_TH		20
-#define CFO_QAM64_TH		20
-#define CFO_QAM256_TH		20
-
-#define BPSK_QPSK_DIST		20
-#define QAM16_DIST			30
-#define QAM64_DIST			30
-#define QAM256_DIST			20
-#endif
 #define HT_TYPE		1
 #define VHT_TYPE		2
 

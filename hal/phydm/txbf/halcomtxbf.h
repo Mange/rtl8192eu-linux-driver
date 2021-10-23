@@ -25,22 +25,6 @@
 #ifndef __HAL_COM_TXBF_H__
 #define __HAL_COM_TXBF_H__
 
-#if 0
-typedef	bool
-(*TXBF_GET)(
-	void*			adapter,
-	u8			get_type,
-	void*			p_out_buf
-	);
-
-typedef	bool
-(*TXBF_SET)(
-	void*			adapter,
-	u8			set_type,
-	void*			p_in_buf
-	);
-#endif
-
 enum txbf_set_type {
 	TXBF_SET_SOUNDING_ENTER,
 	TXBF_SET_SOUNDING_LEAVE,

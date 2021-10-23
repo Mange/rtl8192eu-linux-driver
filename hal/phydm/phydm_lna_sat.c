@@ -282,19 +282,7 @@ void phydm_lna_sat_chk(
 		config_phydm_write_rf_reg_8198f(dm, RF_PATH_D, 0x86, 0x10, 1);
 	} else if (dm->support_ic_type & ODM_RTL8814B) {
 		/*@set rf detection range (threshold)*/
-#if 0
-		config_phydm_write_rf_reg_8814b(dm, RF_PATH_A, 0x87, 0x3, 0x3);
-		config_phydm_write_rf_reg_8814b(dm, RF_PATH_B, 0x87, 0x3, 0x3);
-		config_phydm_write_rf_reg_8814b(dm, RF_PATH_C, 0x87, 0x3, 0x3);
-		config_phydm_write_rf_reg_8814b(dm, RF_PATH_D, 0x87, 0x3, 0x3);
-#endif
 		/*@open rf power detection ckt*/
-#if 0
-		config_phydm_write_rf_reg_8814b(dm, RF_PATH_A, 0x87, 0x10, 1);
-		config_phydm_write_rf_reg_8814b(dm, RF_PATH_B, 0x87, 0x10, 1);
-		config_phydm_write_rf_reg_8814b(dm, RF_PATH_C, 0x87, 0x10, 1);
-		config_phydm_write_rf_reg_8814b(dm, RF_PATH_D, 0x87, 0x10, 1);
-#endif
 	} else
 	#endif
 	{
@@ -326,20 +314,6 @@ void phydm_lna_sat_chk(
 							      0xe0000);
 	} else if (dm->support_ic_type & ODM_RTL8814B) {
 	/*@read peak detector info from 8814B rf reg*/
-#if 0
-		sat_status_a = config_phydm_read_rf_reg_8814b(dm, RF_PATH_A,
-							      RF_0xae,
-							      0xc0000);
-		sat_status_b = config_phydm_read_rf_reg_8814b(dm, RF_PATH_B,
-							      RF_0xae,
-							      0xc0000);
-		sat_status_c = config_phydm_read_rf_reg_8814b(dm, RF_PATH_C,
-							      RF_0xae,
-							      0xc0000);
-		sat_status_d = config_phydm_read_rf_reg_8814b(dm, RF_PATH_D,
-							      RF_0xae,
-							      0xc0000);
-#endif
 	} else
 	#endif
 	{
@@ -625,10 +599,6 @@ void phydm_snr_collect(
 	struct phydm_lna_sat_t	*pinfo = &dm->dm_lna_sat_info;
 
 	if (pinfo->is_sm_done) {
-#if 0
-		/*PHYDM_DBG(dm, DBG_LNA_SAT_CHK, "%s ==>\n", __func__);*/
-#endif
-
 		/* @adapt only path-A for calculation */
 		pinfo->snr_statistic[pinfo->cnt_snr_statistic] = rx_snr;
 
@@ -743,37 +713,10 @@ boolean phydm_is_snr_improve(
 				return true;
 		}
 	}
-#if 0
-	/*special case, mean degrade less than VAR improvement*/
-	/*@make sure pre_var is larger enough*/
-	if (cur_state == ORI_TABLE_MONITOR &&
-	    cur_mean < pre_mean &&
-	    cur_var < pre_var) {
-		diff_mean = pre_mean - cur_mean;
-		diff_var = pre_var - cur_var;
-		return (diff_var > (2 * diff_mean * diff_mean)) ? true : false;
-	}
-
-#endif
 	if (cur_lower_mean >= (pre_lower_mean + pinfo->delta_snr_mean))
 		is_snr_improve = true;
 	else
 		is_snr_improve = false;
-#if 0
-/* @condition refine, mean is bigger enough or VAR is smaller enough*/
-/* @1. from mean's view, mean improve delta_snr_mean(2), VAR not degrade lot*/
-	if (cur_mean > (pre_mean + pinfo->delta_snr_mean)) {
-		is_mean_improve = TRUE;
-		is_var_improve = (cur_var <= pre_var + dm->delta_snr_var)
-				 ? TRUE : FALSE;
-
-	} else if (cur_var + dm->delta_snr_var <= pre_var) {
-		is_var_improve = TRUE;
-		is_mean_improve = ((cur_mean + 1) >= pre_mean) ? TRUE : FALSE;
-	} else {
-		return false;
-	}
-#endif
 	return is_snr_improve;
 }
 
@@ -790,19 +733,6 @@ boolean phydm_is_snr_degrade(
 		is_degrade = TRUE;
 	else
 		is_degrade = FALSE;
-#if 0
-	is_mean_dgrade = (pinfo->cur_snr_mean + pinfo->delta_snr_mean <= pinfo->pre_snr_mean) ? TRUE : FALSE;
-	is_var_degrade = (pinfo->cur_snr_var > (pinfo->pre_snr_var + pinfo->delta_snr_mean)) ? TRUE : FALSE;
-
-	PHYDM_DBG(dm, DBG_LNA_SAT_CHK, "%s: cur_mean=%d, pre_mean=%d, cur_var=%d, pre_var=%d\n",
-		  __func__,
-		  pinfo->cur_snr_mean,
-		  pinfo->pre_snr_mean,
-		  pinfo->cur_snr_var,
-		  pinfo->pre_snr_var);
-
-	return (is_mean_dgrade & is_var_degrade);
-#endif
 	return is_degrade;
 }
 
@@ -851,15 +781,6 @@ void phydm_sat_table_training(
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct phydm_lna_sat_t	*pinfo = &dm->dm_lna_sat_info;
 
-	#if 0
-	if pre_state = ORI_TABLE_MONITOR || SAT_TABLE_TRY_FAIL,
-	/*@"pre" adapt ori-table, "cur" adapt sat-table*/
-	/*@adapt ori table*/
-	if (pinfo->pre_state == ORI_TABLE_MONITOR) {
-		pinfo->nxt_state = SAT_TABLE_TRAINING;
-		config_phydm_switch_agc_tab_8822b(dm, *dm->channel, LNA_SAT_AGC_TABLE);
-	} else {
-	#endif
 	if (phydm_is_snr_improve(dm)) {
 		pinfo->nxt_state = SAT_TABLE_MONITOR;
 	} else {
@@ -988,20 +909,6 @@ void phydm_ori_table_try_fail(
 		//config_phydm_switch_agc_tab_8822b(dm, *dm->channel, LNA_SAT_AGC_TABLE);
 	}
 
-#if 0
-	if (phydm_is_large_var(dm)) {
-		if (phydm_is_snr_degrade(dm)) {
-			pinfo->nxt_state = SAT_TABLE_TRAINING;
-			config_phydm_switch_agc_tab_8822b(dm, *dm->channel, LNA_SAT_AGC_TABLE);
-		} else {
-			pinfo->nxt_state = SAT_TABLE_TRY_FAIL;
-		}
-	} else {
-		pinfo->nxt_state = ORI_TABLE_MONITOR;
-	}
-
-	phydm_update_pre_status(dm);
-#endif
 	pinfo->pre_state = ORI_TABLE_TRY_FAIL;
 }
 

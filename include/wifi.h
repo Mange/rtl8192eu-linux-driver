@@ -357,16 +357,6 @@ static inline int IsFrameTypeData(unsigned char *pframe)
 #define _IEEE8021X_MGT_			1		/* WPA */
 #define _IEEE8021X_PSK_			2		/* WPA with pre-shared key */
 
-#if 0
-#define _NO_PRIVACY_			0
-#define _WEP_40_PRIVACY_		1
-#define _TKIP_PRIVACY_			2
-#define _WRAP_PRIVACY_			3
-#define _CCMP_PRIVACY_			4
-#define _WEP_104_PRIVACY_		5
-#define _WEP_WPA_MIXED_PRIVACY_ 6	/*  WEP + WPA */
-#endif
-
 #define _MME_IE_LENGTH_  18
 
 /*-----------------------------------------------------------------------------

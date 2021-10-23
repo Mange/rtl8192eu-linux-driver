@@ -196,14 +196,8 @@ void phydm_mac_edcca_state(void *dm_void, enum phydm_mac_edcca_type state)
 
 	if (state == PHYDM_IGNORE_EDCCA) {
 		odm_set_mac_reg(dm, R_0x520, BIT(15), 1); /*@ignore EDCCA*/
-#if 0
-		/*odm_set_mac_reg(dm, REG_RD_CTRL, BIT(11), 0);*/
-#endif
 	} else { /*@don't set MAC ignore EDCCA signal*/
 		odm_set_mac_reg(dm, R_0x520, BIT(15), 0); /*@don't ignore EDCCA*/
-#if 0
-		/*odm_set_mac_reg(dm, REG_RD_CTRL, BIT(11), 1);*/
-#endif
 	}
 	PHYDM_DBG(dm, DBG_ADPTVTY, "EDCCA enable state = %d\n", state);
 }
@@ -625,9 +619,6 @@ void phydm_adaptivity_init(void *dm_void)
 	if (dm->support_ic_type & ODM_IC_11N_SERIES &&
 	    !(dm->support_ic_type & ODM_IC_PWDB_EDCCA)) {
 		/*@interfernce need > 2^x us, and then EDCCA will be 1*/
-#if 0
-		/*odm_set_bb_reg(dm, 0x948, 0x1c00, 0x7);*/
-#endif
 		if (dm->support_ic_type & (ODM_RTL8197F | ODM_RTL8192F)) {
 			/*set to page B1*/
 			odm_set_bb_reg(dm, R_0xe28, BIT(30), 0x1);
@@ -641,9 +632,6 @@ void phydm_adaptivity_init(void *dm_void)
 	} else if (dm->support_ic_type & ODM_IC_11AC_SERIES &&
 		   !(dm->support_ic_type & ODM_IC_PWDB_EDCCA)) {
 		/*@interfernce need > 2^x us, and then EDCCA will be 1*/
-#if 0
-		/*odm_set_bb_reg(dm, 0x900, 0x70000000, 0x7);*/
-#endif
 		/*@0:rx_dfir, 1: dcnf_out, 2 :rx_iq, 3: rx_nbi_nf_out*/
 		odm_set_bb_reg(dm, R_0x944, BIT(29) | BIT(28), 0x1);
 	}

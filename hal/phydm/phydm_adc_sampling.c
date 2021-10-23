@@ -162,13 +162,6 @@ void phydm_la_get_tx_pkt_buf(void *dm_void)
 		pr_debug("is_round_up = ((%d)), finish_addr=((0x%x * 8Byte)), Start_Addr = ((0x%x * 8Byte)), smp_number = ((%d))\n",
 			 is_round_up, finish_addr, addr_8byte, smp_number);
 	}
-	#if 0
-	dbg_print("is_round_up = %d, finish_addr=0x%x, value32=0x%x\n",
-		  is_round_up, finish_addr, value32);
-	dbg_print(
-		  "end_addr = %x, buf->start_pos = 0x%x, buf->buffer_size = 0x%x\n",
-		  end_addr, buf->start_pos, buf->buffer_size);
-	#endif
 
 	#if (RTL8197F_SUPPORT || RTL8198F_SUPPORT || RTL8814B_SUPPORT)
 	if (dm->support_ic_type &
@@ -350,10 +343,6 @@ void phydm_adc_smp_start(void *dm_void)
 		odm_set_bb_reg(dm, R_0x1eb4, BIT(23), 0x1);
 	else
 		odm_write_1byte(dm, R_0x8b4, 0x80);
-#if 0
-		/* odm_set_bb_reg(dm, R_0x8b4, BIT(7), 1); */
-#endif
-
 	phydm_la_mode_set_mac_iq_dump(dm, smp->en_fake_trig);
 
 	#if (DM_ODM_SUPPORT_TYPE & ODM_AP)
@@ -544,10 +533,6 @@ void adc_smp_query(void *dm_void, void *output, u32 out_len, u32 *pused)
 	struct rt_adcsmp_string *buf = &smp->adc_smp_buf;
 	u32 used = *pused;
 	u32 i = 0;
-#if 0
-	/* struct timespec t; */
-	/* rtw_get_current_timespec(&t); */
-#endif
 
 	pr_debug("%s adc_smp_state %d", __func__, smp->adc_smp_state);
 
@@ -1023,23 +1008,6 @@ void phydm_la_set_buff_mode(void *dm_void, enum la_buff_mode mode)
 	u8 normal_LA_on = priv->pmib->miscEntry.normal_LA_on;
 #endif
 	smp->la_buff_mode = mode;
-#if 0
-	if (dm->support_ic_type & ODM_RTL8814A)
-		buf->start_pos = 0x30000;
-	else if (dm->support_ic_type &
-		 (ODM_RTL8822B | ODM_RTL8822C | ODM_RTL8812F))
-		buf->start_pos = 0x20000;
-	else if (dm->support_ic_type & ODM_RTL8814B)
-		buf->start_pos = 0x30000;
-	else if (dm->support_ic_type & (ODM_RTL8197F | ODM_RTL8198F))
-		buf->start_pos = 0x00000;
-	else if (dm->support_ic_type & ODM_RTL8192F)
-		buf->start_pos = 0x2000;
-	else if (dm->support_ic_type & ODM_RTL8821C)
-		buf->start_pos = 0x8000;
-	else if (dm->support_ic_type & ODM_RTL8195B)
-		buf->start_pos = 0x4000;
-#endif
 	switch (dm->support_ic_type) {
 	case ODM_RTL8814A:
 		buff_size_base = 0x10000;

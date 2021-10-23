@@ -77,10 +77,6 @@ u8 rtw_set_tim_ie(u8 dtim_cnt, u8 dtim_period
 	*p++ = (rtw_bmp_is_set(tim_bmp, tim_bmp_len, 0) ? BIT0 : 0) | n1;
 	memcpy(p, tim_bmp + n1, bmp_len);
 
-#if 0
-	RTW_INFO("n1:%u, n2:%u, bmp_offset:%u, bmp_len:%u\n", n1, n2, n1 / 2, bmp_len);
-	RTW_INFO_DUMP("tim_ie: ", tim_ie + 2, 2 + 1 + bmp_len);
-#endif
 	return 2 + 2 + 1 + bmp_len;
 }
 
@@ -92,12 +88,6 @@ static void update_BCNTIM(_adapter *padapter)
 	WLAN_BSSID_EX *pnetwork_mlmeext = &(pmlmeinfo->network);
 	unsigned char *pie = pnetwork_mlmeext->IEs;
 
-#if 0
-
-
-	/* update TIM IE */
-	/* if(rtw_tim_map_anyone_be_set(padapter, pstapriv->tim_bitmap)) */
-#endif
 	if (_TRUE) {
 		u8 *p, *dst_ie, *premainder_ie = NULL, *pbackup_remainder_ie = NULL;
 		uint offset, tmp_len, tim_ielen, tim_ie_offset, remainder_ielen;
@@ -286,10 +276,7 @@ static u8 chk_sta_is_alive(struct sta_info *psta)
 
 	/* if(sta_last_rx_pkts(psta) == sta_rx_pkts(psta)) */
 	if ((psta->sta_stats.last_rx_data_pkts + psta->sta_stats.last_rx_ctrl_pkts) == (psta->sta_stats.rx_data_pkts + psta->sta_stats.rx_ctrl_pkts)) {
-#if 0
-		if (psta->state & WIFI_SLEEP_STATE)
-			ret = _TRUE;
-#endif
+
 #ifdef CONFIG_RTW_MESH
 		if (MLME_IS_MESH(psta->padapter) &&
 		    (psta->sta_stats.last_rx_hwmp_pkts !=
@@ -1298,10 +1285,6 @@ static void rtw_set_hw_wmm_param(_adapter *padapter)
 		acm_mask = 0;
 		padapter->mlmepriv.acm_mask = acm_mask;
 
-#if 0
-		/* BK */
-		/* AIFS = AIFSN * slot time + SIFS - r2t phy delay */
-#endif
 		AIFS = (7 * pmlmeinfo->slotTime) + aSifsTime;
 		ECWMin = 4;
 		ECWMax = 10;
@@ -1419,12 +1402,7 @@ static void update_hw_ht_param(_adapter *padapter)
 	/*  */
 	pmlmeinfo->SM_PS = (pmlmeinfo->HT_caps.u.HT_cap_element.HT_caps_info & 0x0C) >> 2;
 	if (pmlmeinfo->SM_PS == WLAN_HT_CAP_SM_PS_STATIC) {
-#if 0
-		u8 i;
-		/* update the MCS rates */
-		for (i = 0; i < 16; i++)
-			pmlmeinfo->HT_caps.HT_cap_element.MCS_rate[i] &= MCS_rate_1R[i];
-#endif
+
 		RTW_INFO("%s(): WLAN_HT_CAP_SM_PS_STATIC\n", __FUNCTION__);
 	}
 
@@ -2082,45 +2060,7 @@ int rtw_check_beacon_data(_adapter *padapter, u8 *pbuf,  int len)
 				psecuritypriv->auth_alg = WLAN_AUTH_SAE;
 			}
 #endif /* CONFIG_IOCTL_CFG80211 */
-#if 0
-			switch (group_cipher) {
-			case WPA_CIPHER_NONE:
-				psecuritypriv->wpa2_group_cipher = _NO_PRIVACY_;
-				break;
-			case WPA_CIPHER_WEP40:
-				psecuritypriv->wpa2_group_cipher = _WEP40_;
-				break;
-			case WPA_CIPHER_TKIP:
-				psecuritypriv->wpa2_group_cipher = _TKIP_;
-				break;
-			case WPA_CIPHER_CCMP:
-				psecuritypriv->wpa2_group_cipher = _AES_;
-				break;
-			case WPA_CIPHER_WEP104:
-				psecuritypriv->wpa2_group_cipher = _WEP104_;
-				break;
-			}
-
-			switch (pairwise_cipher) {
-			case WPA_CIPHER_NONE:
-				psecuritypriv->wpa2_pairwise_cipher = _NO_PRIVACY_;
-				break;
-			case WPA_CIPHER_WEP40:
-				psecuritypriv->wpa2_pairwise_cipher = _WEP40_;
-				break;
-			case WPA_CIPHER_TKIP:
-				psecuritypriv->wpa2_pairwise_cipher = _TKIP_;
-				break;
-			case WPA_CIPHER_CCMP:
-				psecuritypriv->wpa2_pairwise_cipher = _AES_;
-				break;
-			case WPA_CIPHER_WEP104:
-				psecuritypriv->wpa2_pairwise_cipher = _WEP104_;
-				break;
-			}
-#endif
 		}
-
 	}
 
 	/* wpa */
@@ -2141,44 +2081,6 @@ int rtw_check_beacon_data(_adapter *padapter, u8 *pbuf,  int len)
 
 				psecuritypriv->wpa_group_cipher = group_cipher;
 				psecuritypriv->wpa_pairwise_cipher = pairwise_cipher;
-
-#if 0
-				switch (group_cipher) {
-				case WPA_CIPHER_NONE:
-					psecuritypriv->wpa_group_cipher = _NO_PRIVACY_;
-					break;
-				case WPA_CIPHER_WEP40:
-					psecuritypriv->wpa_group_cipher = _WEP40_;
-					break;
-				case WPA_CIPHER_TKIP:
-					psecuritypriv->wpa_group_cipher = _TKIP_;
-					break;
-				case WPA_CIPHER_CCMP:
-					psecuritypriv->wpa_group_cipher = _AES_;
-					break;
-				case WPA_CIPHER_WEP104:
-					psecuritypriv->wpa_group_cipher = _WEP104_;
-					break;
-				}
-
-				switch (pairwise_cipher) {
-				case WPA_CIPHER_NONE:
-					psecuritypriv->wpa_pairwise_cipher = _NO_PRIVACY_;
-					break;
-				case WPA_CIPHER_WEP40:
-					psecuritypriv->wpa_pairwise_cipher = _WEP40_;
-					break;
-				case WPA_CIPHER_TKIP:
-					psecuritypriv->wpa_pairwise_cipher = _TKIP_;
-					break;
-				case WPA_CIPHER_CCMP:
-					psecuritypriv->wpa_pairwise_cipher = _AES_;
-					break;
-				case WPA_CIPHER_WEP104:
-					psecuritypriv->wpa_pairwise_cipher = _WEP104_;
-					break;
-				}
-#endif
 			}
 
 			break;
@@ -2242,11 +2144,6 @@ int rtw_check_beacon_data(_adapter *padapter, u8 *pbuf,  int len)
 			u8 rf_type = 0;
 			enum ieee80211_max_ampdu_length_exp max_rx_ampdu_factor = IEEE80211_HT_MAX_AMPDU_64K;
 			struct ieee80211_ht_cap *pht_cap = (struct ieee80211_ht_cap *)(p + 2);
-
-			if (0) {
-				RTW_INFO(FUNC_ADPT_FMT" HT_CAP_IE from upper layer:\n", FUNC_ADPT_ARG(padapter));
-				dump_ht_cap_ie_content(RTW_DBGDUMP, p + 2, ie_len);
-			}
 
 			pHT_caps_ie = p;
 
@@ -2346,10 +2243,6 @@ int rtw_check_beacon_data(_adapter *padapter, u8 *pbuf,  int len)
 
 			memcpy(&pmlmepriv->htpriv.ht_cap, p + 2, ie_len);
 
-			if (0) {
-				RTW_INFO(FUNC_ADPT_FMT" HT_CAP_IE driver masked:\n", FUNC_ADPT_ARG(padapter));
-				dump_ht_cap_ie_content(RTW_DBGDUMP, p + 2, ie_len);
-			}
 		}
 
 		/* parsing HT_INFO_IE */
@@ -2932,19 +2825,6 @@ u8 rtw_ap_bmc_frames_hdl(_adapter *padapter)
 
 	_exit_critical_bh(&pxmitpriv->lock, &irqL);
 
-#if 0
-	/* HIQ Check */
-	rtw_hal_get_hwreg(padapter, HW_VAR_CHK_HI_QUEUE_EMPTY, &empty);
-
-	while (_FALSE == empty && rtw_get_passing_time_ms(start) < 3000) {
-		msleep(100);
-		rtw_hal_get_hwreg(padapter, HW_VAR_CHK_HI_QUEUE_EMPTY, &empty);
-	}
-
-
-	printk("check if hiq empty=%d\n", empty);
-#endif
-
 	return H2C_SUCCESS;
 }
 
@@ -3311,8 +3191,6 @@ void _update_beacon(_adapter *padapter, u8 ie_id, u8 *oui, u8 tx, const char *ta
 #if defined(CONFIG_USB_HCI) || defined(CONFIG_SDIO_HCI) || defined(CONFIG_GSPI_HCI) || defined(CONFIG_PCI_BCN_POLLING)
 	if (tx && updated) {
 		/* send_beacon(padapter); */ /* send_beacon must execute on TSR level */
-		if (0)
-			RTW_INFO(FUNC_ADPT_FMT" ie_id:%u - %s\n", FUNC_ADPT_ARG(padapter), ie_id, tag);
 		set_tx_beacon_cmd(padapter);
 	}
 #else
@@ -3535,19 +3413,6 @@ void bss_cap_update_on_sta_join(_adapter *padapter, struct sta_info *psta)
 	struct mlme_priv *pmlmepriv = &(padapter->mlmepriv);
 	struct mlme_ext_priv *pmlmeext = &(padapter->mlmeextpriv);
 
-
-#if 0
-	if (!(psta->capability & WLAN_CAPABILITY_SHORT_PREAMBLE) &&
-	    !psta->no_short_preamble_set) {
-		psta->no_short_preamble_set = 1;
-		pmlmepriv->num_sta_no_short_preamble++;
-		if ((pmlmeext->cur_wireless_mode > WIRELESS_11B) &&
-		    (pmlmepriv->num_sta_no_short_preamble == 1))
-			ieee802_11_set_beacons(hapd->iface);
-	}
-#endif
-
-
 	if (!(psta->flags & WLAN_STA_SHORT_PREAMBLE)) {
 		if (!psta->no_short_preamble_set) {
 			psta->no_short_preamble_set = 1;
@@ -3569,15 +3434,6 @@ void bss_cap_update_on_sta_join(_adapter *padapter, struct sta_info *psta)
 				beacon_updated = _TRUE;
 		}
 	}
-
-#if 0
-	if (psta->flags & WLAN_STA_NONERP && !psta->nonerp_set) {
-		psta->nonerp_set = 1;
-		pmlmepriv->num_sta_non_erp++;
-		if (pmlmepriv->num_sta_non_erp == 1)
-			ieee802_11_set_beacons(hapd->iface);
-	}
-#endif
 
 	if (psta->flags & WLAN_STA_NONERP) {
 		if (!psta->nonerp_set) {
@@ -3604,18 +3460,6 @@ void bss_cap_update_on_sta_join(_adapter *padapter, struct sta_info *psta)
 		}
 
 	}
-
-
-#if 0
-	if (!(psta->capability & WLAN_CAPABILITY_SHORT_SLOT_TIME) &&
-	    !psta->no_short_slot_time_set) {
-		psta->no_short_slot_time_set = 1;
-		pmlmepriv->num_sta_no_short_slot_time++;
-		if ((pmlmeext->cur_wireless_mode > WIRELESS_11B) &&
-		    (pmlmepriv->num_sta_no_short_slot_time == 1))
-			ieee802_11_set_beacons(hapd->iface);
-	}
-#endif
 
 	if (!(psta->capability & WLAN_CAPABILITY_SHORT_SLOT_TIME)) {
 		if (!psta->no_short_slot_time_set) {
@@ -3807,11 +3651,6 @@ u8 bss_cap_update_on_sta_leave(_adapter *padapter, struct sta_info *psta)
 
 	if (beacon_updated == _TRUE)
 		update_beacon(padapter, 0xFF, NULL, _TRUE);
-
-#if 0
-	/* update associated stations cap. */
-	associated_clients_update(padapter,  beacon_updated, STA_INFO_UPDATE_ALL); /* move it to avoid deadlock */
-#endif
 
 	RTW_INFO("%s, updated=%d\n", __func__, beacon_updated);
 
@@ -5106,17 +4945,6 @@ void tx_beacon_handlder(struct dvobj_priv *pdvobj)
 			send_beacon(padapter);
 		}
 	}
-
-#if 0
-	/* handle any buffered BC/MC frames*/
-	/* Don't dynamically change DIS_ATIM due to HW will auto send ACQ after HIQ empty.*/
-	val8 = *((unsigned char *)priv->beaconbuf + priv->timoffset + 4);
-	if (val8 & 0x01) {
-		process_mcast_dzqueue(priv);
-		priv->pkt_in_dtimQ = 0;
-	}
-#endif
-
 }
 
 void tx_beacon_timer_handlder(void *ctx)

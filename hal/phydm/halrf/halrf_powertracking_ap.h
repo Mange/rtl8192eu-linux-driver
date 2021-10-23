@@ -279,49 +279,7 @@ struct dm_rf_calibration_struct {
 	u8	is_ap_kdone;
 	u8	is_apk_thermal_meter_ignore;
 	u8	is_dp_done;
-#if 0 /*move below members to halrf_dpk.h*/
-	u8	is_dp_path_aok;
-	u8	is_dp_path_bok;
-	u8	is_dp_path_cok;
-	u8	is_dp_path_dok;
-	u8 	dp_path_a_result[3];
-	u8 	dp_path_b_result[3];
-	u8 	dp_path_c_result[3];
-	u8 	dp_path_d_result[3];
-	boolean	is_dpk_enable;
-	u32	txrate[11];
-	u8 	pwsf_2g_a[3];
-	u8 	pwsf_2g_b[3];
-	u8 	pwsf_2g_c[3];
-	u8 	pwsf_2g_d[3];
-	u32	lut_2g_even_a[3][64];
-	u32	lut_2g_odd_a[3][64];
-	u32	lut_2g_even_b[3][64];
-	u32	lut_2g_odd_b[3][64];
-	u32	lut_2g_even_c[3][64];
-	u32	lut_2g_odd_c[3][64];
-	u32	lut_2g_even_d[3][64];
-	u32	lut_2g_odd_d[3][64];
-	u1Byte 	is_5g_pdk_a_ok;
-	u1Byte 	is_5g_pdk_b_ok;
-	u1Byte 	is_5g_pdk_c_ok;
-	u1Byte 	is_5g_pdk_d_ok;
-	u1Byte 	pwsf_5g_a[9];
-	u1Byte 	pwsf_5g_b[9];
-	u1Byte 	pwsf_5g_c[9];
-	u1Byte 	pwsf_5g_d[9];
-	u4Byte	lut_5g_even_a[9][16];
-	u4Byte	lut_5g_odd_a[9][16];
-	u4Byte	lut_5g_even_b[9][16];
-	u4Byte	lut_5g_odd_b[9][16];
-	u4Byte	lut_5g_even_c[9][16];
-	u4Byte	lut_5g_odd_c[9][16];
-	u4Byte	lut_5g_even_d[9][16];
-	u4Byte	lut_5g_odd_d[9][16];
-	u8	thermal_value_dpk;
-	u8	thermal_value_dpk_avg[AVG_THERMAL_NUM_DPK];
-	u8	thermal_value_dpk_avg_index;
-#endif
+
 	s8  modify_tx_agc_value_ofdm;
 	s8  modify_tx_agc_value_cck;
 

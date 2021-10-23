@@ -99,21 +99,6 @@ int rtw_os_alloc_recvframe(_adapter *padapter, union recv_frame *precvframe, u8 
 		memcpy(pkt_copy->data, pdata, skb_len);
 		precvframe->u.hdr.rx_data = precvframe->u.hdr.rx_tail = pkt_copy->data;
 	} else {
-#if 0
-		{
-			rtw_free_recvframe(precvframe_if2, &precvpriv->free_recv_queue);
-			rtw_enqueue_recvbuf_to_head(precvbuf, &precvpriv->recv_buf_pending_queue);
-
-			/* The case of can't allocate skb is serious and may never be recovered,
-			 once bDriverStopped is enable, this task should be stopped.*/
-			if (!rtw_is_drv_stopped(secondary_padapter))
-#ifdef PLATFORM_LINUX
-				tasklet_schedule(&precvpriv->recv_tasklet);
-#endif
-			return ret;
-		}
-
-#endif
 
 #ifdef CONFIG_USE_USB_BUFFER_ALLOC_RX
 		RTW_INFO("%s:can not allocate memory for skb copy\n", __func__);

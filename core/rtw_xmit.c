@@ -768,18 +768,6 @@ static void update_attrib_vcs_info(_adapter *padapter, struct xmit_frame *pxmitf
 		}
 	} else {
 		while (_TRUE) {
-#if 0 /* Todo */
-			/* check IOT action */
-			if (pHTInfo->IOTAction & HT_IOT_ACT_FORCED_CTS2SELF) {
-				pattrib->vcs_mode = CTS_TO_SELF;
-				pattrib->rts_rate = MGN_24M;
-				break;
-			} else if (pHTInfo->IOTAction & (HT_IOT_ACT_FORCED_RTS | HT_IOT_ACT_PURE_N_MODE)) {
-				pattrib->vcs_mode = RTS_CTS;
-				pattrib->rts_rate = MGN_24M;
-				break;
-			}
-#endif
 
 			/* IOT action */
 			if ((pmlmeinfo->assoc_AP_vendor == HT_IOT_PEER_ATHEROS) && (pattrib->ampdu_en == _TRUE) &&
@@ -1180,9 +1168,6 @@ u8 rtw_check_tdls_established(_adapter *padapter, struct pkt_attrib *pattrib)
 		if (pattrib->ptdls_sta != NULL &&
 		    pattrib->ptdls_sta->tdls_sta_state & TDLS_LINKED_STATE) {
 			pattrib->direct_link = _TRUE;
-#if 0
-			RTW_INFO("send ptk to "MAC_FMT" using direct link\n", MAC_ARG(pattrib->dst));
-#endif
 		}
 
 		/* ARP frame may be helped by AP*/
@@ -1408,8 +1393,6 @@ get_sta_info:
 				if (pattrib->pktlen > 282) { /* MINIMUM_DHCP_PACKET_SIZE */
 					pattrib->dhcp_pkt = 1;
 					DBG_COUNTER(padapter->tx_logs.core_tx_upd_attrib_dhcp);
-					if (0)
-						RTW_INFO("send DHCP packet\n");
 				}
 			}
 
@@ -1877,13 +1860,6 @@ s32 rtw_make_wlanhdr(_adapter *padapter , u8 *hdr, struct pkt_attrib *pattrib)
 				SetSeqNum(hdr, pattrib->seqnum);
 
 #ifdef CONFIG_80211N_HT
-#if 0 /* move into update_attrib_phy_info(). */
-				/* check if enable ampdu */
-				if (pattrib->ht_en && psta->htpriv.ampdu_enable) {
-					if (psta->htpriv.agg_enable_bitmap & BIT(pattrib->priority))
-						pattrib->ampdu_en = _TRUE;
-				}
-#endif
 				/* re-check if enable ampdu by BA_starting_seqctrl */
 				if (pattrib->ampdu_en == _TRUE) {
 					u16 tx_seq;
@@ -2638,38 +2614,6 @@ s32 rtw_xmitframe_coalesce(_adapter *padapter, _pkt *pkt, struct xmit_frame *pxm
 
 		/* adding icv, if necessary... */
 		if (pattrib->iv_len) {
-#if 0
-			/* if (check_fwstate(pmlmepriv, WIFI_MP_STATE)) */
-			/*	psta = rtw_get_stainfo(pstapriv, get_bssid(pmlmepriv)); */
-			/* else */
-			/*	psta = rtw_get_stainfo(pstapriv, pattrib->ra); */
-
-			if (psta != NULL) {
-				switch (pattrib->encrypt) {
-				case _WEP40_:
-				case _WEP104_:
-					WEP_IV(pattrib->iv, psta->dot11txpn, pattrib->key_idx);
-					break;
-				case _TKIP_:
-					if (bmcst)
-						TKIP_IV(pattrib->iv, psta->dot11txpn, pattrib->key_idx);
-					else
-						TKIP_IV(pattrib->iv, psta->dot11txpn, 0);
-					break;
-				case _AES_:
-					if (bmcst)
-						AES_IV(pattrib->iv, psta->dot11txpn, pattrib->key_idx);
-					else
-						AES_IV(pattrib->iv, psta->dot11txpn, 0);
-					break;
-#ifdef CONFIG_WAPI_SUPPORT
-				case _SMS4_:
-					rtw_wapi_get_iv(padapter, pattrib->ra, pattrib->iv);
-					break;
-#endif
-				}
-			}
-#endif
 			memcpy(pframe, pattrib->iv, pattrib->iv_len);
 
 
@@ -3807,13 +3751,6 @@ struct xmit_frame *rtw_dequeue_xframe(struct xmit_priv *pxmitpriv, struct hw_xmi
 
 	if (pregpriv->wifi_spec == 1) {
 		int j;
-#if 0
-		if (flags < XMIT_QUEUE_ENTRY) {
-			/* priority exchange according to the completed xmitbuf flags. */
-			inx[flags] = 0;
-			inx[0] = flags;
-		}
-#endif
 
 #if defined(CONFIG_USB_HCI) || defined(CONFIG_SDIO_HCI) || defined(CONFIG_PCI_HCI)
 		for (j = 0; j < 4; j++)
@@ -4259,20 +4196,6 @@ int rtw_br_client_tx(_adapter *padapter, struct sk_buff **pskb)
 				*((unsigned short *)(skb->data + MACADDRLEN * 2 + 2)) = vlan_hdr;
 			}
 		}
-#if 0
-		else {
-			if (*((unsigned short *)(skb->data + MACADDRLEN * 2)) == __constant_htons(ETH_P_8021Q))
-				is_vlan_tag = 1;
-
-			if (is_vlan_tag) {
-				if (ICMPV6_MCAST_MAC(skb->data) && ICMPV6_PROTO1A_VALN(skb->data))
-					memcpy(skb->data + MACADDRLEN, GET_MY_HWADDR(padapter), MACADDRLEN);
-			} else {
-				if (ICMPV6_MCAST_MAC(skb->data) && ICMPV6_PROTO1A(skb->data))
-					memcpy(skb->data + MACADDRLEN, GET_MY_HWADDR(padapter), MACADDRLEN);
-			}
-		}
-#endif /* 0 */
 
 		/* check if SA is equal to our MAC */
 		if (memcmp(skb->data + MACADDRLEN, GET_MY_HWADDR(padapter), MACADDRLEN)) {
@@ -4714,9 +4637,6 @@ inline bool xmitframe_hiq_filter(struct xmit_frame *xmitframe)
 #endif
 		    || attrib->dhcp_pkt
 		   ) {
-			if (0)
-				RTW_INFO(FUNC_ADPT_FMT" ether_type:0x%04x%s\n", FUNC_ADPT_ARG(xmitframe->padapter)
-					, attrib->ether_type, attrib->dhcp_pkt ? " DHCP" : "");
 			allow = _TRUE;
 		}
 	} else if (registry->hiq_filter == RTW_HIQ_FILTER_ALLOW_ALL)

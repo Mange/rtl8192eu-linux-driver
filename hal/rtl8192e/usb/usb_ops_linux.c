@@ -31,20 +31,6 @@ void interrupt_handler_8192eu(_adapter *padapter, u16 pkt_len, u8 *pbuf)
 	memcpy(&(pHalData->IntArray[0]), &(pbuf[USB_INTR_CONTENT_HISR_OFFSET]), 4);
 	memcpy(&(pHalData->IntArray[1]), &(pbuf[USB_INTR_CONTENT_HISRE_OFFSET]), 4);
 
-#if 0 /* DBG */
-	{
-		u32 hisr = 0 , hisr_ex = 0;
-		memcpy(&hisr, &(pHalData->IntArray[0]), 4);
-		hisr = le32_to_cpu(hisr);
-
-		memcpy(&hisr_ex, &(pHalData->IntArray[1]), 4);
-		hisr_ex = le32_to_cpu(hisr_ex);
-
-		if ((hisr != 0) || (hisr_ex != 0))
-			RTW_INFO("===> %s hisr:0x%08x ,hisr_ex:0x%08x\n", __FUNCTION__, hisr, hisr_ex);
-	}
-#endif
-
 #ifdef CONFIG_TDLS
 #ifdef CONFIG_TDLS_CH_SW
 	if (pHalData->IntArray[0] & IMR_BCNDMAINT0_88E) {
@@ -86,14 +72,6 @@ void interrupt_handler_8192eu(_adapter *padapter, u16 pkt_len, u8 *pbuf)
 		if (pHalData->IntArray[0] & (IMR_TBDER_88E | IMR_TBDOK_88E))
 #endif
 		{
-#if 0
-			if (pHalData->IntArray[0] & IMR_BCNDMAINT0_88E)
-				RTW_INFO("%s: HISR_BCNERLY_INT\n", __func__);
-			if (pHalData->IntArray[0] & IMR_TBDOK_88E)
-				RTW_INFO("%s: HISR_TXBCNOK\n", __func__);
-			if (pHalData->IntArray[0] & IMR_TBDER_88E)
-				RTW_INFO("%s: HISR_TXBCNERR\n", __func__);
-#endif
 			rtw_mi_set_tx_beacon_cmd(padapter);
 		}
 #endif /* CONFIG_INTERRUPT_BASED_TXBCN */
@@ -200,15 +178,6 @@ int recvbuf2recvframe(PADAPTER padapter, void *ptr)
 				/*RTW_INFO("rx C2H_PACKET\n");*/
 				rtw_hal_c2h_pkt_pre_hdl(padapter, precvframe->u.hdr.rx_data, pattrib->pkt_len);
 			}
-#if 0
-			else if (pattrib->pkt_rpt_type == HIS_REPORT) {
-				/*RTW_INFO("%s, rx USB HISR\n", __func__);*/
-#ifdef CONFIG_SUPPORT_USB_INT
-				interrupt_handler_8192eu(padapter, pattrib->pkt_len, precvframe->u.hdr.rx_data);
-#endif
-			}
-#endif
-
 			rtw_free_recvframe(precvframe, pfree_recv_queue);
 
 		}

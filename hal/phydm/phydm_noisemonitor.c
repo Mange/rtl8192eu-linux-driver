@@ -407,30 +407,6 @@ void phydm_noisy_detection(void *dm_void)
 	total_cca_cnt = dm->false_alm_cnt.cnt_cca_all;
 	total_fa_cnt = dm->false_alm_cnt.cnt_all;
 
-#if 0
-	if (total_fa_cnt * 16 >= total_cca_cnt * 14)    /*  @87.5 */
-		;
-	else if (total_fa_cnt * 16 >= total_cca_cnt * 12) /*  @75 */
-		;
-	else if (total_fa_cnt * 16 >= total_cca_cnt * 10) /*  @56.25 */
-		;
-	else if (total_fa_cnt * 16 >= total_cca_cnt * 8) /*  @50 */
-		;
-	else if (total_fa_cnt * 16 >= total_cca_cnt * 7) /*  @43.75 */
-		;
-	else if (total_fa_cnt * 16 >= total_cca_cnt * 6) /*  @37.5 */
-		;
-	else if (total_fa_cnt * 16 >= total_cca_cnt * 5) /*  @31.25% */
-		;
-	else if (total_fa_cnt * 16 >= total_cca_cnt * 4) /*  @25% */
-		;
-	else if (total_fa_cnt * 16 >= total_cca_cnt * 3) /*  @18.75% */
-		;
-	else if (total_fa_cnt * 16 >= total_cca_cnt * 2) /*  @12.5% */
-		;
-	else if (total_fa_cnt * 16 >= total_cca_cnt * 1) /*  @6.25% */
-		;
-#endif
 	for (i = 0; i <= 16; i++) {
 		if (total_fa_cnt * 16 >= total_cca_cnt * (16 - i)) {
 			score = 16 - i;

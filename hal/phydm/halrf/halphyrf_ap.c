@@ -880,30 +880,6 @@ odm_txpowertracking_callback_thermal_meter_jaguar_series(
 			}
 		}
 	}
-#if 0
-	/* Query OFDM path A default setting 	Bit[31:21] */
-	ele_D = phy_query_bb_reg(priv, 0xc1c, 0xffe00000);
-	RF_DBG(dm, DBG_RF_TX_PWR_TRACK, "0xc1c:0x%x ([31:21] = 0x%x)\n", phy_query_bb_reg(priv, 0xc1c, MASKDWORD), ele_D);
-	for (i = 0; i < OFDM_TABLE_SIZE_8812; i++) {/* 4 */
-		if (ele_D == ofdm_swing_table_8812[i]) {
-			OFDM_index[0] = (unsigned char)i;
-			RF_DBG(dm, DBG_RF_TX_PWR_TRACK, "OFDM_index[0]=%d\n", OFDM_index[0]);
-			break;
-		}
-	}
-	/* Query OFDM path B default setting */
-	if (rf == 2) {
-		ele_D = phy_query_bb_reg(priv, 0xe1c, 0xffe00000);
-		RF_DBG(dm, DBG_RF_TX_PWR_TRACK, "0xe1c:0x%x ([32:21] = 0x%x)\n", phy_query_bb_reg(priv, 0xe1c, MASKDWORD), ele_D);
-		for (i = 0; i < OFDM_TABLE_SIZE_8812; i++) {
-			if (ele_D == ofdm_swing_table_8812[i]) {
-				OFDM_index[1] = (unsigned char)i;
-				RF_DBG(dm, DBG_RF_TX_PWR_TRACK, "OFDM_index[1]=%d\n", OFDM_index[1]);
-				break;
-			}
-		}
-	}
-#endif
 	/* Initialize */
 	if (!priv->pshare->thermal_value) {
 		priv->pshare->thermal_value = priv->pmib->dot11RFEntry.ther;
@@ -952,40 +928,10 @@ odm_txpowertracking_callback_thermal_meter_jaguar_series(
 						OFDM_index[rf_path] = priv->pshare->OFDM_index0[rf_path] + get_tx_tracking_index(priv, channel, rf_path, delta, is_decrease, 0);
 						OFDM_index[rf_path] = ((OFDM_index[rf_path] > (OFDM_TABLE_SIZE_8812 - 1)) ? (OFDM_TABLE_SIZE_8812 - 1) : OFDM_index[rf_path]);
 						RF_DBG(dm, DBG_RF_TX_PWR_TRACK, ">>> decrese power ---> new OFDM_INDEX:%d (%d + %d)\n", OFDM_index[rf_path], priv->pshare->OFDM_index0[rf_path], get_tx_tracking_index(priv, channel, rf_path, delta, is_decrease, 0));
-#if 0/* RTL8881A_SUPPORT */
-						if (dm->support_ic_type == ODM_RTL8881A) {
-							if (priv->pshare->rf_ft_var.pwrtrk_tx_agc_enable) {
-								if (priv->pshare->add_tx_agc) { /* tx_agc has been added */
-									add_tx_power88xx_ac(priv, 0);
-									priv->pshare->add_tx_agc = 0;
-									priv->pshare->add_tx_agc_index = 0;
-								}
-							}
-						}
-#endif
 					} else {
 
 						OFDM_index[rf_path] = priv->pshare->OFDM_index0[rf_path] - get_tx_tracking_index(priv, channel, rf_path, delta, is_decrease, 0);
-#if 0/* RTL8881A_SUPPORT */
-						if (dm->support_ic_type == ODM_RTL8881A) {
-							if (priv->pshare->rf_ft_var.pwrtrk_tx_agc_enable) {
-								if (OFDM_index[i] < OFDM_min_index) {
-									priv->pshare->add_tx_agc_index = (OFDM_min_index - OFDM_index[i]) / 2; /* Calculate Remnant tx_agc value,  2 index for 1 tx_agc */
-									add_tx_power88xx_ac(priv, priv->pshare->add_tx_agc_index);
-									priv->pshare->add_tx_agc = 1;     /* add_tx_agc Flag = 1 */
-									OFDM_index[i] = OFDM_min_index;
-								} else {
-									if (priv->pshare->add_tx_agc) { /* tx_agc been added */
-										priv->pshare->add_tx_agc = 0;
-										priv->pshare->add_tx_agc_index = 0;
-										add_tx_power88xx_ac(priv, 0); /* minus the added TPI */
-									}
-								}
-							}
-						}
-#else
 						OFDM_index[rf_path] = ((OFDM_index[rf_path] < OFDM_min_index) ?  OFDM_min_index : OFDM_index[rf_path]);
-#endif
 						RF_DBG(dm, DBG_RF_TX_PWR_TRACK, ">>> increse power ---> new OFDM_INDEX:%d (%d - %d)\n", OFDM_index[rf_path], priv->pshare->OFDM_index0[rf_path], get_tx_tracking_index(priv, channel, rf_path, delta, is_decrease, 0));
 					}
 				}

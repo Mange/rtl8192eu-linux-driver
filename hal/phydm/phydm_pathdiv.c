@@ -411,15 +411,6 @@ void phydm_dynamic_tx_path(
 				p_div->dtp_check_patha_counter = 0;
 				p_div->phydm_dtp_state = PHYDM_DTP_INIT;
 			}
-#if 0
-			/* @2 Search space update */
-			else {
-				/* @1.  find the worst candidate */
-
-
-				/* @2. repalce the worst candidate */
-			}
-#endif
 		}
 	}
 

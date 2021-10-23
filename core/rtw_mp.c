@@ -121,51 +121,6 @@ static void _init_mp_priv_(struct mp_priv *pmp_priv)
 
 }
 
-#ifdef PLATFORM_LINUX
-#if 0
-static int init_mp_priv_by_os(struct mp_priv *pmp_priv)
-{
-	int i, res;
-	struct mp_xmit_frame *pmp_xmitframe;
-
-	if (pmp_priv == NULL)
-		return _FAIL;
-
-	_rtw_init_queue(&pmp_priv->free_mp_xmitqueue);
-
-	pmp_priv->pallocated_mp_xmitframe_buf = NULL;
-	pmp_priv->pallocated_mp_xmitframe_buf = rtw_zmalloc(NR_MP_XMITFRAME * sizeof(struct mp_xmit_frame) + 4);
-	if (pmp_priv->pallocated_mp_xmitframe_buf == NULL) {
-		res = _FAIL;
-		goto _exit_init_mp_priv;
-	}
-
-	pmp_priv->pmp_xmtframe_buf = pmp_priv->pallocated_mp_xmitframe_buf + 4 - ((SIZE_PTR)(pmp_priv->pallocated_mp_xmitframe_buf) & 3);
-
-	pmp_xmitframe = (struct mp_xmit_frame *)pmp_priv->pmp_xmtframe_buf;
-
-	for (i = 0; i < NR_MP_XMITFRAME; i++) {
-		_rtw_init_listhead(&pmp_xmitframe->list);
-		rtw_list_insert_tail(&pmp_xmitframe->list, &pmp_priv->free_mp_xmitqueue.queue);
-
-		pmp_xmitframe->pkt = NULL;
-		pmp_xmitframe->frame_tag = MP_FRAMETAG;
-		pmp_xmitframe->padapter = pmp_priv->papdater;
-
-		pmp_xmitframe++;
-	}
-
-	pmp_priv->free_mp_xmitframe_cnt = NR_MP_XMITFRAME;
-
-	res = _SUCCESS;
-
-_exit_init_mp_priv:
-
-	return res;
-}
-#endif
-#endif
-
 static void mp_init_xmit_attrib(struct mp_tx *pmptx, PADAPTER padapter)
 {
 	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(padapter);
@@ -178,10 +133,6 @@ static void mp_init_xmit_attrib(struct mp_tx *pmptx, PADAPTER padapter)
 	memset(pmptx->desc, 0, TXDESC_SIZE);
 
 	pattrib->ether_type = 0x8712;
-#if 0
-	memcpy(pattrib->src, adapter_mac_addr(padapter), ETH_ALEN);
-	memcpy(pattrib->ta, pattrib->src, ETH_ALEN);
-#endif
 	memset(pattrib->dst, 0xFF, ETH_ALEN);
 
 	/*	pattrib->dhcp_pkt = 0;
@@ -270,30 +221,6 @@ void free_mp_priv(struct mp_priv *pmp_priv)
 	pmp_priv->pmp_xmtframe_buf = NULL;
 }
 
-#if 0
-static VOID PHY_IQCalibrate_default(
-	IN	PADAPTER	pAdapter,
-	IN	BOOLEAN	bReCovery
-)
-{
-	RTW_INFO("%s\n", __func__);
-}
-
-static VOID PHY_LCCalibrate_default(
-	IN	PADAPTER	pAdapter
-)
-{
-	RTW_INFO("%s\n", __func__);
-}
-
-static VOID PHY_SetRFPathSwitch_default(
-	IN	PADAPTER	pAdapter,
-	IN	BOOLEAN		bMain
-)
-{
-	RTW_INFO("%s\n", __func__);
-}
-#endif
 
 void mpt_InitHWConfig(PADAPTER Adapter)
 {
@@ -638,15 +565,6 @@ MPT_DeInitAdapter(
 #endif
 #if	defined(CONFIG_RTL8723B)
 	phy_set_bb_reg(pAdapter, 0xA01, BIT0, 1); /* /suggestion  by jerry for MP Rx. */
-#endif
-#if 0 /* for Windows */
-	PlatformFreeWorkItem(&(pMptCtx->MptWorkItem));
-
-	while (pMptCtx->bMptWorkItemInProgress) {
-		if (NdisWaitEvent(&(pMptCtx->MptWorkItemEvent), 50))
-			break;
-	}
-	NdisFreeSpinLock(&(pMptCtx->MptWorkItemSpinLock));
 #endif
 }
 
@@ -1019,79 +937,6 @@ end_of_mp_stop_test:
 #endif
 	}
 }
-/*---------------------------hal\rtl8192c\MPT_Phy.c---------------------------*/
-#if 0
-/* #ifdef CONFIG_USB_HCI */
-static VOID mpt_AdjustRFRegByRateByChan92CU(PADAPTER pAdapter, u8 RateIdx, u8 Channel, u8 BandWidthID)
-{
-	u8		eRFPath;
-	u32		rfReg0x26;
-	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(pAdapter);
-
-
-	if (RateIdx < MPT_RATE_6M) 	/* CCK rate,for 88cu */
-		rfReg0x26 = 0xf400;
-	else if ((RateIdx >= MPT_RATE_6M) && (RateIdx <= MPT_RATE_54M)) {/* OFDM rate,for 88cu */
-		if ((4 == Channel) || (8 == Channel) || (12 == Channel))
-			rfReg0x26 = 0xf000;
-		else if ((5 == Channel) || (7 == Channel) || (13 == Channel) || (14 == Channel))
-			rfReg0x26 = 0xf400;
-		else
-			rfReg0x26 = 0x4f200;
-	} else if ((RateIdx >= MPT_RATE_MCS0) && (RateIdx <= MPT_RATE_MCS15)) {
-		/* MCS 20M ,for 88cu */ /* MCS40M rate,for 88cu */
-
-		if (CHANNEL_WIDTH_20 == BandWidthID) {
-			if ((4 == Channel) || (8 == Channel))
-				rfReg0x26 = 0xf000;
-			else if ((5 == Channel) || (7 == Channel) || (13 == Channel) || (14 == Channel))
-				rfReg0x26 = 0xf400;
-			else
-				rfReg0x26 = 0x4f200;
-		} else {
-			if ((4 == Channel) || (8 == Channel))
-				rfReg0x26 = 0xf000;
-			else if ((5 == Channel) || (7 == Channel))
-				rfReg0x26 = 0xf400;
-			else
-				rfReg0x26 = 0x4f200;
-		}
-	}
-
-	for (eRFPath = 0; eRFPath < pHalData->NumTotalRFPath; eRFPath++)
-		write_rfreg(pAdapter, eRFPath, RF_SYN_G2, rfReg0x26);
-}
-#endif
-/*-----------------------------------------------------------------------------
- * Function:	mpt_SwitchRfSetting
- *
- * Overview:	Change RF Setting when we siwthc channel/rate/BW for MP.
- *
- * Input:       IN	PADAPTER				pAdapter
- *
- * Output:      NONE
- *
- * Return:      NONE
- *
- * Revised History:
- * When			Who		Remark
- * 01/08/2009	MHC		Suggestion from SD3 Willis for 92S series.
- * 01/09/2009	MHC		Add CCK modification for 40MHZ. Suggestion from SD3.
- *
- *---------------------------------------------------------------------------*/
-#if 0
-static void mpt_SwitchRfSetting(PADAPTER pAdapter)
-{
-	hal_mpt_SwitchRfSetting(pAdapter);
-}
-
-/*---------------------------hal\rtl8192c\MPT_Phy.c---------------------------*/
-/*---------------------------hal\rtl8192c\MPT_HelperFunc.c---------------------------*/
-static void MPT_CCKTxPowerAdjust(PADAPTER Adapter, BOOLEAN bInCH14)
-{
-	hal_mpt_CCKTxPowerAdjust(Adapter, bInCH14);
-}
-#endif
 
 /*---------------------------hal\rtl8192c\MPT_HelperFunc.c---------------------------*/
 
@@ -1169,18 +1014,6 @@ s32 SetThermalMeter(PADAPTER pAdapter, u8 target_ther)
 {
 	return hal_mpt_SetThermalMeter(pAdapter, target_ther);
 }
-
-#if 0
-static void TriggerRFThermalMeter(PADAPTER pAdapter)
-{
-	hal_mpt_TriggerRFThermalMeter(pAdapter);
-}
-
-static u8 ReadRFThermalMeter(PADAPTER pAdapter)
-{
-	return hal_mpt_ReadRFThermalMeter(pAdapter);
-}
-#endif
 
 void GetThermalMeter(PADAPTER pAdapter, u8 *value)
 {
@@ -2353,91 +2186,6 @@ u32 mp_query_psd(PADAPTER pAdapter, u8 *data)
 
 	return strlen(data) + 1;
 }
-
-
-#if 0
-void _rtw_mp_xmit_priv(struct xmit_priv *pxmitpriv)
-{
-	int i, res;
-	_adapter *padapter = pxmitpriv->adapter;
-	struct xmit_frame	*pxmitframe = (struct xmit_frame *) pxmitpriv->pxmit_frame_buf;
-	struct xmit_buf *pxmitbuf = (struct xmit_buf *)pxmitpriv->pxmitbuf;
-
-	u32 max_xmit_extbuf_size = MAX_XMIT_EXTBUF_SZ;
-	u32 num_xmit_extbuf = NR_XMIT_EXTBUFF;
-	if (padapter->registrypriv.mp_mode == 0) {
-		max_xmit_extbuf_size = MAX_XMIT_EXTBUF_SZ;
-		num_xmit_extbuf = NR_XMIT_EXTBUFF;
-	} else {
-		max_xmit_extbuf_size = 6000;
-		num_xmit_extbuf = 8;
-	}
-
-	pxmitbuf = (struct xmit_buf *)pxmitpriv->pxmit_extbuf;
-	for (i = 0; i < num_xmit_extbuf; i++) {
-		rtw_os_xmit_resource_free(padapter, pxmitbuf, (max_xmit_extbuf_size + XMITBUF_ALIGN_SZ), _FALSE);
-
-		pxmitbuf++;
-	}
-
-	vfree(pxmitpriv->pallocated_xmit_extbuf);
-
-	if (padapter->registrypriv.mp_mode == 0) {
-		max_xmit_extbuf_size = 6000;
-		num_xmit_extbuf = 8;
-	} else {
-		max_xmit_extbuf_size = MAX_XMIT_EXTBUF_SZ;
-		num_xmit_extbuf = NR_XMIT_EXTBUFF;
-	}
-
-	/* Init xmit extension buff */
-	_rtw_init_queue(&pxmitpriv->free_xmit_extbuf_queue);
-
-	pxmitpriv->pallocated_xmit_extbuf = vzalloc(num_xmit_extbuf * sizeof(struct xmit_buf) + 4);
-
-	if (pxmitpriv->pallocated_xmit_extbuf  == NULL) {
-		res = _FAIL;
-		goto exit;
-	}
-
-	pxmitpriv->pxmit_extbuf = (u8 *)N_BYTE_ALIGMENT((SIZE_PTR)(pxmitpriv->pallocated_xmit_extbuf), 4);
-
-	pxmitbuf = (struct xmit_buf *)pxmitpriv->pxmit_extbuf;
-
-	for (i = 0; i < num_xmit_extbuf; i++) {
-		_rtw_init_listhead(&pxmitbuf->list);
-
-		pxmitbuf->priv_data = NULL;
-		pxmitbuf->padapter = padapter;
-		pxmitbuf->buf_tag = XMITBUF_MGNT;
-
-		res = rtw_os_xmit_resource_alloc(padapter, pxmitbuf, max_xmit_extbuf_size + XMITBUF_ALIGN_SZ, _TRUE);
-		if (res == _FAIL) {
-			res = _FAIL;
-			goto exit;
-		}
-
-#if defined(CONFIG_SDIO_HCI) || defined(CONFIG_GSPI_HCI)
-		pxmitbuf->phead = pxmitbuf->pbuf;
-		pxmitbuf->pend = pxmitbuf->pbuf + max_xmit_extbuf_size;
-		pxmitbuf->len = 0;
-		pxmitbuf->pdata = pxmitbuf->ptail = pxmitbuf->phead;
-#endif
-
-		rtw_list_insert_tail(&pxmitbuf->list, &(pxmitpriv->free_xmit_extbuf_queue.queue));
-#ifdef DBG_XMIT_BUF_EXT
-		pxmitbuf->no = i;
-#endif
-		pxmitbuf++;
-
-	}
-
-	pxmitpriv->free_xmit_extbuf_cnt = num_xmit_extbuf;
-
-exit:
-	;
-}
-#endif
 
 u8
 mpt_to_mgnt_rate(

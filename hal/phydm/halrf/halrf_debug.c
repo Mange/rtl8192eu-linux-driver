@@ -243,19 +243,5 @@ void halrf_init_debug_setting(void *dm_void)
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct _hal_rf_ *rf = &dm->rf_table;
 
-	rf->rf_dbg_comp =
-#if DBG
-#if 0
-	/*DBG_RF_TX_PWR_TRACK	|*/
-	/*DBG_RF_IQK		| */
-	/*DBG_RF_LCK		| */
-	/*DBG_RF_DPK		| */
-	/*DBG_RF_DACK		| */
-	/*DBG_RF_TXGAPK		| */
-	/*DBG_RF_MP			| */
-	/*DBG_RF_TMP		| */
-	/*DBG_RF_INIT		| */
-#endif
-#endif
-	0;
+	rf->rf_dbg_comp = 0;
 }

@@ -59,9 +59,7 @@ void phydm_dynamicsoftmletting(void *dm_void)
 					  "PHYDM_DynamicSoftMLSetting(): 0xF8C(== 0x%08X) < 0x16, enable SoML\n",
 					  ret_val);
 				phydm_somlrxhp_setting(dm, true);
-#if 0
-			/*odm_set_bb_reg(dm, R_0x19a8, MASKDWORD, 0xc10a0000);*/
-#endif
+
 				dm->bsomlenabled = true;
 			}
 		}
@@ -110,9 +108,7 @@ void phydm_adaptive_soml_callback(struct phydm_timer_list *timer)
 	odm_schedule_work_item(&soml_tab->phydm_adaptive_soml_workitem);
 	#else
 	{
-#if 0
-		/*@dbg_print("%s\n",__func__);*/
-#endif
+
 		phydm_adsl(dm);
 	}
 	#endif
@@ -128,9 +124,6 @@ void phydm_adaptive_soml_workitem_callback(void *context)
 	HAL_DATA_TYPE *hal_data = GET_HAL_DATA(((PADAPTER)adapter));
 	struct dm_struct *dm = &hal_data->DM_OutSrc;
 
-#if 0
-	/*@dbg_print("%s\n",__func__);*/
-#endif
 	phydm_adsl(dm);
 #endif
 }
@@ -157,9 +150,7 @@ void phydm_adaptive_soml_workitem_callback(void *context)
 {
 	struct dm_struct *dm = (void *)context;
 
-#if 0
-	/*@dbg_print("%s\n",__func__);*/
-#endif
+
 	phydm_adsl(dm);
 }
 
@@ -964,13 +955,7 @@ void phydm_adaptive_soml_init(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct adaptive_soml *soml_tab = &dm->dm_soml_table;
-#if 0
-	if (!(dm->support_ability & ODM_BB_ADAPTIVE_SOML)) {
-		PHYDM_DBG(dm, DBG_ADPTV_SOML,
-			  "[Return]   Not Support Adaptive SOML\n");
-		return;
-	}
-#endif
+
 	PHYDM_DBG(dm, DBG_ADPTV_SOML, "%s\n", __func__);
 
 	soml_tab->soml_state_cnt = 0;
@@ -1088,9 +1073,7 @@ void phydm_init_soft_ml_setting(void *dm_void)
 #if (RTL8822B_SUPPORT == 1)
 	if (!*dm->mp_mode) {
 		if (dm->support_ic_type & ODM_RTL8822B) {
-#if 0
-			/*odm_set_bb_reg(dm, R_0x19a8, MASKDWORD, 0xd10a0000);*/
-#endif
+
 			phydm_somlrxhp_setting(dm, true);
 			dm->bsomlenabled = true;
 		}

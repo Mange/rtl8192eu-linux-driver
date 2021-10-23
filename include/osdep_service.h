@@ -329,17 +329,12 @@ static inline bool rtw_thread_stop(_thread_hdl_ th)
 static inline void rtw_thread_wait_stop(void)
 {
 #ifdef PLATFORM_LINUX
-	#if 0
-	while (!kthread_should_stop())
-		msleep(10);
-	#else
 	set_current_state(TASK_INTERRUPTIBLE);
 	while (!kthread_should_stop()) {
 		schedule();
 		set_current_state(TASK_INTERRUPTIBLE);
 	}
 	__set_current_state(TASK_RUNNING);
-	#endif
 #endif
 }
 

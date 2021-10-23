@@ -485,11 +485,6 @@ MPTBT_FwC2hBtMpCtrl(
 	switch (pExtC2h->extendId) {
 	case EXT_C2H_WIFI_FW_ACTIVE_RSP:
 		RTW_INFO("[MPT], EXT_C2H_WIFI_FW_ACTIVE_RSP\n");
-#if 0
-		RTW_INFO("[MPT], pExtC2h->buf hex:\n");
-		for (i = 0; i < (length - 3); i++)
-			RTW_INFO(" 0x%x ", pExtC2h->buf[i]);
-#endif
 		if ((_FALSE == pMptCtx->bMPh2c_timeout)
 		    && (_FALSE == pMptCtx->MptH2cRspEvent)) {
 			pMptCtx->MptH2cRspEvent = _TRUE;

@@ -188,11 +188,6 @@ odm_txpowertracking_callback_thermal_meter(
 		RF_DBG(dm, DBG_RF_TX_PWR_TRACK, "no pg, hal_data->eeprom_thermal_meter = 0x%x\n", rf->eeprom_thermal);
 		return;
 	}
-#if 0
-	/*4 3. Initialize ThermalValues of rf_calibrate_info*/
-	//if (cali_info->is_reloadtxpowerindex)
-	//	RF_DBG(dm, DBG_RF_TX_PWR_TRACK, "reload ofdm index for band switch\n");
-#endif
 	/*4 4. Calculate average thermal meter*/
 
 	cali_info->thermal_value_avg[cali_info->thermal_value_avg_index] = thermal_value;
@@ -325,48 +320,6 @@ odm_txpowertracking_callback_thermal_meter(
 				xtal_offset_eanble = (cali_info->xtal_offset_last != cali_info->xtal_offset);
 			}
 		}
-#if 0
-		for (p = RF_PATH_A; p < c.rf_path_count; p++) {
-			RF_DBG(dm, DBG_RF_TX_PWR_TRACK,
-			       "\n\n=========================== [path-%d] Calculating power_index_offset===========================\n", p);
-
-			if (cali_info->delta_power_index[p] == cali_info->delta_power_index_last[p])		 /*If Thermal value changes but lookup table value still the same*/
-				cali_info->power_index_offset[p] = 0;
-			else
-				cali_info->power_index_offset[p] = cali_info->delta_power_index[p] - cali_info->delta_power_index_last[p];		/*Power index diff between 2 times Power Tracking*/
-
-			RF_DBG(dm, DBG_RF_TX_PWR_TRACK,
-			       "[path-%d] power_index_offset(%d) = delta_power_index(%d) - delta_power_index_last(%d)\n", p, cali_info->power_index_offset[p], cali_info->delta_power_index[p], cali_info->delta_power_index_last[p]);
-
-			cali_info->OFDM_index[p] = cali_info->bb_swing_idx_ofdm_base[p] + cali_info->power_index_offset[p];
-			cali_info->CCK_index = cali_info->bb_swing_idx_cck_base + cali_info->power_index_offset[p];
-
-			cali_info->bb_swing_idx_cck = cali_info->CCK_index;
-			cali_info->bb_swing_idx_ofdm[p] = cali_info->OFDM_index[p];
-
-			/*************Print BB Swing base and index Offset*************/
-
-			RF_DBG(dm, DBG_RF_TX_PWR_TRACK,
-			       "The 'CCK' final index(%d) = BaseIndex(%d) + power_index_offset(%d)\n", cali_info->bb_swing_idx_cck, cali_info->bb_swing_idx_cck_base, cali_info->power_index_offset[p]);
-			RF_DBG(dm, DBG_RF_TX_PWR_TRACK,
-			       "The 'OFDM' final index(%d) = BaseIndex[%d](%d) + power_index_offset(%d)\n", cali_info->bb_swing_idx_ofdm[p], p, cali_info->bb_swing_idx_ofdm_base[p], cali_info->power_index_offset[p]);
-
-			/*4 7.1 Handle boundary conditions of index.*/
-
-			if (cali_info->OFDM_index[p] > c.swing_table_size_ofdm - 1)
-				cali_info->OFDM_index[p] = c.swing_table_size_ofdm - 1;
-			else if (cali_info->OFDM_index[p] <= OFDM_min_index)
-				cali_info->OFDM_index[p] = OFDM_min_index;
-		}
-
-		RF_DBG(dm, DBG_RF_TX_PWR_TRACK,
-		       "\n\n========================================================================================================\n");
-
-		if (cali_info->CCK_index > c.swing_table_size_cck - 1)
-			cali_info->CCK_index = c.swing_table_size_cck - 1;
-		else if (cali_info->CCK_index <= 0)
-			cali_info->CCK_index = 0;
-#endif
 	} else {
 		RF_DBG(dm, DBG_RF_TX_PWR_TRACK,
 		       "The thermal meter is unchanged or TxPowerTracking OFF(%d): thermal_value: %d, cali_info->thermal_value: %d\n",
@@ -375,17 +328,7 @@ odm_txpowertracking_callback_thermal_meter(
 		for (p = RF_PATH_A; p < c.rf_path_count; p++)
 			cali_info->power_index_offset[p] = 0;
 	}
-#if 0
-	RF_DBG(dm, DBG_RF_TX_PWR_TRACK,
-	       "TxPowerTracking: [CCK] Swing Current index: %d, Swing base index: %d\n",
-	       cali_info->CCK_index, cali_info->bb_swing_idx_cck_base);	   /*Print Swing base & current*/
 
-	for (p = RF_PATH_A; p < c.rf_path_count; p++) {
-		RF_DBG(dm, DBG_RF_TX_PWR_TRACK,
-		       "TxPowerTracking: [OFDM] Swing Current index: %d, Swing base index[%d]: %d\n",
-		       cali_info->OFDM_index[p], p, cali_info->bb_swing_idx_ofdm_base[p]);
-	}
-#endif
 	if (thermal_value > rf->eeprom_thermal) {
 		RF_DBG(dm, DBG_RF_TX_PWR_TRACK,
 		       "Temperature(%d) higher than PG value(%d)\n", thermal_value, rf->eeprom_thermal);

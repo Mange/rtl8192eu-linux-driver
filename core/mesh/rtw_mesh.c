@@ -3769,14 +3769,6 @@ int rtw_mesh_rx_msdu_act_check(union recv_frame *rframe
 	u8 b2u_num = 0;
 #endif
 
-	/* fwd info lifetime update */
-	#if 0
-	if (!is_mda_self)
-		mDA(A3) fwinfo.lifetime
-	mSA(A4) fwinfo.lifetime
-	Precursor-to-mDA(A2) fwinfo.lifetime
-	#endif
-
 	/* update/create pxoxy info for SA, mSA */
 	if ((mctrl->flags & MESH_FLAGS_AE)
 		&& sa != msa && _rtw_memcmp(sa, msa, ETH_ALEN) == _FALSE
@@ -3853,10 +3845,6 @@ int rtw_mesh_rx_msdu_act_check(union recv_frame *rframe
 
 		} else {
 			/* mDA is known in fwd info */
-			#if 0
-			if	(TA is not in precursors)
-				goto exit;
-			#endif
 			goto fwd_chk;
 		}
 
@@ -3948,14 +3936,6 @@ int rtw_mesh_rx_msdu_act_check(union recv_frame *rframe
 				, FUNC_ADPT_ARG(adapter), MAC_ARG(da));
 			#endif
 			/* DA is unknown */
-			#if 0 /* TODO: flags with AE bit */
-			rtw_mesh_path_error_tx(adapter
-				, adapter->mesh_cfg.element_ttl
-				, mda, adapter->mesh_info.last_sn_update
-				, WLAN_REASON_MESH_PATH_NOPROXY
-				, msa
-			);
-			#endif
 		}
 
 		/*

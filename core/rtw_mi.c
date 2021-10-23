@@ -374,21 +374,11 @@ inline void rtw_mi_update_iface_status(struct mlme_priv *pmlmepriv, sint state)
 	)
 		return;
 
-	if (0)
-		RTW_INFO("%s => will change or clean state to 0x%08x\n", __func__, state);
-
 	rtw_mi_status(adapter, &tmp_mstate);
 	memcpy(iface_state, &tmp_mstate, sizeof(struct mi_state));
 
 	if (rtw_mi_get_ch_setting_union(adapter, &u_ch, &u_bw, &u_offset))
 		rtw_mi_update_union_chan_inf(adapter , u_ch, u_offset , u_bw);
-	else {
-		if (0) {
-			dump_adapters_status(RTW_DBGDUMP , dvobj);
-			RTW_INFO("%s-[ERROR] cannot get union channel\n", __func__);
-			rtw_warn_on(1);
-		}
-	}
 
 #ifdef DBG_IFACE_STATUS
 	DBG_IFACE_STATUS_DUMP(adapter);

@@ -2242,9 +2242,6 @@ static int proc_get_tx_power_idx(struct seq_file *m, void *v)
 	u8 path = (pos & 0xFF00) >> 8;
 	u8 rs = pos & 0xFF;
 
-	if (0)
-		RTW_INFO("%s path=%u, rs=%u\n", __func__, path, rs);
-
 	if (path == RF_PATH_A && rs == CCK)
 		dump_tx_power_idx_title(m, adapter);
 	dump_tx_power_idx_by_path_rs(m, adapter, path, rs);

@@ -692,9 +692,7 @@ void odm_txpowertracking_thermal_meter_init(void *dm_void)
 
 	RF_DBG(dm, DBG_RF_IQK, "dm txpowertrack_control = %d\n",
 	       cali_info->txpowertrack_control);
-#if 0
-	/* dm->rf_calibrate_info.txpowertrack_control = true; */
-#endif
+
 	cali_info->thermal_value = rf->eeprom_thermal;
 	cali_info->thermal_value_iqk = rf->eeprom_thermal;
 	cali_info->thermal_value_lck = rf->eeprom_thermal;

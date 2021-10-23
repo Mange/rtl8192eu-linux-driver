@@ -330,24 +330,6 @@ void fill_txdesc_vcs(struct pkt_attrib *pattrib, u8 *ptxdesc)
 	default:
 		break;
 	}
-#if 0 /* to do */
-	/* Protection mode related */
-	if (pTcb->bRTSEnable || pTcb->bCTSEnable) {
-		SET_TX_DESC_CCA_RTS_92E(pDesc, pTcb->RTSCCA);
-
-		/* SET_TX_DESC_RTS_ENABLE_92E(pDesc, ((pTcb->bRTSEnable && !pTcb->bCTSEnable) ? 1 : 0)); */
-		/* SET_TX_DESC_CTS2SELF_92E(pDesc, ((pTcb->bCTSEnable) ? 1 : 0)); */
-
-		SET_TX_DESC_CTROL_STBC_92E(pDesc, ((pTcb->bRTSSTBC) ? 1 : 0));
-		SET_TX_DESC_RTS_SHORT_92E(pDesc, pTcb->bRTSShort);
-		SET_TX_DESC_RTS_RATE_92E(pDesc, MRateToHwRate((u1Byte)pTcb->RTSRate));
-
-		if (pMgntInfo->ForcedProtectionMode == PROTECTION_MODE_FORCE_ENABLE)
-			SET_TX_DESC_RTS_RATE_FB_LIMIT_92E(pDesc, 1);
-		else
-			SET_TX_DESC_RTS_RATE_FB_LIMIT_92E(pDesc, 0xF);
-	}
-#endif
 }
 
 u8

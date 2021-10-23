@@ -204,15 +204,6 @@ void odm_tx_gain_gap_calibration_8197f(
 
 				psd_gap = psd_value_next / (psd_value_current / 1000);
 
-#if 0
-				if (psd_gap > 1413)
-					delta_gain_gap[rf_path][rf0_idx] = 1;
-				else if (psd_gap > 1122)
-					delta_gain_gap[rf_path][rf0_idx] = 0;
-				else
-					delta_gain_gap[rf_path][rf0_idx] = -1;
-#endif
-
 				if (psd_gap > 1445)
 					delta_gain_gap[rf_path][rf0_idx] = 1;
 				else if (psd_gap > 1096)
@@ -255,10 +246,6 @@ void odm_tx_gain_gap_calibration_8197f(
 
 		ODM_delay_us(100);
 	}
-
-#if 0
-	/*odm_set_bb_reg(dm, R_0x88c, (BIT(23) | BIT(22) | BIT(21) | BIT(20)), 0x0);*/ /*enable 3-wire*/
-#endif
 
 	for (rf_path = RF_PATH_A; rf_path <= RF_PATH_B; rf_path++) {
 		odm_set_rf_reg(dm, rf_path, RF_0xef, bRFRegOffsetMask, 0x00100);

@@ -26,10 +26,6 @@ typedef enum hi_GPIO_DIR_E {
 #define REG_BASE_CTRL		__io_address(0xf8a20008)
 
 int gpio_wlan_reg_on = RTL_REG_ON_GPIO;
-#if 0
-module_param(gpio_wlan_reg_on, uint, 0644);
-MODULE_PARM_DESC(gpio_wlan_reg_on, "wlan reg_on gpio num (default:gpio4_3)");
-#endif
 
 static int hi_gpio_set_value(u32 gpio, u32 value)
 {

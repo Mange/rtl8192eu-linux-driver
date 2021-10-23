@@ -3113,19 +3113,10 @@ SwLedControlMode9(
 		/* LED1 settings */
 		if (LedAction == LED_CTL_NO_LINK) {
 			/* if(pMgntInfo->AuthStatus == AUTH_STATUS_FAILED) */
-			if (0) {
-				pLed1->CurrLedState = LED_BLINK_AUTH_ERROR;
-				if (pLed1->bLedOn)
-					pLed1->BlinkingLedState = RTW_LED_OFF;
-				else
-					pLed1->BlinkingLedState = RTW_LED_ON;
+			pLed1->CurrLedState = RTW_LED_OFF;
+			pLed1->BlinkingLedState = RTW_LED_OFF;
+			if (pLed1->bLedOn)
 				_set_timer(&(pLed1->BlinkTimer), 0);
-			} else {
-				pLed1->CurrLedState = RTW_LED_OFF;
-				pLed1->BlinkingLedState = RTW_LED_OFF;
-				if (pLed1->bLedOn)
-					_set_timer(&(pLed1->BlinkTimer), 0);
-			}
 		} else {
 			pLed1->CurrLedState = RTW_LED_OFF;
 			pLed1->BlinkingLedState = RTW_LED_OFF;

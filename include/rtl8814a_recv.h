@@ -40,17 +40,6 @@
 	/* #else */
 	#define MAX_RECVBUF_SZ (4000) /* about 4K
 	* #endif */
-
-
-#elif defined(CONFIG_SDIO_HCI)
-	#if 0
-		/* temp solution */
-		#ifdef CONFIG_SDIO_RX_COPY
-			#define MAX_RECVBUF_SZ (10240)
-		#else /*  !CONFIG_SDIO_RX_COPY */
-			#define MAX_RECVBUF_SZ	MAX_RX_DMA_BUFFER_SIZE_8821
-		#endif /*  !CONFIG_SDIO_RX_COPY */
-	#endif
 #endif
 
 
@@ -75,12 +64,6 @@
 
 /* DWORD 3*/ /* RESERVED */
 
-
-#if 0
-	/* =============
-	* RX Info
-	* ============== */
-#endif
 /* DWORD 0 */
 #define SET_RX_STATUS_DESC_PKT_LEN_8814A(__pRxStatusDesc, __Value)		SET_BITS_TO_LE_4BYTE(__pRxStatusDesc, 0, 14, __Value)
 #define SET_RX_STATUS_DESC_EOR_8814A(__pRxStatusDesc, __Value)			SET_BITS_TO_LE_4BYTE(__pRxStatusDesc, 30, 1, __Value)
@@ -167,14 +150,6 @@
 #ifdef CONFIG_PCI_HCI
 	s32 rtl8814ae_init_recv_priv(PADAPTER padapter);
 	void rtl8814ae_free_recv_priv(PADAPTER padapter);
-#endif
-
-#if 0
-	/* temp solution */
-	#ifdef CONFIG_SDIO_HCI
-		s32 InitRecvPriv8821AS(PADAPTER padapter);
-		void FreeRecvPriv8821AS(PADAPTER padapter);
-	#endif /*  CONFIG_SDIO_HCI */
 #endif
 
 void rtl8814_query_rx_desc_status(union recv_frame *precvframe, u8 *pdesc);

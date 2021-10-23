@@ -1318,9 +1318,6 @@ static int rtw_wx_set_mode(struct net_device *dev, struct iw_request_info *a,
 	switch (wrqu->mode) {
 	case IW_MODE_MONITOR:
 		networkType = Ndis802_11Monitor;
-#if 0
-		dev->type = ARPHRD_IEEE80211; /* IEEE 802.11 : 801 */
-#endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 24))
 		dev->type = ARPHRD_IEEE80211_RADIOTAP; /* IEEE 802.11 + radiotap header : 803 */
@@ -1409,18 +1406,6 @@ static int rtw_wx_set_pmkid(struct net_device *dev,
 	struct iw_pmksa  *pPMK = (struct iw_pmksa *) extra;
 	u8     strZeroMacAddress[ETH_ALEN] = { 0x00 };
 	u8     strIssueBssid[ETH_ALEN] = { 0x00 };
-
-#if 0
-	struct iw_pmksa {
-		__u32   cmd;
-		struct sockaddr bssid;
-		__u8    pmkid[IW_PMKID_LEN];   /* IW_PMKID_LEN=16 */
-	}
-	There are the BSSID information in the bssid.sa_data array.
-	If cmd is IW_PMKSA_FLUSH, it means the wpa_suppplicant wants to clear all the PMKID information.
-	If cmd is IW_PMKSA_ADD, it means the wpa_supplicant wants to add a PMKID / BSSID to driver.
-	If cmd is IW_PMKSA_REMOVE, it means the wpa_supplicant wants to remove a PMKID / BSSID from driver.
-#endif
 
 	memcpy(strIssueBssid, pPMK->bssid.sa_data, ETH_ALEN);
 	if (pPMK->cmd == IW_PMKSA_ADD) {
@@ -1726,19 +1711,6 @@ static int rtw_wx_set_wap(struct net_device *dev,
 	while (1) {
 
 		if (phead != pmlmepriv->pscanned) {
-#if 0
-			ret = -EINVAL;
-			goto cancel_ps_deny;
-
-			if (check_fwstate(pmlmepriv, WIFI_ADHOC_STATE) == _TRUE) {
-				rtw_set_802_11_bssid(padapter, temp->sa_data);
-				goto cancel_ps_deny;
-			} else {
-				ret = -EINVAL;
-				goto cancel_ps_deny;
-			}
-#endif
-
 			break;
 		}
 
@@ -1809,14 +1781,6 @@ static int rtw_wx_set_mlme(struct net_device *dev,
 			   struct iw_request_info *info,
 			   union iwreq_data *wrqu, char *extra)
 {
-#if 0
-	/* SIOCSIWMLME data */
-	struct	iw_mlme {
-		__u16		cmd; /* IW_MLME_* */
-		__u16		reason_code;
-		struct sockaddr	addr;
-	};
-#endif
 
 	int ret = 0;
 	u16 reason;
@@ -2067,11 +2031,6 @@ static int rtw_wx_set_scan(struct net_device *dev, struct iw_request_info *a,
 					pos += 1;
 					len -= 1;
 					break;
-#if 0
-				case WEXT_CSCAN_NPROBE_SECTION:
-					RTW_INFO("WEXT_CSCAN_NPROBE_SECTION\n");
-					break;
-#endif
 
 				default:
 					/* RTW_INFO("Unknown CSCAN section %c\n", section); */
@@ -2318,17 +2277,6 @@ static int rtw_wx_set_essid(struct net_device *dev,
 
 		while (1) {
 			if (phead != pmlmepriv->pscanned) {
-#if 0
-				if (check_fwstate(pmlmepriv, WIFI_ADHOC_STATE) == _TRUE) {
-					rtw_set_802_11_ssid(padapter, &ndis_ssid);
-
-					goto cancel_ps_deny;
-				} else {
-					ret = -EINVAL;
-					goto cancel_ps_deny;
-				}
-#endif
-
 				break;
 			}
 
@@ -2606,29 +2554,6 @@ static int rtw_wx_get_retry(struct net_device *dev,
 	return 0;
 
 }
-
-#if 0
-	#define IW_ENCODE_INDEX		0x00FF	/* Token index (if needed) */
-	#define IW_ENCODE_FLAGS		0xFF00	/* Flags defined below */
-	#define IW_ENCODE_MODE		0xF000	/* Modes defined below */
-	#define IW_ENCODE_DISABLED	0x8000	/* Encoding disabled */
-	#define IW_ENCODE_ENABLED	0x0000	/* Encoding enabled */
-	#define IW_ENCODE_RESTRICTED	0x4000	/* Refuse non-encoded packets */
-	#define IW_ENCODE_OPEN		0x2000	/* Accept non-encoded packets */
-	#define IW_ENCODE_NOKEY		0x0800  /* Key is write only, so not present */
-	#define IW_ENCODE_TEMP		0x0400  /* Temporary key */
-	/*
-	iwconfig wlan0 key on->flags = 0x6001->maybe it means auto
-	iwconfig wlan0 key off->flags = 0x8800
-	iwconfig wlan0 key open->flags = 0x2800
-	iwconfig wlan0 key open 1234567890->flags = 0x2000
-	iwconfig wlan0 key restricted->flags = 0x4800
-	iwconfig wlan0 key open [3] 1234567890->flags = 0x2003
-	iwconfig wlan0 key restricted [2] 1234567890->flags = 0x4002
-	iwconfig wlan0 key open [3] -> flags = 0x2803
-	iwconfig wlan0 key restricted [2] -> flags = 0x4802
-	*/
-#endif
 
 static int rtw_wx_set_enc(struct net_device *dev,
 			  struct iw_request_info *info,
@@ -3140,53 +3065,6 @@ static int rtw_wx_get_nick(struct net_device *dev,
 		wrqu->data.flags = 1;
 		memcpy(extra, "<WIFI@REALTEK>", 14);
 	}
-
-	/* rtw_signal_process(pid, SIGUSR1); */ /* for test */
-
-	/* dump debug info here	 */
-#if 0
-	u32 dot11AuthAlgrthm;		/*  802.11 auth, could be open, shared, and 8021x */
-	u32 dot11PrivacyAlgrthm;	/*  This specify the privacy for shared auth. algorithm. */
-	u32 dot118021XGrpPrivacy;	/*  This specify the privacy algthm. used for Grp key */
-	u32 ndisauthtype;
-	u32 ndisencryptstatus;
-#endif
-
-	/* RTW_INFO("auth_alg=0x%x, enc_alg=0x%x, auth_type=0x%x, enc_type=0x%x\n",  */
-	/*		psecuritypriv->dot11AuthAlgrthm, psecuritypriv->dot11PrivacyAlgrthm, */
-	/*		psecuritypriv->ndisauthtype, psecuritypriv->ndisencryptstatus); */
-
-	/* RTW_INFO("enc_alg=0x%x\n", psecuritypriv->dot11PrivacyAlgrthm); */
-	/* RTW_INFO("auth_type=0x%x\n", psecuritypriv->ndisauthtype); */
-	/* RTW_INFO("enc_type=0x%x\n", psecuritypriv->ndisencryptstatus); */
-
-#if 0
-	RTW_INFO("dbg(0x210)=0x%x\n", rtw_read32(padapter, 0x210));
-	RTW_INFO("dbg(0x608)=0x%x\n", rtw_read32(padapter, 0x608));
-	RTW_INFO("dbg(0x280)=0x%x\n", rtw_read32(padapter, 0x280));
-	RTW_INFO("dbg(0x284)=0x%x\n", rtw_read32(padapter, 0x284));
-	RTW_INFO("dbg(0x288)=0x%x\n", rtw_read32(padapter, 0x288));
-
-	RTW_INFO("dbg(0x664)=0x%x\n", rtw_read32(padapter, 0x664));
-
-
-	RTW_INFO("\n");
-
-	RTW_INFO("dbg(0x430)=0x%x\n", rtw_read32(padapter, 0x430));
-	RTW_INFO("dbg(0x438)=0x%x\n", rtw_read32(padapter, 0x438));
-
-	RTW_INFO("dbg(0x440)=0x%x\n", rtw_read32(padapter, 0x440));
-
-	RTW_INFO("dbg(0x458)=0x%x\n", rtw_read32(padapter, 0x458));
-
-	RTW_INFO("dbg(0x484)=0x%x\n", rtw_read32(padapter, 0x484));
-	RTW_INFO("dbg(0x488)=0x%x\n", rtw_read32(padapter, 0x488));
-
-	RTW_INFO("dbg(0x444)=0x%x\n", rtw_read32(padapter, 0x444));
-	RTW_INFO("dbg(0x448)=0x%x\n", rtw_read32(padapter, 0x448));
-	RTW_INFO("dbg(0x44c)=0x%x\n", rtw_read32(padapter, 0x44c));
-	RTW_INFO("dbg(0x450)=0x%x\n", rtw_read32(padapter, 0x450));
-#endif
 
 	return 0;
 
@@ -5256,17 +5134,12 @@ static int rtw_p2p_set_sa(struct net_device *dev,
 
 	RTW_INFO("[%s] data = %s\n", __FUNCTION__, extra);
 
-	if (0) {
-		RTW_INFO("[%s] WiFi Direct is disable!\n", __FUNCTION__);
-		return ret;
-	} else {
-		if (extra[0] == '0')	/*	Disable the session available. */
-			pwdinfo->session_available = _FALSE;
-		else if (extra[0] == '1')	/*	Enable the session available. */
-			pwdinfo->session_available = _TRUE;
-		else
-			pwdinfo->session_available = _FALSE;
-	}
+	if (extra[0] == '0')	/*	Disable the session available. */
+		pwdinfo->session_available = _FALSE;
+	else if (extra[0] == '1')	/*	Enable the session available. */
+		pwdinfo->session_available = _TRUE;
+	else
+		pwdinfo->session_available = _FALSE;
 	printk("[%s] session available = %d\n", __FUNCTION__, pwdinfo->session_available);
 
 exit:
@@ -7167,17 +7040,6 @@ static int rtw_add_sta(struct net_device *dev, struct ieee_param *param)
 	    param->sta_addr[4] == 0xff && param->sta_addr[5] == 0xff)
 		return -EINVAL;
 
-#if 0
-	psta = rtw_get_stainfo(pstapriv, param->sta_addr);
-	if (psta) {
-		RTW_INFO("rtw_add_sta(), free has been added psta=%p\n", psta);
-		/* _enter_critical_bh(&(pstapriv->sta_hash_lock), &irqL);		 */
-		rtw_free_stainfo(padapter,  psta);
-		/* _exit_critical_bh(&(pstapriv->sta_hash_lock), &irqL); */
-
-		psta = NULL;
-	}
-#endif
 	/* psta = rtw_alloc_stainfo(pstapriv, param->sta_addr); */
 	psta = rtw_get_stainfo(pstapriv, param->sta_addr);
 	if (psta) {
@@ -7298,23 +7160,7 @@ static int rtw_ioctl_get_sta_data(struct net_device *dev, struct ieee_param *par
 
 	psta = rtw_get_stainfo(pstapriv, param_ex->sta_addr);
 	if (psta) {
-#if 0
-		struct {
-			u16 aid;
-			u16 capability;
-			int flags;
-			u32 sta_set;
-			u8 tx_supp_rates[16];
-			u32 tx_supp_rates_len;
-			struct ieee80211_ht_cap ht_cap;
-			u64	rx_pkts;
-			u64	rx_bytes;
-			u64	rx_drops;
-			u64	tx_pkts;
-			u64	tx_bytes;
-			u64	tx_drops;
-		} get_sta;
-#endif
+
 		psta_data->aid = (u16)psta->cmn.aid;
 		psta_data->capability = psta->capability;
 		psta_data->flags = psta->flags;
@@ -7544,21 +7390,11 @@ static int rtw_set_hidden_ssid(struct net_device *dev, struct ieee_param *param,
 		memcpy(ssid, ssid_ie + 2, ssid_len);
 		ssid[ssid_len] = 0x0;
 
-		if (0)
-			RTW_INFO(FUNC_ADPT_FMT" ssid:(%s,%d), from ie:(%s,%d), (%s,%d)\n", FUNC_ADPT_ARG(adapter),
-				ssid, ssid_len,
-				pbss_network->Ssid.Ssid, pbss_network->Ssid.SsidLength,
-				pbss_network_ext->Ssid.Ssid, pbss_network_ext->Ssid.SsidLength);
-
 		memcpy(pbss_network->Ssid.Ssid, (void *)ssid, ssid_len);
 		pbss_network->Ssid.SsidLength = ssid_len;
 		memcpy(pbss_network_ext->Ssid.Ssid, (void *)ssid, ssid_len);
 		pbss_network_ext->Ssid.SsidLength = ssid_len;
 
-		if (0)
-			RTW_INFO(FUNC_ADPT_FMT" after ssid:(%s,%d), (%s,%d)\n", FUNC_ADPT_ARG(adapter),
-				pbss_network->Ssid.Ssid, pbss_network->Ssid.SsidLength,
-				pbss_network_ext->Ssid.Ssid, pbss_network_ext->Ssid.SsidLength);
 	}
 
 	RTW_INFO(FUNC_ADPT_FMT" ignore_broadcast_ssid:%d, %s,%d\n", FUNC_ADPT_ARG(adapter),
@@ -8480,20 +8316,6 @@ static int rtw_mp_efuse_get(struct net_device *dev,
 			err = -EFAULT;
 			goto exit;
 		}
-
-#if 0
-		RTW_INFO("OFFSET\tVALUE(hex)\n");
-		for (i = 0; i < mapLen; i += 16) {
-			RTW_INFO("0x%02x\t", i);
-			for (j = 0; j < 8; j++)
-				RTW_INFO("%02X ", efuse[i + j]);
-			RTW_INFO("\t");
-			for (; j < 16; j++)
-				RTW_INFO("%02X ", efuse[i + j]);
-			RTW_INFO("\n");
-		}
-		RTW_INFO("\n");
-#endif
 
 		shift = blksz * order;
 		efuse += shift;
@@ -11383,38 +11205,29 @@ static s32 createpseudoadhoc(PADAPTER padapter)
 
 	_exit_critical_bh(&pmlmepriv->lock, &irqL);
 
-#if 0
-	err = rtw_create_ibss_cmd(padapter, 0);
-	if (err == _FAIL)
+	struct wlan_network *pcur_network;
+	struct sta_info *psta;
+
+	/* 3  create a new psta */
+	pcur_network = &pmlmepriv->cur_network;
+
+	/* clear psta in the cur_network, if any */
+	psta = rtw_get_stainfo(&padapter->stapriv, pcur_network->network.MacAddress);
+	if (psta)
+		rtw_free_stainfo(padapter, psta);
+
+	psta = rtw_alloc_stainfo(&padapter->stapriv, pibss);
+	if (psta == NULL)
 		return _FAIL;
-#else
-	{
-		struct wlan_network *pcur_network;
-		struct sta_info *psta;
 
-		/* 3  create a new psta */
-		pcur_network = &pmlmepriv->cur_network;
+	/* 3  join psudo AdHoc */
+	pcur_network->join_res = 1;
+	pcur_network->aid = psta->cmn.aid = 1;
+	memcpy(&pcur_network->network, pdev_network, get_WLAN_BSSID_EX_sz(pdev_network));
 
-		/* clear psta in the cur_network, if any */
-		psta = rtw_get_stainfo(&padapter->stapriv, pcur_network->network.MacAddress);
-		if (psta)
-			rtw_free_stainfo(padapter, psta);
-
-		psta = rtw_alloc_stainfo(&padapter->stapriv, pibss);
-		if (psta == NULL)
-			return _FAIL;
-
-		/* 3  join psudo AdHoc */
-		pcur_network->join_res = 1;
-		pcur_network->aid = psta->cmn.aid = 1;
-		memcpy(&pcur_network->network, pdev_network, get_WLAN_BSSID_EX_sz(pdev_network));
-
-		/* set msr to WIFI_FW_ADHOC_STATE */
-		padapter->hw_port = HW_PORT0;
-		Set_MSR(padapter, WIFI_FW_ADHOC_STATE);
-
-	}
-#endif
+	/* set msr to WIFI_FW_ADHOC_STATE */
+	padapter->hw_port = HW_PORT0;
+	Set_MSR(padapter, WIFI_FW_ADHOC_STATE);
 
 	return _SUCCESS;
 }
@@ -11579,11 +11392,6 @@ static void printdata(u8 *pbuf, u32 len)
 		for (; i < len, i++)
 			printk("%02X", pbuf + i);
 #else /* CONFIG_LITTLE_ENDIAN */
-#if 0
-		val = 0;
-		memcpy(&val, pbuf + i, len - i);
-		printk("%8X", val);
-#else
 		u8 str[9];
 		u8 n;
 		val = 0;
@@ -11592,7 +11400,6 @@ static void printdata(u8 *pbuf, u32 len)
 		sprintf(str, "%08X", val);
 		n = (4 - n) * 2;
 		printk("%8s", str + n);
-#endif
 #endif /* CONFIG_LITTLE_ENDIAN */
 	}
 	printk("\n");
@@ -12042,11 +11849,6 @@ static const struct iw_priv_args rtw_private_args[] = {
 		SIOCIWFIRSTPRIV + 0xD,
 		IW_PRIV_TYPE_INT | IW_PRIV_SIZE_FIXED | 2, IW_PRIV_TYPE_CHAR | IW_PRIV_SIZE_FIXED | IFNAMSIZ, "rfr"
 	},
-#if 0
-	{
-		SIOCIWFIRSTPRIV + 0xE, 0, 0, "wowlan_ctrl"
-	},
-#endif
 	{
 		SIOCIWFIRSTPRIV + 0x10,
 		IW_PRIV_TYPE_CHAR | 1024, 0, "p2p_set"

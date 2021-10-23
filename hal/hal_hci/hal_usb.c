@@ -196,9 +196,6 @@ void usb_c2h_hisr_hdl(_adapter *adapter, u8 *buf)
 	if (rtw_hal_c2h_reg_hdr_parse(adapter, buf, &id, &seq, &plen, &payload) != _SUCCESS)
 		return;
 
-	if (0)
-		RTW_PRINT("%s C2H == %d\n", __func__, id);
-
 	if (rtw_hal_c2h_id_handle_directly(adapter, id, seq, plen, payload)) {
 		/* Handle directly */
 		rtw_hal_c2h_handler(adapter, id, seq, plen, payload);

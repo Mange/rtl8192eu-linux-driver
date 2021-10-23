@@ -1025,10 +1025,6 @@ void addba_timer_hdl(void *ctx);
 #ifdef CONFIG_IEEE80211W
 void sa_query_timer_hdl(void *ctx);
 #endif /* CONFIG_IEEE80211W */
-#if 0
-void reauth_timer_hdl(_adapter *padapter);
-void reassoc_timer_hdl(_adapter *padapter);
-#endif
 
 #define set_survey_timer(mlmeext, ms) \
 	do { \
