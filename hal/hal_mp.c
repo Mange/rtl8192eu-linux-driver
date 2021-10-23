@@ -90,7 +90,7 @@ void hal_mpt_SwitchRfSetting(PADAPTER	pAdapter)
 		pMptCtx->backup0x52_RF_A = (u1Byte)phy_query_rf_reg(pAdapter, RF_PATH_A, RF_0x52, 0x000F0);
 		pMptCtx->backup0x52_RF_B = (u1Byte)phy_query_rf_reg(pAdapter, RF_PATH_B, RF_0x52, 0x000F0);
 
-		if ((PlatformEFIORead4Byte(pAdapter, 0xF4) & BIT29) == BIT29) {
+		if ((rtw_read32(pAdapter, 0xF4) & BIT29) == BIT29) {
 			phy_set_rf_reg(pAdapter, RF_PATH_A, RF_0x52, 0x000F0, 0xB);
 			phy_set_rf_reg(pAdapter, RF_PATH_B, RF_0x52, 0x000F0, 0xB);
 		} else {

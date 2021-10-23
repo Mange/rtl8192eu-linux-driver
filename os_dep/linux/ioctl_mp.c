@@ -1087,10 +1087,10 @@ int rtw_mp_arx(struct net_device *dev,
 
 	if (pmppriv->bloopback == _TRUE) {
 		sprintf(extra , "Enter MAC LoopBack mode\n");
-		_rtw_write32(padapter, 0x100, 0xB0106FF);
-		RTW_INFO("0x100 :0x%x" , _rtw_read32(padapter, 0x100));
-		_rtw_write16(padapter, 0x608, 0x30c);
-		RTW_INFO("0x100 :0x%x" , _rtw_read32(padapter, 0x608));
+		rtw_write32(padapter, 0x100, 0xB0106FF);
+		RTW_INFO("0x100 :0x%x" , rtw_read32(padapter, 0x100));
+		rtw_write16(padapter, 0x608, 0x30c);
+		RTW_INFO("0x100 :0x%x" , rtw_read32(padapter, 0x608));
 	}
 
 	wrqu->length = strlen(extra) + 1;

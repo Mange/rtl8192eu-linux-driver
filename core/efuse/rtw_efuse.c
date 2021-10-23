@@ -805,13 +805,13 @@ VOID efuse_PreUpdateAction(
 #ifdef CONFIG_RTL8812A
 		BackupRegs[3] = phy_query_mac_reg(pAdapter, REG_AFE_MISC, bMaskDWord);
 #endif
-		PlatformEFIOWrite4Byte(pAdapter, REG_RCR, 0x1);
-		PlatformEFIOWrite1Byte(pAdapter, REG_RXFLTMAP0, 0);
-		PlatformEFIOWrite1Byte(pAdapter, REG_RXFLTMAP0+1, 0);
-		PlatformEFIOWrite1Byte(pAdapter, REG_RXFLTMAP0+2, 0);
-		PlatformEFIOWrite1Byte(pAdapter, REG_RXFLTMAP0+3, 0);
-		PlatformEFIOWrite1Byte(pAdapter, REG_RXFLTMAP0+4, 0);
-		PlatformEFIOWrite1Byte(pAdapter, REG_RXFLTMAP0+5, 0);
+		rtw_write32(pAdapter, REG_RCR, 0x1);
+		rtw_write8(pAdapter, REG_RXFLTMAP0, 0);
+		rtw_write8(pAdapter, REG_RXFLTMAP0+1, 0);
+		rtw_write8(pAdapter, REG_RXFLTMAP0+2, 0);
+		rtw_write8(pAdapter, REG_RXFLTMAP0+3, 0);
+		rtw_write8(pAdapter, REG_RXFLTMAP0+4, 0);
+		rtw_write8(pAdapter, REG_RXFLTMAP0+5, 0);
 #ifdef CONFIG_RTL8812A
 		/* <20140410, Kordan> 0x11 = 0x4E, lower down LX_SPS0 voltage. (Asked by Chunchu)*/
 		phy_set_mac_reg(pAdapter, REG_AFE_MISC, bMaskByte1, 0x4E);

@@ -170,64 +170,64 @@ _InitBurstPktLen_8192EU(IN PADAPTER Adapter)
 	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(Adapter);
 
 
-	/* PlatformEFIOWrite2Byte(Adapter, REG_TRXDMA_CTRL_8195, 0xf5b0); */
-	/* PlatformEFIOWrite2Byte(Adapter, REG_TRXDMA_CTRL_8812, 0xf5b4); */
-	PlatformEFIOWrite2Byte(Adapter, REG_RXDMA_STATUS_8192E, 0x7400);  /* burset lenght=4, set 0x3400 for burset length=2 */
-	PlatformEFIOWrite1Byte(Adapter, 0x289, 0xf5);				/* for rxdma control */
-	/* PlatformEFIOWrite1Byte(Adapter, 0x3a, 0x46); */
+	/* rtw_write16(Adapter, REG_TRXDMA_CTRL_8195, 0xf5b0); */
+	/* rtw_write16(Adapter, REG_TRXDMA_CTRL_8812, 0xf5b4); */
+	rtw_write16(Adapter, REG_RXDMA_STATUS_8192E, 0x7400);  /* burset lenght=4, set 0x3400 for burset length=2 */
+	rtw_write8(Adapter, 0x289, 0xf5);				/* for rxdma control */
+	/* rtw_write8(Adapter, 0x3a, 0x46); */
 
 	/* 0x456 = 0x70, sugguested by Zhilin */
-	/* PlatformEFIOWrite1Byte(Adapter, REG_AMPDU_MAX_TIME_8192E, 0x70); */
+	/* rtw_write8(Adapter, REG_AMPDU_MAX_TIME_8192E, 0x70); */
 
 	/* Suggention by SD1 Jong and Pisa, by Maddest 20130107. */
-	PlatformEFIOWrite2Byte(Adapter, REG_MAX_AGGR_NUM_8192E, 0x0e0e);
-	PlatformEFIOWrite1Byte(Adapter, REG_FWHW_TXQ_CTRL_8192E, 0x80);/* EN_AMPDU_RTY_NEW */
-	PlatformEFIOWrite1Byte(Adapter, REG_AMPDU_MAX_TIME_8192E, 0x5e);
-	PlatformEFIOWrite4Byte(Adapter, REG_FAST_EDCA_CTRL_8192E, 0x03087777);
+	rtw_write16(Adapter, REG_MAX_AGGR_NUM_8192E, 0x0e0e);
+	rtw_write8(Adapter, REG_FWHW_TXQ_CTRL_8192E, 0x80);/* EN_AMPDU_RTY_NEW */
+	rtw_write8(Adapter, REG_AMPDU_MAX_TIME_8192E, 0x5e);
+	rtw_write32(Adapter, REG_FAST_EDCA_CTRL_8192E, 0x03087777);
 
 
-	/* PlatformEFIOWrite4Byte(Adapter, 0x458, 0xffffffff); */
-	PlatformEFIOWrite1Byte(Adapter, REG_USTIME_TSF_8192E, 0x50);
-	PlatformEFIOWrite1Byte(Adapter, REG_USTIME_EDCA_8192E, 0x50);
+	/* rtw_write32(Adapter, 0x458, 0xffffffff); */
+	rtw_write8(Adapter, REG_USTIME_TSF_8192E, 0x50);
+	rtw_write8(Adapter, REG_USTIME_EDCA_8192E, 0x50);
 
 	if (IS_HARDWARE_TYPE_8821U(Adapter) || IS_HARDWARE_TYPE_8192EU(Adapter))
 		speedvalue = BIT7;
 	else
-		speedvalue = PlatformEFIORead1Byte(Adapter, 0xff); /* check device operation speed: SS 0xff bit7 */
+		speedvalue = rtw_read8(Adapter, 0xff); /* check device operation speed: SS 0xff bit7 */
 
 	if (speedvalue & BIT7) { /* USB2/1.1 Mode */
-		temp = PlatformEFIORead1Byte(Adapter, REG_USB_INFO);
+		temp = rtw_read8(Adapter, REG_USB_INFO);
 		if (((temp >> 4) & 0x03) == 0) {
 			/* pHalData->UsbBulkOutSize = 512; */
-			provalue = PlatformEFIORead1Byte(Adapter, REG_RXDMA_PRO_8192E);
-			PlatformEFIOWrite1Byte(Adapter, REG_RXDMA_PRO_8192E, (provalue | BIT(4) & (~BIT(5)))); /* set burst pkt len=512B */
-			PlatformEFIOWrite2Byte(Adapter, REG_RXDMA_PRO_8192E, 0x1e);
+			provalue = rtw_read8(Adapter, REG_RXDMA_PRO_8192E);
+			rtw_write8(Adapter, REG_RXDMA_PRO_8192E, (provalue | BIT(4) & (~BIT(5)))); /* set burst pkt len=512B */
+			rtw_write16(Adapter, REG_RXDMA_PRO_8192E, 0x1e);
 		} else {
 			/* pHalData->UsbBulkOutSize = 64; */
-			provalue = PlatformEFIORead1Byte(Adapter, REG_RXDMA_PRO_8192E);
-			PlatformEFIOWrite1Byte(Adapter, REG_RXDMA_PRO_8192E, ((provalue | BIT(5)) & (~BIT(4)))); /* set burst pkt len=64B */
+			provalue = rtw_read8(Adapter, REG_RXDMA_PRO_8192E);
+			rtw_write8(Adapter, REG_RXDMA_PRO_8192E, ((provalue | BIT(5)) & (~BIT(4)))); /* set burst pkt len=64B */
 		}
 
-		PlatformEFIOWrite2Byte(Adapter, REG_RXDMA_AGG_PG_TH_8192E, 0x2005); /* dmc agg th 20K */
+		rtw_write16(Adapter, REG_RXDMA_AGG_PG_TH_8192E, 0x2005); /* dmc agg th 20K */
 
 		pHalData->bSupportUSB3 = FALSE;
 	}
 
-	PlatformEFIOWrite1Byte(Adapter, REG_DWBCN0_CTRL_8192E, 0x10);
+	rtw_write8(Adapter, REG_DWBCN0_CTRL_8192E, 0x10);
 
-	PlatformEFIOWrite1Byte(Adapter, 0x4c7, PlatformEFIORead1Byte(Adapter, 0x4c7) | BIT(7)); /* enable single pkt ampdu */
-	PlatformEFIOWrite1Byte(Adapter, REG_RX_PKT_LIMIT_8192E, 0x18);		/* for VHT packet length 11K */
+	rtw_write8(Adapter, 0x4c7, rtw_read8(Adapter, 0x4c7) | BIT(7)); /* enable single pkt ampdu */
+	rtw_write8(Adapter, REG_RX_PKT_LIMIT_8192E, 0x18);		/* for VHT packet length 11K */
 
-	/* PlatformEFIOWrite1Byte(Adapter, REG_MAX_AGGR_NUM_8192E, 0x1f); */
-	PlatformEFIOWrite1Byte(Adapter, REG_PIFS_8192E, 0x00);
-	/* PlatformEFIOWrite1Byte(Adapter, REG_FWHW_TXQ_CTRL_8192E, PlatformEFIORead1Byte(Adapter, REG_FWHW_TXQ_CTRL)&(~BIT(7))); */
+	/* rtw_write8(Adapter, REG_MAX_AGGR_NUM_8192E, 0x1f); */
+	rtw_write8(Adapter, REG_PIFS_8192E, 0x00);
+	/* rtw_write8(Adapter, REG_FWHW_TXQ_CTRL_8192E, rtw_read8(Adapter, REG_FWHW_TXQ_CTRL)&(~BIT(7))); */
 
 #ifdef CONFIG_TX_EARLY_MODE
 	if (pHalData->AMPDUBurstMode)
-		PlatformEFIOWrite1Byte(Adapter, REG_SW_AMPDU_BURST_MODE_CTRL_8192E,  0x5F);
+		rtw_write8(Adapter, REG_SW_AMPDU_BURST_MODE_CTRL_8192E,  0x5F);
 #endif
 
-	PlatformEFIOWrite1Byte(Adapter, 0x1c, PlatformEFIORead1Byte(Adapter, 0x1c) | BIT(5) | BIT(6)); /* to prevent mac is reseted by bus. 20111208, by Page */
+	rtw_write8(Adapter, 0x1c, rtw_read8(Adapter, 0x1c) | BIT(5) | BIT(6)); /* to prevent mac is reseted by bus. 20111208, by Page */
 #endif
 }
 
@@ -255,8 +255,8 @@ static u32 _InitPowerOn_8192EU(_adapter *padapter)
 
 
 		/* 0x14[23:20]=b��0101 (raise 1.2V voltage)
-		   u1Byte	tmp1Byte = PlatformEFIORead1Byte(Adapter,0x16);
-		   PlatformEFIOWrite1Byte(Adapter,0x16,tmp1Byte |BIT4|BIT6); */
+		   u1Byte	tmp1Byte = rtw_read8(Adapter,0x16);
+		   rtw_write8(Adapter,0x16,tmp1Byte |BIT4|BIT6); */
 		u32 voltage = rtw_read32(padapter , REG_SYS_SWR_CTRL2_8192E);
 
 		if (((voltage & 0x00F00000) >> 20) == 0x4) {
@@ -1106,10 +1106,10 @@ u32 rtl8192eu_hal_init(PADAPTER Adapter)
 #endif /* CONFIG_XMIT_ACK */
 	/* Fixed LDPC rx hang issue. */
 	{
-		u4Byte	tmp4Byte = PlatformEFIORead4Byte(Adapter, REG_SYS_SWR_CTRL1_8192E);
-		PlatformEFIOWrite1Byte(Adapter, REG_SYS_SWR_CTRL2_8192E, 0x75);
+		u4Byte	tmp4Byte = rtw_read32(Adapter, REG_SYS_SWR_CTRL1_8192E);
+		rtw_write8(Adapter, REG_SYS_SWR_CTRL2_8192E, 0x75);
 		tmp4Byte = (tmp4Byte & 0xfff00fff) | (0x7E << 12);
-		PlatformEFIOWrite4Byte(Adapter, REG_SYS_SWR_CTRL1_8192E, tmp4Byte);
+		rtw_write32(Adapter, REG_SYS_SWR_CTRL1_8192E, tmp4Byte);
 	}
 
 exit:

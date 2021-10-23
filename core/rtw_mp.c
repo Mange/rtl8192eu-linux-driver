@@ -331,7 +331,7 @@ void mpt_InitHWConfig(PADAPTER Adapter)
 		phy_set_mac_reg(Adapter, 0x4C , BIT23, 0);		/*select DPDT_P and DPDT_N as output pin*/
 #ifdef CONFIG_RTL8814A
 	else if (IS_HARDWARE_TYPE_8814A(Adapter))
-		PlatformEFIOWrite2Byte(Adapter, REG_RXFLTMAP1_8814A, 0x2000);
+		rtw_write16(Adapter, REG_RXFLTMAP1_8814A, 0x2000);
 #endif
 
 #ifdef CONFIG_RTL8812A
@@ -346,7 +346,7 @@ void mpt_InitHWConfig(PADAPTER Adapter)
 	else if (IS_HARDWARE_TYPE_8822B(Adapter)) {
 		u32 tmp_reg = 0;
 
-		PlatformEFIOWrite2Byte(Adapter, REG_RXFLTMAP1_8822B, 0x2000);
+		rtw_write16(Adapter, REG_RXFLTMAP1_8822B, 0x2000);
 		/* fixed wifi can't 2.4g tx suggest by Szuyitasi 20160504 */
 		phy_set_bb_reg(Adapter, 0x70, bMaskByte3, 0x0e);
 		RTW_INFO(" 0x73 = 0x%x\n", phy_query_bb_reg(Adapter, 0x70, bMaskByte3));
@@ -358,7 +358,7 @@ void mpt_InitHWConfig(PADAPTER Adapter)
 #endif /* CONFIG_RTL8822B */
 #ifdef CONFIG_RTL8821C
 	else if (IS_HARDWARE_TYPE_8821C(Adapter))
-		PlatformEFIOWrite2Byte(Adapter, REG_RXFLTMAP1_8821C, 0x2000);
+		rtw_write16(Adapter, REG_RXFLTMAP1_8821C, 0x2000);
 #endif /* CONFIG_RTL8821C */
 #if defined(CONFIG_RTL8188F) || defined(CONFIG_RTL8188GTV)
 	else if (IS_HARDWARE_TYPE_8188F(Adapter) || IS_HARDWARE_TYPE_8188GTV(Adapter)) {

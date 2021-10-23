@@ -3741,16 +3741,16 @@ u8 SetHwReg8192E(PADAPTER Adapter, u8 variable, u8 *val)
 			val[1] = 0x0e;
 		}
 		/* SIFS for OFDM Data ACK */
-		PlatformEFIOWrite1Byte(Adapter, REG_SIFS_CTX_8192E+1, val[0]);
+		rtw_write8(Adapter, REG_SIFS_CTX_8192E+1, val[0]);
 		/* SIFS for OFDM consecutive tx like CTS data! */
-		PlatformEFIOWrite1Byte(Adapter, REG_SIFS_TRX_8192E+1, val[1]);
+		rtw_write8(Adapter, REG_SIFS_TRX_8192E+1, val[1]);
 
-		PlatformEFIOWrite1Byte(Adapter, REG_SPEC_SIFS_8192E+1, val[0]);
-		PlatformEFIOWrite1Byte(Adapter, REG_MAC_SPEC_SIFS_8192E+1, val[0]);
+		rtw_write8(Adapter, REG_SPEC_SIFS_8192E+1, val[0]);
+		rtw_write8(Adapter, REG_MAC_SPEC_SIFS_8192E+1, val[0]);
 
 		/* Revise SIFS setting due to Hardware register definition change. */
-		PlatformEFIOWrite1Byte(Adapter, REG_RESP_SIFS_OFDM_8192E+1, val[0]);
-		PlatformEFIOWrite1Byte(Adapter, REG_RESP_SIFS_OFDM_8192E, val[0]);
+		rtw_write8(Adapter, REG_RESP_SIFS_OFDM_8192E+1, val[0]);
+		rtw_write8(Adapter, REG_RESP_SIFS_OFDM_8192E, val[0]);
 
 	}
 #if 0

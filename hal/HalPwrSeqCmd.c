@@ -142,13 +142,13 @@ u8 HalPwrSeqCmdParsing(
 
 							RTW_ERR("[WARNING] PCIE polling(0x%X) timeout(%d), Toggle 0x04[3] and try again.\n", offset, maxPollingCnt);
 							if (IS_HARDWARE_TYPE_8723DE(padapter))
-								PlatformEFIOWrite1Byte(padapter, 0x40, (PlatformEFIORead1Byte(padapter, 0x40)) & (~BIT3));
+								rtw_write8(padapter, 0x40, (rtw_read8(padapter, 0x40)) & (~BIT3));
 
-							PlatformEFIOWrite1Byte(padapter, 0x04, PlatformEFIORead1Byte(padapter, 0x04) | BIT3);
-							PlatformEFIOWrite1Byte(padapter, 0x04, PlatformEFIORead1Byte(padapter, 0x04) & ~BIT3);
+							rtw_write8(padapter, 0x04, rtw_read8(padapter, 0x04) | BIT3);
+							rtw_write8(padapter, 0x04, rtw_read8(padapter, 0x04) & ~BIT3);
 
 							if (IS_HARDWARE_TYPE_8723DE(padapter))
-								PlatformEFIOWrite1Byte(padapter, 0x40, PlatformEFIORead1Byte(padapter, 0x40)|BIT3);
+								rtw_write8(padapter, 0x40, rtw_read8(padapter, 0x40)|BIT3);
 
 							/* Retry Polling Process one more time */
 							pollingCount = 0;

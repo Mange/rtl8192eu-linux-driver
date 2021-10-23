@@ -52,7 +52,7 @@ u8 odm_read_1byte(struct dm_struct *dm, u32 reg_addr)
 	return rtw_read8(adapter, reg_addr);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_WIN)
 	void *adapter = dm->adapter;
-	return PlatformEFIORead1Byte(adapter, reg_addr);
+	return rtw_read8(adapter, reg_addr);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_IOT)
 	void *adapter = dm->adapter;
 
@@ -78,7 +78,7 @@ u16 odm_read_2byte(struct dm_struct *dm, u32 reg_addr)
 	return rtw_read16(adapter, reg_addr);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_WIN)
 	void *adapter = dm->adapter;
-	return PlatformEFIORead2Byte(adapter, reg_addr);
+	return rtw_read16(adapter, reg_addr);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_IOT)
 	void *adapter = dm->adapter;
 
@@ -104,7 +104,7 @@ u32 odm_read_4byte(struct dm_struct *dm, u32 reg_addr)
 	return rtw_read32(adapter, reg_addr);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_WIN)
 	void *adapter = dm->adapter;
-	return PlatformEFIORead4Byte(adapter, reg_addr);
+	return rtw_read32(adapter, reg_addr);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_IOT)
 	void *adapter = dm->adapter;
 
@@ -130,7 +130,7 @@ void odm_write_1byte(struct dm_struct *dm, u32 reg_addr, u8 data)
 	rtw_write8(adapter, reg_addr, data);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_WIN)
 	void *adapter = dm->adapter;
-	PlatformEFIOWrite1Byte(adapter, reg_addr, data);
+	rtw_write8(adapter, reg_addr, data);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_IOT)
 	void *adapter = dm->adapter;
 
@@ -156,7 +156,7 @@ void odm_write_2byte(struct dm_struct *dm, u32 reg_addr, u16 data)
 	rtw_write16(adapter, reg_addr, data);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_WIN)
 	void *adapter = dm->adapter;
-	PlatformEFIOWrite2Byte(adapter, reg_addr, data);
+	rtw_write16(adapter, reg_addr, data);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_IOT)
 	void *adapter = dm->adapter;
 
@@ -182,7 +182,7 @@ void odm_write_4byte(struct dm_struct *dm, u32 reg_addr, u32 data)
 	rtw_write32(adapter, reg_addr, data);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_WIN)
 	void *adapter = dm->adapter;
-	PlatformEFIOWrite4Byte(adapter, reg_addr, data);
+	rtw_write32(adapter, reg_addr, data);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_IOT)
 	void *adapter = dm->adapter;
 
