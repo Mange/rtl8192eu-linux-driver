@@ -401,7 +401,6 @@ struct rtw_mesh_info {
 };
 
 extern const char *_action_self_protected_str[];
-#define action_self_protected_str(action) ((action < RTW_ACT_SELF_PROTECTED_NUM) ? _action_self_protected_str[action] : _action_self_protected_str[0])
 
 u8 *rtw_set_ie_mesh_id(u8 *buf, u32 *buf_len, const char *mesh_id, u8 id_len);
 u8 *rtw_set_ie_mesh_config(u8 *buf, u32 *buf_len
@@ -505,18 +504,18 @@ int rtw_mesh_addr_resolve(_adapter *adapter, struct xmit_frame *xframe, _pkt *pk
 s8 rtw_mesh_tx_set_whdr_mctrl_len(u8 mesh_frame_mode, struct pkt_attrib *attrib);
 void rtw_mesh_tx_build_mctrl(_adapter *adapter, struct pkt_attrib *attrib, u8 *buf);
 u8 rtw_mesh_tx_build_whdr(_adapter *adapter, struct pkt_attrib *attrib
-	, u16 *fctrl, struct rtw_ieee80211_hdr *whdr);
+	, u16 *fctrl, struct ieee80211_hdr *whdr);
 
 int rtw_mesh_rx_data_validate_hdr(_adapter *adapter, union recv_frame *rframe, struct sta_info **sta);
 int rtw_mesh_rx_data_validate_mctrl(_adapter *adapter, union recv_frame *rframe
-	, const struct rtw_ieee80211s_hdr *mctrl, const u8 *mda, const u8 *msa
+	, const struct ieee80211s_hdr *mctrl, const u8 *mda, const u8 *msa
 	, u8 *mctrl_len, const u8 **da, const u8 **sa);
 int rtw_mesh_rx_validate_mctrl_non_amsdu(_adapter *adapter, union recv_frame *rframe);
 
 int rtw_mesh_rx_msdu_act_check(union recv_frame *rframe
 	, const u8 *mda, const u8 *msa
 	, const u8 *da, const u8 *sa
-	, struct rtw_ieee80211s_hdr *mctrl
+	, struct ieee80211s_hdr *mctrl
 	, struct xmit_frame **fwd_frame, _list *b2u_list);
 
 void dump_mesh_stats(void *sel, _adapter *adapter);

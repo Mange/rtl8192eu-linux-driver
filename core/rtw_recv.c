@@ -177,7 +177,7 @@ void _rtw_free_recv_priv(struct recv_priv *precvpriv)
 bool rtw_rframe_del_wfd_ie(union recv_frame *rframe, u8 ies_offset)
 {
 #define DBG_RFRAME_DEL_WFD_IE 0
-	u8 *ies = rframe->u.hdr.rx_data + sizeof(struct rtw_ieee80211_hdr_3addr) + ies_offset;
+	u8 *ies = rframe->u.hdr.rx_data + sizeof(struct ieee80211_hdr_3addr) + ies_offset;
 	uint ies_len_ori = rframe->u.hdr.len - (ies - rframe->u.hdr.rx_data);
 	uint ies_len;
 
@@ -1013,8 +1013,8 @@ sint OnTDLS(_adapter *adapter, union recv_frame *precv_frame)
 	ptdls_sta = rtw_get_stainfo(pstapriv, ieee80211_get_SA((struct ieee80211_hdr *)ptr));
 	if (ptdls_sta == NULL) {
 		switch (*paction) {
-		case TDLS_SETUP_REQUEST:
-		case TDLS_DISCOVERY_REQUEST:
+		case WLAN_TDLS_SETUP_REQUEST:
+		case WLAN_TDLS_DISCOVERY_REQUEST:
 			break;
 		default:
 			RTW_INFO("[TDLS] %s - Direct Link Peer = "MAC_FMT" not found for action = %d\n", __func__, MAC_ARG(ieee80211_get_SA((struct ieee80211_hdr *)ptr)), *paction);
@@ -1024,32 +1024,32 @@ sint OnTDLS(_adapter *adapter, union recv_frame *precv_frame)
 	}
 
 	switch (*paction) {
-	case TDLS_SETUP_REQUEST:
+	case WLAN_TDLS_SETUP_REQUEST:
 		ret = On_TDLS_Setup_Req(adapter, precv_frame, ptdls_sta);
 		break;
-	case TDLS_SETUP_RESPONSE:
+	case WLAN_TDLS_SETUP_RESPONSE:
 		ret = On_TDLS_Setup_Rsp(adapter, precv_frame, ptdls_sta);
 		break;
-	case TDLS_SETUP_CONFIRM:
+	case WLAN_TDLS_SETUP_CONFIRM:
 		ret = On_TDLS_Setup_Cfm(adapter, precv_frame, ptdls_sta);
 		break;
-	case TDLS_TEARDOWN:
+	case WLAN_TDLS_TEARDOWN:
 		ret = On_TDLS_Teardown(adapter, precv_frame, ptdls_sta);
 		break;
-	case TDLS_DISCOVERY_REQUEST:
+	case WLAN_TDLS_DISCOVERY_REQUEST:
 		ret = On_TDLS_Dis_Req(adapter, precv_frame);
 		break;
-	case TDLS_PEER_TRAFFIC_INDICATION:
+	case WLAN_TDLS_PEER_TRAFFIC_INDICATION:
 		ret = On_TDLS_Peer_Traffic_Indication(adapter, precv_frame, ptdls_sta);
 		break;
-	case TDLS_PEER_TRAFFIC_RESPONSE:
+	case WLAN_TDLS_PEER_TRAFFIC_RESPONSE:
 		ret = On_TDLS_Peer_Traffic_Rsp(adapter, precv_frame, ptdls_sta);
 		break;
 #ifdef CONFIG_TDLS_CH_SW
-	case TDLS_CHANNEL_SWITCH_REQUEST:
+	case WLAN_TDLS_CHANNEL_SWITCH_REQUEST:
 		ret = On_TDLS_Ch_Switch_Req(adapter, precv_frame, ptdls_sta);
 		break;
-	case TDLS_CHANNEL_SWITCH_RESPONSE:
+	case WLAN_TDLS_CHANNEL_SWITCH_RESPONSE:
 		ret = On_TDLS_Ch_Switch_Rsp(adapter, precv_frame, ptdls_sta);
 		break;
 #endif
@@ -1762,7 +1762,7 @@ static sint validate_mgmt_protect(_adapter *adapter, union recv_frame *precv_fra
 		} else {
 			RTW_INFO(FUNC_ADPT_FMT" bmc:%u, action(%u), privacy:%u, encrypt:%u, bdecrypted:%u\n"
 				, FUNC_ADPT_ARG(adapter), is_bmc
-				, *(ptr + sizeof(struct rtw_ieee80211_hdr_3addr))
+				, *(ptr + sizeof(struct ieee80211_hdr_3addr))
 				, pattrib->privacy, pattrib->encrypt, pattrib->bdecrypted);
 		}
 	}
@@ -1775,7 +1775,7 @@ static sint validate_mgmt_protect(_adapter *adapter, union recv_frame *precv_fra
 		}
 
 		if (subtype == IEEE80211_STYPE_ACTION)
-			category = *(ptr + sizeof(struct rtw_ieee80211_hdr_3addr));
+			category = *(ptr + sizeof(struct ieee80211_hdr_3addr));
 
 		if (is_bmc) {
 			/* broadcast cases */
@@ -1873,7 +1873,7 @@ bip_verify:
 	/* cases to decrypt mgmt frame */
 	pattrib->bdecrypted = 0;
 	pattrib->encrypt = _AES_;
-	pattrib->hdrlen = sizeof(struct rtw_ieee80211_hdr_3addr);
+	pattrib->hdrlen = sizeof(struct ieee80211_hdr_3addr);
 
 	/* set iv and icv length */
 	SET_ICE_IV_LEN(pattrib->iv_len, pattrib->icv_len, pattrib->encrypt);
@@ -3049,7 +3049,7 @@ int amsdu_to_msdu(_adapter *padapter, union recv_frame *prframe)
 		#ifdef CONFIG_RTW_MESH
 		if (MLME_IS_MESH(padapter)) {
 			u8 *mda = pdata, *msa = pdata + ETH_ALEN;
-			struct rtw_ieee80211s_hdr *mctrl = (struct rtw_ieee80211s_hdr *)(pdata + ETH_HLEN);
+			struct ieee80211s_hdr *mctrl = (struct ieee80211s_hdr *)(pdata + ETH_HLEN);
 			int v_ret;
 
 			v_ret = rtw_mesh_rx_data_validate_mctrl(padapter, prframe
@@ -3167,7 +3167,7 @@ static int recv_process_mpdu(_adapter *padapter, union recv_frame *prframe)
 			act = rtw_mesh_rx_msdu_act_check(prframe
 				, pattrib->mda, pattrib->msa
 				, pattrib->dst, pattrib->src
-				, (struct rtw_ieee80211s_hdr *)(get_recvframe_data(prframe) + pattrib->hdrlen + pattrib->iv_len)
+				, (struct ieee80211s_hdr *)(get_recvframe_data(prframe) + pattrib->hdrlen + pattrib->iv_len)
 				, &fwd_frame, &b2u_list);
 		}
 		#endif
@@ -4351,7 +4351,7 @@ int recv_func_posthandle(_adapter *padapter, union recv_frame *prframe)
 	pcategory = psnap_type + ETH_TYPE_LEN + PAYLOAD_TYPE_LEN;
 
 	if ((_rtw_memcmp(psnap_type, SNAP_ETH_TYPE_TDLS, ETH_TYPE_LEN)) &&
-	    ((*pcategory == RTW_WLAN_CATEGORY_TDLS) || (*pcategory == RTW_WLAN_CATEGORY_P2P))) {
+	    ((*pcategory == WLAN_CATEGORY_TDLS) || (*pcategory == WLAN_CATEGORY_VENDOR_SPECIFIC))) {
 		ret = OnTDLS(padapter, prframe);
 		if (ret == _FAIL)
 			goto _exit_recv_func;

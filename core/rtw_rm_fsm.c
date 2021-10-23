@@ -519,7 +519,7 @@ static int rm_state_idle(struct rm_obj *prm, enum RM_EV_ID evid)
 	u32 val32;
 
 
-	prm->p.category = RTW_WLAN_CATEGORY_RADIO_MEAS;
+	prm->p.category = WLAN_CATEGORY_RADIO_MEASUREMENT;
 
 	switch (evid) {
 	case RM_EV_state_in:
@@ -528,7 +528,7 @@ static int rm_state_idle(struct rm_obj *prm, enum RM_EV_ID evid)
 			/* copy attrib from meas_req to meas_rep */
 			prm->p.action_code = RM_ACT_RADIO_MEAS_REP;
 			prm->p.diag_token = prm->q.diag_token;
-			prm->p.e_id = _MEAS_RSP_IE_;
+			prm->p.e_id = WLAN_EID_MEASURE_REPORT;
 			prm->p.m_token = prm->q.m_token;
 			prm->p.m_type = prm->q.m_type;
 			prm->p.rpt = prm->q.rpt;

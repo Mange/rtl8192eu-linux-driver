@@ -367,7 +367,7 @@ static inline char *iwe_stream_protocol_process(_adapter *padapter,
 #ifdef CONFIG_80211AC_VHT
 	/* parsing VHT_CAP_IE */
 	if(padapter->registrypriv.wireless_mode & WIRELESS_11AC) {
-		p = rtw_get_ie(&pnetwork->network.IEs[ie_offset], EID_VHTCapability, &vht_ielen, pnetwork->network.IELength - ie_offset);
+		p = rtw_get_ie(&pnetwork->network.IEs[ie_offset], WLAN_EID_VHT_CAPABILITY, &vht_ielen, pnetwork->network.IELength - ie_offset);
 		if (p && vht_ielen > 0)
 			vht_cap = _TRUE;
 	}
@@ -436,7 +436,7 @@ static inline char *iwe_stream_rate_process(_adapter *padapter,
 #ifdef CONFIG_80211AC_VHT
 	/* parsing VHT_CAP_IE */
 	if(padapter->registrypriv.wireless_mode & WIRELESS_11AC){
-		p = rtw_get_ie(&pnetwork->network.IEs[ie_offset], EID_VHTCapability, &vht_ielen, pnetwork->network.IELength - ie_offset);
+		p = rtw_get_ie(&pnetwork->network.IEs[ie_offset], WLAN_EID_VHT_CAPABILITY, &vht_ielen, pnetwork->network.IELength - ie_offset);
 		if (p && vht_ielen > 0) {
 			u8	mcs_map[2];
 
@@ -755,13 +755,13 @@ static int wpa_set_auth_algs(struct net_device *dev, u32 value)
 	_adapter *padapter = (_adapter *) rtw_netdev_priv(dev);
 	int ret = 0;
 
-	if ((value & AUTH_ALG_SHARED_KEY) && (value & AUTH_ALG_OPEN_SYSTEM)) {
-		RTW_INFO("wpa_set_auth_algs, AUTH_ALG_SHARED_KEY and  AUTH_ALG_OPEN_SYSTEM [value:0x%x]\n", value);
+	if ((value & IW_AUTH_ALG_SHARED_KEY) && (value & IW_AUTH_ALG_OPEN_SYSTEM)) {
+		RTW_INFO("wpa_set_auth_algs, IW_AUTH_ALG_SHARED_KEY and  IW_AUTH_ALG_OPEN_SYSTEM [value:0x%x]\n", value);
 		padapter->securitypriv.ndisencryptstatus = Ndis802_11Encryption1Enabled;
 		padapter->securitypriv.ndisauthtype = Ndis802_11AuthModeAutoSwitch;
 		padapter->securitypriv.dot11AuthAlgrthm = dot11AuthAlgrthm_Auto;
-	} else if (value & AUTH_ALG_SHARED_KEY) {
-		RTW_INFO("wpa_set_auth_algs, AUTH_ALG_SHARED_KEY  [value:0x%x]\n", value);
+	} else if (value & IW_AUTH_ALG_SHARED_KEY) {
+		RTW_INFO("wpa_set_auth_algs, IW_AUTH_ALG_SHARED_KEY  [value:0x%x]\n", value);
 		padapter->securitypriv.ndisencryptstatus = Ndis802_11Encryption1Enabled;
 
 #ifdef CONFIG_PLATFORM_MT53XX
@@ -771,8 +771,8 @@ static int wpa_set_auth_algs(struct net_device *dev, u32 value)
 		padapter->securitypriv.ndisauthtype = Ndis802_11AuthModeShared;
 		padapter->securitypriv.dot11AuthAlgrthm = dot11AuthAlgrthm_Shared;
 #endif
-	} else if (value & AUTH_ALG_OPEN_SYSTEM) {
-		RTW_INFO("wpa_set_auth_algs, AUTH_ALG_OPEN_SYSTEM\n");
+	} else if (value & IW_AUTH_ALG_OPEN_SYSTEM) {
+		RTW_INFO("wpa_set_auth_algs, IW_AUTH_ALG_OPEN_SYSTEM\n");
 		/* padapter->securitypriv.ndisencryptstatus = Ndis802_11EncryptionDisabled; */
 		if (padapter->securitypriv.ndisauthtype < Ndis802_11AuthModeWPAPSK) {
 #ifdef CONFIG_PLATFORM_MT53XX
@@ -784,8 +784,8 @@ static int wpa_set_auth_algs(struct net_device *dev, u32 value)
 #endif
 		}
 
-	} else if (value & AUTH_ALG_LEAP)
-		RTW_INFO("wpa_set_auth_algs, AUTH_ALG_LEAP\n");
+	} else if (value & IW_AUTH_ALG_LEAP)
+		RTW_INFO("wpa_set_auth_algs, IW_AUTH_ALG_LEAP\n");
 	else {
 		RTW_INFO("wpa_set_auth_algs, error!\n");
 		ret = -EINVAL;
@@ -3040,7 +3040,7 @@ static int rtw_wx_set_enc_ext(struct net_device *dev,
 	memset(param, 0, param_len);
 
 	param->cmd = IEEE_CMD_SET_ENCRYPTION;
-	memset(param->sta_addr, 0xff, ETH_ALEN);
+	eth_broadcast_addr(param->sta_addr);
 
 
 	switch (pext->alg) {
@@ -6689,25 +6689,6 @@ static int wpa_set_param(struct net_device *dev, u8 name, u32 value)
 		 * be set.
 		 */
 
-#if 0
-		struct ieee80211_security sec = {
-			.flags = SEC_ENABLED,
-			.enabled = value,
-		};
-		ieee->drop_unencrypted = value;
-		/* We only change SEC_LEVEL for open mode. Others
-		 * are set by ipw_wpa_set_encryption.
-		 */
-		if (!value) {
-			sec.flags |= SEC_LEVEL;
-			sec.level = SEC_LEVEL_0;
-		} else {
-			sec.flags |= SEC_LEVEL;
-			sec.level = SEC_LEVEL_1;
-		}
-		if (ieee->set_security)
-			ieee->set_security(ieee->dev, &sec);
-#endif
 		break;
 
 	}
@@ -11446,7 +11427,7 @@ static struct xmit_frame *createloopbackpkt(PADAPTER padapter, u32 size)
 	struct pkt_attrib *pattrib;
 	struct tx_desc *desc;
 	u8 *pkt_start, *pkt_end, *ptr;
-	struct rtw_ieee80211_hdr *hdr;
+	struct ieee80211_hdr *hdr;
 	bool bmcast;
 	_irqL irqL;
 
@@ -11551,8 +11532,8 @@ static struct xmit_frame *createloopbackpkt(PADAPTER padapter, u32 size)
 	pkt_end = pkt_start + pattrib->last_txcmdsz;
 
 	/* 3 5.1. make wlan header, make_wlanhdr() */
-	hdr = (struct rtw_ieee80211_hdr *)pkt_start;
-	set_frame_sub_type(&hdr->frame_ctl, pattrib->subtype);
+	hdr = (struct ieee80211_hdr *)pkt_start;
+	set_frame_sub_type(&hdr->frame_control, pattrib->subtype);
 	memcpy(hdr->addr1, pattrib->dst, ETH_ALEN); /* DA */
 	memcpy(hdr->addr2, pattrib->src, ETH_ALEN); /* SA */
 	memcpy(hdr->addr3, get_bssid(&padapter->mlmepriv), ETH_ALEN); /* RA, BSSID */
@@ -11642,7 +11623,7 @@ static u8 pktcmp(PADAPTER padapter, u8 *txbuf, u32 txsz, u8 *rxbuf, u32 rxsz)
 
 	phal = GET_HAL_DATA(padapter);
 	if (rtw_hal_rcr_check(padapter, RCR_APPFCS))
-		fcssize = IEEE80211_FCS_LEN;
+		fcssize = FCS_LEN;
 	else
 		fcssize = 0;
 

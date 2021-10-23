@@ -98,7 +98,7 @@ static void rtw_hal_mcc_build_p2p_noa_attr(PADAPTER padapter, u8 *ie, u32 *ie_le
 	p2p_noa_attr_len = p2p_noa_attr_len + 1;
 	
 	/* attrute length(2 bytes) length = noa_desc_num*13 + 2 */
-	RTW_PUT_LE16(p2p_noa_attr_ie + p2p_noa_attr_len, (noa_desc_num * 13 + 2));
+	*(u16 *) (p2p_noa_attr_ie + p2p_noa_attr_len) = cpu_to_le16(noa_desc_num * 13 + 2);
 	p2p_noa_attr_len = p2p_noa_attr_len + 2;
 
 	/* Index (1 byte) */
@@ -984,8 +984,6 @@ exit:
 
 static void rtw_hal_construct_CTS(PADAPTER padapter, u8 *pframe, u32 *pLength)
 {
-	u8 broadcast_addr[ETH_ALEN] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
-
 	/* frame type, length = 1*/
 	set_frame_sub_type(pframe, WIFI_RTS);
 
@@ -997,7 +995,7 @@ static void rtw_hal_construct_CTS(PADAPTER padapter, u8 *pframe, u32 *pLength)
 	*(pframe + 3) = 0x78;
 
 	/* frame recvaddr, length = 6 */
-	memcpy((pframe + 4), broadcast_addr, ETH_ALEN);
+	eth_broadcast_addr((pframe + 4));
 	memcpy((pframe + 4 + ETH_ALEN), adapter_mac_addr(padapter), ETH_ALEN);
 	memcpy((pframe + 4 + ETH_ALEN*2), adapter_mac_addr(padapter), ETH_ALEN);
 	*pLength = 22;

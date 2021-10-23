@@ -4321,7 +4321,7 @@ int rtw_rsn_sync_pmkid(_adapter *adapter, u8 *ie, uint ie_len, int i_ent)
 	} else
 		info.pmkid_cnt = 0; /* update new pmkid_cnt */
 
-	RTW_PUT_LE16(info.pmkid_list - 2, info.pmkid_cnt);
+	*(u16 *)(info.pmkid_list - 2) = cpu_to_le16(info.pmkid_cnt);
 	if (info.gmcs)
 		memcpy(info.pmkid_list + 16 * info.pmkid_cnt, gm_cs, 4);
 
@@ -4350,15 +4350,15 @@ sint rtw_restruct_sec_ie(_adapter *adapter, u8 *out_ie)
 	uint	ndisauthmode = psecuritypriv->ndisauthtype;
 
 	if ((ndisauthmode == Ndis802_11AuthModeWPA) || (ndisauthmode == Ndis802_11AuthModeWPAPSK))
-		authmode = _WPA_IE_ID_;
+		authmode = WLAN_EID_VENDOR_SPECIFIC;
 	if ((ndisauthmode == Ndis802_11AuthModeWPA2) || (ndisauthmode == Ndis802_11AuthModeWPA2PSK))
-		authmode = _WPA2_IE_ID_;
+		authmode = WLAN_EID_RSN;
 
 	if (check_fwstate(pmlmepriv, WIFI_UNDER_WPS)) {
 		memcpy(out_ie, psecuritypriv->wps_ie, psecuritypriv->wps_ie_len);
 		ielength = psecuritypriv->wps_ie_len;
 
-	} else if ((authmode == _WPA_IE_ID_) || (authmode == _WPA2_IE_ID_)) {
+	} else if ((authmode == WLAN_EID_VENDOR_SPECIFIC) || (authmode == WLAN_EID_RSN)) {
 		/* copy RSN or SSN		 */
 		memcpy(out_ie, psecuritypriv->supplicant_ie, psecuritypriv->supplicant_ie[1] + 2);
 		/* debug for CONFIG_IEEE80211W
@@ -5118,7 +5118,7 @@ void rtw_append_exented_cap(_adapter *padapter, u8 *out_ie, uint *pout_len)
 		transmit the Extended Capabilities element.
 	*/
 	if (_FALSE == _rtw_memcmp(cap_content, null_content, 8))
-		pframe = rtw_set_ie(out_ie + *pout_len, EID_EXTCapability, 8, cap_content , pout_len);
+		pframe = rtw_set_ie(out_ie + *pout_len, WLAN_EID_EXT_CAPABILITY, 8, cap_content , pout_len);
 }
 #endif
 

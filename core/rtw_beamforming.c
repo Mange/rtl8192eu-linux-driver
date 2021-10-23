@@ -176,7 +176,7 @@ static u8 _send_ht_ndpa_packet(PADAPTER adapter, u8 *ra, enum channel_width bw)
 	u8 ActionHdr[4] = {ACT_CAT_VENDOR, 0x00, 0xE0, 0x4C};
 	/* MISC */
 	struct pkt_attrib		*attrib;
-	struct rtw_ieee80211_hdr	*pwlanhdr;
+	struct ieee80211_hdr	*pwlanhdr;
 	enum MGN_RATE txrate;
 	u8 *pframe;
 	u16 duration = 0;
@@ -215,10 +215,10 @@ static u8 _send_ht_ndpa_packet(PADAPTER adapter, u8 *ra, enum channel_width bw)
 
 	memset(pmgntframe->buf_addr, 0, WLANHDR_OFFSET + TXDESC_OFFSET);
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 
 	/* Frame control */
-	pwlanhdr->frame_ctl = 0;
+	pwlanhdr->frame_control = 0;
 	set_frame_sub_type(pframe, attrib->subtype);
 	set_order_bit(pframe);
 
@@ -272,7 +272,7 @@ static u8 _send_vht_ndpa_packet(PADAPTER adapter, u8 *ra, u16 aid, enum channel_
 	struct ndpa_sta_info		sta_info;
 	/* MISC */
 	struct pkt_attrib		*attrib;
-	struct rtw_ieee80211_hdr	*pwlanhdr;
+	struct ieee80211_hdr	*pwlanhdr;
 	u8 *pframe;
 	enum MGN_RATE txrate;
 	u16 duration = 0;
@@ -310,10 +310,10 @@ static u8 _send_vht_ndpa_packet(PADAPTER adapter, u8 *ra, u16 aid, enum channel_
 
 	memset(pmgntframe->buf_addr, 0, TXDESC_OFFSET + WLANHDR_OFFSET);
 	pframe = pmgntframe->buf_addr + TXDESC_OFFSET;
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 
 	/* Frame control */
-	pwlanhdr->frame_ctl = 0;
+	pwlanhdr->frame_control = 0;
 	set_frame_sub_type(pframe, attrib->subtype);
 
 	/* Duration */
@@ -379,7 +379,7 @@ static u8 _send_vht_mu_ndpa_packet(PADAPTER adapter, enum channel_width bw)
 	struct ndpa_sta_info		sta_info;
 	/* MISC */
 	struct pkt_attrib		*attrib;
-	struct rtw_ieee80211_hdr	*pwlanhdr;
+	struct ieee80211_hdr	*pwlanhdr;
 	enum MGN_RATE txrate;
 	u8 *pframe;
 	u8 *ra = NULL;
@@ -427,10 +427,10 @@ static u8 _send_vht_mu_ndpa_packet(PADAPTER adapter, enum channel_width bw)
 
 	memset(pmgntframe->buf_addr, 0, TXDESC_OFFSET + WLANHDR_OFFSET);
 	pframe = pmgntframe->buf_addr + TXDESC_OFFSET;
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 
 	/* Frame control */
-	pwlanhdr->frame_ctl = 0;
+	pwlanhdr->frame_control = 0;
 	set_frame_sub_type(pframe, attrib->subtype);
 
 	/* Duration */
@@ -490,7 +490,7 @@ static u8 _send_bf_report_poll(PADAPTER adapter, u8 *ra, u8 bFinalPoll)
 	struct xmit_frame *pmgntframe;
 	/* MISC */
 	struct pkt_attrib *attrib;
-	struct rtw_ieee80211_hdr *pwlanhdr;
+	struct ieee80211_hdr *pwlanhdr;
 	u8 *pframe;
 
 
@@ -519,10 +519,10 @@ static u8 _send_bf_report_poll(PADAPTER adapter, u8 *ra, u8 bFinalPoll)
 
 	memset(pmgntframe->buf_addr, 0, TXDESC_OFFSET + WLANHDR_OFFSET);
 	pframe = pmgntframe->buf_addr + TXDESC_OFFSET;
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 
 	/* Frame control */
-	pwlanhdr->frame_ctl = 0;
+	pwlanhdr->frame_control = 0;
 	set_frame_sub_type(pframe, attrib->subtype);
 
 	/* Duration */
@@ -1627,12 +1627,12 @@ u32 rtw_bf_get_report_packet(PADAPTER adapter, union recv_frame *precv_frame)
 	if (!bfee)
 		return _FAIL;
 
-	frame_body = pframe + sizeof(struct rtw_ieee80211_hdr_3addr);
+	frame_body = pframe + sizeof(struct ieee80211_hdr_3addr);
 	category = frame_body[0];
 	action = frame_body[1];
 
-	if ((category == RTW_WLAN_CATEGORY_VHT)
-	    && (action == RTW_WLAN_ACTION_VHT_COMPRESSED_BEAMFORMING)) {
+	if ((category == WLAN_CATEGORY_VHT)
+	    && (action == WLAN_VHT_ACTION_COMPRESSED_BF)) {
 		pMIMOCtrlField = pframe + 26;
 		Nc = (*pMIMOCtrlField) & 0x7;
 		Nr = ((*pMIMOCtrlField) & 0x38) >> 3;
@@ -1646,8 +1646,8 @@ u32 rtw_bf_get_report_packet(PADAPTER adapter, union recv_frame *precv_frame)
 		pCSIMatrix = pMIMOCtrlField + 3 + Nc;
 		CSIMatrixLen = frame_len - 26 - 3 - Nc;
 		info->TargetCSIInfo.bVHT = _TRUE;
-	} else if ((category == RTW_WLAN_CATEGORY_HT)
-		   && (action == RTW_WLAN_ACTION_HT_COMPRESS_BEAMFORMING)) {
+	} else if ((category == WLAN_CATEGORY_HT)
+		   && (action == WLAN_HT_ACTION_COMPRESSED_BF)) {
 		pMIMOCtrlField = pframe + 26;
 		Nc = (*pMIMOCtrlField) & 0x3;
 		Nr = ((*pMIMOCtrlField) & 0xC) >> 2;
@@ -1693,7 +1693,7 @@ u8 rtw_bf_send_vht_gid_mgnt_packet(PADAPTER adapter, u8 *ra, u8 *gid, u8 *positi
 	struct xmit_frame *pmgntframe;
 	/* MISC */
 	struct pkt_attrib *attrib;
-	struct rtw_ieee80211_hdr *wlanhdr;
+	struct ieee80211_hdr *wlanhdr;
 	u8 *pframe, *ptr;
 
 
@@ -1714,9 +1714,9 @@ u8 rtw_bf_send_vht_gid_mgnt_packet(PADAPTER adapter, u8 *ra, u8 *gid, u8 *positi
 	memset(pmgntframe->buf_addr, 0, WLANHDR_OFFSET + TXDESC_OFFSET);
 
 	pframe = (u8 *)pmgntframe->buf_addr + TXDESC_OFFSET;
-	wlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	wlanhdr = (struct ieee80211_hdr *)pframe;
 
-	wlanhdr->frame_ctl = 0;
+	wlanhdr->frame_control = 0;
 	set_frame_sub_type(pframe, attrib->subtype);
 	set_duration(pframe, 0);
 	SetFragNum(pframe, 0);
@@ -1726,8 +1726,8 @@ u8 rtw_bf_send_vht_gid_mgnt_packet(PADAPTER adapter, u8 *ra, u8 *gid, u8 *positi
 	memcpy(wlanhdr->addr2, adapter_mac_addr(adapter), ETH_ALEN);
 	memcpy(wlanhdr->addr3, get_bssid(mlmepriv), ETH_ALEN);
 
-	pframe[24] = RTW_WLAN_CATEGORY_VHT;
-	pframe[25] = RTW_WLAN_ACTION_VHT_GROUPID_MANAGEMENT;
+	pframe[24] = WLAN_CATEGORY_VHT;
+	pframe[25] = WLAN_VHT_ACTION_GROUPID_MGMT;
 	/* Set Membership Status Array */
 	ptr = pframe + 26;
 	memcpy(ptr, gid, 8);
@@ -2176,7 +2176,7 @@ BOOLEAN	issue_ht_sw_ndpa_packet(PADAPTER Adapter, u8 *ra, enum channel_width bw,
 {
 	struct xmit_frame		*pmgntframe;
 	struct pkt_attrib		*pattrib;
-	struct rtw_ieee80211_hdr	*pwlanhdr;
+	struct ieee80211_hdr	*pwlanhdr;
 	struct xmit_priv		*pxmitpriv = &(Adapter->xmitpriv);
 	struct mlme_ext_priv	*pmlmeext = &Adapter->mlmeextpriv;
 	struct mlme_ext_info	*pmlmeinfo = &(pmlmeext->mlmext_info);
@@ -2209,9 +2209,9 @@ BOOLEAN	issue_ht_sw_ndpa_packet(PADAPTER Adapter, u8 *ra, enum channel_width bw,
 
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 
-	fctrl = &pwlanhdr->frame_ctl;
+	fctrl =&pwlanhdr->frame_control;
 	*(fctrl) = 0;
 
 	set_order_bit(pframe);
@@ -2255,7 +2255,7 @@ BOOLEAN	issue_ht_ndpa_packet(PADAPTER Adapter, u8 *ra, enum channel_width bw, u8
 {
 	struct xmit_frame		*pmgntframe;
 	struct pkt_attrib		*pattrib;
-	struct rtw_ieee80211_hdr	*pwlanhdr;
+	struct ieee80211_hdr	*pwlanhdr;
 	struct xmit_priv		*pxmitpriv = &(Adapter->xmitpriv);
 	struct mlme_ext_priv	*pmlmeext = &Adapter->mlmeextpriv;
 	struct mlme_ext_info	*pmlmeinfo = &(pmlmeext->mlmext_info);
@@ -2285,9 +2285,9 @@ BOOLEAN	issue_ht_ndpa_packet(PADAPTER Adapter, u8 *ra, enum channel_width bw, u8
 
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 
-	fctrl = &pwlanhdr->frame_ctl;
+	fctrl =&pwlanhdr->frame_control;
 	*(fctrl) = 0;
 
 	set_order_bit(pframe);
@@ -2334,7 +2334,7 @@ BOOLEAN	issue_vht_sw_ndpa_packet(PADAPTER Adapter, u8 *ra, u16 aid, enum channel
 {
 	struct xmit_frame		*pmgntframe;
 	struct pkt_attrib		*pattrib;
-	struct rtw_ieee80211_hdr	*pwlanhdr;
+	struct ieee80211_hdr	*pwlanhdr;
 	struct xmit_priv		*pxmitpriv = &(Adapter->xmitpriv);
 	struct mlme_ext_priv	*pmlmeext = &Adapter->mlmeextpriv;
 	struct mlme_ext_info	*pmlmeinfo = &(pmlmeext->mlmext_info);
@@ -2372,9 +2372,9 @@ BOOLEAN	issue_vht_sw_ndpa_packet(PADAPTER Adapter, u8 *ra, u16 aid, enum channel
 
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 
-	fctrl = &pwlanhdr->frame_ctl;
+	fctrl =&pwlanhdr->frame_control;
 	*(fctrl) = 0;
 
 	set_frame_sub_type(pframe, WIFI_NDPA);
@@ -2428,7 +2428,7 @@ BOOLEAN	issue_vht_ndpa_packet(PADAPTER Adapter, u8 *ra, u16 aid, enum channel_wi
 {
 	struct xmit_frame		*pmgntframe;
 	struct pkt_attrib		*pattrib;
-	struct rtw_ieee80211_hdr	*pwlanhdr;
+	struct ieee80211_hdr	*pwlanhdr;
 	struct xmit_priv		*pxmitpriv = &(Adapter->xmitpriv);
 	struct mlme_ext_priv	*pmlmeext = &Adapter->mlmeextpriv;
 	struct mlme_ext_info	*pmlmeinfo = &(pmlmeext->mlmext_info);
@@ -2458,9 +2458,9 @@ BOOLEAN	issue_vht_ndpa_packet(PADAPTER Adapter, u8 *ra, u16 aid, enum channel_wi
 
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 
-	fctrl = &pwlanhdr->frame_ctl;
+	fctrl =&pwlanhdr->frame_control;
 	*(fctrl) = 0;
 
 	set_frame_sub_type(pframe, WIFI_NDPA);

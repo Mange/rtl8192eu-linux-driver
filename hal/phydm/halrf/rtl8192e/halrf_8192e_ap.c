@@ -1754,10 +1754,6 @@ void phy_set_rf_path_switch_8192e(
 	HAL_DATA_TYPE	*hal_data = GET_HAL_DATA(adapter);
 #endif
 
-#ifdef DISABLE_BB_RF
-	return;
-#endif
-
 #if !(DM_ODM_SUPPORT_TYPE & ODM_AP)
 	if (IS_92C_SERIAL(hal_data->version_id))
 		_phy_set_rf_path_switch_8192e(adapter, is_main, true);

@@ -310,7 +310,7 @@ void SecCalculateMicSMS4(
 
 	memcpy((TempBuf + 16), (pHeader + 16), 6); /* Addr3 */
 
-	fc = le16_to_cpu(header->frame_ctl);
+	fc = le16_to_cpu(header->frame_control);
 
 
 
@@ -473,7 +473,7 @@ u8 WapiCheckPnInSwDecrypt(
 	header = (struct ieee80211_hdr_3addr_qos *)pskb->data;
 	pTaddr = header->addr2;
 	pRaddr = header->addr1;
-	fc = le16_to_cpu(header->frame_ctl);
+	fc = le16_to_cpu(header->frame_control);
 
 	if (GetToDs(&fc))
 		pDaddr = header->addr3;

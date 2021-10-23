@@ -21,7 +21,6 @@
 
 
 u8 RTW_WPA_OUI_TYPE[] = { 0x00, 0x50, 0xf2, 1 };
-u16 RTW_WPA_VERSION = 1;
 u8 WPA_AUTH_KEY_MGMT_NONE[] = { 0x00, 0x50, 0xf2, 0 };
 u8 WPA_AUTH_KEY_MGMT_UNSPEC_802_1X[] = { 0x00, 0x50, 0xf2, 1 };
 u8 WPA_AUTH_KEY_MGMT_PSK_OVER_802_1X[] = { 0x00, 0x50, 0xf2, 2 };
@@ -282,8 +281,8 @@ inline u8 *rtw_set_ie_mesh_ch_switch_parm(u8 *buf, u32 *buf_len, u8 ttl,
 
 	ie_data[0] = ttl;
 	ie_data[1] = flags;
-	RTW_PUT_LE16((u8 *)&ie_data[2], reason);
-	RTW_PUT_LE16((u8 *)&ie_data[4], precedence);
+	*(u16 *)(ie_data+2) = cpu_to_le16(reason);
+	*(u16 *)(ie_data+4) = cpu_to_le16(precedence);
 
 	return rtw_set_ie(buf, 0x118,  6, ie_data, buf_len);
 }
@@ -483,18 +482,13 @@ void rtw_set_supported_rate(u8 *SupportedRates, uint mode)
 	}
 }
 
-uint	rtw_get_rateset_len(u8	*rateset)
+uint rtw_get_rateset_len(u8	*rateset)
 {
-	uint i = 0;
-	while (1) {
-		if ((rateset[i]) == 0)
-			break;
+	uint i;
 
-		if (i > 12)
+	for (i = 0; i < 13; i++)
+		if (rateset[i] == 0)
 			break;
-
-		i++;
-	}
 	return i;
 }
 
@@ -592,7 +586,7 @@ unsigned char *rtw_get_wpa_ie(unsigned char *pie, int *wpa_ie_len, int limit)
 	int limit_new = limit;
 
 	while (1) {
-		pbuf = rtw_get_ie(pbuf, _WPA_IE_ID_, &len, limit_new);
+		pbuf = rtw_get_ie(pbuf, WLAN_EID_VENDOR_SPECIFIC, &len, limit_new);
 
 		if (pbuf) {
 
@@ -638,7 +632,7 @@ check_next_ie:
 unsigned char *rtw_get_wpa2_ie(unsigned char *pie, int *rsn_ie_len, int limit)
 {
 
-	return rtw_get_ie(pie, _WPA2_IE_ID_, rsn_ie_len, limit);
+	return rtw_get_ie(pie, WLAN_EID_RSN, rsn_ie_len, limit);
 
 }
 
@@ -724,7 +718,7 @@ int rtw_parse_wpa_ie(u8 *wpa_ie, int wpa_ie_len, int *group_cipher,
 	}
 
 
-	if ((*wpa_ie != _WPA_IE_ID_) || (*(wpa_ie + 1) != (u8)(wpa_ie_len - 2)) ||
+	if ((*wpa_ie != WLAN_EID_VENDOR_SPECIFIC) || (*(wpa_ie + 1) != (u8)(wpa_ie_len - 2)) ||
 	    (_rtw_memcmp(wpa_ie + 2, RTW_WPA_OUI_TYPE, WPA_SELECTOR_LEN) != _TRUE))
 		return _FAIL;
 
@@ -982,7 +976,7 @@ int rtw_get_sec_ie(u8 *in_ie, uint in_len, u8 *rsn_ie, u16 *rsn_len, u8 *wpa_ie,
 	while (cnt < in_len) {
 		authmode = in_ie[cnt];
 
-		if ((authmode == _WPA_IE_ID_) && (_rtw_memcmp(&in_ie[cnt + 2], &wpa_oui[0], 4) == _TRUE)) {
+		if ((authmode == WLAN_EID_VENDOR_SPECIFIC) && (_rtw_memcmp(&in_ie[cnt + 2], &wpa_oui[0], 4) == _TRUE)) {
 
 			if (wpa_ie)
 				memcpy(wpa_ie, &in_ie[cnt], in_ie[cnt + 1] + 2);
@@ -990,7 +984,7 @@ int rtw_get_sec_ie(u8 *in_ie, uint in_len, u8 *rsn_ie, u16 *rsn_len, u8 *wpa_ie,
 			*wpa_len = in_ie[cnt + 1] + 2;
 			cnt += in_ie[cnt + 1] + 2; /* get next */
 		} else {
-			if (authmode == _WPA2_IE_ID_) {
+			if (authmode == WLAN_EID_RSN) {
 
 				if (rsn_ie)
 					memcpy(rsn_ie, &in_ie[cnt], in_ie[cnt + 1] + 2);
@@ -1019,7 +1013,7 @@ u8 rtw_is_wps_ie(u8 *ie_ptr, uint *wps_ielen)
 
 	eid = ie_ptr[0];
 
-	if ((eid == _WPA_IE_ID_) && (_rtw_memcmp(&ie_ptr[2], wps_oui, 4) == _TRUE)) {
+	if ((eid == WLAN_EID_VENDOR_SPECIFIC) && (_rtw_memcmp(&ie_ptr[2], wps_oui, 4) == _TRUE)) {
 		/* RTW_INFO("==> found WPS_IE.....\n"); */
 		*wps_ielen = ie_ptr[1] + 2;
 		match = _TRUE;
@@ -1214,13 +1208,13 @@ static int rtw_ieee802_11_parse_vendor_specific(u8 *pos, uint elen,
 		/* Microsoft/Wi-Fi information elements are further typed and
 		 * subtyped */
 		switch (pos[3]) {
-		case 1:
+		case WLAN_OUI_TYPE_MICROSOFT_WPA:
 			/* Microsoft OUI (00:50:F2) with OUI Type 1:
 			 * real WPA information element */
 			elems->wpa_ie = pos;
 			elems->wpa_ie_len = elen;
 			break;
-		case WME_OUI_TYPE: /* this is a Wi-Fi WME info. element */
+		case WLAN_OUI_TYPE_MICROSOFT_WMM: /* this is a Wi-Fi WME info. element */
 			if (elen < 5) {
 				RTW_DBG("short WME "
 					"information element ignored "
@@ -1246,7 +1240,7 @@ static int rtw_ieee802_11_parse_vendor_specific(u8 *pos, uint elen,
 				return -1;
 			}
 			break;
-		case 4:
+		case WLAN_OUI_TYPE_MICROSOFT_WPS:
 			/* Wi-Fi Protected Setup (WPS) IE */
 			elems->wps_ie = pos;
 			elems->wps_ie_len = elen;
@@ -1295,7 +1289,7 @@ static int rtw_ieee802_11_parse_vendor_specific(u8 *pos, uint elen,
  * @show_errors: Whether to show parsing errors in debug log
  * Returns: Parsing result
  */
-ParseRes rtw_ieee802_11_parse_elems(u8 *start, uint len,
+enum ParseRes rtw_ieee802_11_parse_elems(u8 *start, uint len,
 				    struct rtw_ieee802_11_elems *elems,
 				    int show_errors)
 {
@@ -1776,13 +1770,13 @@ void rtw_ies_get_chbw(u8 *ies, int ies_len, u8 *ch, u8 *bw, u8 *offset, u8 ht, u
 		u8 *ht_cap_ie, *ht_op_ie;
 		int ht_cap_ielen, ht_op_ielen;
 
-		ht_cap_ie = rtw_get_ie(ies, EID_HTCapability, &ht_cap_ielen, ies_len);
+		ht_cap_ie = rtw_get_ie(ies, WLAN_EID_HT_CAPABILITY, &ht_cap_ielen, ies_len);
 		if (ht_cap_ie && ht_cap_ielen) {
 			if (GET_HT_CAP_ELE_CHL_WIDTH(ht_cap_ie + 2))
 				*bw = CHANNEL_WIDTH_40;
 		}
 
-		ht_op_ie = rtw_get_ie(ies, EID_HTInfo, &ht_op_ielen, ies_len);
+		ht_op_ie = rtw_get_ie(ies, WLAN_EID_HT_OPERATION, &ht_op_ielen, ies_len);
 		if (ht_op_ie && ht_op_ielen) {
 			if (*ch == 0)
 				*ch = GET_HT_OP_ELE_PRI_CHL(ht_op_ie + 2);
@@ -1811,7 +1805,7 @@ void rtw_ies_get_chbw(u8 *ies, int ies_len, u8 *ch, u8 *bw, u8 *offset, u8 ht, u
 			u8 *vht_op_ie;
 			int vht_op_ielen;
 
-			vht_op_ie = rtw_get_ie(ies, EID_VHTOperation, &vht_op_ielen, ies_len);
+			vht_op_ie = rtw_get_ie(ies, WLAN_EID_VHT_OPERATION, &vht_op_ielen, ies_len);
 			if (vht_op_ie && vht_op_ielen) {
 				if (GET_VHT_OPERATION_ELE_CHL_WIDTH(vht_op_ie + 2) >= 1)
 					*bw = CHANNEL_WIDTH_80;
@@ -2169,8 +2163,7 @@ u32 rtw_set_p2p_attr_content(u8 *pbuf, u8 attr_id, u16 attr_len, u8 *pdata_attr)
 
 	*pbuf = attr_id;
 
-	/* *(u16*)(pbuf + 1) = cpu_to_le16(attr_len); */
-	RTW_PUT_LE16(pbuf + 1, attr_len);
+	*(u16 *)(pbuf + 1) = cpu_to_le16(attr_len);
 
 	if (pdata_attr)
 		memcpy(pbuf + 3, pdata_attr, attr_len);
@@ -2664,50 +2657,6 @@ void rtw_bss_ex_del_wfd_attr(WLAN_BSSID_EX *bss_ex, u8 attr_id)
 	}
 }
 
-/* Baron adds to avoid FreeBSD warning */
-int ieee80211_is_empty_essid(const char *essid, int essid_len)
-{
-	/* Single white space is for Linksys APs */
-	if (essid_len == 1 && essid[0] == ' ')
-		return 1;
-
-	/* Otherwise, if the entire essid is 0, we assume it is hidden */
-	while (essid_len) {
-		essid_len--;
-		if (essid[essid_len] != '\0')
-			return 0;
-	}
-
-	return 1;
-}
-
-int ieee80211_get_hdrlen(u16 fc)
-{
-	int hdrlen = 24;
-
-	switch (WLAN_FC_GET_TYPE(fc)) {
-	case RTW_IEEE80211_FTYPE_DATA:
-		if (fc & RTW_IEEE80211_STYPE_QOS_DATA)
-			hdrlen += 2;
-		if ((fc & RTW_IEEE80211_FCTL_FROMDS) && (fc & RTW_IEEE80211_FCTL_TODS))
-			hdrlen += 6; /* Addr4 */
-		break;
-	case RTW_IEEE80211_FTYPE_CTL:
-		switch (WLAN_FC_GET_STYPE(fc)) {
-		case RTW_IEEE80211_STYPE_CTS:
-		case RTW_IEEE80211_STYPE_ACK:
-			hdrlen = 10;
-			break;
-		default:
-			hdrlen = 16;
-			break;
-		}
-		break;
-	}
-
-	return hdrlen;
-}
-
 u8	rtw_ht_mcsset_to_nss(u8 *supp_mcs_set)
 {
 	u8 nss = 1;
@@ -2820,22 +2769,22 @@ u16 rtw_mcs_rate(u8 rf_type, u8 bw_40MHz, u8 short_GI, unsigned char *MCS_rate)
 
 int rtw_action_frame_parse(const u8 *frame, u32 frame_len, u8 *category, u8 *action)
 {
-	const u8 *frame_body = frame + sizeof(struct rtw_ieee80211_hdr_3addr);
+	const u8 *frame_body = frame + sizeof(struct ieee80211_hdr_3addr);
 	u16 fc;
 	u8 c;
 	u8 a = ACT_PUBLIC_MAX;
 
-	fc = le16_to_cpu(((struct rtw_ieee80211_hdr_3addr *)frame)->frame_ctl);
+	fc = le16_to_cpu(((struct ieee80211_hdr_3addr *)frame)->frame_control);
 
-	if ((fc & (RTW_IEEE80211_FCTL_FTYPE | RTW_IEEE80211_FCTL_STYPE))
-	    != (RTW_IEEE80211_FTYPE_MGMT | RTW_IEEE80211_STYPE_ACTION)
+	if ((fc & ( IEEE80211_FCTL_FTYPE | IEEE80211_FCTL_STYPE))
+	    != (IEEE80211_FTYPE_MGMT | IEEE80211_STYPE_ACTION)
 	   )
 		return _FALSE;
 
 	c = frame_body[0];
 
 	switch (c) {
-	case RTW_WLAN_CATEGORY_P2P: /* vendor-specific */
+	case WLAN_CATEGORY_VENDOR_SPECIFIC: /* vendor-specific */
 		break;
 	default:
 		a = frame_body[1];
@@ -2847,31 +2796,5 @@ int rtw_action_frame_parse(const u8 *frame, u32 frame_len, u8 *category, u8 *act
 		*action = a;
 
 	return _TRUE;
-}
-
-static const char *_action_public_str[] = {
-	"ACT_PUB_BSSCOEXIST",
-	"ACT_PUB_DSE_ENABLE",
-	"ACT_PUB_DSE_DEENABLE",
-	"ACT_PUB_DSE_REG_LOCATION",
-	"ACT_PUB_EXT_CHL_SWITCH",
-	"ACT_PUB_DSE_MSR_REQ",
-	"ACT_PUB_DSE_MSR_RPRT",
-	"ACT_PUB_MP",
-	"ACT_PUB_DSE_PWR_CONSTRAINT",
-	"ACT_PUB_VENDOR",
-	"ACT_PUB_GAS_INITIAL_REQ",
-	"ACT_PUB_GAS_INITIAL_RSP",
-	"ACT_PUB_GAS_COMEBACK_REQ",
-	"ACT_PUB_GAS_COMEBACK_RSP",
-	"ACT_PUB_TDLS_DISCOVERY_RSP",
-	"ACT_PUB_LOCATION_TRACK",
-	"ACT_PUB_RSVD",
-};
-
-const char *action_public_str(u8 action)
-{
-	action = (action >= ACT_PUBLIC_MAX) ? ACT_PUBLIC_MAX : action;
-	return _action_public_str[action];
 }
 

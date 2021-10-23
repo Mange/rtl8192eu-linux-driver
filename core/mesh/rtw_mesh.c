@@ -85,19 +85,19 @@ inline u8 *rtw_set_ie_mpm(u8 *buf, u32 *buf_len
 	u8 data[24] = {0};
 	u8 *pos = data;
 
-	RTW_PUT_LE16(pos, proto_id);
+	*(u16 *) (pos) = cpu_to_le16(proto_id);
 	pos += 2;
 
-	RTW_PUT_LE16(pos, llid);
+	*(u16 *) (pos) = cpu_to_le16(llid);
 	pos += 2;
 
 	if (plid) {
-		RTW_PUT_LE16(pos, *plid);
+		*(u16 *) (pos) = cpu_to_le16(*plid));
 		pos += 2;
 	}
 
 	if (reason) {
-		RTW_PUT_LE16(pos, *reason);
+		*(u16 *) (pos) = cpu_to_le16(*reason));
 		pos += 2;
 	}
 
@@ -1312,7 +1312,7 @@ static int rtw_mpm_tx_ies_sync_bss(_adapter *adapter, struct mesh_plink_ent *pli
 #endif
 
 	/* count for new frame length  */
-	new_len = sizeof(struct rtw_ieee80211_hdr_3addr) + tlv_ies_offset;
+	new_len = sizeof(struct ieee80211_hdr_3addr) + tlv_ies_offset;
 	left = BSS_EX_TLV_IES_LEN(network);
 	pos = BSS_EX_TLV_IES(network);
 	while (left >= 2) {
@@ -1349,10 +1349,10 @@ static int rtw_mpm_tx_ies_sync_bss(_adapter *adapter, struct mesh_plink_ent *pli
 	}
 
 	/* build new frame  */
-	memcpy(new_buf, fhead, sizeof(struct rtw_ieee80211_hdr_3addr) + tlv_ies_offset);
+	memcpy(new_buf, fhead, sizeof(struct ieee80211_hdr_3addr) + tlv_ies_offset);
 	new_fhead = new_buf;
 	new_flen = new_len;
-	new_fbody = new_fhead + sizeof(struct rtw_ieee80211_hdr_3addr);
+	new_fbody = new_fhead + sizeof(struct ieee80211_hdr_3addr);
 
 	fpos = new_fbody + tlv_ies_offset;
 	left = BSS_EX_TLV_IES_LEN(network);
@@ -1483,7 +1483,7 @@ static int rtw_mpm_check_frames(_adapter *adapter, u8 action, const u8 **buf, si
 	u8 *fhead = (u8 *)*buf;
 	size_t flen = *len;
 	u8 *peer_addr = tx ? GetAddr1Ptr(fhead) : get_addr2_ptr(fhead);
-	u8 *frame_body = fhead + sizeof(struct rtw_ieee80211_hdr_3addr);
+	u8 *frame_body = fhead + sizeof(struct ieee80211_hdr_3addr);
 	struct mpm_frame_info mpm_info;
 	u8 tlv_ies_offset;
 	u8 *mpm_ie = NULL;
@@ -1493,11 +1493,11 @@ static int rtw_mpm_check_frames(_adapter *adapter, u8 action, const u8 **buf, si
 	int ret = 0;
 	u8 mpm_log_buf[MPM_LOG_BUF_LEN] = {0};
 
-	if (action == RTW_ACT_SELF_PROTECTED_MESH_OPEN)
+	if (action == WLAN_SP_MESH_PEERING_OPEN)
 		tlv_ies_offset = 4;
-	else if (action == RTW_ACT_SELF_PROTECTED_MESH_CONF)
+	else if (action == WLAN_SP_MESH_PEERING_CONFIRM)
 		tlv_ies_offset = 6;
-	else if (action == RTW_ACT_SELF_PROTECTED_MESH_CLOSE)
+	else if (action == WLAN_SP_MESH_PEERING_CLOSE)
 		tlv_ies_offset = 2;
 	else {
 		rtw_warn_on(1);
@@ -1505,23 +1505,20 @@ static int rtw_mpm_check_frames(_adapter *adapter, u8 action, const u8 **buf, si
 	}
 
 	plink = rtw_mesh_plink_get(adapter, peer_addr);
-	if (!plink && (tx == _TRUE || action == RTW_ACT_SELF_PROTECTED_MESH_CONF)) {
-		/* warning message if no plink when: 1.TX all MPM or 2.RX CONF */
-		RTW_WARN("RTW_%s:%s without plink of "MAC_FMT"\n"
-			, (tx == _TRUE) ? "Tx" : "Rx", action_self_protected_str(action), MAC_ARG(peer_addr));
+	if (!plink && (tx == _TRUE || action == WLAN_SP_MESH_PEERING_CONFIRM)) {
 		goto exit;
 	}
 
 	memset(&mpm_info, 0, sizeof(struct mpm_frame_info));
 
-	if (action == RTW_ACT_SELF_PROTECTED_MESH_CONF) {
+	if (action == WLAN_SP_MESH_PEERING_CONFIRM) {
 		mpm_info.aid = (u8 *)frame_body + 4;
 		mpm_info.aid_v = RTW_GET_LE16(mpm_info.aid);
 	}
 
-	mpm_ie = rtw_get_ie(fhead + sizeof(struct rtw_ieee80211_hdr_3addr) + tlv_ies_offset
+	mpm_ie = rtw_get_ie(fhead + sizeof(struct ieee80211_hdr_3addr) + tlv_ies_offset
 		, WLAN_EID_MPM, &mpm_ielen
-		, flen - sizeof(struct rtw_ieee80211_hdr_3addr) - tlv_ies_offset);
+		, flen - sizeof(struct ieee80211_hdr_3addr) - tlv_ies_offset);
 	if (!mpm_ie || mpm_ielen < 2 + 2)
 		goto exit;
 
@@ -1531,7 +1528,7 @@ static int rtw_mpm_check_frames(_adapter *adapter, u8 action, const u8 **buf, si
 	mpm_info.llid_v = RTW_GET_LE16(mpm_info.llid);
 
 	switch (action) {
-	case RTW_ACT_SELF_PROTECTED_MESH_OPEN:
+	case WLAN_SP_MESH_PEERING_OPEN:
 		/* pid:2, llid:2, (chosen_pmk:16) */
 		if (mpm_info.pid_v == 0 && mpm_ielen == 4)
 			;
@@ -1540,7 +1537,7 @@ static int rtw_mpm_check_frames(_adapter *adapter, u8 action, const u8 **buf, si
 		else
 			goto exit;
 		break;
-	case RTW_ACT_SELF_PROTECTED_MESH_CONF:
+	case WLAN_SP_MESH_PEERING_CONFIRM:
 		/* pid:2, llid:2, plid:2, (chosen_pmk:16) */
 		mpm_info.plid = mpm_info.llid + 2;
 		mpm_info.plid_v = RTW_GET_LE16(mpm_info.plid);
@@ -1551,7 +1548,7 @@ static int rtw_mpm_check_frames(_adapter *adapter, u8 action, const u8 **buf, si
 		else
 			goto exit;
 		break;
-	case RTW_ACT_SELF_PROTECTED_MESH_CLOSE:
+	case WLAN_SP_MESH_PEERING_CLOSE:
 		/* pid:2, llid:2, (plid:2), reason:2, (chosen_pmk:16) */
 		if (mpm_info.pid_v == 0 && mpm_ielen == 6) {
 			/* MPM, without plid */
@@ -1581,15 +1578,15 @@ static int rtw_mpm_check_frames(_adapter *adapter, u8 action, const u8 **buf, si
 	};
 
 	if (mpm_info.pid_v == 1) {
-		mic_ie = rtw_get_ie(fhead + sizeof(struct rtw_ieee80211_hdr_3addr) + tlv_ies_offset
+		mic_ie = rtw_get_ie(fhead + sizeof(struct ieee80211_hdr_3addr) + tlv_ies_offset
 			, WLAN_EID_MIC, &mic_ielen
-			, flen - sizeof(struct rtw_ieee80211_hdr_3addr) - tlv_ies_offset);
+			, flen - sizeof(struct ieee80211_hdr_3addr) - tlv_ies_offset);
 		if (!mic_ie || mic_ielen != AES_BLOCK_SIZE)
 			goto exit;
 	}
 
 #if CONFIG_RTW_MPM_TX_IES_SYNC_BSS
-	if ((action == RTW_ACT_SELF_PROTECTED_MESH_OPEN || action == RTW_ACT_SELF_PROTECTED_MESH_CONF)
+	if ((action == WLAN_SP_MESH_PEERING_OPEN || action == WLAN_SP_MESH_PEERING_CONFIRM)
 		&& tx == _TRUE
 	) {
 #define DBG_RTW_MPM_TX_IES_SYNC_BSS 0
@@ -1602,8 +1599,8 @@ static int rtw_mpm_check_frames(_adapter *adapter, u8 action, const u8 **buf, si
 		if (DBG_RTW_MPM_TX_IES_SYNC_BSS) {
 			RTW_INFO(FUNC_ADPT_FMT" before:\n", FUNC_ADPT_ARG(adapter));
 			dump_ies(RTW_DBGDUMP
-				, fhead + sizeof(struct rtw_ieee80211_hdr_3addr) + tlv_ies_offset
-				, flen - sizeof(struct rtw_ieee80211_hdr_3addr) - tlv_ies_offset);
+				, fhead + sizeof(struct ieee80211_hdr_3addr) + tlv_ies_offset
+				, flen - sizeof(struct ieee80211_hdr_3addr) - tlv_ies_offset);
 		}
 
 		rtw_mpm_tx_ies_sync_bss(adapter, plink
@@ -1615,18 +1612,18 @@ static int rtw_mpm_check_frames(_adapter *adapter, u8 action, const u8 **buf, si
 		/* update pointer & len for new frame */
 		fhead = nbuf;
 		flen = nlen;
-		frame_body = fhead + sizeof(struct rtw_ieee80211_hdr_3addr);
+		frame_body = fhead + sizeof(struct ieee80211_hdr_3addr);
 		if (mpm_info.pid_v == 1) {
-			mic_ie = rtw_get_ie(fhead + sizeof(struct rtw_ieee80211_hdr_3addr) + tlv_ies_offset
+			mic_ie = rtw_get_ie(fhead + sizeof(struct ieee80211_hdr_3addr) + tlv_ies_offset
 				, WLAN_EID_MIC, &mic_ielen
-				, flen - sizeof(struct rtw_ieee80211_hdr_3addr) - tlv_ies_offset);
+				, flen - sizeof(struct ieee80211_hdr_3addr) - tlv_ies_offset);
 		}
 
 		if (DBG_RTW_MPM_TX_IES_SYNC_BSS) {
 			RTW_INFO(FUNC_ADPT_FMT" after:\n", FUNC_ADPT_ARG(adapter));
 			dump_ies(RTW_DBGDUMP
-				, fhead + sizeof(struct rtw_ieee80211_hdr_3addr) + tlv_ies_offset
-				, flen - sizeof(struct rtw_ieee80211_hdr_3addr) - tlv_ies_offset);
+				, fhead + sizeof(struct ieee80211_hdr_3addr) + tlv_ies_offset
+				, flen - sizeof(struct ieee80211_hdr_3addr) - tlv_ies_offset);
 		}
 	}
 bypass_sync_bss:
@@ -1636,14 +1633,14 @@ bypass_sync_bss:
 		goto mpm_log;
 
 #if CONFIG_RTW_MESH_PEER_BLACKLIST
-	if (action == RTW_ACT_SELF_PROTECTED_MESH_OPEN) {
+	if (action == WLAN_SP_MESH_PEERING_OPEN) {
 		if (tx)
 			rtw_mesh_plink_set_peer_conf_timeout(adapter, peer_addr);
 
 	} else
 #endif
 #if CONFIG_RTW_MESH_ACNODE_PREVENT
-	if (action == RTW_ACT_SELF_PROTECTED_MESH_CLOSE) {
+	if (action == WLAN_SP_MESH_PEERING_CLOSE) {
 		if (tx && mpm_info.reason && mpm_info.reason_v == WLAN_REASON_MESH_MAX_PEERS) {
 			if (rtw_mesh_scanned_is_acnode_confirmed(adapter, plink->scanned)
 				&& rtw_mesh_acnode_prevent_allow_sacrifice(adapter)
@@ -1676,7 +1673,7 @@ bypass_sync_bss:
 		}
 	} else
 #endif
-	if (action == RTW_ACT_SELF_PROTECTED_MESH_CONF) {
+	if (action == WLAN_SP_MESH_PEERING_CONFIRM) {
 		_irqL irqL;
 		u8 *ies = NULL;
 		u16 ies_len = 0;
@@ -1718,13 +1715,13 @@ bypass_sync_bss:
 
 		/* copy mesh confirm IEs */
 		if (mpm_info.pid_v == 1) /* not include MIC & encrypted AMPE */
-			ies_len = (mic_ie - fhead) - sizeof(struct rtw_ieee80211_hdr_3addr) - 2;
+			ies_len = (mic_ie - fhead) - sizeof(struct ieee80211_hdr_3addr) - 2;
 		else
-			ies_len = flen - sizeof(struct rtw_ieee80211_hdr_3addr) - 2;
+			ies_len = flen - sizeof(struct ieee80211_hdr_3addr) - 2;
 
 		ies = rtw_zmalloc(ies_len);
 		if (ies) {
-			memcpy(ies, fhead + sizeof(struct rtw_ieee80211_hdr_3addr) + 2, ies_len);
+			memcpy(ies, fhead + sizeof(struct ieee80211_hdr_3addr) + 2, ies_len);
 			if (tx == _FALSE) {
 				plink->rx_conf_ies = ies;
 				plink->rx_conf_ies_len = ies_len;
@@ -1743,11 +1740,6 @@ release_plink_ctl:
 
 mpm_log:
 	rtw_mpm_info_msg(&mpm_info, mpm_log_buf);
-	RTW_INFO("RTW_%s:%s %s\n"
-		, (tx == _TRUE) ? "Tx" : "Rx"
-		, action_self_protected_str(action)
-		, mpm_log_buf
-	);
 
 	ret = 1;
 
@@ -1769,21 +1761,20 @@ static int rtw_mesh_check_frames(_adapter *adapter, const u8 **buf, size_t *len,
 	const u8 *frame_body;
 	u8 category, action;
 
-	frame_body = *buf + sizeof(struct rtw_ieee80211_hdr_3addr);
+	frame_body = *buf + sizeof(struct ieee80211_hdr_3addr);
 	category = frame_body[0];
 
-	if (category == RTW_WLAN_CATEGORY_SELF_PROTECTED) {
+	if (category == WLAN_CATEGORY_SELF_PROTECTED) {
 		action = frame_body[1];
 		switch (action) {
-		case RTW_ACT_SELF_PROTECTED_MESH_OPEN:
-		case RTW_ACT_SELF_PROTECTED_MESH_CONF:
-		case RTW_ACT_SELF_PROTECTED_MESH_CLOSE:
+		case WLAN_SP_MESH_PEERING_OPEN:
+		case WLAN_SP_MESH_PEERING_CONFIRM:
+		case WLAN_SP_MESH_PEERING_CLOSE:
 			rtw_mpm_check_frames(adapter, action, buf, len, tx);
 			is_mesh_frame = action;
 			break;
 		case RTW_ACT_SELF_PROTECTED_MESH_GK_INFORM:
-		case RTW_ACT_SELF_PROTECTED_MESH_GK_ACK:
-			RTW_INFO("RTW_%s:%s\n", (tx == _TRUE) ? "Tx" : "Rx", action_self_protected_str(action));
+		case WLAN_SP_MGK_ACK:
 			is_mesh_frame = action;
 			break;
 		default:
@@ -1836,7 +1827,7 @@ unsigned int on_action_self_protected(_adapter *adapter, union recv_frame *rfram
 	struct sta_info *sta = NULL;
 	u8 *pframe = rframe->u.hdr.rx_data;
 	uint frame_len = rframe->u.hdr.len;
-	u8 *frame_body = (u8 *)(pframe + sizeof(struct rtw_ieee80211_hdr_3addr));
+	u8 *frame_body = (u8 *)(pframe + sizeof(struct ieee80211_hdr_3addr));
 	u8 category;
 	u8 action;
 
@@ -1845,16 +1836,16 @@ unsigned int on_action_self_protected(_adapter *adapter, union recv_frame *rfram
 		goto exit;
 
 	category = frame_body[0];
-	if (category != RTW_WLAN_CATEGORY_SELF_PROTECTED)
+	if (category != WLAN_CATEGORY_SELF_PROTECTED)
 		goto exit;
 
 	action = frame_body[1];
 	switch (action) {
-	case RTW_ACT_SELF_PROTECTED_MESH_OPEN:
-	case RTW_ACT_SELF_PROTECTED_MESH_CONF:
-	case RTW_ACT_SELF_PROTECTED_MESH_CLOSE:
+	case WLAN_SP_MESH_PEERING_OPEN:
+	case WLAN_SP_MESH_PEERING_CONFIRM:
+	case WLAN_SP_MESH_PEERING_CLOSE:
 	case RTW_ACT_SELF_PROTECTED_MESH_GK_INFORM:
-	case RTW_ACT_SELF_PROTECTED_MESH_GK_ACK:
+	case WLAN_SP_MGK_ACK:
 		if (!(MLME_IS_MESH(adapter) && MLME_IS_ASOC(adapter)))
 			goto exit;
 #ifdef CONFIG_IOCTL_CFG80211
@@ -1894,7 +1885,7 @@ unsigned int on_action_mesh(_adapter *adapter, union recv_frame *rframe)
 	struct sta_priv *stapriv = &adapter->stapriv;
 	u8 *pframe = rframe->u.hdr.rx_data;
 	uint frame_len = rframe->u.hdr.len;
-	u8 *frame_body = (u8 *)(pframe + sizeof(struct rtw_ieee80211_hdr_3addr));
+	u8 *frame_body = (u8 *)(pframe + sizeof(struct ieee80211_hdr_3addr));
 	u8 category;
 	u8 action;
 
@@ -1904,12 +1895,12 @@ unsigned int on_action_mesh(_adapter *adapter, union recv_frame *rframe)
 	/* check stainfo exist? */
 
 	category = frame_body[0];
-	if (category != RTW_WLAN_CATEGORY_MESH)
+	if (category != WLAN_CATEGORY_MESH_ACTION)
 		goto exit;
 
 	action = frame_body[1];
 	switch (action) {
-	case RTW_ACT_MESH_HWMP_PATH_SELECTION:
+	case WLAN_MESH_ACTION_HWMP_PATH_SELECTION:
 		rtw_mesh_rx_path_sel_frame(adapter, rframe);
 		ret = _SUCCESS;
 		break;
@@ -2506,12 +2497,12 @@ static u8 *rtw_mesh_construct_peer_mesh_close(_adapter *adapter, struct mesh_pli
 	struct rtw_mesh_info *minfo = &adapter->mesh_info;
 	u8 *frame = NULL, *pos;
 	u32 flen;
-	struct rtw_ieee80211_hdr *whdr;
+	struct ieee80211_hdr *whdr;
 
 	if (minfo->mesh_auth_id && !MESH_PLINK_AEK_VALID(plink))
 		goto exit;
 
-	flen = sizeof(struct rtw_ieee80211_hdr_3addr)
+	flen = sizeof(struct ieee80211_hdr_3addr)
 		+ 2 /* category, action */
 		+ 2 + minfo->mesh_id_len /* mesh id */
 		+ 2 + 8 + (minfo->mesh_auth_id ? 16 : 0) /* mpm */
@@ -2523,16 +2514,16 @@ static u8 *rtw_mesh_construct_peer_mesh_close(_adapter *adapter, struct mesh_pli
 	if (!frame)
 		goto exit;
 
-	whdr = (struct rtw_ieee80211_hdr *)frame;
+	whdr = (struct ieee80211_hdr *)frame;
 	memcpy(whdr->addr1, adapter_mac_addr(adapter), ETH_ALEN);
 	memcpy(whdr->addr2, plink->addr, ETH_ALEN);
 	memcpy(whdr->addr3, adapter_mac_addr(adapter), ETH_ALEN);
 
 	set_frame_sub_type(frame, IEEE80211_STYPE_ACTION);
 
-	pos += sizeof(struct rtw_ieee80211_hdr_3addr);
-	*(pos++) = RTW_WLAN_CATEGORY_SELF_PROTECTED;
-	*(pos++) = RTW_ACT_SELF_PROTECTED_MESH_CLOSE;
+	pos += sizeof(struct ieee80211_hdr_3addr);
+	*(pos++) = WLAN_CATEGORY_SELF_PROTECTED;
+	*(pos++) = WLAN_SP_MESH_PEERING_CLOSE;
 
 	pos = rtw_set_ie_mesh_id(pos, NULL, minfo->mesh_id, minfo->mesh_id_len);
 
@@ -2558,7 +2549,7 @@ static u8 *rtw_mesh_construct_peer_mesh_close(_adapter *adapter, struct mesh_pli
 		memcpy(ampe_buf + 38, plink->l_nonce, 32);
 
 		enc_ret = rtw_mpm_ampe_enc(adapter, plink
-			, frame + sizeof(struct rtw_ieee80211_hdr_3addr)
+			, frame + sizeof(struct ieee80211_hdr_3addr)
 			, pos, ampe_buf, 1);
 		if (enc_ret != _SUCCESS) {
 			rtw_mfree(frame, flen);
@@ -3035,7 +3026,7 @@ void rtw_mesh_cfg_init(_adapter *adapter)
 	mcfg->dot11MeshHWMPpreqMinInterval = RTW_MESH_PREQ_MIN_INT;
 	mcfg->dot11MeshHWMPperrMinInterval = RTW_MESH_PERR_MIN_INT;
 	mcfg->dot11MeshHWMPnetDiameterTraversalTime = RTW_MESH_DIAM_TRAVERSAL_TIME;
-	mcfg->dot11MeshHWMPRootMode = RTW_IEEE80211_ROOTMODE_NO_ROOT;
+	mcfg->dot11MeshHWMPRootMode = IEEE80211_ROOTMODE_NO_ROOT;
 	mcfg->dot11MeshHWMPRannInterval = RTW_MESH_RANN_INTERVAL;
 	mcfg->dot11MeshGateAnnouncementProtocol = _FALSE;
 	mcfg->dot11MeshForwarding = _TRUE;
@@ -3457,7 +3448,7 @@ s8 rtw_mesh_tx_set_whdr_mctrl_len(u8 mesh_frame_mode, struct pkt_attrib *attrib)
 
 void rtw_mesh_tx_build_mctrl(_adapter *adapter, struct pkt_attrib *attrib, u8 *buf)
 {
-	struct rtw_ieee80211s_hdr *mctrl = (struct rtw_ieee80211s_hdr *)buf;
+	struct ieee80211s_hdr *mctrl = (struct ieee80211s_hdr *)buf;
 
 	memset(mctrl, 0, XATTRIB_GET_MCTRL_LEN(attrib));
 
@@ -3505,7 +3496,7 @@ void rtw_mesh_tx_build_mctrl(_adapter *adapter, struct pkt_attrib *attrib, u8 *b
 }
 
 u8 rtw_mesh_tx_build_whdr(_adapter *adapter, struct pkt_attrib *attrib
-	, u16 *fctrl, struct rtw_ieee80211_hdr *whdr)
+	, u16 *fctrl, struct ieee80211_hdr *whdr)
 {
 	switch (attrib->mesh_frame_mode) {
 	case MESH_UCAST_DATA:		/* 1, 1, RA, TA, mDA(=DA),	mSA(=SA) */
@@ -3635,7 +3626,7 @@ exit:
 }
 
 int rtw_mesh_rx_data_validate_mctrl(_adapter *adapter, union recv_frame *rframe
-	, const struct rtw_ieee80211s_hdr *mctrl, const u8 *mda, const u8 *msa
+	, const struct ieee80211s_hdr *mctrl, const u8 *mda, const u8 *msa
 	, u8 *mctrl_len
 	, const u8 **da, const u8 **sa)
 {
@@ -3689,7 +3680,7 @@ inline int rtw_mesh_rx_validate_mctrl_non_amsdu(_adapter *adapter, union recv_fr
 	int ret;
 
 	ret = rtw_mesh_rx_data_validate_mctrl(adapter, rframe
-			, (struct rtw_ieee80211s_hdr *)(get_recvframe_data(rframe) + rattrib->hdrlen + rattrib->iv_len)
+			, (struct ieee80211s_hdr *)(get_recvframe_data(rframe) + rattrib->hdrlen + rattrib->iv_len)
 			, rattrib->mda, rattrib->msa
 			, &rattrib->mesh_ctrl_len
 			, &da, &sa);
@@ -3756,7 +3747,7 @@ endlookup:
 int rtw_mesh_rx_msdu_act_check(union recv_frame *rframe
 	, const u8 *mda, const u8 *msa
 	, const u8 *da, const u8 *sa
-	, struct rtw_ieee80211s_hdr *mctrl
+	, struct ieee80211s_hdr *mctrl
 	, struct xmit_frame **fwd_frame, _list *b2u_list)
 {
 	_adapter *adapter = rframe->u.hdr.adapter;

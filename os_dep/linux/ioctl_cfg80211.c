@@ -786,9 +786,8 @@ struct cfg80211_bss *rtw_cfg80211_inform_bss(_adapter *padapter, struct wlan_net
 	u8 *pbuf;
 	size_t buf_size = MAX_BSSINFO_LEN;
 	size_t len, bssinf_len = 0;
-	struct rtw_ieee80211_hdr *pwlanhdr;
+	struct ieee80211_hdr *pwlanhdr;
 	unsigned short *fctrl;
-	u8	bc_addr[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 
 	struct wireless_dev *wdev = padapter->rtw_wdev;
 	struct wiphy *wiphy = wdev->wiphy;
@@ -802,7 +801,7 @@ struct cfg80211_bss *rtw_cfg80211_inform_bss(_adapter *padapter, struct wlan_net
 
 	/* RTW_INFO("%s\n", __func__); */
 
-	bssinf_len = pnetwork->network.IELength + sizeof(struct rtw_ieee80211_hdr_3addr);
+	bssinf_len = pnetwork->network.IELength + sizeof(struct ieee80211_hdr_3addr);
 	if (bssinf_len > buf_size) {
 		RTW_INFO("%s IE Length too long > %zu byte\n", __FUNCTION__, buf_size);
 		goto exit;
@@ -855,15 +854,15 @@ struct cfg80211_bss *rtw_cfg80211_inform_bss(_adapter *padapter, struct wlan_net
 
 	/* pbuf = buf; */
 
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pbuf;
-	fctrl = &(pwlanhdr->frame_ctl);
+	pwlanhdr = (struct ieee80211_hdr *)pbuf;
+	fctrl =&pwlanhdr->frame_control;
 	*(fctrl) = 0;
 
 	SetSeqNum(pwlanhdr, 0/*pmlmeext->mgnt_seq*/);
 	/* pmlmeext->mgnt_seq++; */
 
 	if (pnetwork->network.Reserved[0] == BSS_TYPE_BCN) { /* IEEE80211_STYPE_BEACON */
-		memcpy(pwlanhdr->addr1, bc_addr, ETH_ALEN);
+		eth_broadcast_addr(pwlanhdr->addr1);
 		set_frame_sub_type(pbuf, IEEE80211_STYPE_BEACON);
 	} else {
 		memcpy(pwlanhdr->addr1, adapter_mac_addr(padapter), ETH_ALEN);
@@ -874,8 +873,8 @@ struct cfg80211_bss *rtw_cfg80211_inform_bss(_adapter *padapter, struct wlan_net
 	memcpy(pwlanhdr->addr3, pnetwork->network.MacAddress, ETH_ALEN);
 
 
-	/* pbuf += sizeof(struct rtw_ieee80211_hdr_3addr); */
-	len = sizeof(struct rtw_ieee80211_hdr_3addr);
+	/* pbuf += sizeof(struct ieee80211_hdr_3addr); */
+	len = sizeof(struct ieee80211_hdr_3addr);
 	memcpy((pbuf + len), pnetwork->network.IEs, pnetwork->network.IELength);
 	*((u64 *)(pbuf + len)) = cpu_to_le64(notify_timestamp);
 
@@ -1125,10 +1124,10 @@ check_bss:
 
 		#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)
 		roam_info.bssid = cur_network->network.MacAddress;
-		roam_info.req_ie = pmlmepriv->assoc_req + sizeof(struct rtw_ieee80211_hdr_3addr) + 2;
-		roam_info.req_ie_len = pmlmepriv->assoc_req_len - sizeof(struct rtw_ieee80211_hdr_3addr) - 2;
-		roam_info.resp_ie = pmlmepriv->assoc_rsp + sizeof(struct rtw_ieee80211_hdr_3addr) + 6;
-		roam_info.resp_ie_len = pmlmepriv->assoc_rsp_len - sizeof(struct rtw_ieee80211_hdr_3addr) - 6;
+		roam_info.req_ie = pmlmepriv->assoc_req + sizeof(struct ieee80211_hdr_3addr) + 2;
+		roam_info.req_ie_len = pmlmepriv->assoc_req_len - sizeof(struct ieee80211_hdr_3addr) - 2;
+		roam_info.resp_ie = pmlmepriv->assoc_rsp + sizeof(struct ieee80211_hdr_3addr) + 6;
+		roam_info.resp_ie_len = pmlmepriv->assoc_rsp_len - sizeof(struct ieee80211_hdr_3addr) - 6;
 
 		cfg80211_roamed(padapter->pnetdev, &roam_info, GFP_ATOMIC);
 		#else
@@ -1137,10 +1136,10 @@ check_bss:
 			, notify_channel
 			#endif
 			, cur_network->network.MacAddress
-			, pmlmepriv->assoc_req + sizeof(struct rtw_ieee80211_hdr_3addr) + 2
-			, pmlmepriv->assoc_req_len - sizeof(struct rtw_ieee80211_hdr_3addr) - 2
-			, pmlmepriv->assoc_rsp + sizeof(struct rtw_ieee80211_hdr_3addr) + 6
-			, pmlmepriv->assoc_rsp_len - sizeof(struct rtw_ieee80211_hdr_3addr) - 6
+			, pmlmepriv->assoc_req + sizeof(struct ieee80211_hdr_3addr) + 2
+			, pmlmepriv->assoc_req_len - sizeof(struct ieee80211_hdr_3addr) - 2
+			, pmlmepriv->assoc_rsp + sizeof(struct ieee80211_hdr_3addr) + 6
+			, pmlmepriv->assoc_rsp_len - sizeof(struct ieee80211_hdr_3addr) - 6
 			, GFP_ATOMIC);
 		#endif /*LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)*/
 
@@ -1157,10 +1156,10 @@ check_bss:
 
 		if (check_fwstate(pmlmepriv, WIFI_MONITOR_STATE) != _TRUE)
 			rtw_cfg80211_connect_result(pwdev, cur_network->network.MacAddress
-				, pmlmepriv->assoc_req + sizeof(struct rtw_ieee80211_hdr_3addr) + 2
-				, pmlmepriv->assoc_req_len - sizeof(struct rtw_ieee80211_hdr_3addr) - 2
-				, pmlmepriv->assoc_rsp + sizeof(struct rtw_ieee80211_hdr_3addr) + 6
-				, pmlmepriv->assoc_rsp_len - sizeof(struct rtw_ieee80211_hdr_3addr) - 6
+				, pmlmepriv->assoc_req + sizeof(struct ieee80211_hdr_3addr) + 2
+				, pmlmepriv->assoc_req_len - sizeof(struct ieee80211_hdr_3addr) - 2
+				, pmlmepriv->assoc_rsp + sizeof(struct ieee80211_hdr_3addr) + 6
+				, pmlmepriv->assoc_rsp_len - sizeof(struct ieee80211_hdr_3addr) - 6
 				, WLAN_STATUS_SUCCESS, GFP_ATOMIC);
 		#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 11, 0) || defined(COMPAT_KERNEL_RELEASE)
 		RTW_INFO("pwdev->sme_state(a)=%d\n", pwdev->sme_state);
@@ -1724,7 +1723,7 @@ static int cfg80211_rtw_add_key(struct wiphy *wiphy, struct net_device *ndev
 	memset(param, 0, param_len);
 
 	param->cmd = IEEE_CMD_SET_ENCRYPTION;
-	memset(param->sta_addr, 0xff, ETH_ALEN);
+	eth_broadcast_addr(param->sta_addr);
 
 	switch (params->cipher) {
 	case IW_AUTH_CIPHER_NONE:
@@ -4387,7 +4386,7 @@ void rtw_cfg80211_indicate_sta_disassoc(_adapter *padapter, const u8 *da, unsign
 	int channel;
 	u8 *pmgmt_frame;
 	uint frame_len;
-	struct rtw_ieee80211_hdr *pwlanhdr;
+	struct ieee80211_hdr *pwlanhdr;
 	unsigned short *fctrl;
 	u8 mgmt_buf[128] = {0};
 	struct mlme_ext_priv	*pmlmeext = &(padapter->mlmeextpriv);
@@ -4405,9 +4404,9 @@ void rtw_cfg80211_indicate_sta_disassoc(_adapter *padapter, const u8 *da, unsign
 	freq = rtw_ch2freq(channel);
 
 	pmgmt_frame = mgmt_buf;
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pmgmt_frame;
+	pwlanhdr = (struct ieee80211_hdr *)pmgmt_frame;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl =&pwlanhdr->frame_control;
 	*(fctrl) = 0;
 
 	memcpy(pwlanhdr->addr1, adapter_mac_addr(padapter), ETH_ALEN);
@@ -4418,8 +4417,8 @@ void rtw_cfg80211_indicate_sta_disassoc(_adapter *padapter, const u8 *da, unsign
 	pmlmeext->mgnt_seq++;
 	set_frame_sub_type(pmgmt_frame, IEEE80211_STYPE_DEAUTH);
 
-	pmgmt_frame += sizeof(struct rtw_ieee80211_hdr_3addr);
-	frame_len = sizeof(struct rtw_ieee80211_hdr_3addr);
+	pmgmt_frame += sizeof(struct ieee80211_hdr_3addr);
+	frame_len = sizeof(struct ieee80211_hdr_3addr);
 
 	reason = cpu_to_le16(reason);
 	pmgmt_frame = rtw_set_fixed_ie(pmgmt_frame, _RSON_CODE_ , (unsigned char *)&reason, &frame_len);
@@ -4464,7 +4463,7 @@ static int rtw_cfg80211_monitor_if_xmit_entry(struct sk_buff *skb, struct net_de
 	u16 frame_ctl;
 	unsigned char src_mac_addr[ETH_ALEN];
 	unsigned char dst_mac_addr[ETH_ALEN];
-	struct rtw_ieee80211_hdr *dot11_hdr;
+	struct ieee80211_hdr *dot11_hdr;
 	struct ieee80211_radiotap_header *rtap_hdr;
 	_adapter *padapter = (_adapter *)rtw_netdev_priv(ndev);
 #ifdef CONFIG_DFS_MASTER
@@ -4502,16 +4501,16 @@ static int rtw_cfg80211_monitor_if_xmit_entry(struct sk_buff *skb, struct net_de
 	/* Skip the ratio tap header */
 	skb_pull(skb, rtap_len);
 
-	dot11_hdr = (struct rtw_ieee80211_hdr *)skb->data;
-	frame_ctl = le16_to_cpu(dot11_hdr->frame_ctl);
+	dot11_hdr = (struct ieee80211_hdr *)skb->data;
+	frame_ctl = le16_to_cpu(dot11_hdr->frame_control);
 	/* Check if the QoS bit is set */
-	if ((frame_ctl & RTW_IEEE80211_FCTL_FTYPE) == RTW_IEEE80211_FTYPE_DATA) {
+	if ((frame_ctl &  IEEE80211_FCTL_FTYPE) == IEEE80211_FTYPE_DATA) {
 		/* Check if this ia a Wireless Distribution System (WDS) frame
 		 * which has 4 MAC addresses
 		 */
-		if (dot11_hdr->frame_ctl & 0x0080)
+		if (dot11_hdr->frame_control & 0x0080)
 			qos_len = 2;
-		if ((dot11_hdr->frame_ctl & 0x0300) == 0x0300)
+		if ((dot11_hdr->frame_control & 0x0300) == 0x0300)
 			dot11_hdr_len += 6;
 
 		memcpy(dst_mac_addr, dot11_hdr->addr1, sizeof(dst_mac_addr));
@@ -4532,8 +4531,8 @@ static int rtw_cfg80211_monitor_if_xmit_entry(struct sk_buff *skb, struct net_de
 
 		return ret;
 
-	} else if ((frame_ctl & (RTW_IEEE80211_FCTL_FTYPE | RTW_IEEE80211_FCTL_STYPE))
-		== (RTW_IEEE80211_FTYPE_MGMT | RTW_IEEE80211_STYPE_ACTION)
+	} else if ((frame_ctl & ( IEEE80211_FCTL_FTYPE | IEEE80211_FCTL_STYPE))
+		== (IEEE80211_FTYPE_MGMT | IEEE80211_STYPE_ACTION)
 	) {
 		/* only for action frames */
 		struct xmit_frame		*pmgntframe;
@@ -4541,7 +4540,7 @@ static int rtw_cfg80211_monitor_if_xmit_entry(struct sk_buff *skb, struct net_de
 		unsigned char	*pframe;
 		/* u8 category, action, OUI_Subtype, dialogToken=0; */
 		/* unsigned char	*frame_body; */
-		struct rtw_ieee80211_hdr *pwlanhdr;
+		struct ieee80211_hdr *pwlanhdr;
 		struct xmit_priv	*pxmitpriv = &(padapter->xmitpriv);
 		struct mlme_ext_priv	*pmlmeext = &(padapter->mlmeextpriv);
 		u8 *buf = skb->data;
@@ -4551,7 +4550,7 @@ static int rtw_cfg80211_monitor_if_xmit_entry(struct sk_buff *skb, struct net_de
 
 		if (rtw_action_frame_parse(buf, len, &category, &action) == _FALSE) {
 			RTW_INFO(FUNC_NDEV_FMT" frame_control:0x%x\n", FUNC_NDEV_ARG(ndev),
-				le16_to_cpu(((struct rtw_ieee80211_hdr_3addr *)buf)->frame_ctl));
+				le16_to_cpu(((struct ieee80211_hdr_3addr *)buf)->frame_control));
 			goto fail;
 		}
 
@@ -4562,10 +4561,6 @@ static int rtw_cfg80211_monitor_if_xmit_entry(struct sk_buff *skb, struct net_de
 		if (type >= 0)
 			goto dump;
 		#endif
-		if (category == RTW_WLAN_CATEGORY_PUBLIC)
-			RTW_INFO("RTW_Tx:%s\n", action_public_str(action));
-		else
-			RTW_INFO("RTW_Tx:category(%u), action(%u)\n", category, action);
 
 dump:
 		/* starting alloc mgmt frame to dump it */
@@ -4590,7 +4585,7 @@ dump:
 			rtw_xframe_chk_wfd_ie(pmgntframe);
 #endif /* CONFIG_P2P */
 
-		pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+		pwlanhdr = (struct ieee80211_hdr *)pframe;
 		/* update seq number */
 		pmlmeext->mgnt_seq = GetSequence(pwlanhdr);
 		pattrib->seqnum = pmlmeext->mgnt_seq;
@@ -4602,7 +4597,7 @@ dump:
 		dump_mgntframe(padapter, pmgntframe);
 
 	} else
-		RTW_INFO("frame_ctl=0x%x\n", frame_ctl & (RTW_IEEE80211_FCTL_FTYPE | RTW_IEEE80211_FCTL_STYPE));
+		RTW_INFO("frame_ctl=0x%x\n", frame_ctl & ( IEEE80211_FCTL_FTYPE | IEEE80211_FCTL_STYPE));
 
 
 fail:
@@ -6204,8 +6199,8 @@ void rtw_cfg80211_rx_action(_adapter *adapter, union recv_frame *rframe, const c
 	}
 #endif
 	rtw_action_frame_parse(frame, frame_len, &category, &action);
-	if (category == RTW_WLAN_CATEGORY_PUBLIC) {
-		if (action == ACT_PUBLIC_GAS_INITIAL_REQ) {
+	if (category == WLAN_CATEGORY_PUBLIC) {
+		if (action == WLAN_PUB_ACTION_GAS_INITIAL_REQ ) {
 			rtw_mi_set_scan_deny(adapter, 200);
 			rtw_mi_scan_abort(adapter, _FALSE); /*rtw_scan_abort_no_wait*/
 		}
@@ -6270,7 +6265,7 @@ void rtw_cfg80211_rx_mframe(_adapter *adapter, union recv_frame *rframe, const c
 		if (msg)
 			RTW_INFO("RTW_Rx:%s\n", msg);
 		else
-			RTW_INFO("RTW_Rx:frame_control:0x%02x\n", le16_to_cpu(((struct rtw_ieee80211_hdr_3addr *)rframe)->frame_ctl));
+			RTW_INFO("RTW_Rx:frame_control:0x%02x\n", le16_to_cpu(((struct ieee80211_hdr_3addr *)rframe)->frame_control));
 	}
 }
 
@@ -6287,7 +6282,7 @@ void rtw_cfg80211_issue_p2p_provision_request(_adapter *padapter, const u8 *buf,
 	u16	capability = 0;
 	uint capability_len = 0;
 
-	unsigned char category = RTW_WLAN_CATEGORY_PUBLIC;
+	unsigned char category = WLAN_CATEGORY_PUBLIC;
 	u8			action = P2P_PUB_ACTION_ACTION;
 	u8			dialogToken = 1;
 	u32			p2poui = cpu_to_be32(P2POUI);
@@ -6300,14 +6295,14 @@ void rtw_cfg80211_issue_p2p_provision_request(_adapter *padapter, const u8 *buf,
 	struct xmit_frame			*pmgntframe;
 	struct pkt_attrib			*pattrib;
 	unsigned char					*pframe;
-	struct rtw_ieee80211_hdr	*pwlanhdr;
+	struct ieee80211_hdr	*pwlanhdr;
 	unsigned short				*fctrl;
 	struct xmit_priv			*pxmitpriv = &(padapter->xmitpriv);
 	struct mlme_ext_priv	*pmlmeext = &(padapter->mlmeextpriv);
 
 	struct wifidirect_info *pwdinfo = &(padapter->wdinfo);
-	u8 *frame_body = (unsigned char *)(buf + sizeof(struct rtw_ieee80211_hdr_3addr));
-	size_t frame_body_len = len - sizeof(struct rtw_ieee80211_hdr_3addr);
+	u8 *frame_body = (unsigned char *)(buf + sizeof(struct ieee80211_hdr_3addr));
+	size_t frame_body_len = len - sizeof(struct ieee80211_hdr_3addr);
 
 
 	RTW_INFO("[%s] In\n", __FUNCTION__);
@@ -6369,9 +6364,9 @@ void rtw_cfg80211_issue_p2p_provision_request(_adapter *padapter, const u8 *buf,
 	memset(pmgntframe->buf_addr, 0, WLANHDR_OFFSET + TXDESC_OFFSET);
 
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl =&pwlanhdr->frame_control;
 	*(fctrl) = 0;
 
 	memcpy(pwlanhdr->addr1, pwdinfo->tx_prov_disc_info.peerDevAddr, ETH_ALEN);
@@ -6382,8 +6377,8 @@ void rtw_cfg80211_issue_p2p_provision_request(_adapter *padapter, const u8 *buf,
 	pmlmeext->mgnt_seq++;
 	set_frame_sub_type(pframe, IEEE80211_STYPE_ACTION);
 
-	pframe += sizeof(struct rtw_ieee80211_hdr_3addr);
-	pattrib->pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
+	pframe += sizeof(struct ieee80211_hdr_3addr);
+	pattrib->pktlen = sizeof(struct ieee80211_hdr_3addr);
 
 	pframe = rtw_set_fixed_ie(pframe, 1, &(category), &(pattrib->pktlen));
 	pframe = rtw_set_fixed_ie(pframe, 1, &(action), &(pattrib->pktlen));
@@ -6411,8 +6406,7 @@ void rtw_cfg80211_issue_p2p_provision_request(_adapter *padapter, const u8 *buf,
 	p2p_ie[p2pielen++] = P2P_ATTR_CAPABILITY;
 
 	/*	Length: */
-	/* *(u16*) ( p2pie + p2pielen ) = cpu_to_le16( 0x0002 ); */
-	RTW_PUT_LE16(p2p_ie + p2pielen, 0x0002);
+	*(u16*) ( p2p_ie + p2pielen ) = cpu_to_le16( 0x0002 );
 	p2pielen += 2;
 
 	/*	Value: */
@@ -6429,8 +6423,7 @@ void rtw_cfg80211_issue_p2p_provision_request(_adapter *padapter, const u8 *buf,
 	/*	Length: */
 	/*	21->P2P Device Address (6bytes) + Config Methods (2bytes) + Primary Device Type (8bytes)  */
 	/*	+ NumofSecondDevType (1byte) + WPS Device Name ID field (2bytes) + WPS Device Name Len field (2bytes) */
-	/* *(u16*) ( p2pie + p2pielen ) = cpu_to_le16( 21 + pwdinfo->device_name_len ); */
-	RTW_PUT_LE16(p2p_ie + p2pielen, devinfo_contentlen);
+	*(u16*) (p2p_ie + p2pielen) = cpu_to_le16(devinfo_contentlen);
 	p2pielen += 2;
 
 	/*	Value: */
@@ -7011,7 +7004,7 @@ static int _cfg80211_rtw_mgmt_tx(_adapter *padapter, u8 tx_ch, u8 no_cck, const 
 	unsigned char	*pframe;
 	int ret = _FAIL;
 	bool ack = _TRUE;
-	struct rtw_ieee80211_hdr *pwlanhdr;
+	struct ieee80211_hdr *pwlanhdr;
 #if defined(RTW_ROCH_BACK_OP) && defined(CONFIG_P2P) && defined(CONFIG_CONCURRENT_MODE)
 	struct rtw_wdev_priv *pwdev_priv = adapter_wdev_data(padapter);
 #endif
@@ -7105,7 +7098,7 @@ issue_mgmt_frame:
 	memcpy(pframe, (void *)buf, len);
 	pattrib->pktlen = len;
 
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 	/* update seq number */
 	pmlmeext->mgnt_seq = GetSequence(pwlanhdr);
 	pattrib->seqnum = pmlmeext->mgnt_seq;
@@ -7324,7 +7317,7 @@ static int cfg80211_rtw_mgmt_tx(struct wiphy *wiphy,
 	cfg80211_action_tx_status(ndev, *cookie, buf, len, ack, GFP_KERNEL);
 #endif
 
-	frame_styp = le16_to_cpu(((struct rtw_ieee80211_hdr_3addr *)buf)->frame_ctl) & IEEE80211_FCTL_STYPE;
+	frame_styp = le16_to_cpu(((struct ieee80211_hdr_3addr *)buf)->frame_control) & IEEE80211_FCTL_STYPE;
 	if (IEEE80211_STYPE_PROBE_RESP == frame_styp) {
 #ifdef CONFIG_DEBUG_CFG80211
 		RTW_INFO("RTW_Tx: probe_resp tx_ch=%d, no_cck=%u, da="MAC_FMT"\n", tx_ch, no_cck, MAC_ARG(GetAddr1Ptr(buf)));
@@ -7332,7 +7325,7 @@ static int cfg80211_rtw_mgmt_tx(struct wiphy *wiphy,
 		wait_ack = 0;
 		goto dump;
 	}
-	else if (frame_styp == RTW_IEEE80211_STYPE_AUTH) {
+	else if (frame_styp == IEEE80211_STYPE_AUTH) {
 		int retval = 0;
 
 		RTW_INFO("RTW_Tx:tx_ch=%d, no_cck=%u, da="MAC_FMT"\n", tx_ch, no_cck, MAC_ARG(GetAddr1Ptr(buf)));
@@ -7348,7 +7341,7 @@ static int cfg80211_rtw_mgmt_tx(struct wiphy *wiphy,
 
 	if (rtw_action_frame_parse(buf, len, &category, &action) == _FALSE) {
 		RTW_INFO(FUNC_ADPT_FMT" frame_control:0x%02x\n", FUNC_ADPT_ARG(padapter),
-			le16_to_cpu(((struct rtw_ieee80211_hdr_3addr *)buf)->frame_ctl));
+			le16_to_cpu(((struct ieee80211_hdr_3addr *)buf)->frame_control));
 		goto exit;
 	}
 
@@ -7370,18 +7363,17 @@ static int cfg80211_rtw_mgmt_tx(struct wiphy *wiphy,
 		}
 	}
 #endif
-	if (category == RTW_WLAN_CATEGORY_PUBLIC) {
-		RTW_INFO("RTW_Tx:%s\n", action_public_str(action));
+	if (category == WLAN_CATEGORY_PUBLIC) {
 		switch (action) {
-		case ACT_PUBLIC_GAS_INITIAL_REQ:
-		case ACT_PUBLIC_GAS_INITIAL_RSP:
+		case WLAN_PUB_ACTION_GAS_INITIAL_REQ :
+		case WLAN_PUB_ACTION_GAS_INITIAL_RESP:
 			sleep_ms = 50;
 			retry_guarantee_ms = RTW_MAX_MGMT_TX_MS_GAS;
 			break;
 		}
 	}
 #ifdef CONFIG_RTW_80211K
-	else if (category == RTW_WLAN_CATEGORY_RADIO_MEAS)
+	else if (category == WLAN_CATEGORY_RADIO_MEASUREMENT)
 		RTW_INFO("RTW_Tx: RRM Action\n");
 #endif
 	else
@@ -7619,22 +7611,22 @@ static int cfg80211_rtw_tdls_mgmt(struct wiphy *wiphy,
 #endif
 
 	switch (txmgmt.action_code) {
-	case TDLS_SETUP_REQUEST:
+	case WLAN_TDLS_SETUP_REQUEST:
 		issue_tdls_setup_req(padapter, &txmgmt, _TRUE);
 		break;
-	case TDLS_SETUP_RESPONSE:
+	case WLAN_TDLS_SETUP_RESPONSE:
 		issue_tdls_setup_rsp(padapter, &txmgmt);
 		break;
-	case TDLS_SETUP_CONFIRM:
+	case WLAN_TDLS_SETUP_CONFIRM:
 		issue_tdls_setup_cfm(padapter, &txmgmt);
 		break;
-	case TDLS_TEARDOWN:
+	case WLAN_TDLS_TEARDOWN:
 		issue_tdls_teardown(padapter, &txmgmt, _TRUE);
 		break;
-	case TDLS_DISCOVERY_REQUEST:
+	case WLAN_TDLS_DISCOVERY_REQUEST:
 		issue_tdls_dis_req(padapter, &txmgmt);
 		break;
-	case TDLS_DISCOVERY_RESPONSE:
+	case WLAN_TDLS_DISCOVERY_RESPONSE:
 		issue_tdls_dis_rsp(padapter, &txmgmt, pmlmeinfo->enc_algo ? _TRUE : _FALSE);
 		break;
 	}
@@ -8032,9 +8024,9 @@ static void rtw_cfg80211_mesh_cfg_set(_adapter *adapter, const struct mesh_confi
 		mcfg->dot11MeshGateAnnouncementProtocol = conf->dot11MeshGateAnnouncementProtocol;
 	/* our current gate annc implementation rides on root annc with gate annc bit in PREQ flags */
 	if (mcfg->dot11MeshGateAnnouncementProtocol
-		&& mcfg->dot11MeshHWMPRootMode <= RTW_IEEE80211_ROOTMODE_ROOT
+		&& mcfg->dot11MeshHWMPRootMode <= IEEE80211_ROOTMODE_ROOT
 	) {
-		mcfg->dot11MeshHWMPRootMode = RTW_IEEE80211_PROACTIVE_RANN;
+		mcfg->dot11MeshHWMPRootMode = IEEE80211_PROACTIVE_RANN;
 		RTW_INFO(ADPT_FMT" enable PROACTIVE_RANN becaue gate annc is needed\n", ADPT_ARG(adapter));
 	}
 	if (chk_mesh_attr(NL80211_MESHCONF_HWMP_RANN_INTERVAL, mask))
@@ -8158,7 +8150,7 @@ u8 *rtw_cfg80211_construct_mesh_beacon_ies(struct wiphy *wiphy, _adapter *adapte
 	c = ies + 8;
 
 	/* beacon interval */
-	RTW_PUT_LE16(c , setup->beacon_interval);
+	*((u16 *)c) = cpu_to_le16(setup->beacon_interval);
 	c += 2;
 
 	/* capability */
@@ -8208,7 +8200,7 @@ u8 *rtw_cfg80211_construct_mesh_beacon_ies(struct wiphy *wiphy, _adapter *adapte
 		memset(ht_op, 0, HT_OP_IE_LEN);
 
 		/* WLAN_EID_HT_CAPABILITY */
-		RTW_PUT_LE16(HT_CAP_ELE_CAP_INFO(ht_cap), sta_ht_cap->cap);
+		*(u16 *) (HT_CAP_ELE_CAP_INFO(ht_cap)) = cpu_to_le16(sta_ht_cap->cap);
 		SET_HT_CAP_ELE_MAX_AMPDU_LEN_EXP(ht_cap, sta_ht_cap->ampdu_factor);
 		SET_HT_CAP_ELE_MIN_MPDU_S_SPACE(ht_cap, sta_ht_cap->ampdu_density);
 		memcpy(HT_CAP_ELE_SUP_MCS_SET(ht_cap), &sta_ht_cap->mcs, 16);

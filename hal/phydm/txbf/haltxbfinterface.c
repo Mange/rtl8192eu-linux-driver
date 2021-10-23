@@ -1011,7 +1011,7 @@ send_fw_ht_ndpa_packet(
 	struct _ADAPTER *adapter = dm->adapter;
 	struct xmit_frame *pmgntframe;
 	struct pkt_attrib *pattrib;
-	struct rtw_ieee80211_hdr *pwlanhdr;
+	struct ieee80211_hdr *pwlanhdr;
 	struct xmit_priv *pxmitpriv = &(adapter->xmitpriv);
 	struct mlme_ext_priv *pmlmeext = &adapter->mlmeextpriv;
 	struct mlme_ext_info *pmlmeinfo = &(pmlmeext->mlmext_info);
@@ -1048,9 +1048,9 @@ send_fw_ht_ndpa_packet(
 
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 
-	fctrl = &pwlanhdr->frame_ctl;
+	fctrl =&pwlanhdr->frame_control;
 	*(fctrl) = 0;
 
 	set_order_bit(pframe);
@@ -1099,7 +1099,7 @@ send_sw_ht_ndpa_packet(
 	struct _ADAPTER *adapter = dm->adapter;
 	struct xmit_frame *pmgntframe;
 	struct pkt_attrib *pattrib;
-	struct rtw_ieee80211_hdr *pwlanhdr;
+	struct ieee80211_hdr *pwlanhdr;
 	struct xmit_priv *pxmitpriv = &(adapter->xmitpriv);
 	struct mlme_ext_priv *pmlmeext = &adapter->mlmeextpriv;
 	struct mlme_ext_info *pmlmeinfo = &(pmlmeext->mlmext_info);
@@ -1134,9 +1134,9 @@ send_sw_ht_ndpa_packet(
 
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 
-	fctrl = &pwlanhdr->frame_ctl;
+	fctrl =&pwlanhdr->frame_control;
 	*(fctrl) = 0;
 
 	set_order_bit(pframe);
@@ -1186,7 +1186,7 @@ send_fw_vht_ndpa_packet(
 	struct _ADAPTER *adapter = dm->adapter;
 	struct xmit_frame *pmgntframe;
 	struct pkt_attrib *pattrib;
-	struct rtw_ieee80211_hdr *pwlanhdr;
+	struct ieee80211_hdr *pwlanhdr;
 	struct xmit_priv *pxmitpriv = &(adapter->xmitpriv);
 	struct mlme_ext_priv *pmlmeext = &adapter->mlmeextpriv;
 	struct mlme_ext_info *pmlmeinfo = &(pmlmeext->mlmext_info);
@@ -1224,9 +1224,9 @@ send_fw_vht_ndpa_packet(
 
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 
-	fctrl = &pwlanhdr->frame_ctl;
+	fctrl =&pwlanhdr->frame_control;
 	*(fctrl) = 0;
 
 	set_frame_sub_type(pframe, WIFI_NDPA);
@@ -1287,7 +1287,7 @@ send_sw_vht_ndpa_packet(
 	struct _ADAPTER *adapter = dm->adapter;
 	struct xmit_frame *pmgntframe;
 	struct pkt_attrib *pattrib;
-	struct rtw_ieee80211_hdr *pwlanhdr;
+	struct ieee80211_hdr *pwlanhdr;
 	struct xmit_priv *pxmitpriv = &(adapter->xmitpriv);
 	struct mlme_ext_priv *pmlmeext = &adapter->mlmeextpriv;
 	struct mlme_ext_info *pmlmeinfo = &(pmlmeext->mlmext_info);
@@ -1325,9 +1325,9 @@ send_sw_vht_ndpa_packet(
 
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
+	pwlanhdr = (struct ieee80211_hdr *)pframe;
 
-	fctrl = &pwlanhdr->frame_ctl;
+	fctrl =&pwlanhdr->frame_control;
 	*(fctrl) = 0;
 
 	set_frame_sub_type(pframe, WIFI_NDPA);
