@@ -389,7 +389,6 @@ void halbtc8192e2ant_monitor_bt_ctr(IN struct btc_coexist *btcoexist)
 
 void halbtc8192e2ant_monitor_wifi_ctr(IN struct btc_coexist *btcoexist)
 {
-#if 1
 
 	coex_sta->crc_ok_cck =
 		btcoexist->btc_phydm_query_PHY_counter(
@@ -424,7 +423,6 @@ void halbtc8192e2ant_monitor_wifi_ctr(IN struct btc_coexist *btcoexist)
 		btcoexist->btc_phydm_query_PHY_counter(
 			btcoexist,
 			PHYDM_INFO_CRC32_ERROR_VHT);
-#endif
 }
 
 

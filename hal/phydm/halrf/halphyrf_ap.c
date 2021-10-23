@@ -327,7 +327,6 @@ odm_txpowertracking_callback_thermal_meter_jaguar_series3(
 	void		*dm_void
 )
 {
-#if 1
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u8 thermal_value = 0, delta, delta_LCK, delta_IQK, channel, is_increase;
 	u8 thermal_value_avg_count = 0, p = 0, i = 0;
@@ -578,7 +577,6 @@ odm_txpowertracking_callback_thermal_meter_jaguar_series3(
 				}
 			}
 		}
-#endif
 
 		if (GET_CHIP_VER(priv) != VERSION_8198F) {
 			if ((delta_IQK >= c.threshold_iqk) && (!iqk_info->rfk_forbidden)) {
@@ -1237,7 +1235,7 @@ odm_reset_iqk_result(
 {
 	return;
 }
-#if 1/* !(DM_ODM_SUPPORT_TYPE & ODM_AP) */
+
 u8 odm_get_right_chnl_place_for_iqk(u8 chnl)
 {
 	u8	channel_all[ODM_TARGET_CHNL_NUM_2G_5G] = {
@@ -1255,7 +1253,7 @@ u8 odm_get_right_chnl_place_for_iqk(u8 chnl)
 	return 0;
 
 }
-#endif
+
 
 void
 odm_iq_calibrate(

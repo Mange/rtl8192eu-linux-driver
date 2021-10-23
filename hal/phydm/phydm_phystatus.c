@@ -410,56 +410,28 @@ void phydm_process_signal_strength(struct dm_struct *dm,
 		/* Update signal strength to UI,
 		 * and phy_info->rx_pwdb_all is the maximum RSSI of all path
 		 */
-		#if 1 /*(DM_ODM_SUPPORT_TYPE == ODM_WIN)*/
 		ss = SignalScaleProc(dm->adapter, pwdb, false, false);
-		#elif (DM_ODM_SUPPORT_TYPE == ODM_CE)
-		ss = (u8)phydm_signal_scale_mapping(dm, pwdb);
-		#elif (DM_ODM_SUPPORT_TYPE == ODM_IOT)
-		ss = (u8)phydm_signal_scale_mapping(dm, pwdb);
-		#endif
-
 	#endif
 	} else if (dm->support_ic_type & PHYSTS_2ND_TYPE_IC) {
 	#if (ODM_PHY_STATUS_NEW_TYPE_SUPPORT)
 		/* Update signal strength to UI,
 		 * and phy_info->rx_pwdb_all is the maximum RSSI of all path
 		 */
-		#if 1 /*(DM_ODM_SUPPORT_TYPE == ODM_WIN)*/
 		ss = SignalScaleProc(dm->adapter, pwdb, false, false);
-		#elif (DM_ODM_SUPPORT_TYPE == ODM_CE)
-		ss = (u8)phydm_signal_scale_mapping(dm, pwdb);
-		#endif
-
 	#endif
 	} else if (dm->support_ic_type & ODM_IC_11AC_SERIES) {
 	#if ODM_IC_11AC_SERIES_SUPPORT
 		if (pktinfo->is_cck_rate)
-			#if 1/*(DM_ODM_SUPPORT_TYPE == ODM_WIN)*/
 			ss = SignalScaleProc(dm->adapter, pwdb, 0, 1);
-			#else
-			ss = (u8)phydm_signal_scale_mapping(dm, pwdb);
-			#endif
 		else
-			#if 1 /*(DM_ODM_SUPPORT_TYPE == ODM_WIN)*/
 			ss = SignalScaleProc(dm->adapter, avg_rssi, 0, 1);
-			#else
-			ss = (u8)phydm_signal_scale_mapping(dm, avg_rssi);
-			#endif
 	#endif
 	} else if (dm->support_ic_type & ODM_IC_11N_SERIES) {
 	#if ODM_IC_11N_SERIES_SUPPORT
 		if (pktinfo->is_cck_rate)
-			#if 1/*(DM_ODM_SUPPORT_TYPE == ODM_WIN)*/
 			ss = SignalScaleProc(dm->adapter, pwdb, 1, 1);
-			#else
-			ss = (u8)phydm_signal_scale_mapping(dm, pwdb);
-			#endif
 		else
-			#if 1 /*(DM_ODM_SUPPORT_TYPE == ODM_WIN)*/
 			ss = SignalScaleProc(dm->adapter, avg_rssi, 1, 0);
-			#else
-			ss = (u8)phydm_signal_scale_mapping(dm, avg_rssi);
-			#endif
 	#endif
 	}
 	phy_info->signal_strength = ss;

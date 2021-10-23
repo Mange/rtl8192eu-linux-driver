@@ -360,7 +360,6 @@ void phydm_hl_smart_ant_type2_init_8822b(
 		{0xe, 0},
 		{0xf, 0}};
 	u8 rfu_codeword_table_init_5g[SUPPORT_BEAM_SET_PATTERN_NUM][MAX_PATH_NUM_8822B] = {
-#if 1
 		{9, 1}, /*@0*/
 		{9, 9},
 		{1, 9},
@@ -377,24 +376,6 @@ void phydm_hl_smart_ant_type2_init_8822b(
 		{6, 6},
 		{2, 6},
 		{1, 1}
-#else
-		{1, 1}, /*@0*/
-		{9, 1},
-		{9, 9},
-		{1, 9},
-		{1, 2},
-		{9, 2},
-		{9, 6},
-		{1, 6},
-		{2, 1}, /*@8*/
-		{6, 1},
-		{6, 9},
-		{2, 9},
-		{2, 2},
-		{6, 2},
-		{6, 6},
-		{2, 6}
-#endif
 	};
 
 	PHYDM_DBG(dm, DBG_ANT_DIV,
@@ -513,7 +494,6 @@ void phydm_update_beam_pattern_type2(
 	for (i = 0; i <= (codeword_length - 1); i++) {
 		beam_ctrl_signal = (boolean)((codeword & BIT(i)) >> i);
 
-		#if 1
 		if (dm->debug_components & DBG_ANT_DIV) {
 			if (i == (codeword_length - 1))
 				pr_debug("%d ]\n", beam_ctrl_signal);
@@ -524,7 +504,6 @@ void phydm_update_beam_pattern_type2(
 			else
 				pr_debug("%d ", beam_ctrl_signal);
 		}
-		#endif
 
 		if (dm->support_ic_type == ODM_RTL8821) {
 			#if (RTL8821A_SUPPORT == 1)

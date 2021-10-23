@@ -1373,13 +1373,8 @@ u8 SetHwReg8192EU(PADAPTER Adapter, u8 variable, u8 *val)
 				struct ht_priv		*phtpriv = &pmlmepriv->htpriv;
 
 				if (pHalData->rxagg_mode == RX_AGG_USB) {
-#if 1
 					/* BG mode || (wifi_spec=1 && BG mode Testbed)	 */
 					if ((threshold == 1) && (_FALSE == phtpriv->ht_option))
-#else
-					/* (wifi_spec=1 && BG mode Testbed) */
-					if ((Adapter->registrypriv.wifi_spec == 1) && (_FALSE == phtpriv->ht_option))
-#endif
 						rtw_write8(Adapter, REG_RXDMA_AGG_PG_TH + 1, 0);
 					else
 						rtw_write8(Adapter, REG_RXDMA_AGG_PG_TH + 1, pHalData->rxagg_usb_timeout);

@@ -72,7 +72,7 @@ s32 InitLLTTable8192E(PADAPTER padapter, u8 txpktbuf_bndy)
 	u32 value32;
 	systime start = 0;
 	u32 passing_time = 0;
-#if 1
+
 	value32 = rtw_read32(padapter, REG_AUTO_LLT);
 
 	rtw_write32(padapter, REG_AUTO_LLT, value32 | BIT_AUTO_INIT_LLT);
@@ -88,33 +88,6 @@ s32 InitLLTTable8192E(PADAPTER padapter, u8 txpktbuf_bndy)
 		RTW_INFO("Auto %s success\n", __FUNCTION__);
 		status = _SUCCESS;
 	}
-
-#else
-	for (i = 0; i < (txpktbuf_bndy - 1); i++) {
-		status = _LLTWrite(padapter, i, i + 1);
-		if (_SUCCESS != status)
-			return status;
-	}
-
-	/* end of list */
-	status = _LLTWrite(padapter, (txpktbuf_bndy - 1), 0xFF);
-	if (_SUCCESS != status)
-		return status;
-
-	/* Make the other pages as ring buffer */
-	/* This ring buffer is used as beacon buffer if we config this MAC as two MAC transfer. */
-	/* Otherwise used as local loopback buffer. */
-	for (i = txpktbuf_bndy; i < Last_Entry_Of_TxPktBuf; i++) {
-		status = _LLTWrite(padapter, i, (i + 1));
-		if (_SUCCESS != status)
-			return status;
-	}
-
-	/* Let last entry point to the start entry of ring buffer */
-	status = _LLTWrite(padapter, Last_Entry_Of_TxPktBuf, txpktbuf_bndy);
-	if (_SUCCESS != status)
-		return status;
-#endif
 	return status;
 }
 
@@ -4168,10 +4141,8 @@ static void read_chip_version_8192e(PADAPTER Adapter)
 	pHalData->MultiFunc = RT_MULTI_FUNC_NONE;
 
 	rtw_hal_config_rftype(Adapter);
-#if 1
-	dump_chip_info(pHalData->version_id);
-#endif
 
+	dump_chip_info(pHalData->version_id);
 }
 
 void init_hal_spec_8192e(_adapter *adapter)

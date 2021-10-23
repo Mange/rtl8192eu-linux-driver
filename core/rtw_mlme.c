@@ -3135,7 +3135,7 @@ void rtw_drv_scan_by_self(_adapter *padapter, u8 reason)
 	struct sitesurvey_parm parm;
 	struct mlme_priv *pmlmepriv = &padapter->mlmepriv;
 	int i;
-#if 1
+
 	u8 ssc_chk;
 
 	ssc_chk = rtw_sitesurvey_condition_check(padapter, _FALSE);
@@ -3157,40 +3157,6 @@ void rtw_drv_scan_by_self(_adapter *padapter, u8 reason)
 
 	if (!rtw_is_adapter_up(padapter))
 		goto exit;
-#else
-	if (rtw_is_scan_deny(padapter))
-		goto exit;
-
-	if (!rtw_is_adapter_up(padapter))
-		goto exit;
-
-	if (rtw_mi_busy_traffic_check(padapter, _FALSE)) {
-#ifdef CONFIG_LAYER2_ROAMING
-		if (rtw_chk_roam_flags(padapter, RTW_ROAM_ACTIVE) && pmlmepriv->need_to_roam == _TRUE) {
-			RTW_INFO("need to roam, don't care BusyTraffic\n");
-		} else
-#endif
-		{
-			RTW_INFO(FUNC_ADPT_FMT" exit BusyTraffic\n", FUNC_ADPT_ARG(padapter));
-			goto exit;
-		}
-	}
-	if (check_fwstate(pmlmepriv, WIFI_AP_STATE) && check_fwstate(pmlmepriv, WIFI_UNDER_WPS)) {
-		RTW_INFO(FUNC_ADPT_FMT" WIFI_AP_STATE && WIFI_UNDER_WPS\n", FUNC_ADPT_ARG(padapter));
-		goto exit;
-	}
-	if (check_fwstate(pmlmepriv, (_FW_UNDER_SURVEY | _FW_UNDER_LINKING)) == _TRUE) {
-		RTW_INFO(FUNC_ADPT_FMT" _FW_UNDER_SURVEY|_FW_UNDER_LINKING\n", FUNC_ADPT_ARG(padapter));
-		goto exit;
-	}
-
-#ifdef CONFIG_CONCURRENT_MODE
-	if (rtw_mi_buddy_check_fwstate(padapter, (_FW_UNDER_SURVEY | _FW_UNDER_LINKING | WIFI_UNDER_WPS))) {
-		RTW_INFO(FUNC_ADPT_FMT", but buddy_intf is under scanning or linking or wps_phase\n", FUNC_ADPT_ARG(padapter));
-		goto exit;
-	}
-#endif
-#endif
 
 	RTW_INFO(FUNC_ADPT_FMT" reason:0x%02x\n", FUNC_ADPT_ARG(padapter), reason);
 
@@ -3562,7 +3528,7 @@ static int rtw_check_roaming_candidate(struct mlme_priv *mlme
 		else
 			goto exit;
 	}
-#if 1
+
 	if (rtw_get_passing_time_ms(competitor->last_scanned) >= mlme->roam_scanr_exp_ms)
 		goto exit;
 
@@ -3578,9 +3544,7 @@ static int rtw_check_roaming_candidate(struct mlme_priv *mlme
 
 	if (*candidate != NULL && (*candidate)->network.Rssi >= competitor->network.Rssi)
 		goto exit;
-#else
-	goto exit;
-#endif
+
 
 update:
 	*candidate = competitor;

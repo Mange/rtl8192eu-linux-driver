@@ -1547,15 +1547,12 @@ u8 rtw_mi_get_assoc_if_num(_adapter *adapter)
 {
 	struct dvobj_priv *dvobj = adapter_to_dvobj(adapter);
 	u8 n_assoc_iface = 0;
-#if 1
+
 	u8 i;
 
 	for (i = 0; i < dvobj->iface_nums; i++) {
 		if (check_fwstate(&(dvobj->padapters[i]->mlmepriv), WIFI_ASOC_STATE))
 			n_assoc_iface++;
 	}
-#else
-	n_assoc_iface = DEV_STA_LD_NUM(dvobj) + DEV_AP_NUM(dvobj) + DEV_ADHOC_NUM(dvobj) + DEV_MESH_NUM(dvobj);
-#endif
 	return n_assoc_iface;
 }

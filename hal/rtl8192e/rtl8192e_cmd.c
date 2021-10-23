@@ -436,8 +436,6 @@ void rtl8192e_set_p2p_ps_offload_cmd(_adapter *padapter, u8 p2p_ps_state)
 
 	u8	i;
 
-
-#if 1
 	switch (p2p_ps_state) {
 	case P2P_PS_DISABLE:
 		RTW_INFO("P2P_PS_DISABLE\n");
@@ -507,8 +505,6 @@ void rtl8192e_set_p2p_ps_offload_cmd(_adapter *padapter, u8 p2p_ps_state)
 
 	RTW_INFO("P2P_PS_OFFLOAD : %x\n", p2p_ps_offload[0]);
 	FillH2CCmd_8192E(padapter, H2C_8192E_P2P_PS_OFFLOAD, 1, p2p_ps_offload);
-#endif
-
 
 }
 

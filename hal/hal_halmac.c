@@ -821,7 +821,6 @@ u32 rtw_halmac_read32(struct intf_hdl *pintfhdl, u32 addr)
 
 static void _read_register(struct dvobj_priv *d, u32 addr, u32 cnt, u8 *buf)
 {
-#if 1
 	struct _ADAPTER *a;
 	u32 i, n;
 	u16 val16;
@@ -866,15 +865,7 @@ static void _read_register(struct dvobj_priv *d, u32 addr, u32 cnt, u8 *buf)
 			break;
 		}
 	}
-#else
-	struct _ADAPTER *a;
-	u32 i;
 
-
-	a = dvobj_get_primary_adapter(d);
-	for (i = 0; i < cnt; i++)
-		buf[i] = rtw_read8(a, addr + i);
-#endif
 }
 
 #ifdef CONFIG_SDIO_HCI

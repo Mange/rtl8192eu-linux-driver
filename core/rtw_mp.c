@@ -765,24 +765,22 @@ end_of_mp_start_test:
 
 	_exit_critical_bh(&pmlmepriv->lock, &irqL);
 
-	if (1) { /* (res == _SUCCESS) */
-		/* set MSR to WIFI_FW_ADHOC_STATE */
-		if (mode == WIFI_FW_ADHOC_STATE) {
-			/* set msr to WIFI_FW_ADHOC_STATE */
-			pmlmeinfo->state = WIFI_FW_ADHOC_STATE;
-			Set_MSR(padapter, (pmlmeinfo->state & 0x3));
-			rtw_hal_set_hwreg(padapter, HW_VAR_BSSID, padapter->registrypriv.dev_network.MacAddress);
-			rtw_hal_rcr_set_chk_bssid(padapter, MLME_ADHOC_STARTED);
-			pmlmeinfo->state |= WIFI_FW_ASSOC_SUCCESS;
-		} else {
-			Set_MSR(padapter, WIFI_FW_STATION_STATE);
+	/* set MSR to WIFI_FW_ADHOC_STATE */
+	if (mode == WIFI_FW_ADHOC_STATE) {
+		/* set msr to WIFI_FW_ADHOC_STATE */
+		pmlmeinfo->state = WIFI_FW_ADHOC_STATE;
+		Set_MSR(padapter, (pmlmeinfo->state & 0x3));
+		rtw_hal_set_hwreg(padapter, HW_VAR_BSSID, padapter->registrypriv.dev_network.MacAddress);
+		rtw_hal_rcr_set_chk_bssid(padapter, MLME_ADHOC_STARTED);
+		pmlmeinfo->state |= WIFI_FW_ASSOC_SUCCESS;
+	} else {
+		Set_MSR(padapter, WIFI_FW_STATION_STATE);
 
-			RTW_INFO("%s , pmppriv->network_macaddr =%x %x %x %x %x %x\n", __func__,
-				pmppriv->network_macaddr[0], pmppriv->network_macaddr[1], pmppriv->network_macaddr[2], pmppriv->network_macaddr[3], pmppriv->network_macaddr[4],
-				 pmppriv->network_macaddr[5]);
+		RTW_INFO("%s , pmppriv->network_macaddr =%x %x %x %x %x %x\n", __func__,
+			pmppriv->network_macaddr[0], pmppriv->network_macaddr[1], pmppriv->network_macaddr[2], pmppriv->network_macaddr[3], pmppriv->network_macaddr[4],
+				pmppriv->network_macaddr[5]);
 
-			rtw_hal_set_hwreg(padapter, HW_VAR_BSSID, pmppriv->network_macaddr);
-		}
+		rtw_hal_set_hwreg(padapter, HW_VAR_BSSID, pmppriv->network_macaddr);
 	}
 
 	return res;

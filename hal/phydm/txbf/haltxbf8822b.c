@@ -376,26 +376,22 @@ void hal_txbf_8822b_enter(
 #endif
 
 		phydm_beamforming_notify(dm);
-#if 1
-		{
-			u32 ctrl_info_offset, index;
-			/*Set Ctrl Info*/
-			odm_write_2byte(dm, 0x140, 0x660);
-			ctrl_info_offset = 0x8000 + 32 * p_beamformee_entry->mac_id;
-			/*Reset Ctrl Info*/
-			for (index = 0; index < 8; index++)
-				odm_write_4byte(dm, ctrl_info_offset + index * 4, 0);
+		u32 ctrl_info_offset, index;
+		/*Set Ctrl Info*/
+		odm_write_2byte(dm, 0x140, 0x660);
+		ctrl_info_offset = 0x8000 + 32 * p_beamformee_entry->mac_id;
+		/*Reset Ctrl Info*/
+		for (index = 0; index < 8; index++)
+			odm_write_4byte(dm, ctrl_info_offset + index * 4, 0);
 
-			odm_write_4byte(dm, ctrl_info_offset, (p_beamformee_entry->mu_reg_index + 1) << 16);
-			odm_write_1byte(dm, 0x81, 0x80); /*RPTBUF ready*/
+		odm_write_4byte(dm, ctrl_info_offset, (p_beamformee_entry->mu_reg_index + 1) << 16);
+		odm_write_1byte(dm, 0x81, 0x80); /*RPTBUF ready*/
 
-			PHYDM_DBG(dm, DBG_TXBF,
-				  "@%s, mac_id = %d, ctrl_info_offset = 0x%x, mu_reg_index = %x\n",
-				  __func__, p_beamformee_entry->mac_id,
-				  ctrl_info_offset,
-				  p_beamformee_entry->mu_reg_index);
-		}
-#endif
+		PHYDM_DBG(dm, DBG_TXBF,
+				"@%s, mac_id = %d, ctrl_info_offset = 0x%x, mu_reg_index = %x\n",
+				__func__, p_beamformee_entry->mac_id,
+				ctrl_info_offset,
+				p_beamformee_entry->mu_reg_index);
 	}
 }
 
@@ -534,99 +530,97 @@ void hal_txbf_8822b_status(
 	} else {
 		PHYDM_DBG(dm, DBG_TXBF, "@%s, MU Sounding Done\n", __func__);
 		/*@MU sounding done */
-		if (1) { /* @(beamform_entry->beamform_entry_state == BEAMFORMING_ENTRY_STATE_PROGRESSED) { */
-			PHYDM_DBG(dm, DBG_TXBF,
-				  "@%s, BEAMFORMING_ENTRY_STATE_PROGRESSED\n",
-				  __func__);
+		PHYDM_DBG(dm, DBG_TXBF,
+				"@%s, BEAMFORMING_ENTRY_STATE_PROGRESSED\n",
+				__func__);
 
-			value32 = odm_get_bb_reg(dm, R_0x1684, MASKDWORD);
-			is_sounding_success[0] = (value32 & BIT(10)) ? 1 : 0;
-			is_sounding_success[1] = (value32 & BIT(26)) ? 1 : 0;
-			value32 = odm_get_bb_reg(dm, R_0x1688, MASKDWORD);
-			is_sounding_success[2] = (value32 & BIT(10)) ? 1 : 0;
-			is_sounding_success[3] = (value32 & BIT(26)) ? 1 : 0;
-			value32 = odm_get_bb_reg(dm, R_0x168c, MASKDWORD);
-			is_sounding_success[4] = (value32 & BIT(10)) ? 1 : 0;
-			is_sounding_success[5] = (value32 & BIT(26)) ? 1 : 0;
+		value32 = odm_get_bb_reg(dm, R_0x1684, MASKDWORD);
+		is_sounding_success[0] = (value32 & BIT(10)) ? 1 : 0;
+		is_sounding_success[1] = (value32 & BIT(26)) ? 1 : 0;
+		value32 = odm_get_bb_reg(dm, R_0x1688, MASKDWORD);
+		is_sounding_success[2] = (value32 & BIT(10)) ? 1 : 0;
+		is_sounding_success[3] = (value32 & BIT(26)) ? 1 : 0;
+		value32 = odm_get_bb_reg(dm, R_0x168c, MASKDWORD);
+		is_sounding_success[4] = (value32 & BIT(10)) ? 1 : 0;
+		is_sounding_success[5] = (value32 & BIT(26)) ? 1 : 0;
 
-			PHYDM_DBG(dm, DBG_TXBF,
-				  "@%s, is_sounding_success STA1:%d,  STA2:%d, STA3:%d, STA4:%d, STA5:%d, STA6:%d\n",
-				  __func__, is_sounding_success[0],
-				  is_sounding_success[1],
-				  is_sounding_success[2],
-				  is_sounding_success[3],
-				  is_sounding_success[4],
-				  is_sounding_success[5]);
+		PHYDM_DBG(dm, DBG_TXBF,
+				"@%s, is_sounding_success STA1:%d,  STA2:%d, STA3:%d, STA4:%d, STA5:%d, STA6:%d\n",
+				__func__, is_sounding_success[0],
+				is_sounding_success[1],
+				is_sounding_success[2],
+				is_sounding_success[3],
+				is_sounding_success[4],
+				is_sounding_success[5]);
 
-			value32 = odm_get_bb_reg(dm, R_0xf4c, 0xFFFF0000);
-			/* odm_set_bb_reg(dm, R_0x19e0, MASKHWORD, 0xFFFF);Let MAC ignore bitmap */
+		value32 = odm_get_bb_reg(dm, R_0xf4c, 0xFFFF0000);
+		/* odm_set_bb_reg(dm, R_0x19e0, MASKHWORD, 0xFFFF);Let MAC ignore bitmap */
 
-			is_bitmap_ready = (boolean)((value32 & BIT(15)) >> 15);
-			bitmap = (u16)(value32 & 0x3FFF);
+		is_bitmap_ready = (boolean)((value32 & BIT(15)) >> 15);
+		bitmap = (u16)(value32 & 0x3FFF);
 
-			for (idx = 0; idx < 15; idx++) {
-				if (idx < 5) { /*@bit0~4*/
-					id0 = 0;
-					id1 = (u8)(idx + 1);
-				} else if (idx < 9) { /*@bit5~8*/
-					id0 = 1;
-					id1 = (u8)(idx - 3);
-				} else if (idx < 12) { /*@bit9~11*/
-					id0 = 2;
-					id1 = (u8)(idx - 6);
-				} else if (idx < 14) { /*@bit12~13*/
-					id0 = 3;
-					id1 = (u8)(idx - 8);
-				} else { /*@bit14*/
-					id0 = 4;
-					id1 = (u8)(idx - 9);
-				}
-				if (bitmap & BIT(idx)) {
-					/*Pair 1*/
-					gid = (idx << 1) + 1;
-					gid_valid[id0] |= (BIT(gid));
-					gid_valid[id1] |= (BIT(gid));
-					/*Pair 2*/
-					gid += 1;
-					gid_valid[id0] |= (BIT(gid));
-					gid_valid[id1] |= (BIT(gid));
-				} else {
-					/*Pair 1*/
-					gid = (idx << 1) + 1;
-					gid_valid[id0] &= ~(BIT(gid));
-					gid_valid[id1] &= ~(BIT(gid));
-					/*Pair 2*/
-					gid += 1;
-					gid_valid[id0] &= ~(BIT(gid));
-					gid_valid[id1] &= ~(BIT(gid));
-				}
+		for (idx = 0; idx < 15; idx++) {
+			if (idx < 5) { /*@bit0~4*/
+				id0 = 0;
+				id1 = (u8)(idx + 1);
+			} else if (idx < 9) { /*@bit5~8*/
+				id0 = 1;
+				id1 = (u8)(idx - 3);
+			} else if (idx < 12) { /*@bit9~11*/
+				id0 = 2;
+				id1 = (u8)(idx - 6);
+			} else if (idx < 14) { /*@bit12~13*/
+				id0 = 3;
+				id1 = (u8)(idx - 8);
+			} else { /*@bit14*/
+				id0 = 4;
+				id1 = (u8)(idx - 9);
 			}
-
-			for (i = 0; i < BEAMFORMEE_ENTRY_NUM; i++) {
-				beamform_entry = &beamforming_info->beamformee_entry[i];
-				if (beamform_entry->is_mu_sta && beamform_entry->mu_reg_index < 6) {
-					value32 = gid_valid[beamform_entry->mu_reg_index];
-					for (idx = 0; idx < 4; idx++) {
-						beamform_entry->gid_valid[idx] = (u8)(value32 & 0xFF);
-						value32 = (value32 >> 8);
-					}
-				}
+			if (bitmap & BIT(idx)) {
+				/*Pair 1*/
+				gid = (idx << 1) + 1;
+				gid_valid[id0] |= (BIT(gid));
+				gid_valid[id1] |= (BIT(gid));
+				/*Pair 2*/
+				gid += 1;
+				gid_valid[id0] |= (BIT(gid));
+				gid_valid[id1] |= (BIT(gid));
+			} else {
+				/*Pair 1*/
+				gid = (idx << 1) + 1;
+				gid_valid[id0] &= ~(BIT(gid));
+				gid_valid[id1] &= ~(BIT(gid));
+				/*Pair 2*/
+				gid += 1;
+				gid_valid[id0] &= ~(BIT(gid));
+				gid_valid[id1] &= ~(BIT(gid));
 			}
-
-			for (idx = 0; idx < 6; idx++) {
-				beamforming_info->reg_mu_tx_ctrl &= ~(BIT(8) | BIT(9) | BIT(10));
-				beamforming_info->reg_mu_tx_ctrl |= ((idx << 8) & (BIT(8) | BIT(9) | BIT(10)));
-				odm_write_4byte(dm, 0x14c0, beamforming_info->reg_mu_tx_ctrl);
-				odm_set_mac_reg(dm, R_0x14c4, MASKDWORD, gid_valid[idx]); /*set MU STA gid valid table*/
-			}
-
-			/*@Enable TxMU PPDU*/
-			if (beamforming_info->dbg_disable_mu_tx == false)
-				beamforming_info->reg_mu_tx_ctrl |= BIT(7);
-			else
-				beamforming_info->reg_mu_tx_ctrl &= ~BIT(7);
-			odm_write_4byte(dm, 0x14c0, beamforming_info->reg_mu_tx_ctrl);
 		}
+
+		for (i = 0; i < BEAMFORMEE_ENTRY_NUM; i++) {
+			beamform_entry = &beamforming_info->beamformee_entry[i];
+			if (beamform_entry->is_mu_sta && beamform_entry->mu_reg_index < 6) {
+				value32 = gid_valid[beamform_entry->mu_reg_index];
+				for (idx = 0; idx < 4; idx++) {
+					beamform_entry->gid_valid[idx] = (u8)(value32 & 0xFF);
+					value32 = (value32 >> 8);
+				}
+			}
+		}
+
+		for (idx = 0; idx < 6; idx++) {
+			beamforming_info->reg_mu_tx_ctrl &= ~(BIT(8) | BIT(9) | BIT(10));
+			beamforming_info->reg_mu_tx_ctrl |= ((idx << 8) & (BIT(8) | BIT(9) | BIT(10)));
+			odm_write_4byte(dm, 0x14c0, beamforming_info->reg_mu_tx_ctrl);
+			odm_set_mac_reg(dm, R_0x14c4, MASKDWORD, gid_valid[idx]); /*set MU STA gid valid table*/
+		}
+
+		/*@Enable TxMU PPDU*/
+		if (beamforming_info->dbg_disable_mu_tx == false)
+			beamforming_info->reg_mu_tx_ctrl |= BIT(7);
+		else
+			beamforming_info->reg_mu_tx_ctrl &= ~BIT(7);
+		odm_write_4byte(dm, 0x14c0, beamforming_info->reg_mu_tx_ctrl);
 	}
 }
 

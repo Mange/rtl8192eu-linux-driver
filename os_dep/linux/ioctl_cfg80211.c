@@ -870,15 +870,8 @@ struct cfg80211_bss *rtw_cfg80211_inform_bss(_adapter *padapter, struct wlan_net
 		RTW_INFO("%s, got p2p_ie\n", __func__);
 	#endif
 
-#if 1
 	bss = cfg80211_inform_bss_frame(wiphy, notify_channel, (struct ieee80211_mgmt *)pbuf,
 					len, notify_signal, GFP_ATOMIC);
-#else
-
-	bss = cfg80211_inform_bss(wiphy, notify_channel, (const u8 *)pnetwork->network.MacAddress,
-		notify_timestamp, notify_capability, notify_interval, notify_ie,
-		notify_ielen, notify_signal, GFP_ATOMIC/*GFP_KERNEL*/);
-#endif
 
 	if (unlikely(!bss)) {
 		RTW_INFO(FUNC_ADPT_FMT" bss NULL\n", FUNC_ADPT_ARG(padapter));
@@ -1004,8 +997,7 @@ void rtw_cfg80211_ibss_indicate_connect(_adapter *padapter)
 	/* notify cfg80211 that device joined an IBSS */
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 15, 0))
 	freq = rtw_ch2freq(cur_network->network.Configuration.DSConfig);
-	if (1)
-		RTW_INFO("chan: %d, freq: %d\n", cur_network->network.Configuration.DSConfig, freq);
+	RTW_INFO("chan: %d, freq: %d\n", cur_network->network.Configuration.DSConfig, freq);
 	notify_channel = ieee80211_get_channel(wiphy, freq);
 	cfg80211_ibss_joined(padapter->pnetdev, cur_network->network.MacAddress, notify_channel, GFP_ATOMIC);
 #else
@@ -2864,7 +2856,6 @@ static int cfg80211_rtw_scan(struct wiphy *wiphy
 	RTW_INFO(FUNC_ADPT_FMT"%s\n", FUNC_ADPT_ARG(padapter)
 		, wdev == wiphy_to_pd_wdev(wiphy) ? " PD" : "");
 
-#if 1
 	ssc_chk = rtw_sitesurvey_condition_check(padapter, _TRUE);
 
 	if (ssc_chk == SS_DENY_MP_MODE)
@@ -2969,129 +2960,6 @@ bypass_p2p_chk:
 		need_indicate_scan_done = _TRUE;
 		goto check_need_indicate_scan_done;
 	}
-
-#else
-
-
-#ifdef CONFIG_MP_INCLUDED
-	if (rtw_mp_mode_check(padapter)) {
-		RTW_INFO("MP mode block Scan request\n");
-		ret = -EPERM;
-		goto exit;
-	}
-#endif
-
-#ifdef CONFIG_P2P
-	if (pwdinfo->driver_interface == DRIVER_CFG80211) {
-		if (ssids->ssid != NULL
-			&& _rtw_memcmp(ssids->ssid, "DIRECT-", 7)
-			&& rtw_get_p2p_ie((u8 *)request->ie, request->ie_len, NULL, NULL)
-		) {
-			if (rtw_p2p_chk_state(pwdinfo, P2P_STATE_NONE))
-				rtw_p2p_enable(padapter, P2P_ROLE_DEVICE);
-			else {
-				rtw_p2p_set_pre_state(pwdinfo, rtw_p2p_state(pwdinfo));
-				#ifdef CONFIG_DEBUG_CFG80211
-				RTW_INFO("%s, role=%d, p2p_state=%d\n", __func__, rtw_p2p_role(pwdinfo), rtw_p2p_state(pwdinfo));
-				#endif
-			}
-			rtw_p2p_set_state(pwdinfo, P2P_STATE_LISTEN);
-
-			if (request->n_channels == 3 &&
-				request->channels[0]->hw_value == 1 &&
-				request->channels[1]->hw_value == 6 &&
-				request->channels[2]->hw_value == 11
-			)
-				social_channel = 1;
-		}
-	}
-#endif /*CONFIG_P2P*/
-
-	if (request->ie && request->ie_len > 0)
-		rtw_cfg80211_set_probe_req_wpsp2pie(padapter, (u8 *)request->ie, request->ie_len);
-
-#ifdef CONFIG_RTW_REPEATER_SON
-	if (padapter->rtw_rson_scanstage == RSON_SCAN_PROCESS) {
-		RTW_INFO(FUNC_ADPT_FMT" blocking scan for under rson scanning process\n", FUNC_ADPT_ARG(padapter));
-		need_indicate_scan_done = _TRUE;
-		goto check_need_indicate_scan_done;
-	}
-#endif
-
-	if (adapter_wdev_data(padapter)->block_scan == _TRUE) {
-		RTW_INFO(FUNC_ADPT_FMT" wdev_priv.block_scan is set\n", FUNC_ADPT_ARG(padapter));
-		need_indicate_scan_done = _TRUE;
-		goto check_need_indicate_scan_done;
-	}
-
-	rtw_ps_deny(padapter, PS_DENY_SCAN);
-	ps_denied = _TRUE;
-	if (_FAIL == rtw_pwr_wakeup(padapter)) {
-		need_indicate_scan_done = _TRUE;
-		goto check_need_indicate_scan_done;
-	}
-
-	if (rtw_is_scan_deny(padapter)) {
-		RTW_INFO(FUNC_ADPT_FMT	": scan deny\n", FUNC_ADPT_ARG(padapter));
-#if CONFIG_NOTIFY_SCAN_ABORT_WITH_BUSY
-		ret = -EBUSY;
-		goto exit;
-#else
-		need_indicate_scan_done = _TRUE;
-		goto check_need_indicate_scan_done;
-#endif
-	}
-
-	/* check fw state*/
-	if (check_fwstate(pmlmepriv, WIFI_AP_STATE) == _TRUE) {
-
-#ifdef CONFIG_DEBUG_CFG80211
-		RTW_INFO(FUNC_ADPT_FMT" under WIFI_AP_STATE\n", FUNC_ADPT_ARG(padapter));
-#endif
-
-		if (check_fwstate(pmlmepriv, WIFI_UNDER_WPS | _FW_UNDER_SURVEY | _FW_UNDER_LINKING) == _TRUE) {
-			RTW_INFO("%s, fwstate=0x%x\n", __func__, pmlmepriv->fw_state);
-
-			if (check_fwstate(pmlmepriv, WIFI_UNDER_WPS))
-				RTW_INFO("AP mode process WPS\n");
-
-			need_indicate_scan_done = _TRUE;
-			goto check_need_indicate_scan_done;
-		}
-	}
-
-	if (check_fwstate(pmlmepriv, _FW_UNDER_SURVEY) == _TRUE) {
-		RTW_INFO("%s, fwstate=0x%x\n", __func__, pmlmepriv->fw_state);
-		need_indicate_scan_done = _TRUE;
-		goto check_need_indicate_scan_done;
-	} else if (check_fwstate(pmlmepriv, _FW_UNDER_LINKING) == _TRUE) {
-		RTW_INFO("%s, fwstate=0x%x\n", __func__, pmlmepriv->fw_state);
-		ret = -EBUSY;
-		goto check_need_indicate_scan_done;
-	}
-
-#ifdef CONFIG_CONCURRENT_MODE
-	if (rtw_mi_buddy_check_fwstate(padapter, _FW_UNDER_LINKING | WIFI_UNDER_WPS)) {
-		RTW_INFO("%s exit due to buddy_intf's mlme state under linking or wps\n", __func__);
-		need_indicate_scan_done = _TRUE;
-		goto check_need_indicate_scan_done;
-
-	} else if (rtw_mi_buddy_check_fwstate(padapter, _FW_UNDER_SURVEY)) {
-		bool scan_via_buddy = rtw_cfg80211_scan_via_buddy(padapter, request);
-
-		if (scan_via_buddy == _FALSE)
-			need_indicate_scan_done = _TRUE;
-
-		goto check_need_indicate_scan_done;
-	}
-#endif /* CONFIG_CONCURRENT_MODE */
-
-	/* busy traffic check*/
-	if (rtw_mi_busy_traffic_check(padapter, _TRUE)) {
-		need_indicate_scan_done = _TRUE;
-		goto check_need_indicate_scan_done;
-	}
-#endif
 
 #ifdef CONFIG_P2P
 	if (!rtw_p2p_chk_state(pwdinfo, P2P_STATE_NONE) && !rtw_p2p_chk_state(pwdinfo, P2P_STATE_IDLE)) {
@@ -7415,7 +7283,6 @@ static int cfg80211_rtw_tdls_mgmt(struct wiphy *wiphy,
 	memcpy(txmgmt.buf, (void *)buf, txmgmt.len);
 
 	/* Debug purpose */
-#if 1
 	RTW_INFO("%s %d\n", __FUNCTION__, __LINE__);
 	RTW_INFO("peer:"MAC_FMT", action code:%d, dialog:%d, status code:%d\n",
 		MAC_ARG(txmgmt.peer), txmgmt.action_code,
@@ -7426,7 +7293,6 @@ static int cfg80211_rtw_tdls_mgmt(struct wiphy *wiphy,
 			printk("%02x ", *(txmgmt.buf + i));
 		RTW_INFO("len:%d\n", (u32)txmgmt.len);
 	}
-#endif
 
 	switch (txmgmt.action_code) {
 	case WLAN_TDLS_SETUP_REQUEST:

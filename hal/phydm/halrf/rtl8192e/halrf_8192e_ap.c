@@ -738,13 +738,7 @@ _phy_reload_mac_registers_92e(
 	u32	i;
 
 	RF_DBG(dm, DBG_RF_IQK, "Reload MAC parameters !\n");
-#if 1
 	odm_set_bb_reg(dm, R_0x520, MASKBYTE2, 0x0);
-#else
-	for (i = 0 ; i < (IQK_MAC_REG_NUM - 1); i++)
-		odm_write_1byte(dm, mac_reg[i], (u8)mac_backup[i]);
-	odm_write_4byte(dm, mac_reg[i], mac_backup[i]);
-#endif
 }
 
 
@@ -790,13 +784,7 @@ _phy_mac_setting_calibration_92e(
 		}
 		odm_write_1byte(dm, mac_reg[i], (u8)(mac_backup[i]&(~BIT(5))));
 	*/
-#if 1
 	odm_set_bb_reg(dm, R_0x520, MASKBYTE2, 0xff);
-#else
-	odm_set_bb_reg(dm, R_0x522, MASKBYTE0, 0x7f);
-	odm_set_bb_reg(dm, R_0x550, MASKBYTE0, 0x15);
-	odm_set_bb_reg(dm, R_0x551, MASKBYTE0, 0x00);
-#endif
 
 	while ((((odm_get_rf_reg(dm, 0x0, RF_0x0, bMaskDWord) & 0xf0000)  >> 16) == 0x2) && (((odm_get_rf_reg(dm, 0x1, RF_0x0, bMaskDWord) & 0xf0000)  >> 16) == 0x2))
 		ODM_delay_ms(1);
@@ -1063,7 +1051,6 @@ _phy_iq_calibrate_8192e(
 	}
 
 	/* path A RXIQK */
-#if 1
 	for (i = 0 ; i < retry_count ; i++) {
 		path_aok = phy_path_a_rx_iqk_92e(dm, is2T);
 		if (path_aok == 0x03) {
@@ -1083,8 +1070,6 @@ _phy_iq_calibrate_8192e(
 	if (0x00 == path_aok)
 		RF_DBG(dm, DBG_RF_IQK, "path A IQK failed!!\n");
 
-#endif
-
 	if (is2T) {
 		_phy_path_a_stand_by_92e(dm);
 		/* Turn ADDA on */
@@ -1096,7 +1081,6 @@ _phy_iq_calibrate_8192e(
 		odm_set_bb_reg(dm, REG_RX_IQK, MASKDWORD, 0x01004800);
 
 		/* path B Tx IQK */
-#if 1
 		for (i = 0 ; i < retry_count ; i++) {
 			path_bok = phy_path_b_iqk_8192e(dm);
 			/*		if(path_bok == 0x03){ */
@@ -1111,10 +1095,8 @@ _phy_iq_calibrate_8192e(
 				result[t][5] = 0x0;
 			}
 		}
-#endif
-
 		/* path B RX IQK */
-#if 1
+
 		for (i = 0 ; i < retry_count ; i++) {
 			path_bok = phy_path_b_rx_iqk_92e(dm, is2T);
 			if (path_bok == 0x03) {
@@ -1135,7 +1117,6 @@ _phy_iq_calibrate_8192e(
 			RF_DBG(dm, DBG_RF_IQK, "path B IQK failed!!\n");
 			/**/
 		}
-#endif
 	}
 
 	/* Back to BB mode, load original value */

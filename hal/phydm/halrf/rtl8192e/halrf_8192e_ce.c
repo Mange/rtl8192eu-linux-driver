@@ -1579,7 +1579,6 @@ void _phy_iq_calibrate_8192e(struct dm_struct *dm, s32 result[][8], u8 t,
 	}
 
 /* path A TXIQK */
-#if 1
 	for (i = 0; i < retry_count; i++) {
 		path_aok = phy_path_a_iqk_8192e(dm, is2T);
 		/*		if(path_aok == 0x03){ */
@@ -1592,10 +1591,7 @@ void _phy_iq_calibrate_8192e(struct dm_struct *dm, s32 result[][8], u8 t,
 
 		RF_DBG(dm, DBG_RF_IQK, "path A Tx IQK Fail!!\n");
 	}
-#endif
-
 /* path A RXIQK */
-#if 1
 	for (i = 0; i < retry_count; i++) {
 		path_aok = phy_path_a_rx_iqk_92e(dm, is2T);
 		if (path_aok == 0x03) {
@@ -1613,8 +1609,6 @@ void _phy_iq_calibrate_8192e(struct dm_struct *dm, s32 result[][8], u8 t,
 	if (0x00 == path_aok)
 		RF_DBG(dm, DBG_RF_IQK, "path A IQK failed!!\n");
 
-#endif
-
 	if (is2T) {
 		_phy_path_a_stand_by_92e(dm);
 		/* Turn ADDA on */
@@ -1626,7 +1620,6 @@ void _phy_iq_calibrate_8192e(struct dm_struct *dm, s32 result[][8], u8 t,
 		odm_set_bb_reg(dm, REG_RX_IQK, MASKDWORD, 0x01004800);
 
 /* path B Tx IQK */
-#if 1
 		for (i = 0; i < retry_count; i++) {
 			path_bok = phy_path_b_iqk_8192e(dm);
 			/*		if(path_bok == 0x03){ */
@@ -1638,10 +1631,8 @@ void _phy_iq_calibrate_8192e(struct dm_struct *dm, s32 result[][8], u8 t,
 				break;
 			}
 		}
-#endif
 
 /* path B RX IQK */
-#if 1
 		for (i = 0; i < retry_count; i++) {
 			path_bok = phy_path_b_rx_iqk_92e(dm, is2T);
 			if (path_bok == 0x03) {
@@ -1656,7 +1647,6 @@ void _phy_iq_calibrate_8192e(struct dm_struct *dm, s32 result[][8], u8 t,
 		}
 		if (0x00 == path_bok)
 			RF_DBG(dm, DBG_RF_IQK, "path B IQK failed!!\n");
-#endif
 	}
 
 	/* Back to BB mode, load original value */

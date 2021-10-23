@@ -1138,26 +1138,9 @@ void rtw_hal_dump_macaddr(void *sel, _adapter *adapter)
 #ifdef RTW_HALMAC
 void rtw_hal_hw_port_enable(_adapter *adapter)
 {
-#if 1
 	u8 port_enable = _TRUE;
 
 	rtw_hal_set_hwreg(adapter, HW_VAR_PORT_CFG, &port_enable);
-#else
-	struct dvobj_priv *dvobj = adapter_to_dvobj(adapter);
-	struct rtw_halmac_bcn_ctrl bcn_ctrl;
-
-	memset(&bcn_ctrl, 0, sizeof(struct rtw_halmac_bcn_ctrl));
-	bcn_ctrl.enable_bcn = 1;
-	bcn_ctrl.rx_bssid_fit = 1;
-	bcn_ctrl.rxbcn_rpt = 1;
-
-	/*rtw_halmac_get_bcn_ctrl(struct dvobj_priv *d, enum _hw_port hwport,
-				struct rtw_halmac_bcn_ctrl *bcn_ctrl)*/
-	if (rtw_halmac_set_bcn_ctrl(dvobj, get_hw_port(adapter), &bcn_ctrl) == -1) {
-		RTW_ERR(ADPT_FMT" - hw port(%d) enable fail!!\n", ADPT_ARG(adapter), get_hw_port(adapter));
-		rtw_warn_on(1);
-	}
-#endif
 }
 void rtw_hal_hw_port_disable(_adapter *adapter)
 {
@@ -1199,8 +1182,7 @@ void rtw_mi_set_mac_addr(_adapter *adapter)
 			rtw_hal_set_hwreg(iface, HW_VAR_MAC_ADDR, adapter_mac_addr(iface));
 	}
 #endif
-	if (1)
-		rtw_hal_dump_macaddr(RTW_DBGDUMP, adapter);
+	rtw_hal_dump_macaddr(RTW_DBGDUMP, adapter);
 }
 
 void rtw_init_hal_com_default_value(PADAPTER Adapter)
@@ -2842,43 +2824,19 @@ void rtw_hal_set_bcn_rsvdpage_loc_cmd(_adapter *adapter)
 	u8 bcn_rsvdpage[H2C_BCN_RSVDPAGE_LEN] = {0};
 
 	rtw_hal_get_def_var(adapter, HAL_DEF_TX_PAGE_SIZE, (u8 *)&page_size);
-	#if 1
 	for (vap_id = 0; vap_id < CONFIG_LIMITED_AP_NUM; vap_id++) {
 		if (dvobj->vap_map & BIT(vap_id))
 			bcn_rsvdpage[vap_id] = vap_id * (MAX_BEACON_LEN / page_size);
 	}
-	#else
-#define SET_H2CCMD_BCN_RSVDPAGE_LOC_ROOT(__pH2CCmd, __Value)	SET_BITS_TO_LE_1BYTE(__pH2CCmd, 0, 8, __Value)
-#define SET_H2CCMD_BCN_RSVDPAGE_LOC_VAP1(__pH2CCmd, __Value)	SET_BITS_TO_LE_1BYTE(__pH2CCmd, 1, 8, __Value)
-#define SET_H2CCMD_BCN_RSVDPAGE_LOC_VAP2(__pH2CCmd, __Value)	SET_BITS_TO_LE_1BYTE(__pH2CCmd, 2, 8, __Value)
-#define SET_H2CCMD_BCN_RSVDPAGE_LOC_VAP3(__pH2CCmd, __Value)	SET_BITS_TO_LE_1BYTE(__pH2CCmd, 3, 8, __Value)
-#define SET_H2CCMD_BCN_RSVDPAGE_LOC_VAP4(__pH2CCmd, __Value)	SET_BITS_TO_LE_1BYTE(__pH2CCmd, 4, 8, __Value)
 
-	if (dvobj->vap_map & BIT(0))
- 		SET_H2CCMD_BCN_RSVDPAGE_LOC_ROOT(bcn_rsvdpage, 0);
-	if (dvobj->vap_map & BIT(1))
-		SET_H2CCMD_BCN_RSVDPAGE_LOC_VAP1(bcn_rsvdpage,
-					1 * (MAX_BEACON_LEN / page_size));
-	if (dvobj->vap_map & BIT(2))
-		SET_H2CCMD_BCN_RSVDPAGE_LOC_VAP2(bcn_rsvdpage,
-					2 * (MAX_BEACON_LEN / page_size));
-	if (dvobj->vap_map & BIT(3))
-		SET_H2CCMD_BCN_RSVDPAGE_LOC_VAP3(bcn_rsvdpage,
-					3 * (MAX_BEACON_LEN / page_size));
-	if (dvobj->vap_map & BIT(4))
-		SET_H2CCMD_BCN_RSVDPAGE_LOC_VAP4(bcn_rsvdpage,
-					4 * (MAX_BEACON_LEN / page_size));
-	#endif
-	if (1) {
-		RTW_INFO("[BCN_LOC] vap_map : 0x%02x\n", dvobj->vap_map);
-		RTW_INFO("[BCN_LOC] page_size :%d, @bcn_page_num :%d\n"
-			, page_size, (MAX_BEACON_LEN / page_size));
-		RTW_INFO("[BCN_LOC] root ap : 0x%02x\n", *bcn_rsvdpage);
-		RTW_INFO("[BCN_LOC] vap_1 : 0x%02x\n", *(bcn_rsvdpage + 1));
-		RTW_INFO("[BCN_LOC] vap_2 : 0x%02x\n", *(bcn_rsvdpage + 2));
-		RTW_INFO("[BCN_LOC] vap_3 : 0x%02x\n", *(bcn_rsvdpage + 3));
-		RTW_INFO("[BCN_LOC] vap_4 : 0x%02x\n", *(bcn_rsvdpage + 4));
-	}
+	RTW_INFO("[BCN_LOC] vap_map : 0x%02x\n", dvobj->vap_map);
+	RTW_INFO("[BCN_LOC] page_size :%d, @bcn_page_num :%d\n"
+		, page_size, (MAX_BEACON_LEN / page_size));
+	RTW_INFO("[BCN_LOC] root ap : 0x%02x\n", *bcn_rsvdpage);
+	RTW_INFO("[BCN_LOC] vap_1 : 0x%02x\n", *(bcn_rsvdpage + 1));
+	RTW_INFO("[BCN_LOC] vap_2 : 0x%02x\n", *(bcn_rsvdpage + 2));
+	RTW_INFO("[BCN_LOC] vap_3 : 0x%02x\n", *(bcn_rsvdpage + 3));
+	RTW_INFO("[BCN_LOC] vap_4 : 0x%02x\n", *(bcn_rsvdpage + 4));
 	ret = rtw_hal_fill_h2c_cmd(adapter, H2C_BCN_RSVDPAGE,
 					H2C_BCN_RSVDPAGE_LEN, bcn_rsvdpage);
 }
@@ -10706,13 +10664,11 @@ void hw_var_set_correct_tsf(PADAPTER adapter, u8 mlme_state)
 	}
 
 	/*#ifdef DBG_P0_TSF_SYNC*/
-	#if 1
 	if (dvobj->p0_tsf.sync_port == MAX_HW_PORT)
 		RTW_INFO("[TSF_SYNC] p0 sync port = N/A\n");
 	else
 		RTW_INFO("[TSF_SYNC] p0 sync port = %d\n", dvobj->p0_tsf.sync_port);
 	RTW_INFO("[TSF_SYNC] timer offset = %d\n", dvobj->p0_tsf.offset);
-	#endif
 #endif /*CONFIG_CONCURRENT_MODE*/
 }
 

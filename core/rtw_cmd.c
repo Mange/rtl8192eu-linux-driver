@@ -2585,19 +2585,17 @@ u8 _ssmps_chk_by_tp(_adapter *adapter, u8 from_timer)
 			enter_smps = _FALSE;
 	}
 
-	if (1) {
-		RTW_INFO(FUNC_ADPT_FMT" tx_tp:%d [%d], rx_tp:%d [%d] , SSMPS enter :%s\n",
-			FUNC_ADPT_ARG(adapter),
-			tx_tp_mbits, pmlmeext->ssmps_tx_tp_th,
-			rx_tp_mbits, pmlmeext->ssmps_rx_tp_th,
-			(enter_smps == _TRUE) ? "True" : "False");
-		#ifdef DBG_STATIC_SMPS
-		RTW_INFO(FUNC_ADPT_FMT" test:%d test_en:%d\n",
-			FUNC_ADPT_ARG(adapter),
-			pmlmeext->ssmps_test,
-			pmlmeext->ssmps_test_en);
-		#endif
-	}
+	RTW_INFO(FUNC_ADPT_FMT" tx_tp:%d [%d], rx_tp:%d [%d] , SSMPS enter :%s\n",
+		FUNC_ADPT_ARG(adapter),
+		tx_tp_mbits, pmlmeext->ssmps_tx_tp_th,
+		rx_tp_mbits, pmlmeext->ssmps_rx_tp_th,
+		(enter_smps == _TRUE) ? "True" : "False");
+	#ifdef DBG_STATIC_SMPS
+	RTW_INFO(FUNC_ADPT_FMT" test:%d test_en:%d\n",
+		FUNC_ADPT_ARG(adapter),
+		pmlmeext->ssmps_test,
+		pmlmeext->ssmps_test_en);
+	#endif
 
 	if (enter_smps) {
 		if (!from_timer && psta->cmn.sm_ps != SM_PS_STATIC)
@@ -2773,13 +2771,11 @@ void rtw_ctrl_tx_ss_by_tp(_adapter *adapter, u8 from_timer)
 			tx_1ss = _TRUE;
 	}
 
-	if (1) {
-		RTW_INFO(FUNC_ADPT_FMT" tx_tp:%d [%d] tx_1ss(%d):%s\n",
-			FUNC_ADPT_ARG(adapter),
-			tx_tp_mbits, pmlmeext->txss_tp_th,
-			pmlmeext->txss_tp_chk_cnt,
-			(tx_1ss == _TRUE) ? "True" : "False");
-	}
+	RTW_INFO(FUNC_ADPT_FMT" tx_tp:%d [%d] tx_1ss(%d):%s\n",
+		FUNC_ADPT_ARG(adapter),
+		tx_tp_mbits, pmlmeext->txss_tp_th,
+		pmlmeext->txss_tp_chk_cnt,
+		(tx_1ss == _TRUE) ? "True" : "False");
 
 	if (pmlmeext->txss_1ss != tx_1ss) {
 		if (from_timer)
@@ -2856,15 +2852,9 @@ u8 _lps_chk_by_tp(_adapter *adapter, u8 from_timer)
 	psta->sta_stats.acc_tx_bytes = psta->sta_stats.tx_bytes;
 	psta->sta_stats.acc_rx_bytes = psta->sta_stats.rx_bytes;
 
-#if 1
 	tx_tp_mbits = psta->sta_stats.tx_tp_kbits >> 10;
 	rx_tp_mbits = psta->sta_stats.rx_tp_kbits >> 10;
 	bi_tp_mbits = tx_tp_mbits + rx_tp_mbits;
-#else
-	tx_tp_mbits = psta->sta_stats.smooth_tx_tp_kbits >> 10;
-	rx_tp_mbits = psta->sta_stats.smooth_rx_tp_kbits >> 10;
-	bi_tp_mbits = tx_tp_mbits + rx_tp_mbits;
-#endif
 
 	if ((bi_tp_mbits >= pwrpriv->lps_bi_tp_th) ||
 		(tx_tp_mbits >= pwrpriv->lps_tx_tp_th) ||
@@ -2889,26 +2879,24 @@ u8 _lps_chk_by_tp(_adapter *adapter, u8 from_timer)
 			enter_ps = _TRUE;
 	}
 
-	if (1) {
-		RTW_INFO(FUNC_ADPT_FMT" tx_tp:%d [%d], rx_tp:%d [%d], bi_tp:%d [%d], enter_ps(%d):%s\n",
-			FUNC_ADPT_ARG(adapter),
-			tx_tp_mbits, pwrpriv->lps_tx_tp_th,
-			rx_tp_mbits, pwrpriv->lps_rx_tp_th,
-			bi_tp_mbits, pwrpriv->lps_bi_tp_th,
-			pwrpriv->lps_chk_cnt,
-			(enter_ps == _TRUE) ? "True" : "False");
-		RTW_INFO(FUNC_ADPT_FMT" tx_pkt_cnt :%d [%d], rx_pkt_cnt :%d [%d]\n",
-			FUNC_ADPT_ARG(adapter),
-			pmlmepriv->LinkDetectInfo.NumTxOkInPeriod,
-			pwrpriv->lps_tx_pkts,
-			pmlmepriv->LinkDetectInfo.NumRxUnicastOkInPeriod,
-			pwrpriv->lps_rx_pkts);
-		if (!adapter->bsta_tp_dump)
-			RTW_INFO(FUNC_ADPT_FMT" bcn_cnt:%d (per-%d second)\n",
-			FUNC_ADPT_ARG(adapter),
-			rx_bcn_cnt,
-			2);
-	}
+	RTW_INFO(FUNC_ADPT_FMT" tx_tp:%d [%d], rx_tp:%d [%d], bi_tp:%d [%d], enter_ps(%d):%s\n",
+		FUNC_ADPT_ARG(adapter),
+		tx_tp_mbits, pwrpriv->lps_tx_tp_th,
+		rx_tp_mbits, pwrpriv->lps_rx_tp_th,
+		bi_tp_mbits, pwrpriv->lps_bi_tp_th,
+		pwrpriv->lps_chk_cnt,
+		(enter_ps == _TRUE) ? "True" : "False");
+	RTW_INFO(FUNC_ADPT_FMT" tx_pkt_cnt :%d [%d], rx_pkt_cnt :%d [%d]\n",
+		FUNC_ADPT_ARG(adapter),
+		pmlmepriv->LinkDetectInfo.NumTxOkInPeriod,
+		pwrpriv->lps_tx_pkts,
+		pmlmepriv->LinkDetectInfo.NumRxUnicastOkInPeriod,
+		pwrpriv->lps_rx_pkts);
+	if (!adapter->bsta_tp_dump)
+		RTW_INFO(FUNC_ADPT_FMT" bcn_cnt:%d (per-%d second)\n",
+		FUNC_ADPT_ARG(adapter),
+		rx_bcn_cnt,
+		2);
 
 	if (enter_ps) {
 		if (!from_timer)

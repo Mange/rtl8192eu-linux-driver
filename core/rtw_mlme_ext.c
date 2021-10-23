@@ -1298,7 +1298,6 @@ void mgt_dispatcher(_adapter *padapter, union recv_frame *precv_frame)
 	}
 	ptable += index;
 
-#if 1
 	if (psta != NULL) {
 		if (GetRetry(pframe)) {
 			if (precv_frame->u.hdr.attrib.seq_num == psta->RxMgmtFrameSeqNum) {
@@ -1310,12 +1309,6 @@ void mgt_dispatcher(_adapter *padapter, union recv_frame *precv_frame)
 		}
 		psta->RxMgmtFrameSeqNum = precv_frame->u.hdr.attrib.seq_num;
 	}
-#else
-
-	if (GetRetry(pframe)) {
-		/* return; */
-	}
-#endif
 
 #ifdef CONFIG_AP_MODE
 	switch (get_frame_sub_type(pframe)) {

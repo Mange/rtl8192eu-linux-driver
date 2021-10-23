@@ -1485,7 +1485,6 @@ ssize_t proc_set_survey_info(struct file *file, const char __user *buffer, size_
 	if (count < 1)
 		return -EFAULT;
 
-#if 1
 	ssc_chk = rtw_sitesurvey_condition_check(padapter, _FALSE);
 	if (ssc_chk != SS_ALLOW)
 		goto exit;
@@ -1497,49 +1496,7 @@ ssize_t proc_set_survey_info(struct file *file, const char __user *buffer, size_
 		RTW_INFO("scan abort!! adapter cannot use\n");
 		goto cancel_ps_deny;
 	}
-#else
-#ifdef CONFIG_MP_INCLUDED
-	if (rtw_mp_mode_check(padapter)) {
-		RTW_INFO("MP mode block Scan request\n");
-		goto exit;
-	}
-#endif
-	if (rtw_is_scan_deny(padapter)) {
-		RTW_INFO(FUNC_ADPT_FMT  ": scan deny\n", FUNC_ADPT_ARG(padapter));
-		goto exit;
-	}
 
-	rtw_ps_deny(padapter, PS_DENY_SCAN);
-	if (_FAIL == rtw_pwr_wakeup(padapter))
-		goto cancel_ps_deny;
-
-	if (!rtw_is_adapter_up(padapter)) {
-		RTW_INFO("scan abort!! adapter cannot use\n");
-		goto cancel_ps_deny;
-	}
-
-	if (rtw_mi_busy_traffic_check(padapter, _FALSE)) {
-		RTW_INFO("scan abort!! BusyTraffic == _TRUE\n");
-		goto cancel_ps_deny;
-	}
-
-	if (check_fwstate(pmlmepriv, WIFI_AP_STATE) && check_fwstate(pmlmepriv, WIFI_UNDER_WPS)) {
-		RTW_INFO("scan abort!! AP mode process WPS\n");
-		goto cancel_ps_deny;
-	}
-	if (check_fwstate(pmlmepriv, _FW_UNDER_SURVEY | _FW_UNDER_LINKING) == _TRUE) {
-		RTW_INFO("scan abort!! fwstate=0x%x\n", pmlmepriv->fw_state);
-		goto cancel_ps_deny;
-	}
-
-#ifdef CONFIG_CONCURRENT_MODE
-	if (rtw_mi_buddy_check_fwstate(padapter,
-		       _FW_UNDER_SURVEY | _FW_UNDER_LINKING | WIFI_UNDER_WPS)) {
-		RTW_INFO("scan abort!! buddy_fwstate check failed\n");
-		goto cancel_ps_deny;
-	}
-#endif
-#endif
 	_status = rtw_set_802_11_bssid_list_scan(padapter, NULL);
 
 cancel_ps_deny:
@@ -3817,10 +3774,8 @@ int proc_get_best_channel(struct seq_file *m, void *v)
 				best_channel_5G = rfctl->channel_set[i].ChannelNum;
 			}
 		}
-#if 1 /* debug */
 		RTW_PRINT_SEL(m, "The rx cnt of channel %3d = %d\n",
 			rfctl->channel_set[i].ChannelNum, rfctl->channel_set[i].rx_count);
-#endif
 	}
 
 	RTW_PRINT_SEL(m, "best_channel_5G = %d\n", best_channel_5G);
@@ -4433,7 +4388,6 @@ int proc_get_tx_ring_ext(struct seq_file *m, void *v)
 					RTW_PRINT_SEL(m, "\n");
 			}
 
-#if 1 /* data dump */
 			if (pbuf->tx_desc_size) {
 				RTW_PRINT_SEL(m, "  data[%03d]:\n", j);
 
@@ -4448,8 +4402,6 @@ int proc_get_tx_ring_ext(struct seq_file *m, void *v)
 				}
 				RTW_PRINT_SEL(m, "\n");
 			}
-#endif
-
 			RTW_PRINT_SEL(m, "  R/W pointer: %d/%d\n", pbuf->tx_bak_rp, pbuf->tx_bak_wp);
 
 			pbuf = pbuf + 1;
@@ -6862,7 +6814,7 @@ int proc_get_smps(struct seq_file *m, void *v)
 
 #endif /* CONFIG_PROC_DEBUG */
 #define RTW_BUFDUMP_BSIZE		16
-#if 1
+
 inline void RTW_BUF_DUMP_SEL(uint _loglevel, void *sel, u8 *_titlestring,
 					bool _idx_show, const u8 *_hexdata, int _hexdatalen)
 {
@@ -6894,89 +6846,4 @@ inline void RTW_BUF_DUMP_SEL(uint _loglevel, void *sel, u8 *_titlestring,
 	}
 #endif
 }
-#else
-inline void _RTW_STR_DUMP_SEL(void *sel, char *str_out)
-{
-	if (sel == RTW_DBGDUMP)
-		_dbgdump("%s\n", str_out);
-	#if defined(_seqdump)
-	else
-		_seqdump(sel, "%s\n", str_out);
-	#endif /*_seqdump*/
-}
-inline void RTW_BUF_DUMP_SEL(uint _loglevel, void *sel, u8 *_titlestring,
-					bool _idx_show, u8 *_hexdata, int _hexdatalen)
-{
-	int __i, len;
-	int __j, idx;
-	int block_num, remain_byte;
-	char str_out[128] = {'\0'};
-	char str_val[32] = {'\0'};
-	char *p = NULL;
-	u8 *ptr = (u8 *)_hexdata;
 
-	if (_loglevel <= rtw_drv_log_level) {
-		/*dump title*/
-		p = &str_out[0];
-		if (_titlestring) {
-			if (sel == RTW_DBGDUMP) {
-				len = snprintf(str_val, sizeof(str_val), "%s", DRIVER_PREFIX);
-				strncpy(p, str_val, len);
-				p += len;
-			}
-			len = snprintf(str_val, sizeof(str_val), "%s", _titlestring);
-			strncpy(p, str_val, len);
-			p += len;
-		}
-		if (p != &str_out[0]) {
-			_RTW_STR_DUMP_SEL(sel, str_out);
-			memset(&str_out, '\0', sizeof(str_out));
-		}
-
-		/*dump buffer*/
-		block_num = _hexdatalen / RTW_BUFDUMP_BSIZE;
-		remain_byte = _hexdatalen % RTW_BUFDUMP_BSIZE;
-		for (__i = 0; __i < block_num; __i++) {
-			p = &str_out[0];
-			if (sel == RTW_DBGDUMP) {
-				len = snprintf(str_val, sizeof(str_val), "%s", DRIVER_PREFIX);
-				strncpy(p, str_val, len);
-				p += len;
-			}
-			if (_idx_show) {
-				len = snprintf(str_val, sizeof(str_val), "0x%03X: ", __i * RTW_BUFDUMP_BSIZE);
-				strncpy(p, str_val, len);
-				p += len;
-			}
-			for (__j =0; __j < RTW_BUFDUMP_BSIZE; __j++) {
-				idx = __i * RTW_BUFDUMP_BSIZE + __j;
-				len = snprintf(str_val, sizeof(str_val), "%02X%s", ptr[idx], (((__j + 1) % 4) == 0) ? "  " : " ");
-				strncpy(p, str_val, len);
-				p += len;
-			}
-			_RTW_STR_DUMP_SEL(sel, str_out);
-			memset(&str_out, '\0', sizeof(str_out));
-		}
-
-		p = &str_out[0];
-		if ((sel == RTW_DBGDUMP) && remain_byte) {
-			len = snprintf(str_val, sizeof(str_val), "%s", DRIVER_PREFIX);
-			strncpy(p, str_val, len);
-			p += len;
-		}
-		if (_idx_show && remain_byte) {
-			len = snprintf(str_val, sizeof(str_val), "0x%03X: ", block_num * RTW_BUFDUMP_BSIZE);
-			strncpy(p, str_val, len);
-			p += len;
-		}
-		for (__i = 0; __i < remain_byte; __i++) {
-			idx = block_num * RTW_BUFDUMP_BSIZE + __i;
-			len = snprintf(str_val, sizeof(str_val), "%02X%s", ptr[idx], (((__i + 1) % 4) == 0) ? "  " : " ");
-			strncpy(p, str_val, len);
-			p += len;
-		}
-		_RTW_STR_DUMP_SEL(sel, str_out);
-	}
-}
-
-#endif

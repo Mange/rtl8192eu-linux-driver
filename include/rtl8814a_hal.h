@@ -197,7 +197,6 @@ Chip specific
 -------------------------------------------------------------------------*/
 
 /* pic buffer descriptor */
-#if 1 /* according to the define in the rtw_xmit.h, rtw_recv.h */
 	#define RTL8814AE_SEG_NUM  TX_BUFFER_SEG_NUM /* 0:2 seg, 1: 4 seg, 2: 8 seg */
 	#define TX_DESC_NUM_8814A  TX_BD_NUM   /* 128 */
 	#define RX_DESC_NUM_8814A  PCI_MAX_RX_COUNT /* 128 */
@@ -206,11 +205,6 @@ Chip specific
 	#else
 		#define BE_QUEUE_TX_DESC_NUM_8814A  (TX_BD_NUM+(TX_BD_NUM>>1)) /* 192 */
 	#endif
-#else
-	#define RTL8814AE_SEG_NUM  TX_BUFFER_SEG_NUM /* 0:2 seg, 1: 4 seg, 2: 8 seg */
-	#define TX_DESC_NUM_8814A  128 /* 1024//2048 change by ylb 20130624 */
-	#define RX_DESC_NUM_8814A  128 /* 1024 //512 change by ylb 20130624 */
-#endif
 
 /* <Roger_Notes> To prevent out of boundary programming case, leave 1byte and program full section
  * 9bytes + 1byt + 5bytes and pre 1byte.

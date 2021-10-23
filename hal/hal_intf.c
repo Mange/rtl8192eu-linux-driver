@@ -482,7 +482,7 @@ s32 rtw_hal_fw_mem_dl(_adapter *padapter, enum fw_mem mem)
 
 	if (rst == _FALSE)
 		pdbgpriv->dbg_fw_mem_dl_error_cnt++;
-	if (1)
+
 		RTW_INFO("%s dbg_fw_mem_dl_error_cnt:%d\n", __func__, pdbgpriv->dbg_fw_mem_dl_error_cnt);
 	return rst;
 }
@@ -1400,7 +1400,7 @@ bool rtw_hal_rfkill_poll(_adapter *adapter, u8 *valid)
 u8 rtw_hal_ops_check(_adapter *padapter)
 {
 	u8 ret = _SUCCESS;
-#if 1
+
 	/*** initialize section ***/
 	if (NULL == padapter->hal_func.read_chip_version) {
 		rtw_hal_error_msg("read_chip_version");
@@ -1697,7 +1697,6 @@ u8 rtw_hal_ops_check(_adapter *padapter)
 		rtw_hal_error_msg("hal_radio_onoff_check");
 		ret = _FAIL;
 	}
-#endif
 #endif
 	return  ret;
 }

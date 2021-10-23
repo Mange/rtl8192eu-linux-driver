@@ -1225,9 +1225,8 @@ s16 rtw_camid_alloc(_adapter *adapter, struct sta_info *sta, u8 kid, u8 gk, bool
 		u8 *addr = adapter_mac_addr(adapter);
 
 		cam_id = rtw_get_camid(adapter, addr, kid, gk);
-		if (1)
-			RTW_PRINT(FUNC_ADPT_FMT" group key with "MAC_FMT" assigned cam_id:%u\n"
-				, FUNC_ADPT_ARG(adapter), MAC_ARG(addr), cam_id);
+		RTW_PRINT(FUNC_ADPT_FMT" group key with "MAC_FMT" assigned cam_id:%u\n"
+			, FUNC_ADPT_ARG(adapter), MAC_ARG(addr), cam_id);
 #endif
 	} else {
 		/*
@@ -1296,8 +1295,7 @@ inline void rtw_sec_cam_swap(_adapter *adapter, u8 cam_id_a, u8 cam_id_b)
 	_irqL irqL;
 	bool cam_a_used, cam_b_used;
 
-	if (1)
-		RTW_INFO(ADPT_FMT" - sec_cam %d,%d swap\n", ADPT_ARG(adapter), cam_id_a, cam_id_b);
+	RTW_INFO(ADPT_FMT" - sec_cam %d,%d swap\n", ADPT_ARG(adapter), cam_id_a, cam_id_b);
 
 	if (cam_id_a == cam_id_b)
 		return;
@@ -1405,7 +1403,6 @@ void flush_all_cam_entry(_adapter *padapter)
 				rtw_clearstakey_cmd(padapter, psta, _FALSE);
 		}
 	} else if (MLME_IS_AP(padapter) || MLME_IS_MESH(padapter)) {
-#if 1
 		int cam_id = -1;
 		u8 *addr = adapter_mac_addr(padapter);
 
@@ -1414,21 +1411,6 @@ void flush_all_cam_entry(_adapter *padapter)
 			clear_cam_entry(padapter, cam_id);
 			rtw_camid_free(padapter, cam_id);
 		}
-#else
-		/* clear default key */
-		int i, cam_id;
-		u8 null_addr[ETH_ALEN] = {0, 0, 0, 0, 0, 0};
-
-		for (i = 0; i < 4; i++) {
-			cam_id = rtw_camid_search(padapter, null_addr, i, -1);
-			if (cam_id >= 0) {
-				clear_cam_entry(padapter, cam_id);
-				rtw_camid_free(padapter, cam_id);
-			}
-		}
-		/* clear default key related key search setting */
-		rtw_hal_set_hwreg(padapter, HW_VAR_SEC_DK_CFG, (u8 *)_FALSE);
-#endif
 	}
 
 #else /*NON CONFIG_CONCURRENT_MODE*/

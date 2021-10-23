@@ -1512,9 +1512,7 @@ void halrf_aac_check(struct dm_struct *dm)
 #endif
 #if (RTL8822B_SUPPORT == 1)
 	case ODM_RTL8822B:
-#if 1
 		aac_check_8822b(dm);
-#endif
 		break;
 #endif
 	default:
@@ -1534,11 +1532,11 @@ void halrf_init(void *dm_void)
 		halrf_supportability_init_mp(dm);
 	else
 		halrf_supportability_init(dm);
-#if 1
+
 	/*Init all RF funciton*/
 	halrf_aac_check(dm);
 	halrf_dack_trigger(dm);
-#endif
+
 	halrf_tssi_init(dm);
 }
 
@@ -2163,7 +2161,7 @@ void halrf_mode(void *dm_void, u32 *i_value, u32 *q_value)
 			break;
 		}
 	} while (c < 100);
-#if 1
+
 	/*i*/
 	m = 0;
 	p = 0;
@@ -2203,6 +2201,6 @@ void halrf_mode(void *dm_void, u32 *i_value, u32 *q_value)
 			t = 0x400 - t;
 	}
 	*q_value = t;
-#endif
+
 }
 

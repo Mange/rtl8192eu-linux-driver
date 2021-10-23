@@ -418,10 +418,8 @@ PHY_BBConfig8192E(
 
 	hal_set_crystal_cap(Adapter, pHalData->crystal_cap);
 
-#if 1
 	/* write 0x24= 000f81fb ,suggest by Ed		 */
 	rtw_write32(Adapter, REG_AFE_CTRL1_8192E, 0x000f81fb);
-#endif
 
 	return rtStatus;
 

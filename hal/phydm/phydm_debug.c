@@ -180,14 +180,8 @@ void phydm_bb_hw_dbg_info_n(void *dm_void, u32 *_used, char *output,
 	u8 rf_gain_a = 0, rf_gain_b = 0, rf_gain_c = 0, rf_gain_d = 0;
 	u8 rx_snr_a = 0, rx_snr_b = 0, rx_snr_c = 0, rx_snr_d = 0;
 	s8 rxevm_0 = 0, rxevm_1 = 0;
-	#if 1
 	struct phydm_cfo_rpt cfo;
 	u8 i = 0;
-	#else
-	s32 short_cfo_a = 0, short_cfo_b = 0, long_cfo_a = 0, long_cfo_b = 0;
-	s32 scfo_a = 0, scfo_b = 0, avg_cfo_a = 0, avg_cfo_b = 0;
-	s32 cfo_end_a = 0, cfo_end_b = 0, acq_cfo_a = 0, acq_cfo_b = 0;
-	#endif
 
 	PDM_SNPF(out_len, used, output + used, out_len - used, "\r\n %-35s\n",
 		 "BB Report Info");
@@ -244,7 +238,6 @@ void phydm_bb_hw_dbg_info_n(void *dm_void, u32 *_used, char *output,
 	PDM_SNPF(out_len, used, output + used, out_len - used,
 		 "\r\n %-35s = %d / %d", "RXEVM (1ss/2ss)", rxevm_0, rxevm_1);
 
-#if 1
 	phydm_get_cfo_info(dm, &cfo);
 	for (i = 0; i < dm->num_rf_path; i++) {
 		PDM_SNPF(out_len, used, output + used, out_len - used,
@@ -253,118 +246,6 @@ void phydm_bb_hw_dbg_info_n(void *dm_void, u32 *_used, char *output,
 			 cfo.cfo_rpt_s[i], cfo.cfo_rpt_l[i], cfo.cfo_rpt_sec[i],
 			 cfo.cfo_rpt_acq[i], cfo.cfo_rpt_end[i]);
 	}
-#else
-	/*@CFO Report Info*/
-	odm_set_bb_reg(dm, R_0xd00, BIT(26), 1);
-
-	/*Short CFO*/
-	value32 = odm_get_bb_reg(dm, R_0xdac, MASKDWORD);
-	value32_1 = odm_get_bb_reg(dm, R_0xdb0, MASKDWORD);
-
-	short_cfo_b = (s32)(value32 & 0xfff); /*S(12,11)*/
-	short_cfo_a = (s32)((value32 & 0x0fff0000) >> 16);
-
-	long_cfo_b = (s32)(value32_1 & 0x1fff); /*S(13,12)*/
-	long_cfo_a = (s32)((value32_1 & 0x1fff0000) >> 16);
-
-	/*SFO 2's to dec*/
-	if (short_cfo_a > 2047)
-		short_cfo_a = short_cfo_a - 4096;
-	if (short_cfo_b > 2047)
-		short_cfo_b = short_cfo_b - 4096;
-
-	short_cfo_a = (short_cfo_a * 312500) / 2048;
-	short_cfo_b = (short_cfo_b * 312500) / 2048;
-
-	/*@LFO 2's to dec*/
-
-	if (long_cfo_a > 4095)
-		long_cfo_a = long_cfo_a - 8192;
-
-	if (long_cfo_b > 4095)
-		long_cfo_b = long_cfo_b - 8192;
-
-	long_cfo_a = long_cfo_a * 312500 / 4096;
-	long_cfo_b = long_cfo_b * 312500 / 4096;
-
-	PDM_SNPF(out_len, used, output + used, out_len - used, "\r\n %-35s",
-		 "CFO Report Info");
-	PDM_SNPF(out_len, used, output + used, out_len - used,
-		 "\r\n %-35s = %d / %d", "Short CFO(Hz) <A/B>", short_cfo_a,
-		 short_cfo_b);
-	PDM_SNPF(out_len, used, output + used, out_len - used,
-		 "\r\n %-35s = %d / %d", "Long CFO(Hz) <A/B>", long_cfo_a,
-		 long_cfo_b);
-
-	/*SCFO*/
-	value32 = odm_get_bb_reg(dm, R_0xdb8, MASKDWORD);
-	value32_1 = odm_get_bb_reg(dm, R_0xdb4, MASKDWORD);
-
-	scfo_b = (s32)(value32 & 0x7ff); /*S(11,10)*/
-	scfo_a = (s32)((value32 & 0x07ff0000) >> 16);
-
-	if (scfo_a > 1023)
-		scfo_a = scfo_a - 2048;
-
-	if (scfo_b > 1023)
-		scfo_b = scfo_b - 2048;
-
-	scfo_a = scfo_a * 312500 / 1024;
-	scfo_b = scfo_b * 312500 / 1024;
-
-	avg_cfo_b = (s32)(value32_1 & 0x1fff); /*S(13,12)*/
-	avg_cfo_a = (s32)((value32_1 & 0x1fff0000) >> 16);
-
-	if (avg_cfo_a > 4095)
-		avg_cfo_a = avg_cfo_a - 8192;
-
-	if (avg_cfo_b > 4095)
-		avg_cfo_b = avg_cfo_b - 8192;
-
-	avg_cfo_a = avg_cfo_a * 312500 / 4096;
-	avg_cfo_b = avg_cfo_b * 312500 / 4096;
-
-	PDM_SNPF(out_len, used, output + used, out_len - used,
-		 "\r\n %-35s = %d / %d", "value SCFO(Hz) <A/B>", scfo_a,
-		 scfo_b);
-	PDM_SNPF(out_len, used, output + used, out_len - used,
-		 "\r\n %-35s = %d / %d", "Avg CFO(Hz) <A/B>", avg_cfo_a,
-		 avg_cfo_b);
-
-	value32 = odm_get_bb_reg(dm, R_0xdbc, MASKDWORD);
-	value32_1 = odm_get_bb_reg(dm, R_0xde0, MASKDWORD);
-
-	cfo_end_b = (s32)(value32 & 0x1fff); /*S(13,12)*/
-	cfo_end_a = (s32)((value32 & 0x1fff0000) >> 16);
-
-	if (cfo_end_a > 4095)
-		cfo_end_a = cfo_end_a - 8192;
-
-	if (cfo_end_b > 4095)
-		cfo_end_b = cfo_end_b - 8192;
-
-	cfo_end_a = cfo_end_a * 312500 / 4096;
-	cfo_end_b = cfo_end_b * 312500 / 4096;
-
-	acq_cfo_b = (s32)(value32_1 & 0x1fff); /*S(13,12)*/
-	acq_cfo_a = (s32)((value32_1 & 0x1fff0000) >> 16);
-
-	if (acq_cfo_a > 4095)
-		acq_cfo_a = acq_cfo_a - 8192;
-
-	if (acq_cfo_b > 4095)
-		acq_cfo_b = acq_cfo_b - 8192;
-
-	acq_cfo_a = acq_cfo_a * 312500 / 4096;
-	acq_cfo_b = acq_cfo_b * 312500 / 4096;
-
-	PDM_SNPF(out_len, used, output + used, out_len - used,
-		 "\r\n %-35s = %d / %d", "End CFO(Hz) <A/B>", cfo_end_a,
-		 cfo_end_b);
-	PDM_SNPF(out_len, used, output + used, out_len - used,
-		 "\r\n %-35s = %d / %d", "ACQ CFO(Hz) <A/B>", acq_cfo_a,
-		 acq_cfo_b);
-#endif
 }
 #endif
 

@@ -1837,7 +1837,6 @@ static int rtw_wx_set_scan(struct net_device *dev, struct iw_request_info *a,
 	RTW_INFO("DBG_IOCTL %s:%d\n", __FUNCTION__, __LINE__);
 #endif
 
-#if 1
 	ssc_chk = rtw_sitesurvey_condition_check(padapter, _FALSE);
 
 	#ifdef CONFIG_DOSCAN_IN_BUSYTRAFFIC
@@ -1871,67 +1870,7 @@ static int rtw_wx_set_scan(struct net_device *dev, struct iw_request_info *a,
 		ret = -1;
 		goto cancel_ps_deny;
 	}
-#else
 
-#ifdef CONFIG_MP_INCLUDED
-	if (rtw_mp_mode_check(padapter)) {
-		RTW_INFO("MP mode block Scan request\n");
-		ret = -EPERM;
-		goto exit;
-	}
-#endif
-	if (rtw_is_scan_deny(padapter)) {
-		indicate_wx_scan_complete_event(padapter);
-		goto exit;
-	}
-
-	rtw_ps_deny(padapter, PS_DENY_SCAN);
-	if (_FAIL == rtw_pwr_wakeup(padapter)) {
-		ret = -1;
-		goto cancel_ps_deny;
-	}
-
-	if (!rtw_is_adapter_up(padapter)) {
-		ret = -1;
-		goto cancel_ps_deny;
-	}
-
-#ifndef CONFIG_DOSCAN_IN_BUSYTRAFFIC
-	/* When Busy Traffic, driver do not site survey. So driver return success. */
-	/* wpa_supplicant will not issue SIOCSIWSCAN cmd again after scan timeout. */
-	/* modify by thomas 2011-02-22. */
-	if (rtw_mi_busy_traffic_check(padapter, _FALSE)) {
-		indicate_wx_scan_complete_event(padapter);
-		goto cancel_ps_deny;
-	}
-#endif
-#ifdef CONFIG_RTW_REPEATER_SON
-	if (padapter->rtw_rson_scanstage == RSON_SCAN_PROCESS) {
-		RTW_INFO(FUNC_ADPT_FMT" blocking scan for under rson scanning process\n", FUNC_ADPT_ARG(padapter));
-		indicate_wx_scan_complete_event(padapter);
-		goto cancel_ps_deny;
-	}
-#endif
-	if (check_fwstate(pmlmepriv, WIFI_AP_STATE) && check_fwstate(pmlmepriv, WIFI_UNDER_WPS)) {
-		RTW_INFO("AP mode process WPS\n");
-		indicate_wx_scan_complete_event(padapter);
-		goto cancel_ps_deny;
-	}
-
-	if (check_fwstate(pmlmepriv, _FW_UNDER_SURVEY | _FW_UNDER_LINKING) == _TRUE) {
-		indicate_wx_scan_complete_event(padapter);
-		goto cancel_ps_deny;
-	}
-
-#ifdef CONFIG_CONCURRENT_MODE
-	if (rtw_mi_buddy_check_fwstate(padapter,
-		       _FW_UNDER_SURVEY | _FW_UNDER_LINKING | WIFI_UNDER_WPS)) {
-
-		indicate_wx_scan_complete_event(padapter);
-		goto cancel_ps_deny;
-	}
-#endif
-#endif
 
 #ifdef CONFIG_P2P
 	if (pwdinfo->p2p_state != P2P_STATE_NONE) {
@@ -2107,7 +2046,7 @@ static int rtw_wx_get_scan(struct net_device *dev, struct iw_request_info *a,
 	}
 #endif /* CONFIG_P2P */
 
-#if 1 /* Wireless Extension use EAGAIN to try */
+	/* Wireless Extension use EAGAIN to try */
 	wait_status = _FW_UNDER_SURVEY
 #ifndef CONFIG_ANDROID
 		      | _FW_UNDER_LINKING
@@ -2116,20 +2055,7 @@ static int rtw_wx_get_scan(struct net_device *dev, struct iw_request_info *a,
 
 	while (check_fwstate(pmlmepriv, wait_status) == _TRUE)
 		return -EAGAIN;
-#else
-	wait_status = _FW_UNDER_SURVEY
-#ifndef CONFIG_ANDROID
-		      | _FW_UNDER_LINKING
-#endif
-		      ;
 
-	while (check_fwstate(pmlmepriv, wait_status) == _TRUE) {
-		msleep(30);
-		cnt++;
-		if (cnt > wait_for_surveydone)
-			break;
-	}
-#endif
 	_enter_critical_bh(&(pmlmepriv->scanned_queue.lock), &irqL);
 
 	phead = get_list_head(queue);
@@ -9377,7 +9303,7 @@ static int rtw_mp_efuse_set(struct net_device *dev,
 			printk("\n");
 		}
 		printk("\n");
-#if 1
+
 		err = -EFAULT;
 		RTW_INFO("%s: rtw_BT_efuse_map_read _rtw_memcmp\n", __FUNCTION__);
 		if ((rtw_BT_efuse_map_read(padapter, 0x00, EFUSE_BT_MAX_MAP_LEN, pEfuseHal->fakeBTEfuseInitMap) == _SUCCESS)) {
@@ -9409,7 +9335,6 @@ static int rtw_mp_efuse_set(struct net_device *dev,
 				goto exit;
 			}
 		}
-#endif
 
 	} else if (strcmp(tmp[0], "wlfk2map") == 0) {
 		*extra = 0;
@@ -10883,11 +10808,10 @@ static int rtw_tdls_get_best_ch(struct net_device *dev,
 				best_channel_5G = rfctl->channel_set[i].ChannelNum;
 			}
 		}
-#if 1 /* debug */
+
 		RTW_INFO("The rx cnt of channel %3d = %d\n",
 			 rfctl->channel_set[i].ChannelNum,
 			 rfctl->channel_set[i].rx_count);
-#endif
 	}
 
 	sprintf(extra, "\nbest_channel_24G = %d\n", best_channel_24G);

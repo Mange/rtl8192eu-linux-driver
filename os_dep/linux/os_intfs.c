@@ -4408,7 +4408,6 @@ int rtw_suspend_wow(_adapter *padapter)
 			clr_fwstate(pmlmepriv, _FW_UNDER_SURVEY);
 		}
 
-#if 1
 		if (rtw_mi_check_status(padapter, MI_LINKED)) {
 			ch =  rtw_mi_get_union_chan(padapter);
 			bw = rtw_mi_get_union_bw(padapter);
@@ -4417,14 +4416,7 @@ int rtw_suspend_wow(_adapter *padapter)
 				 FUNC_ADPT_ARG(padapter), ch, bw, offset);
 			set_channel_bwmode(padapter, ch, offset, bw);
 		}
-#else
-		if (rtw_mi_get_ch_setting_union(padapter, &ch, &bw, &offset) != 0) {
-			RTW_INFO(FUNC_ADPT_FMT" back to linked/linking union - ch:%u, bw:%u, offset:%u\n",
-				 FUNC_ADPT_ARG(padapter), ch, bw, offset);
-			set_channel_bwmode(padapter, ch, offset, bw);
-			rtw_mi_update_union_chan_inf(padapter, ch, offset, bw);
-		}
-#endif
+
 #ifdef CONFIG_CONCURRENT_MODE
 		rtw_mi_buddy_suspend_free_assoc_resource(padapter);
 #endif
@@ -4507,7 +4499,7 @@ int rtw_suspend_ap_wow(_adapter *padapter)
 	rtw_hal_set_hwreg(padapter, HW_VAR_WOWLAN, (u8 *)&poidparam);
 
 	RTW_PRINT("%s: wowmode suspending\n", __func__);
-#if 1
+
 	if (rtw_mi_check_status(padapter, MI_LINKED)) {
 		ch =  rtw_mi_get_union_chan(padapter);
 		bw = rtw_mi_get_union_bw(padapter);
@@ -4515,13 +4507,6 @@ int rtw_suspend_ap_wow(_adapter *padapter)
 		RTW_INFO("back to linked/linking union - ch:%u, bw:%u, offset:%u\n", ch, bw, offset);
 		set_channel_bwmode(padapter, ch, offset, bw);
 	}
-#else
-	if (rtw_mi_get_ch_setting_union(padapter, &ch, &bw, &offset) != 0) {
-		RTW_INFO("back to linked/linking union - ch:%u, bw:%u, offset:%u\n", ch, bw, offset);
-		set_channel_bwmode(padapter, ch, offset, bw);
-		rtw_mi_update_union_chan_inf(padapter, ch, offset, bw);
-	}
-#endif
 
 	/*FOR ONE AP - TODO :Multi-AP*/
 	{
@@ -4898,7 +4883,6 @@ int rtw_resume_process_ap_wow(_adapter *padapter)
 
 	rtw_mi_start_drv_threads(padapter);
 
-#if 1
 	if (rtw_mi_check_status(padapter, MI_LINKED)) {
 		ch =  rtw_mi_get_union_chan(padapter);
 		bw = rtw_mi_get_union_bw(padapter);
@@ -4906,13 +4890,6 @@ int rtw_resume_process_ap_wow(_adapter *padapter)
 		RTW_INFO(FUNC_ADPT_FMT" back to linked/linking union - ch:%u, bw:%u, offset:%u\n", FUNC_ADPT_ARG(padapter), ch, bw, offset);
 		set_channel_bwmode(padapter, ch, offset, bw);
 	}
-#else
-	if (rtw_mi_get_ch_setting_union(padapter, &ch, &bw, &offset) != 0) {
-		RTW_INFO(FUNC_ADPT_FMT" back to linked/linking union - ch:%u, bw:%u, offset:%u\n", FUNC_ADPT_ARG(padapter), ch, bw, offset);
-		set_channel_bwmode(padapter, ch, offset, bw);
-		rtw_mi_update_union_chan_inf(padapter, ch, offset, bw);
-	}
-#endif
 
 	/*FOR ONE AP - TODO :Multi-AP*/
 	{

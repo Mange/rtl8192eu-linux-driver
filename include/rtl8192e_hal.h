@@ -49,8 +49,6 @@
 #define Rtl8192E_NIC_LPS_ENTER_FLOW			rtl8192E_enter_lps_flow
 #define Rtl8192E_NIC_LPS_LEAVE_FLOW			rtl8192E_leave_lps_flow
 
-
-#if 1 /* download firmware related data structure */
 #define FW_SIZE_8192E			0x8000 /* Compatible with RTL8192e Maximal RAM code size 32k */
 #define FW_START_ADDRESS		0x1000
 #define FW_END_ADDRESS			0x5FFF
@@ -102,7 +100,6 @@ typedef struct _RT_FIRMWARE_8192E {
 #define GET_FIRMWARE_HDR_RSVD4_8192E(__FwHdr)			LE_BITS_TO_4BYTE(__FwHdr+24, 0, 32)
 #define GET_FIRMWARE_HDR_RSVD5_8192E(__FwHdr)			LE_BITS_TO_4BYTE(__FwHdr+28, 0, 32)
 
-#endif /* download firmware related data structure */
 
 #define DRIVER_EARLY_INT_TIME_8192E		0x05
 #define BCN_DMA_ATIME_INT_TIME_8192E		0x02
