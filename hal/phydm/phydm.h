@@ -690,9 +690,6 @@ struct _phydm_mcc_dm_ {
 
 
 #if (DM_ODM_SUPPORT_TYPE & ODM_WIN)
-	#if (RT_PLATFORM != PLATFORM_LINUX)
-		typedef
-	#endif
 
 struct dm_struct {
 #else/*for AP, CE Team*/
@@ -1167,18 +1164,7 @@ struct dm_struct {
 	struct phydm_mp dm_mp_table;
 #endif
 /*@==========================================================*/
-
-#if (DM_ODM_SUPPORT_TYPE & ODM_WIN)
-
-#if (RT_PLATFORM != PLATFORM_LINUX)
-} dm_struct;	/*@DM_Dynamic_Mechanism_Structure*/
-#else
 };
-#endif
-
-#else	/*@for AP,CE Team*/
-};
-#endif
 
 enum phydm_adv_ota {
 	PHYDM_PATHB_1RCCA		= BIT(0),

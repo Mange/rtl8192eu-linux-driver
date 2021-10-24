@@ -2725,49 +2725,31 @@ static void rtw_mpath_tx_queue_flush(_adapter *adapter)
 	}
 }
 
-#ifdef PLATFORM_LINUX /* 3.10 ~ 4.13 checked */
 #if defined(CONFIG_SLUB)
 #include <linux/slub_def.h>
 #elif defined(CONFIG_SLAB)
 #include <linux/slab_def.h>
 #endif
 typedef struct kmem_cache rtw_mcache;
-#endif
 
 rtw_mcache *rtw_mcache_create(const char *name, size_t size)
 {
-#ifdef PLATFORM_LINUX /* 3.10 ~ 4.13 checked */
 	return kmem_cache_create(name, size, 0, 0, NULL);
-#else
-	#error "TBD\n";
-#endif
 }
 
 void rtw_mcache_destroy(rtw_mcache *s)
 {
-#ifdef PLATFORM_LINUX /* 3.10 ~ 4.13 checked */
 	kmem_cache_destroy(s);
-#else
-	#error "TBD\n";
-#endif
 }
 
 void *_rtw_mcache_alloc(rtw_mcache *cachep)
 {
-#ifdef PLATFORM_LINUX /* 3.10 ~ 4.13 checked */
 	return kmem_cache_alloc(cachep, GFP_ATOMIC);
-#else
-	#error "TBD\n";
-#endif
 }
 
 void _rtw_mcache_free(rtw_mcache *cachep, void *objp)
 {
-#ifdef PLATFORM_LINUX /* 3.10 ~ 4.13 checked */
 	kmem_cache_free(cachep, objp);
-#else
-	#error "TBD\n";
-#endif
 }
 
 #ifdef DBG_MEM_ALLOC

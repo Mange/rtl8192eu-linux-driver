@@ -18,7 +18,6 @@
 #include <drv_types.h>
 #include <linux/jhash.h>
 
-#ifdef PLATFORM_LINUX
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 0, 0))
 static void rtw_mpath_free_rcu(struct rtw_mesh_path *mpath)
 {
@@ -39,7 +38,6 @@ static void rtw_mpath_free_rcu(struct rtw_mesh_path *mpath)
 	call_rcu(&mpath->rcu, rtw_mpath_free_rcu_callback);
 }
 #endif
-#endif /* PLATFORM_LINUX */
 
 static void rtw_mesh_path_free_rcu(struct rtw_mesh_table *tbl, struct rtw_mesh_path *mpath);
 

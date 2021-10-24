@@ -174,12 +174,8 @@ static inline BOOLEAN rtw_ether_addr_equal(const u8 *addr1, const u8 *addr2)
 	return _rtw_memcmp(addr1, addr2, ETH_ALEN);
 }
 
-#ifdef PLATFORM_LINUX
 #define rtw_print_ratelimit()	printk_ratelimit()
 #define rtw_mod_timer(ptimer, expires) mod_timer(&(ptimer)->timer, expires)
-#else
-
-#endif
 
 #define RTW_MESH_EWMA_PRECISION 20
 #define RTW_MESH_EWMA_WEIGHT_RCP 8

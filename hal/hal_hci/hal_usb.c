@@ -22,22 +22,17 @@ int	usb_init_recv_priv(_adapter *padapter, u16 ini_in_buf_sz)
 	struct recv_priv	*precvpriv = &padapter->recvpriv;
 	int	i, res = _SUCCESS;
 	struct recv_buf *precvbuf;
-
-#ifdef PLATFORM_LINUX
 	tasklet_init(&precvpriv->recv_tasklet,
 		     (void(*)(unsigned long))usb_recv_tasklet,
 		     (unsigned long)padapter);
-#endif /* PLATFORM_LINUX */
 
 #ifdef CONFIG_USB_INTERRUPT_IN_PIPE
-#ifdef PLATFORM_LINUX
 	precvpriv->int_in_urb = usb_alloc_urb(0, GFP_KERNEL);
 	if (precvpriv->int_in_urb == NULL) {
 		res = _FAIL;
 		RTW_INFO("alloc_urb for interrupt in endpoint fail !!!!\n");
 		goto exit;
 	}
-#endif /* PLATFORM_LINUX */
 	precvpriv->int_in_buf = rtw_zmalloc(ini_in_buf_sz);
 	if (precvpriv->int_in_buf == NULL) {
 		res = _FAIL;
@@ -149,15 +144,11 @@ void usb_free_recv_priv(_adapter *padapter, u16 ini_in_buf_sz)
 		rtw_mfree(precvpriv->pallocated_recv_buf, NR_RECVBUFF * sizeof(struct recv_buf) + 4);
 
 #ifdef CONFIG_USB_INTERRUPT_IN_PIPE
-#ifdef PLATFORM_LINUX
 	if (precvpriv->int_in_urb)
 		usb_free_urb(precvpriv->int_in_urb);
-#endif
 	if (precvpriv->int_in_buf)
 		rtw_mfree(precvpriv->int_in_buf, ini_in_buf_sz);
 #endif /* CONFIG_USB_INTERRUPT_IN_PIPE */
-
-#ifdef PLATFORM_LINUX
 
 	if (skb_queue_len(&precvpriv->rx_skb_queue))
 		RTW_WARN("rx_skb_queue not empty\n");
@@ -181,8 +172,6 @@ void usb_free_recv_priv(_adapter *padapter, u16 ini_in_buf_sz)
 	rtw_skb_queue_purge(&precvpriv->free_recv_skb_queue);
 #endif /* defined(CONFIG_PREALLOC_RX_SKB_BUFFER) && defined(CONFIG_PREALLOC_RECV_SKB) */
 #endif /* !defined(CONFIG_USE_USB_BUFFER_ALLOC_RX) */
-
-#endif /* PLATFORM_LINUX */
 
 }
 

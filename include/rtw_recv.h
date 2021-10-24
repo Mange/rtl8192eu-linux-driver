@@ -347,9 +347,7 @@ struct recv_priv {
 	atomic_t	rx_pending_cnt;
 
 #ifdef CONFIG_USB_INTERRUPT_IN_PIPE
-#ifdef PLATFORM_LINUX
 	PURB	int_in_urb;
-#endif
 
 	u8	*int_in_buf;
 #endif /* CONFIG_USB_INTERRUPT_IN_PIPE */
@@ -490,9 +488,7 @@ u32 alloc_sz;
 
 #endif
 
-#if defined(PLATFORM_LINUX)
 	_pkt *pskb;
-#endif
 };
 
 

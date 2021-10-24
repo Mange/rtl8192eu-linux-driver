@@ -23,11 +23,9 @@ s32	rtl8192eu_init_xmit_priv(_adapter *padapter)
 	struct xmit_priv	*pxmitpriv = &padapter->xmitpriv;
 	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(padapter);
 
-#ifdef PLATFORM_LINUX
 	tasklet_init(&pxmitpriv->xmit_tasklet,
 		     (void(*)(unsigned long))rtl8192eu_xmit_tasklet,
 		     (unsigned long)padapter);
-#endif
 	rtl8192e_init_xmit_priv(padapter);
 
 	return _SUCCESS;
@@ -890,9 +888,7 @@ s32	rtl8192eu_hal_xmitframe_enqueue(_adapter *padapter, struct xmit_frame *pxmit
 
 		pxmitpriv->tx_drop++;
 	} else {
-#ifdef PLATFORM_LINUX
 		tasklet_hi_schedule(&pxmitpriv->xmit_tasklet);
-#endif
 	}
 
 	return err;
@@ -903,13 +899,11 @@ s32	rtl8192eu_hal_xmitframe_enqueue(_adapter *padapter, struct xmit_frame *pxmit
 
 static void rtl8192eu_hostap_mgnt_xmit_cb(struct urb *urb)
 {
-#ifdef PLATFORM_LINUX
 	struct sk_buff *skb = (struct sk_buff *)urb->context;
 
 	/* RTW_INFO("%s\n", __FUNCTION__); */
 
 	rtw_skb_free(skb);
-#endif
 }
 
 s32 rtl8192eu_hostap_mgnt_xmit_entry(_adapter *padapter, _pkt *pkt)

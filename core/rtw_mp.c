@@ -1817,13 +1817,12 @@ void SetPacketTx(PADAPTER padapter)
 	rtw_mfree(pmp_priv->TXradomBuffer, 4096);
 
 	/* 3 6. start thread */
-#ifdef PLATFORM_LINUX
 	pmp_priv->tx.PktTxThread = kthread_run(mp_xmit_packet_thread, pmp_priv, "RTW_MP_THREAD");
 	if (IS_ERR(pmp_priv->tx.PktTxThread)) {
 		RTW_ERR("Create PktTx Thread Fail !!!!!\n");
 		pmp_priv->tx.PktTxThread = NULL;
 	}
-#endif
+
 	Rtw_MPSetMacTxEDCA(padapter);
 exit:
 	return;
@@ -2139,11 +2138,9 @@ u32 mp_query_psd(PADAPTER pAdapter, u8 *data)
 	int psd_analysis = 0;
 	u8 *pdata = data;
 
-#ifdef PLATFORM_LINUX
 	if (!netif_running(pAdapter->pnetdev)) {
 		return 0;
 	}
-#endif
 
 	if (check_fwstate(&pAdapter->mlmepriv, WIFI_MP_STATE) == _FALSE) {
 		return 0;
