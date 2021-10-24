@@ -204,7 +204,7 @@ struct rtw_external_auth_params {
 	struct cfg80211_ssid ssid;
 	unsigned int key_mgmt_suite;
 	u16 status;
-	u8 pmkid[PMKID_LEN];
+	u8 pmkid[WLAN_PMKID_LEN];
 };
 
 bool rtw_cfg80211_is_connect_requested(_adapter *adapter);

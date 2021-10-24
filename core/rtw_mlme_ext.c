@@ -16138,7 +16138,7 @@ void rtw_set_external_auth_status(_adapter *padapter,
 	params.ssid.ssid_len = RTW_GET_BE64((u8 *)data + 42);
 	params.key_mgmt_suite = RTW_GET_BE32((u8 *)data + 58);
 	params.status = RTW_GET_BE16((u8 *)data + 62);
-	memcpy(&params.pmkid, (u8 *)data + 64, PMKID_LEN);
+	memcpy(&params.pmkid, (u8 *)data + 64, WLAN_PMKID_LEN);
 
 	rtw_cfg80211_external_auth_status(wiphy, dev, &params);
 #endif /* CONFIG_IOCTL_CFG80211 */

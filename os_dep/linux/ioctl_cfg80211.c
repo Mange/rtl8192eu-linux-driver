@@ -9423,7 +9423,7 @@ void rtw_cfg80211_external_auth_status(struct wiphy *wiphy, struct net_device *d
 		psta->expire_to = padapter->stapriv.assoc_to;
 
 		if (params->pmkid != NULL) {
-			/* RTW_INFO_DUMP("PMKID:", params->pmkid, PMKID_LEN); */
+			/* RTW_INFO_DUMP("PMKID:", params->pmkid, WLAN_PMKID_LEN); */
 			_rtw_set_pmksa(dev, params->bssid, params->pmkid);
 		}
 
