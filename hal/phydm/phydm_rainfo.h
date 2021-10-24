@@ -242,13 +242,7 @@ void phydm_update_hal_ra_mask(
 u8 phydm_get_plcp(void *dm_void, u16 macid);
 #endif
 
-void phydm_refresh_rate_adaptive_mask(void *dm_void);
-
 u8 phydm_rssi_lv_dec(void *dm_void, u32 rssi, u8 ratr_state);
-
-void odm_ra_post_action_on_assoc(void *dm);
-
-u8 odm_find_rts_rate(void *dm_void, u8 tx_rate, boolean is_erp_protect);
 
 void phydm_show_sta_info(void *dm_void, char input[][16], u32 *_used,
 			 char *output, u32 *_out_len);

@@ -157,23 +157,6 @@ int rtw_writeN(_adapter *adapter, u32 addr , u32 length , u8 *pdata)
 }
 
 #ifdef CONFIG_SDIO_HCI
-u8 _rtw_sd_f0_read8(_adapter *adapter, u32 addr)
-{
-	u8 r_val = 0x00;
-	struct io_priv *pio_priv = &adapter->iopriv;
-	struct intf_hdl *pintfhdl = &(pio_priv->intf);
-	u8(*_sd_f0_read8)(struct intf_hdl *pintfhdl, u32 addr);
-
-	_sd_f0_read8 = pintfhdl->io_ops._sd_f0_read8;
-
-	if (_sd_f0_read8)
-		r_val = _sd_f0_read8(pintfhdl, addr);
-	else
-		RTW_WARN(FUNC_ADPT_FMT" _sd_f0_read8 callback is NULL\n", FUNC_ADPT_ARG(adapter));
-
-	return r_val;
-}
-
 #ifdef CONFIG_SDIO_INDIRECT_ACCESS
 u8 _rtw_sd_iread8(_adapter *adapter, u32 addr)
 {
@@ -715,13 +698,6 @@ bool match_rf_write_sniff_ranges(_adapter *adapter, u8 path, u32 addr, u32 mask)
 }
 
 #ifdef CONFIG_SDIO_HCI
-u8 dbg_rtw_sd_f0_read8(_adapter *adapter, u32 addr, const char *caller, const int line)
-{
-	u8 val = _rtw_sd_f0_read8(adapter, addr);
-
-	return val;
-}
-
 #ifdef CONFIG_SDIO_INDIRECT_ACCESS
 u8 dbg_rtw_sd_iread8(_adapter *adapter, u32 addr, const char *caller, const int line)
 {

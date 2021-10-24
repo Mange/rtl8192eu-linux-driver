@@ -4327,7 +4327,7 @@ void rtl8192e_set_hal_ops(struct hal_ops *pHalFunc)
 	pHalFunc->set_chnl_bw_handler = &PHY_SetSwChnlBWMode8192E;
 
 	pHalFunc->set_tx_power_level_handler = &PHY_SetTxPowerLevel8192E;
-	pHalFunc->get_tx_power_level_handler = &PHY_GetTxPowerLevel8192E;
+	/*pHalFunc->get_tx_power_level_handler = &PHY_GetTxPowerLevel8192E;*/
 
 	pHalFunc->set_tx_power_index_handler = PHY_SetTxPowerIndex_8192E;
 	pHalFunc->get_tx_power_index_handler = PHY_GetTxPowerIndex_8192E;

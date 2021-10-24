@@ -162,11 +162,6 @@ void rtl8192eu_interface_configure(_adapter *padapter)
 
 }
 
-static VOID
-_InitBurstPktLen_8192EU(IN PADAPTER Adapter)
-{
-}
-
 static u32 _InitPowerOn_8192EU(_adapter *padapter)
 {
 	u16 value16;
@@ -755,8 +750,6 @@ u32 rtl8192eu_hal_init(PADAPTER Adapter)
 	_InitBeaconParameters_8192E(Adapter);
 	_InitBeaconMaxError_8192E(Adapter, _TRUE);
 
-	_InitBurstPktLen_8192EU(Adapter);  /* added by page. 20110919 */
-
 	/*  */
 	/* Init CR MACTXEN, MACRXEN after setting RxFF boundary REG_TRXFF_BNDY to patch */
 	/* Hw bug which Hw initials RxFF boundry size to a value which is larger than the real Rx buffer size in 88E. */
@@ -1200,14 +1193,6 @@ hal_CustomizedBehavior_8192EU(
 #endif
 }
 
-static void
-hal_CustomizeByCustomerID_8192EU(
-	IN	PADAPTER		padapter
-)
-{
-}
-
-
 static VOID
 ReadLEDSetting_8192EU(
 	IN	PADAPTER	Adapter,
@@ -1264,7 +1249,6 @@ InitAdapterVariablesByPROM_8192EU(
 	Hal_ReadPAType_8192E(Adapter, pHalData->efuse_eeprom_data, pHalData->bautoload_fail_flag);
 	Hal_ReadAmplifierType_8192E(Adapter, pHalData->efuse_eeprom_data, pHalData->bautoload_fail_flag);
 	Hal_ReadRFEType_8192E(Adapter, pHalData->efuse_eeprom_data,  pHalData->bautoload_fail_flag);
-	hal_CustomizeByCustomerID_8192EU(Adapter);
 
 	ReadLEDSetting_8192EU(Adapter, pHalData->efuse_eeprom_data, pHalData->bautoload_fail_flag);
 
@@ -1552,7 +1536,7 @@ void rtl8192eu_set_hal_ops(_adapter *padapter)
 
 
 #ifdef CONFIG_HOSTAPD_MLME
-	pHalFunc->hostap_mgnt_xmit_entry = &rtl8192eu_hostap_mgnt_xmit_entry;
+	pHalFunc->hostap_mgnt_xmit_entry = 0;
 #endif
 	pHalFunc->interface_ps_func = &rtl8192eu_ps_func;
 #ifdef CONFIG_XMIT_THREAD_MODE

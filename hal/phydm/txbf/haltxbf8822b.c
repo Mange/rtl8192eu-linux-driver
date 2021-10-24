@@ -85,12 +85,6 @@ u8 hal_txbf_8822b_get_nrx(
 }
 
 /***************SU & MU BFee Entry********************/
-void hal_txbf_8822b_rf_mode(
-	void *dm_void,
-	struct _RT_BEAMFORMING_INFO *beamforming_info,
-	u8 idx)
-{
-}
 
 void hal_txbf_8822b_enter(
 	void *dm_void,
@@ -165,7 +159,6 @@ void hal_txbf_8822b_enter(
 	if (beamforming_info->beamformee_su_cnt > 0 && bfee_idx < BEAMFORMEE_ENTRY_NUM) {
 		p_beamformee_entry = &beamforming_info->beamformee_entry[bfee_idx];
 		p_beamformee_entry->is_mu_sta = false;
-		hal_txbf_8822b_rf_mode(dm, beamforming_info, bfee_idx);
 
 		if (phydm_acting_determine(dm, phydm_acting_as_ibss))
 			sta_id = p_beamformee_entry->mac_id;
@@ -368,7 +361,6 @@ void hal_txbf_8822b_enter(
 		odm_write_1byte(dm, REG_RXFLTMAP0_8822B + 1, u1b_tmp);
 		/* @End of MAC registers setting */
 
-		hal_txbf_8822b_rf_mode(dm, beamforming_info, bfee_idx);
 #if (SUPPORT_MU_BF == 1)
 		/*Special for plugfest*/
 		mdelay(50); /* wait for 4-way handshake ending*/
@@ -441,7 +433,6 @@ void hal_txbf_8822b_leave(
 	}
 
 	if (p_beamformee_entry->beamform_entry_cap == BEAMFORMING_CAP_NONE) {
-		hal_txbf_8822b_rf_mode(dm, beamforming_info, idx);
 		if (p_beamformee_entry->is_mu_sta == 0) { /*SU BFee*/
 			if (p_beamformee_entry->su_reg_index == 0) {
 				odm_write_2byte(dm, REG_TXBF_CTRL_8822B, 0x0);
@@ -689,12 +680,6 @@ void hal_txbf_8822b_config_gtab(
 	beamforming_info->reg_mu_tx_ctrl &= 0xFFFFFFC0;
 	beamforming_info->reg_mu_tx_ctrl |= 0x3; /* STA0, STA1*/
 	odm_write_4byte(dm, 0x14c0, beamforming_info->reg_mu_tx_ctrl);
-}
-
-void hal_txbf_8822b_fw_txbf(
-	void *dm_void,
-	u8 idx)
-{
 }
 
 #endif

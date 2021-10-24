@@ -2473,13 +2473,6 @@ void halbtc8192e1ant_wifi_off_hw_cfg(IN struct btc_coexist* btcoexist)
  * ************************************************************
  * extern function start with ex_halbtc8192e1ant_
  * ************************************************************ */
-void ex_halbtc8192e1ant_power_on_setting(IN struct btc_coexist *btcoexist)
-{
-}
-
-void ex_halbtc8192e1ant_pre_load_firmware(IN struct btc_coexist *btcoexist)
-{
-}
 
 void ex_halbtc8192e1ant_init_hw_config(IN struct btc_coexist *btcoexist,
 				       IN boolean wifi_only)

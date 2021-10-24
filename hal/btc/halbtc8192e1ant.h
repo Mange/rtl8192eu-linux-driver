@@ -185,8 +185,6 @@ struct coex_sta_8192e_1ant {
 /* *******************************************
  * The following is interface which will notify coex module.
  * ******************************************* */
-void ex_halbtc8192e1ant_power_on_setting(IN struct btc_coexist *btcoexist);
-void ex_halbtc8192e1ant_pre_load_firmware(IN struct btc_coexist *btcoexist);
 void ex_halbtc8192e1ant_init_hw_config(IN struct btc_coexist *btcoexist,
 				       IN boolean wifi_only);
 void ex_halbtc8192e1ant_init_coex_dm(IN struct btc_coexist *btcoexist);
@@ -216,8 +214,6 @@ void ex_halbtc8192e1ant_dbg_control(IN struct btc_coexist *btcoexist,
 				    IN u8 op_code, IN u8 op_len, IN u8 *pdata);
 
 #else	/*  #if (RTL8192E_SUPPORT == 1) */
-#define	ex_halbtc8192e1ant_power_on_setting(btcoexist)
-#define	ex_halbtc8192e1ant_pre_load_firmware(btcoexist)
 #define	ex_halbtc8192e1ant_init_hw_config(btcoexist, wifi_only)
 #define	ex_halbtc8192e1ant_init_coex_dm(btcoexist)
 #define	ex_halbtc8192e1ant_ips_notify(btcoexist, type)

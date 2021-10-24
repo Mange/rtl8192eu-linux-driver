@@ -281,17 +281,6 @@ void WapiSMS4CalculateMic(u8 *Key, u8 *IV, u8 *Input1, u8 Input1Length,
 	*OutputLength = 16;
 }
 
-void SecCalculateMicSMS4(
-	u8		KeyIdx,
-	u8        *MicKey,
-	u8        *pHeader,
-	u8        *pData,
-	u16       DataLen,
-	u8        *MicBuffer
-)
-{
-}
-
 /* AddCount: 1 or 2.
  *  If overflow, return 1,
  *  else return 0.
@@ -393,23 +382,6 @@ void WapiSetLastRxUnicastPNForQoSData(
 	WAPI_TRACE(WAPI_RX, "<=========== %s\n", __FUNCTION__);
 }
 
-
-/****************************************************************************
- FALSE not RX-Reorder
- TRUE do RX Reorder
-add to support WAPI to N-mode
-*****************************************************************************/
-u8 WapiCheckPnInSwDecrypt(
-	_adapter *padapter,
-	struct sk_buff *pskb
-)
-{
-	u8				ret = false;
-
-	WAPI_TRACE(WAPI_RX, "%s: return %d\n", __FUNCTION__, ret);
-	return ret;
-}
-
 int SecSMS4HeaderFillIV(_adapter *padapter, u8 *pxmitframe)
 {
 	struct pkt_attrib *pattrib = &((struct xmit_frame *)pxmitframe)->attrib;
@@ -491,7 +463,6 @@ void SecSWSMS4Encryption(
 	}
 
 	SecPtr = pframe;
-	SecCalculateMicSMS4(KeyIdx, pMicKey, SecPtr, (SecPtr + DataOffset), pattrib->pktlen, MicBuffer);
 
 	WAPI_DATA(WAPI_TX, "Encryption - MIC", MicBuffer, padapter->wapiInfo.extra_postfix_len);
 
@@ -531,7 +502,7 @@ u8 SecSWSMS4Decryption(
 
 	precv_hdr = &((union recv_frame *)precv_frame)->u.hdr;
 	pskb = (struct sk_buff *)(precv_hdr->rx_data);
-	precv_hdr->bWapiCheckPNInDecrypt = WapiCheckPnInSwDecrypt(padapter, pskb);
+	precv_hdr->bWapiCheckPNInDecrypt = false;
 	WAPI_TRACE(WAPI_RX, "=========>%s: check PN  %d\n", __FUNCTION__, precv_hdr->bWapiCheckPNInDecrypt);
 	WAPI_DATA(WAPI_RX, "Decryption - Before decryption", pskb->data, pskb->len);
 
@@ -653,8 +624,6 @@ u8 SecSWSMS4Decryption(
 	WAPI_DATA(WAPI_RX, "Decryption - After decryption", pskb->data, pskb->len);
 
 	DataLen -= padapter->wapiInfo.extra_postfix_len;
-
-	SecCalculateMicSMS4(KeyIdx, pMicKey, pskb->data, pSecData, DataLen, MicBuffer);
 
 	WAPI_DATA(WAPI_RX, "Decryption - MIC received", pRecvMic, SMS4_MIC_LEN);
 	WAPI_DATA(WAPI_RX, "Decryption - MIC calculated", MicBuffer, SMS4_MIC_LEN);

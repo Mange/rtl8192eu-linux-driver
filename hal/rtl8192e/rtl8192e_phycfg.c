@@ -455,14 +455,6 @@ PHY_RFConfig8192E(
 }
 
 VOID
-PHY_GetTxPowerLevel8192E(
-	IN	PADAPTER		Adapter,
-	OUT s32		*powerlevel
-)
-{
-}
-
-VOID
 PHY_SetTxPowerIndex_8192E(
 	IN	PADAPTER			Adapter,
 	IN	u32					PowerIndex,

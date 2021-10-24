@@ -1273,102 +1273,6 @@ u16 rtw_btcoex_parse_recv_data(u8 *msg, u8 msg_size)
 	return res;
 }
 
-void rtw_btcoex_recvmsgbysocket(void *data)
-{
-	u8 recv_data[255];
-	u8 tx_msg[255] = leave_ack;
-	u32 len = 0;
-	u16 recv_length = 0;
-	u16 parse_res = 0;
-
-	struct bt_coex_info *pcoex_info = NULL;
-	struct sock *sk = NULL;
-	struct sk_buff *skb = NULL;
-
-	/*RTW_INFO("%s\n",__func__);*/
-
-	if (pbtcoexadapter == NULL) {
-		RTW_INFO("%s: btcoexadapter NULL!\n", __func__);
-		return;
-	}
-
-	pcoex_info = &pbtcoexadapter->coex_info;
-	sk = pcoex_info->sk_store;
-
-	if (sk == NULL) {
-		RTW_INFO("%s: critical error when receive socket data!\n", __func__);
-		return;
-	}
-
-	len = skb_queue_len(&sk->sk_receive_queue);
-	while (len > 0) {
-		skb = skb_dequeue(&sk->sk_receive_queue);
-
-		/*important: cut the udp header from skb->data! header length is 8 byte*/
-		recv_length = skb->len - 8;
-		memset(recv_data, 0, sizeof(recv_data));
-		memcpy(recv_data, skb->data + 8, recv_length);
-
-		parse_res = rtw_btcoex_parse_recv_data(recv_data, recv_length);
-		switch (parse_res) {
-		case RX_ATTEND_ACK:
-			/* attend ack */
-			pcoex_info->BT_attend = _TRUE;
-			RTW_INFO("RX_ATTEND_ACK!,sock_open:%d, BT_attend:%d\n", pcoex_info->sock_open, pcoex_info->BT_attend);
-			rtw_btcoex_pta_off_on_notify(pbtcoexadapter, pcoex_info->BT_attend);
-			break;
-
-		case RX_ATTEND_REQ:
-			pcoex_info->BT_attend = _TRUE;
-			RTW_INFO("RX_BT_ATTEND_REQ!,sock_open:%d, BT_attend:%d\n", pcoex_info->sock_open, pcoex_info->BT_attend);
-			rtw_btcoex_sendmsgbysocket(pbtcoexadapter, attend_ack, sizeof(attend_ack), _FALSE);
-			rtw_btcoex_pta_off_on_notify(pbtcoexadapter, pcoex_info->BT_attend);
-			break;
-
-		case RX_INVITE_REQ:
-			/* invite req from BT */
-			pcoex_info->BT_attend = _TRUE;
-			RTW_INFO("RX_INVITE_REQ!,sock_open:%d, BT_attend:%d\n", pcoex_info->sock_open, pcoex_info->BT_attend);
-			rtw_btcoex_sendmsgbysocket(pbtcoexadapter, invite_rsp, sizeof(invite_rsp), _FALSE);
-			rtw_btcoex_pta_off_on_notify(pbtcoexadapter, pcoex_info->BT_attend);
-			break;
-
-		case RX_INVITE_RSP:
-			/*invite rsp*/
-			pcoex_info->BT_attend = _TRUE;
-			RTW_INFO("RX_INVITE_RSP!,sock_open:%d, BT_attend:%d\n", pcoex_info->sock_open, pcoex_info->BT_attend);
-			rtw_btcoex_pta_off_on_notify(pbtcoexadapter, pcoex_info->BT_attend);
-			break;
-
-		case RX_LEAVE_ACK:
-			/* mean BT know wifi  will leave */
-			pcoex_info->BT_attend = _FALSE;
-			RTW_INFO("RX_LEAVE_ACK!,sock_open:%d, BT_attend:%d\n", pcoex_info->sock_open, pcoex_info->BT_attend);
-			rtw_btcoex_pta_off_on_notify(pbtcoexadapter, pcoex_info->BT_attend);
-			break;
-
-		case RX_BT_LEAVE:
-			/* BT leave */
-			rtw_btcoex_sendmsgbysocket(pbtcoexadapter, leave_ack, sizeof(leave_ack), _FALSE); /* no ack */
-			pcoex_info->BT_attend = _FALSE;
-			RTW_INFO("RX_BT_LEAVE!sock_open:%d, BT_attend:%d\n", pcoex_info->sock_open, pcoex_info->BT_attend);
-			rtw_btcoex_pta_off_on_notify(pbtcoexadapter, pcoex_info->BT_attend);
-			break;
-
-		default:
-			if (_TRUE == pcoex_info->BT_attend)
-				rtw_btcoex_parse_hci_cmd(pbtcoexadapter, recv_data, recv_length);
-			else
-				RTW_INFO("ERROR!! BT is UP\n");
-			break;
-
-		}
-
-		len--;
-		kfree_skb(skb);
-	}
-}
-
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 15, 0))
 	void rtw_btcoex_recvmsg_init(struct sock *sk_in, s32 bytes)
 #else
@@ -1563,16 +1467,6 @@ void rtw_btcoex_close_socket(_adapter *padapter)
 		pbtcoexadapter = NULL;
 		pcoex_info->is_exist = _FALSE;
 	}
-}
-
-void rtw_btcoex_dump_tx_msg(u8 *tx_msg, u8 len, u8 *msg_name)
-{
-	u8	i = 0;
-	RTW_INFO("======> Msg name: %s\n", msg_name);
-	for (i = 0; i < len; i++)
-		printk("%02x ", tx_msg[i]);
-	printk("\n");
-	RTW_INFO("Msg name: %s <======\n", msg_name);
 }
 
 /* Porting from Windows team */

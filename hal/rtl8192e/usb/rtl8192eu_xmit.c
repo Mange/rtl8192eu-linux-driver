@@ -906,9 +906,4 @@ static void rtl8192eu_hostap_mgnt_xmit_cb(struct urb *urb)
 	rtw_skb_free(skb);
 }
 
-s32 rtl8192eu_hostap_mgnt_xmit_entry(_adapter *padapter, _pkt *pkt)
-{
-	return 0;
-
-}
 #endif

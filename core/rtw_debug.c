@@ -237,8 +237,6 @@ void sd_f0_reg_dump(void *sel, _adapter *adapter)
 		if (i % 16 == 0)
 			RTW_PRINT_SEL(sel, "0x%02x ", i);
 
-		_RTW_PRINT_SEL(sel, "%02x ", rtw_sd_f0_read8(adapter, i));
-
 		if (i % 16 == 15)
 			_RTW_PRINT_SEL(sel, "\n");
 		else if (i % 8 == 7)
@@ -5568,11 +5566,6 @@ int proc_get_efuse_map(struct seq_file *m, void *v)
 	rtw_pm_set_ips(padapter, ips_mode);
 
 	return 0;
-}
-
-ssize_t proc_set_efuse_map(struct file *file, const char __user *buffer, size_t count, loff_t *pos, void *data)
-{
-	return count;
 }
 
 #ifdef CONFIG_IEEE80211W

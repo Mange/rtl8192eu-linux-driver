@@ -473,11 +473,6 @@ void phydm_c2h_ra_report_handler(void *dm_void, u8 *cmd_buf, u8 cmd_len)
 
 }
 
-void odm_ra_post_action_on_assoc(void *dm_void)
-{
-
-}
-
 void phydm_modify_RA_PCR_threshold(void *dm_void, u8 ra_ofst_direc,
 				   u8 ra_th_ofst)
 {
@@ -660,14 +655,6 @@ void phydm_rate_adaptive_mask_init(void *dm_void)
 	ra_t->ldpc_thres = 35;
 	ra_t->up_ramask_cnt = 0;
 	ra_t->up_ramask_cnt_tmp = 0;
-}
-
-void phydm_refresh_rate_adaptive_mask(void *dm_void)
-{
-/*@Will be removed*/
-	struct dm_struct *dm = (struct dm_struct *)dm_void;
-
-	phydm_ra_mask_watchdog(dm);
 }
 
 void phydm_show_sta_info(void *dm_void, char input[][16], u32 *_used,
@@ -1687,120 +1674,6 @@ void phydm_ra_info_init(void *dm_void)
 	}
 #endif
 	phydm_rate_adaptive_mask_init(dm);
-}
-
-u8 odm_find_rts_rate(void *dm_void, u8 tx_rate, boolean is_erp_protect)
-{
-	struct dm_struct *dm = (struct dm_struct *)dm_void;
-	u8 rts_ini_rate = ODM_RATE6M;
-
-	if (is_erp_protect) { /* use CCK rate as RTS*/
-		rts_ini_rate = ODM_RATE1M;
-	} else {
-		switch (tx_rate) {
-		case ODM_RATEVHTSS4MCS9:
-		case ODM_RATEVHTSS4MCS8:
-		case ODM_RATEVHTSS4MCS7:
-		case ODM_RATEVHTSS4MCS6:
-		case ODM_RATEVHTSS4MCS5:
-		case ODM_RATEVHTSS4MCS4:
-		case ODM_RATEVHTSS4MCS3:
-		case ODM_RATEVHTSS3MCS9:
-		case ODM_RATEVHTSS3MCS8:
-		case ODM_RATEVHTSS3MCS7:
-		case ODM_RATEVHTSS3MCS6:
-		case ODM_RATEVHTSS3MCS5:
-		case ODM_RATEVHTSS3MCS4:
-		case ODM_RATEVHTSS3MCS3:
-		case ODM_RATEVHTSS2MCS9:
-		case ODM_RATEVHTSS2MCS8:
-		case ODM_RATEVHTSS2MCS7:
-		case ODM_RATEVHTSS2MCS6:
-		case ODM_RATEVHTSS2MCS5:
-		case ODM_RATEVHTSS2MCS4:
-		case ODM_RATEVHTSS2MCS3:
-		case ODM_RATEVHTSS1MCS9:
-		case ODM_RATEVHTSS1MCS8:
-		case ODM_RATEVHTSS1MCS7:
-		case ODM_RATEVHTSS1MCS6:
-		case ODM_RATEVHTSS1MCS5:
-		case ODM_RATEVHTSS1MCS4:
-		case ODM_RATEVHTSS1MCS3:
-		case ODM_RATEMCS31:
-		case ODM_RATEMCS30:
-		case ODM_RATEMCS29:
-		case ODM_RATEMCS28:
-		case ODM_RATEMCS27:
-		case ODM_RATEMCS23:
-		case ODM_RATEMCS22:
-		case ODM_RATEMCS21:
-		case ODM_RATEMCS20:
-		case ODM_RATEMCS19:
-		case ODM_RATEMCS15:
-		case ODM_RATEMCS14:
-		case ODM_RATEMCS13:
-		case ODM_RATEMCS12:
-		case ODM_RATEMCS11:
-		case ODM_RATEMCS7:
-		case ODM_RATEMCS6:
-		case ODM_RATEMCS5:
-		case ODM_RATEMCS4:
-		case ODM_RATEMCS3:
-		case ODM_RATE54M:
-		case ODM_RATE48M:
-		case ODM_RATE36M:
-		case ODM_RATE24M:
-			rts_ini_rate = ODM_RATE24M;
-			break;
-		case ODM_RATEVHTSS4MCS2:
-		case ODM_RATEVHTSS4MCS1:
-		case ODM_RATEVHTSS3MCS2:
-		case ODM_RATEVHTSS3MCS1:
-		case ODM_RATEVHTSS2MCS2:
-		case ODM_RATEVHTSS2MCS1:
-		case ODM_RATEVHTSS1MCS2:
-		case ODM_RATEVHTSS1MCS1:
-		case ODM_RATEMCS26:
-		case ODM_RATEMCS25:
-		case ODM_RATEMCS18:
-		case ODM_RATEMCS17:
-		case ODM_RATEMCS10:
-		case ODM_RATEMCS9:
-		case ODM_RATEMCS2:
-		case ODM_RATEMCS1:
-		case ODM_RATE18M:
-		case ODM_RATE12M:
-			rts_ini_rate = ODM_RATE12M;
-			break;
-		case ODM_RATEVHTSS4MCS0:
-		case ODM_RATEVHTSS3MCS0:
-		case ODM_RATEVHTSS2MCS0:
-		case ODM_RATEVHTSS1MCS0:
-		case ODM_RATEMCS24:
-		case ODM_RATEMCS16:
-		case ODM_RATEMCS8:
-		case ODM_RATEMCS0:
-		case ODM_RATE9M:
-		case ODM_RATE6M:
-			rts_ini_rate = ODM_RATE6M;
-			break;
-		case ODM_RATE11M:
-		case ODM_RATE5_5M:
-		case ODM_RATE2M:
-		case ODM_RATE1M:
-			rts_ini_rate = ODM_RATE1M;
-			break;
-		default:
-			rts_ini_rate = ODM_RATE6M;
-			break;
-		}
-	}
-
-	if (*dm->band_type == ODM_BAND_5G) {
-		if (rts_ini_rate < ODM_RATE6M)
-			rts_ini_rate = ODM_RATE6M;
-	}
-	return rts_ini_rate;
 }
 
 #if (DM_ODM_SUPPORT_TYPE == ODM_WIN)

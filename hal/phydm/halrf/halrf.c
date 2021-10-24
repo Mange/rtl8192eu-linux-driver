@@ -677,11 +677,6 @@ void halrf_iqk_debug(void *dm_void, u32 *const dm_value, u32 *_used,
 		halrf_do_imr_test(dm, (u8)dm_value[1]);
 }
 
-void halrf_iqk_hwtx_check(void *dm_void, boolean is_check)
-{
-
-}
-
 void halrf_segment_iqk_trigger(void *dm_void, boolean clear,
 			       boolean segment_iqk)
 {

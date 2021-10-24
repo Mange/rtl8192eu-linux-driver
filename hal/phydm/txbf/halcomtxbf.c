@@ -250,7 +250,7 @@ void hal_com_txbf_fw_ndpa_work_item_callback(
 	else if (dm->support_ic_type & ODM_RTL8814A)
 		hal_txbf_8814a_fw_txbf(dm, idx);
 	else if (dm->support_ic_type & ODM_RTL8822B)
-		hal_txbf_8822b_fw_txbf(dm, idx);
+		/*hal_txbf_8822b_fw_txbf(dm, idx);*/
 }
 
 void hal_com_txbf_clk_work_item_callback(

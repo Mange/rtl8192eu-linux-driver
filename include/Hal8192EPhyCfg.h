@@ -82,7 +82,6 @@ int	PHY_RFConfig8192E(IN PADAPTER	Adapter);
 /*
  * BB TX Power R/W
  *   */
-void	PHY_GetTxPowerLevel8192E(IN PADAPTER	Adapter, OUT s32	*powerlevel);
 void	PHY_SetTxPowerLevel8192E(IN PADAPTER	Adapter, IN u8	channel);
 BOOLEAN	PHY_UpdateTxPowerDbm8192E(IN PADAPTER	Adapter, IN int	powerInDbm);
 

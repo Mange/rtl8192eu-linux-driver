@@ -3043,15 +3043,6 @@ exit:
 	return ret;
 }
 
-static int cfg80211_rtw_set_wiphy_params(struct wiphy *wiphy, u32 changed)
-{
-
-	RTW_INFO("%s\n", __func__);
-	return 0;
-}
-
-
-
 static int rtw_cfg80211_set_wpa_version(struct security_priv *psecuritypriv, u32 wpa_version)
 {
 	RTW_INFO("%s, wpa_version=%d\n", __func__, wpa_version);
@@ -9488,7 +9479,7 @@ static struct cfg80211_ops rtw_cfg80211_ops = {
 #endif /*CONFIG_GTK_OL*/
 	.get_station = cfg80211_rtw_get_station,
 	.scan = cfg80211_rtw_scan,
-	.set_wiphy_params = cfg80211_rtw_set_wiphy_params,
+	.set_wiphy_params = 0,
 	.connect = cfg80211_rtw_connect,
 	.disconnect = cfg80211_rtw_disconnect,
 	.join_ibss = cfg80211_rtw_join_ibss,

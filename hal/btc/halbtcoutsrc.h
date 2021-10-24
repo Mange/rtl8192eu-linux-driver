@@ -1117,65 +1117,6 @@ EXhalbtcoutsrc_PowerOnSetting(
 	IN	PBTC_COEXIST		pBtCoexist
 	);
 VOID
-EXhalbtcoutsrc_PreLoadFirmware(
-	IN	PBTC_COEXIST		pBtCoexist
-	);
-VOID
-EXhalbtcoutsrc_InitHwConfig(
-	IN	PBTC_COEXIST		pBtCoexist,
-	IN	BOOLEAN				bWifiOnly
-	);
-VOID
-EXhalbtcoutsrc_InitCoexDm(
-	IN	PBTC_COEXIST		pBtCoexist
-	);
-VOID
-EXhalbtcoutsrc_IpsNotify(
-	IN	PBTC_COEXIST		pBtCoexist,
-	IN	u1Byte			type
-	);
-VOID
-EXhalbtcoutsrc_LpsNotify(
-	IN	PBTC_COEXIST		pBtCoexist,
-	IN	u1Byte			type
-	);
-VOID
-EXhalbtcoutsrc_ScanNotify(
-	IN	PBTC_COEXIST		pBtCoexist,
-	IN	u1Byte			type
-	);
-VOID
-EXhalbtcoutsrc_SetAntennaPathNotify(
-	IN	PBTC_COEXIST	pBtCoexist,
-	IN	u1Byte			type
-	);
-VOID
-EXhalbtcoutsrc_ConnectNotify(
-	IN	PBTC_COEXIST		pBtCoexist,
-	IN	u1Byte			action
-	);
-VOID
-EXhalbtcoutsrc_MediaStatusNotify(
-	IN	PBTC_COEXIST		pBtCoexist,
-	IN	RT_MEDIA_STATUS	mediaStatus
-	);
-VOID
-EXhalbtcoutsrc_SpecificPacketNotify(
-	IN	PBTC_COEXIST		pBtCoexist,
-	IN	u1Byte			pktType
-	);
-VOID
-EXhalbtcoutsrc_BtInfoNotify(
-	IN	PBTC_COEXIST		pBtCoexist,
-	IN	pu1Byte			tmpBuf,
-	IN	u1Byte			length
-	);
-VOID
-EXhalbtcoutsrc_RfStatusNotify(
-	IN	PBTC_COEXIST		pBtCoexist,
-	IN	u1Byte				type
-	);
-VOID
 EXhalbtcoutsrc_WlFwDbgInfoNotify(
 	IN	PBTC_COEXIST		pBtCoexist,
 	IN	pu1Byte			tmpBuf,
@@ -1186,43 +1127,6 @@ EXhalbtcoutsrc_rx_rate_change_notify(
 	IN	PBTC_COEXIST	pBtCoexist,
 	IN 	BOOLEAN			is_data_frame,
 	IN	u1Byte			btc_rate_id
-	);
-VOID
-EXhalbtcoutsrc_StackOperationNotify(
-	IN	PBTC_COEXIST		pBtCoexist,
-	IN	u1Byte			type
-	);
-VOID
-EXhalbtcoutsrc_HaltNotify(
-	IN	PBTC_COEXIST		pBtCoexist
-	);
-VOID
-EXhalbtcoutsrc_PnpNotify(
-	IN	PBTC_COEXIST		pBtCoexist,
-	IN	u1Byte			pnpState
-	);
-VOID
-EXhalbtcoutsrc_CoexDmSwitch(
-	IN	PBTC_COEXIST		pBtCoexist
-	);
-VOID
-EXhalbtcoutsrc_Periodical(
-	IN	PBTC_COEXIST		pBtCoexist
-	);
-VOID
-EXhalbtcoutsrc_DbgControl(
-	IN	PBTC_COEXIST			pBtCoexist,
-	IN	u1Byte				opCode,
-	IN	u1Byte				opLen,
-	IN	pu1Byte				pData
-	);
-VOID
-EXhalbtcoutsrc_AntennaDetection(
-	IN	PBTC_COEXIST			pBtCoexist,
-	IN	u4Byte					centFreq,
-	IN	u4Byte					offset,
-	IN	u4Byte					span,
-	IN	u4Byte					seconds
 	);
 VOID
 EXhalbtcoutsrc_StackUpdateProfileInfo(
@@ -1237,15 +1141,7 @@ EXhalbtcoutsrc_SetBtPatchVersion(
 	IN	u2Byte	btHciVersion,
 	IN	u2Byte	btPatchVersion
 	);
-VOID
-EXhalbtcoutsrc_UpdateMinBtRssi(
-	IN	s1Byte	btRssi
-	);
 
-VOID
-EXhalbtcoutsrc_SetChipType(
-	IN	u1Byte		chipType
-	);
 VOID
 EXhalbtcoutsrc_SetAntNum(
 	IN	u1Byte		type,
@@ -1257,10 +1153,6 @@ EXhalbtcoutsrc_SetSingleAntPath(
 	);
 VOID
 EXhalbtcoutsrc_DisplayBtCoexInfo(
-	IN	PBTC_COEXIST		pBtCoexist
-	);
-VOID
-EXhalbtcoutsrc_DisplayAntDetection(
 	IN	PBTC_COEXIST		pBtCoexist
 	);
 
