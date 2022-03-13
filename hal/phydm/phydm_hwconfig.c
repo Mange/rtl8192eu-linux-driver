@@ -370,12 +370,6 @@ odm_config_rf_with_header_file(struct dm_struct *dm,
 			if (e_rf_path == RF_PATH_A)
 				READ_AND_CONFIG(8195b, _radioa);
 		}
-		#if 0
-		else if (config_type == CONFIG_RF_TXPWR_LMT) {
-			READ_AND_CONFIG(8821c, _txpwr_lmt);
-			/*@*/
-		}
-		#endif
 	}
 #endif
 #if (RTL8198F_SUPPORT == 1)
@@ -728,12 +722,6 @@ odm_config_rf_with_tx_pwr_track_header_file(struct dm_struct *dm)
 
 #if RTL8721D_SUPPORT
 	if (dm->support_ic_type == ODM_RTL8721D) {
-		#if 0
-		if (dm->package_type == 1)
-			READ_AND_CONFIG_MP(8721d, _txpowertrack_qfn48m_smic);
-		else if (dm->package_type == 5)
-			READ_AND_CONFIG_MP(8721d, _txpowertrack_qfn48m_umc);
-		#endif
 		READ_AND_CONFIG_MP(8721d, _txpowertrack);
 		READ_AND_CONFIG_MP(8721d, _txxtaltrack);
 	}

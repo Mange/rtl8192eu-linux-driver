@@ -520,10 +520,6 @@ void phydm_parsing_cfo(void *dm_void, void *pktinfo_void, s8 *pcfotail,
 	if (valid_info) {
 		if (num_ss > dm->num_rf_path) /*@For fool proof*/
 			num_ss = dm->num_rf_path;
-		#if 0
-		PHYDM_DBG(dm, DBG_CFO_TRK, "num_ss=%d, num_rf_path=%d\n",
-			  num_ss, dm->num_rf_path);
-		#endif
 
 		/* @ Update CFO report for path-A & path-B */
 		/* Only paht-A and path-B have CFO tail and short CFO */
@@ -532,13 +528,6 @@ void phydm_parsing_cfo(void *dm_void, void *pktinfo_void, s8 *pcfotail,
 				continue;
 			cfo_track->CFO_tail[i] += pcfotail[i];
 			cfo_track->CFO_cnt[i]++;
-			#if 0
-			PHYDM_DBG(dm, DBG_CFO_TRK,
-				  "[ID %d][path %d][rate 0x%x] CFO_tail = ((%d)), CFO_tail_sum = ((%d)), CFO_cnt = ((%d))\n",
-				  pktinfo->station_id, i, pktinfo->data_rate,
-				  pcfotail[i], cfo_track->CFO_tail[i],
-				  cfo_track->CFO_cnt[i]);
-			#endif
 		}
 
 		/* @ Update packet counter */

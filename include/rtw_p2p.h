@@ -93,15 +93,6 @@ static inline void _rtw_p2p_set_pre_state(struct wifidirect_info *wdinfo, enum P
 	if (wdinfo->pre_p2p_state != state)
 		wdinfo->pre_p2p_state = state;
 }
-#if 0
-static inline void _rtw_p2p_restore_state(struct wifidirect_info *wdinfo)
-{
-	if (wdinfo->pre_p2p_state != -1) {
-		wdinfo->p2p_state = wdinfo->pre_p2p_state;
-		wdinfo->pre_p2p_state = -1;
-	}
-}
-#endif
 void _rtw_p2p_set_role(struct wifidirect_info *wdinfo, enum P2P_ROLE role);
 
 static inline int _rtw_p2p_state(struct wifidirect_info *wdinfo)

@@ -97,16 +97,6 @@ void phydm_traffic_load_decision(void *dm_void)
 		dm->consecutive_idlel_time += PHYDM_WATCH_DOG_PERIOD;
 	else
 		dm->consecutive_idlel_time = 0;
-
-	#if 0
-	PHYDM_DBG(dm, DBG_COMMON_FLOW,
-		  "cur_tx_ok_cnt = %d, cur_rx_ok_cnt = %d, last_tx_ok_cnt = %d, last_rx_ok_cnt = %d\n",
-		  dm->cur_tx_ok_cnt, dm->cur_rx_ok_cnt, dm->last_tx_ok_cnt,
-		  dm->last_rx_ok_cnt);
-
-	PHYDM_DBG(dm, DBG_COMMON_FLOW, "tx_tp = %d, rx_tp = %d\n", dm->tx_tp,
-		  dm->rx_tp);
-	#endif
 }
 
 void phydm_cck_new_agc_chk(struct dm_struct *dm)
@@ -255,13 +245,7 @@ void phydm_common_info_self_init(struct dm_struct *dm)
 		dm->num_rf_path = 1;
 	else if (dm->support_ic_type & ODM_IC_2SS)
 		dm->num_rf_path = 2;
-	#if 0
-	/* @RTK do not has IC which is equipped with 3 RF paths,
-	 * so ODM_IC_3SS is an enpty macro and result in coverity check errors
-	 */
-	else if (dm->support_ic_type & ODM_IC_3SS)
-		dm->num_rf_path = 3;
-	#endif
+
 	else if (dm->support_ic_type & ODM_IC_4SS)
 		dm->num_rf_path = 4;
 	else
@@ -1245,16 +1229,6 @@ u64 phydm_supportability_init_ap(
 		pr_debug("[Warning] Supportability Init Warning !!!\n");
 		break;
 	}
-
-#if 0
-	/*@[Config Antenna Diveristy]*/
-	if (*dm->enable_antdiv)
-		support_ability |= ODM_BB_ANT_DIV;
-
-	/*@[Config Adaptivity]*/
-	if (*dm->enable_adaptivity)
-		support_ability |= ODM_BB_ADAPTIVITY;
-#endif
 
 	return support_ability;
 }
@@ -2918,13 +2892,6 @@ void odm_dtc(struct dm_struct *dm)
 	u8 dtc_steps = 0;
 	u8 sign;
 	u8 resp_txagc = 0;
-
-#if 0
-	/* @As DIG is disabled, DTC is also disable */
-	if (!(dm->support_ability & ODM_XXXXXX))
-		return;
-#endif
-
 	if (dm->rssi_min > DTC_BASE) {
 		/* need to decade the CTS TX power */
 		sign = 1;
@@ -2935,19 +2902,7 @@ void odm_dtc(struct dm_struct *dm)
 				dtc_steps++;
 		}
 	}
-#if 0
-	else if (dm->rssi_min > DTC_DWN_BASE) {
-		/* needs to increase the CTS TX power */
-		sign = 0;
-		dtc_steps = 1;
-		for (i = 0; i < ARRAY_SIZE(dtc_table_up); i++) {
-			if (dtc_table_up[i] <= dm->rssi_min || dtc_steps >= 10)
-				break;
-			else
-				dtc_steps++;
-		}
-	}
-#endif
+
 	else {
 		sign = 0;
 		dtc_steps = 0;

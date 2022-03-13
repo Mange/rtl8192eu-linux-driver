@@ -43,7 +43,6 @@ struct intf_priv {
 	_mutex ioctl_mutex;
 
 
-#ifdef PLATFORM_LINUX
 #ifdef CONFIG_USB_HCI
 	/* when in USB, IO is through interrupt in/out endpoints */
 	struct usb_device	*udev;
@@ -54,7 +53,6 @@ struct intf_priv {
 	_timer	io_timer;
 	u8 bio_irp_timeout;
 	u8 bio_timer_cancel;
-#endif
 #endif
 
 };
@@ -82,7 +80,6 @@ void rtw_cancel_all_timer(_adapter *padapter);
 
 uint loadparam(_adapter *adapter);
 
-#ifdef PLATFORM_LINUX
 int rtw_ioctl(struct net_device *dev, struct ifreq *rq, int cmd);
 
 int rtw_init_netdev_name(struct net_device *pnetdev, const char *ifname);
@@ -114,7 +111,6 @@ void rtw_inetaddr_notifier_unregister(void);
 u8 rtw_rtnl_lock_needed(struct dvobj_priv *dvobj);
 void rtw_set_rtnl_lock_holder(struct dvobj_priv *dvobj, _thread_hdl_ thd_hdl);
 
-#endif /* PLATFORM_LINUX */
 
 void rtw_ips_dev_unload(_adapter *padapter);
 

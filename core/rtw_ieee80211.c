@@ -2101,9 +2101,6 @@ u8 *rtw_get_p2p_attr(u8 *p2p_ie, uint p2p_ielen, u8 target_attr_id , u8 *buf_att
 		u16 attr_data_len = RTW_GET_LE16(attr_ptr + 1);
 		u16 attr_len = attr_data_len + 3;
 
-		if (0)
-			RTW_INFO("%s attr_ptr:%p, id:%u, length:%u\n", __func__, attr_ptr, attr_id, attr_data_len);
-
 		if ((attr_ptr - p2p_ie + attr_len) > p2p_ielen)
 			break;
 
@@ -2443,9 +2440,6 @@ u8 *rtw_get_wfd_attr(u8 *wfd_ie, uint wfd_ielen, u8 target_attr_id, u8 *buf_attr
 		u8 attr_id = *attr_ptr;
 		u16 attr_data_len = RTW_GET_BE16(attr_ptr + 1);
 		u16 attr_len = attr_data_len + 3;
-
-		if (0)
-			RTW_INFO("%s attr_ptr:%p, id:%u, length:%u\n", __func__, attr_ptr, attr_id, attr_data_len);
 
 		if ((attr_ptr - wfd_ie + attr_len) > wfd_ielen)
 			break;

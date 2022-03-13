@@ -138,11 +138,6 @@ void halrf_psd(
 	else
 		psd_reg = R_0x808;
 
-#if 0
-	dbg_print("[PSD]point=%d, start_point=%d, stop_point=%d, average=%d, average_tmp=%d, buf_size=%d\n",
-		point, start_point, stop_point, average, average_tmp, psd->buf_size);
-#endif
-
 	for (i = 0; i < psd->buf_size; i++)
 		psd->psd_data[i] = 0;
 
@@ -158,17 +153,6 @@ void halrf_psd(
 			odm_set_bb_reg(dm, psd_reg, 0x3000, 0x1);
 	}
 
-#if 0
-	if (avg_temp == 0)
-		avg = 1;
-	else if (avg_temp == 1)
-		avg = 8;
-	else if (avg_temp == 2)
-		avg = 16;
-	else if (avg_temp == 3)
-		avg = 32;
-#endif
-
 	i = start_point;
 	while (i < stop_point) {
 		data_tatal = 0;
@@ -181,34 +165,13 @@ void halrf_psd(
 		for (k = 0; k < average_tmp; k++) {
 			data_temp[k] = halrf_get_psd_data(dm, point_temp);
 			data_tatal = data_tatal + (data_temp[k] * data_temp[k]);
-
-#if 0
-			if ((k % 20) == 0)
-				dbg_print("\n ");
-
-			dbg_print("0x%x ", data_temp[k]);
-#endif
 		}
-#if 0
-		/*dbg_print("\n");*/
-#endif
-
 		data_tatal = ((data_tatal * 100) / average_tmp);
 		psd->psd_data[j] = (u32)_sqrt(data_tatal);
 
 		i++;
 		j++;
 	}
-
-#if 0
-	for (i = 0; i < psd->buf_size; i++) {
-		if ((i % 20) == 0)
-			dbg_print("\n ");
-
-		dbg_print("0x%x ", psd->psd_data[i]);
-	}
-	dbg_print("\n\n");
-#endif
 
 	if (dm->support_ic_type & ODM_RTL8710B)
 		odm_set_bb_reg(dm, psd_reg, 0x30000, avg_org);
@@ -293,10 +256,6 @@ void halrf_iqk_psd(
 		else
 			average_tmp = 1;
 	}
-#if 0
-	DbgPrint("[PSD]point=%d, start_point=%d, stop_point=%d, average=0x%x, average_tmp=%d, buf_size=%d, mode=%d\n",
-		point, start_point, stop_point, average, average_tmp, psd->buf_size, mode);
-#endif
 
 	for (i = 0; i < psd->buf_size; i++)
 		psd->psd_data[i] = 0;
@@ -323,12 +282,7 @@ void halrf_iqk_psd(
 			/*data_tatal = data_tatal + (data_temp[k] * data_temp[k]);*/
 			data_tatal = data_tatal + data_temp[k];
 
-#if 0
-			if ((k % 20) == 0)
-				DbgPrint("\n ");
 
-			DbgPrint("0x%x ", data_temp[k]);
-#endif
 		}
 
 		/*data_tatal = ((data_tatal * 100) / average_tmp);*/
@@ -340,17 +294,6 @@ void halrf_iqk_psd(
 		j++;
 	}
 
-#if 0
-	DbgPrint("\n [iqk psd]psd result:\n");
-
-	for (i = 0; i < psd->buf_size; i++) {
-		if ((i % 20) == 0)
-			DbgPrint("\n ");
-
-		DbgPrint("0x%x ", psd->psd_data[i]);
-	}
-	DbgPrint("\n\n");
-#endif
 }
 
 

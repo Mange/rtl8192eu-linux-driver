@@ -497,10 +497,8 @@ struct tx_desc;
 void odm_set_tx_ant_by_tx_info(struct rtl8192cd_priv *priv,
 			       struct tx_desc *pdesc, unsigned short aid);
 
-#if 1 /*@def def CONFIG_WLAN_HAL*/
 void odm_set_tx_ant_by_tx_info_hal(struct rtl8192cd_priv *priv,
 				   void *pdesc_data, u16 aid);
-#endif /*@#ifdef CONFIG_WLAN_HAL*/
 #endif
 
 void odm_ant_div_config(void *dm_void);

@@ -97,16 +97,6 @@ void phydm_mp_set_single_tone_jgr3(void *dm_void, boolean is_single_tone,
 	}
 	if (is_single_tone) {
 		mp->rf_reg0 = odm_get_rf_reg(dm, RF_PATH_A, RF_0x00, 0xfffff);
-#if 0
-		mp->rfe_sel_a_0 = odm_get_bb_reg(dm, R_0x1840, MASKDWORD);
-		mp->rfe_sel_b_0 = odm_get_bb_reg(dm, R_0x4140, MASKDWORD);
-		mp->rfe_sel_c_0 = odm_get_bb_reg(dm, R_0x5240, MASKDWORD);
-		mp->rfe_sel_d_0 = odm_get_bb_reg(dm, R_0x5340, MASKDWORD);
-		mp->rfe_sel_a_1 = odm_get_bb_reg(dm, R_0x1844, MASKDWORD);
-		mp->rfe_sel_b_1 = odm_get_bb_reg(dm, R_0x4144, MASKDWORD);
-		mp->rfe_sel_c_1 = odm_get_bb_reg(dm, R_0x5244, MASKDWORD);
-		mp->rfe_sel_d_1 = odm_get_bb_reg(dm, R_0x5344, MASKDWORD);
-#endif
 		/* Disable CCK and OFDM */
 		odm_set_bb_reg(dm, R_0x1c3c, 0x3, 0x0);
 		for (start; start <= end; start++) {
@@ -142,16 +132,6 @@ void phydm_mp_set_single_tone_jgr3(void *dm_void, boolean is_single_tone,
 					       0x0);
 			}
 		}
-#if 0
-		odm_set_bb_reg(dm, R_0x1840, MASKDWORD, mp->rfe_sel_a_0);
-		odm_set_bb_reg(dm, R_0x4140, MASKDWORD, mp->rfe_sel_b_0);
-		odm_set_bb_reg(dm, R_0x5240, MASKDWORD, mp->rfe_sel_c_0);
-		odm_set_bb_reg(dm, R_0x5340, MASKDWORD, mp->rfe_sel_d_0);
-		odm_set_bb_reg(dm, R_0x1844, MASKDWORD, mp->rfe_sel_a_1);
-		odm_set_bb_reg(dm, R_0x4144, MASKDWORD, mp->rfe_sel_b_1);
-		odm_set_bb_reg(dm, R_0x5244, MASKDWORD, mp->rfe_sel_c_1);
-		odm_set_bb_reg(dm, R_0x5344, MASKDWORD, mp->rfe_sel_d_1);
-#endif
 	}
 }
 

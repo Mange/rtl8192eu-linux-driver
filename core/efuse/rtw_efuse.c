@@ -72,10 +72,6 @@ BOOLEAN efuse_IsMasked(PADAPTER pAdapter, u16 Offset)
 		return (IS_MASKED(8812A, _MUSB, Offset)) ? TRUE : FALSE;
 #endif
 #if defined(CONFIG_RTL8821A)
-#if 0
-	if (IS_HARDWARE_TYPE_8811AU(pAdapter))
-		return (IS_MASKED(8811A, _MUSB, Offset)) ? TRUE : FALSE;
-#endif
 	if (IS_HARDWARE_TYPE_8821(pAdapter))
 		return (IS_MASKED(8821A, _MUSB, Offset)) ? TRUE : FALSE;
 #endif
@@ -3013,7 +3009,6 @@ u8 mac_hidden_wl_func_to_hal_wl_func(u8 func)
 	return wl_func;
 }
 
-#ifdef PLATFORM_LINUX
 #ifdef CONFIG_ADAPTOR_INFO_CACHING_FILE
 /* #include <rtw_eeprom.h> */
 
@@ -3053,13 +3048,6 @@ int retriveAdaptorInfoFile(char *path, u8 *efuse_data)
 			ret = _SUCCESS;
 		else
 			ret = _FAIL;
-
-#if 0
-		if (isAdaptorInfoFileValid())
-			return 0;
-		else
-			return _FAIL;
-#endif
 
 	} else {
 		RTW_INFO("%s NULL pointer\n", __FUNCTION__);
@@ -3276,4 +3264,3 @@ exit:
 }
 #endif /* CONFIG_EFUSE_CONFIG_FILE */
 
-#endif /* PLATFORM_LINUX */

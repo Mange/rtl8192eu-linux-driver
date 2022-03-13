@@ -964,14 +964,6 @@ u8 /* bit0 = 1 => Tx OK, bit1 = 1 => Rx OK */
 	odm_set_rf_reg(dm, RF_PATH_B, RF_TXPA_G2, RFREGOFFSETMASK, 0x07f77); /* PA off, default: 0x7f7f */
 
 	odm_set_bb_reg(dm, REG_FPGA0_IQK, 0xffffff00, 0x808000);
-#if 0
-	odm_set_bb_reg(dm, R_0xe28, 0xffffff00, 0x000000);
-	RF_DBG(dm, DBG_RF_IQK, "path A 0xdf = 0x%x\n",
-	       odm_get_rf_reg(dm, RF_PATH_A, RF_0xdf, RFREGOFFSETMASK));
-	RF_DBG(dm, DBG_RF_IQK, "path B 0xdf = 0x%x\n",
-	       odm_get_rf_reg(dm, RF_PATH_B, RF_0xdf, RFREGOFFSETMASK));
-	odm_set_bb_reg(dm, R_0xe28, 0xffffff00, 0x808000);
-#endif
 
 	odm_set_bb_reg(dm, REG_TX_IQK_TONE_A, MASKDWORD, 0x38008c1c);
 	odm_set_bb_reg(dm, REG_RX_IQK_TONE_A, MASKDWORD, 0x38008c1c);
@@ -1333,13 +1325,10 @@ void _phy_reload_mac_registers_92e(struct dm_struct *dm, u32 *mac_reg,
 	u32 i;
 
 	RF_DBG(dm, DBG_RF_IQK, "Reload MAC parameters !\n");
-#if 0
-	odm_set_bb_reg(dm, R_0x520, MASKBYTE2, 0x0);
-#else
+
 	for (i = 0; i < (IQK_MAC_REG_NUM - 1); i++)
 		odm_write_1byte(dm, mac_reg[i], (u8)mac_backup[i]);
 	odm_write_4byte(dm, mac_reg[i], mac_backup[i]);
-#endif
 }
 
 void _phy_path_adda_on_92e(struct dm_struct *dm, u32 *adda_reg,
@@ -1549,19 +1538,6 @@ void _phy_iq_calibrate_8192e(struct dm_struct *dm, s32 result[][8], u8 t,
 
 	_phy_path_adda_on_92e(dm, ADDA_REG, true, is2T);
 
-#if 0
-	if (t == 0)
-		dm->rf_calibrate_info.is_rf_pi_enable = (u8)odm_get_bb_reg(dm, REG_FPGA0_XA_HSSI_PARAMETER1, BIT(8));
-
-	if (!dm->rf_calibrate_info.is_rf_pi_enable) {
-		/*  Switch BB to PI mode to do IQ Calibration. */
-#if !(DM_ODM_SUPPORT_TYPE & ODM_AP)
-		_phy_pi_mode_switch_92e(adapter, true);
-#else
-		_phy_pi_mode_switch_92e(dm, true);
-#endif
-	}
-#endif
 	/* MAC settings */
 	_phy_mac_setting_calibration_92e(dm, IQK_MAC_REG, dm->rf_calibrate_info.IQK_MAC_backup);
 
@@ -1603,7 +1579,6 @@ void _phy_iq_calibrate_8192e(struct dm_struct *dm, s32 result[][8], u8 t,
 	}
 
 /* path A TXIQK */
-#if 1
 	for (i = 0; i < retry_count; i++) {
 		path_aok = phy_path_a_iqk_8192e(dm, is2T);
 		/*		if(path_aok == 0x03){ */
@@ -1615,19 +1590,8 @@ void _phy_iq_calibrate_8192e(struct dm_struct *dm, s32 result[][8], u8 t,
 		}
 
 		RF_DBG(dm, DBG_RF_IQK, "path A Tx IQK Fail!!\n");
-#if 0
-		else if (i == (retry_count - 1) && path_aok == 0x01) {	/*Tx IQK OK*/
-			RT_DISP(FINIT, INIT_IQK, ("path A IQK Only  Tx Success!!\n"));
-
-			result[t][0] = (odm_get_bb_reg(dm, REG_TX_POWER_BEFORE_IQK_A, MASKDWORD) & 0x3FF0000) >> 16;
-			result[t][1] = (odm_get_bb_reg(dm, REG_TX_POWER_AFTER_IQK_A, MASKDWORD) & 0x3FF0000) >> 16;
-		}
-#endif
 	}
-#endif
-
 /* path A RXIQK */
-#if 1
 	for (i = 0; i < retry_count; i++) {
 		path_aok = phy_path_a_rx_iqk_92e(dm, is2T);
 		if (path_aok == 0x03) {
@@ -1645,8 +1609,6 @@ void _phy_iq_calibrate_8192e(struct dm_struct *dm, s32 result[][8], u8 t,
 	if (0x00 == path_aok)
 		RF_DBG(dm, DBG_RF_IQK, "path A IQK failed!!\n");
 
-#endif
-
 	if (is2T) {
 		_phy_path_a_stand_by_92e(dm);
 		/* Turn ADDA on */
@@ -1658,7 +1620,6 @@ void _phy_iq_calibrate_8192e(struct dm_struct *dm, s32 result[][8], u8 t,
 		odm_set_bb_reg(dm, REG_RX_IQK, MASKDWORD, 0x01004800);
 
 /* path B Tx IQK */
-#if 1
 		for (i = 0; i < retry_count; i++) {
 			path_bok = phy_path_b_iqk_8192e(dm);
 			/*		if(path_bok == 0x03){ */
@@ -1669,19 +1630,9 @@ void _phy_iq_calibrate_8192e(struct dm_struct *dm, s32 result[][8], u8 t,
 				result[t][5] = (odm_get_bb_reg(dm, REG_TX_POWER_AFTER_IQK_B, MASKDWORD) & 0x3FF0000) >> 16;
 				break;
 			}
-#if 0
-			else if (i == (retry_count - 1) && path_aok == 0x01) {	/*Tx IQK OK*/
-				RT_DISP(FINIT, INIT_IQK, ("path B IQK Only  Tx Success!!\n"));
-
-				result[t][0] = (odm_get_bb_reg(dm, REG_TX_POWER_BEFORE_IQK_B, MASKDWORD) & 0x3FF0000) >> 16;
-				result[t][1] = (odm_get_bb_reg(dm, REG_TX_POWER_AFTER_IQK_B, MASKDWORD) & 0x3FF0000) >> 16;
-			}
-#endif
 		}
-#endif
 
 /* path B RX IQK */
-#if 1
 		for (i = 0; i < retry_count; i++) {
 			path_bok = phy_path_b_rx_iqk_92e(dm, is2T);
 			if (path_bok == 0x03) {
@@ -1696,7 +1647,6 @@ void _phy_iq_calibrate_8192e(struct dm_struct *dm, s32 result[][8], u8 t,
 		}
 		if (0x00 == path_bok)
 			RF_DBG(dm, DBG_RF_IQK, "path B IQK failed!!\n");
-#endif
 	}
 
 	/* Back to BB mode, load original value */

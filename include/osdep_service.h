@@ -36,14 +36,12 @@
 #undef _FALSE
 #define _FALSE		0
 
-#ifdef PLATFORM_LINUX
-	#include <linux/version.h>
+#include <linux/version.h>
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0))
 	#include <linux/sched/signal.h>
 	#include <linux/sched/types.h>
 #endif
-	#include <osdep_service_linux.h>
-#endif
+#include <osdep_service_linux.h>
 
 /* #include <rtw_byteorder.h> */
 
@@ -311,9 +309,7 @@ __inline static unsigned char _cancel_timer_ex(_timer *ptimer)
 
 static __inline void thread_enter(char *name)
 {
-#ifdef PLATFORM_LINUX
 	allow_signal(SIGTERM);
-#endif
 }
 void thread_exit(_completion *comp);
 void _rtw_init_completion(_completion *comp);
@@ -322,33 +318,22 @@ void _rtw_wait_for_comp(_completion *comp);
 
 static inline bool rtw_thread_stop(_thread_hdl_ th)
 {
-#ifdef PLATFORM_LINUX
 	return kthread_stop(th);
-#endif
 }
 static inline void rtw_thread_wait_stop(void)
 {
-#ifdef PLATFORM_LINUX
-	#if 0
-	while (!kthread_should_stop())
-		msleep(10);
-	#else
 	set_current_state(TASK_INTERRUPTIBLE);
 	while (!kthread_should_stop()) {
 		schedule();
 		set_current_state(TASK_INTERRUPTIBLE);
 	}
 	__set_current_state(TASK_RUNNING);
-	#endif
-#endif
 }
 
 __inline static void flush_signals_thread(void)
 {
-#ifdef PLATFORM_LINUX
 	if (signal_pending(current))
 		flush_signals(current);
-#endif
 }
 
 __inline static _OS_STATUS res_to_status(sint res)
@@ -359,16 +344,11 @@ __inline static _OS_STATUS res_to_status(sint res)
 
 __inline static void rtw_dump_stack(void)
 {
-#ifdef PLATFORM_LINUX
 	dump_stack();
-#endif
 }
 
-#ifdef PLATFORM_LINUX
 #define rtw_warn_on(condition) WARN_ON(condition)
-#else
-#define rtw_warn_on(condition) do {} while (0)
-#endif
+
 
 __inline static int rtw_bug_check(void *parg1, void *parg2, void *parg3, void *parg4)
 {
@@ -377,11 +357,8 @@ __inline static int rtw_bug_check(void *parg1, void *parg2, void *parg3, void *p
 	return ret;
 
 }
-#ifdef PLATFORM_LINUX
+
 #define RTW_DIV_ROUND_UP(n, d)	DIV_ROUND_UP(n, d)
-#else /* !PLATFORM_LINUX */
-#define RTW_DIV_ROUND_UP(n, d)	(((n) + (d - 1)) / d)
-#endif /* !PLATFORM_LINUX */
 
 #define _RND(sz, r) ((((sz)+((r)-1))/(r))*(r))
 #define RND4(x)	(((x >> 2) + (((x & 3) == 0) ? 0 : 1)) << 2)
@@ -647,10 +624,5 @@ int hexstr2bin(const char *hex, u8 *buf, size_t len);
 /*
  * Write formatted output to sized buffer
  */
-#ifdef PLATFORM_LINUX
 #define rtw_sprintf(buf, size, format, arg...)	snprintf(buf, size, format, ##arg)
-#else /* !PLATFORM_LINUX */
-#error "NOT DEFINE \"rtw_sprintf\"!!"
-#endif /* !PLATFORM_LINUX */
-
 #endif

@@ -73,36 +73,6 @@ void hal_txbf_8814a_set_ndpa_rate(void *dm_void, u8 BW, u8 rate)
 	odm_write_1byte(dm, REG_NDPA_OPT_CTRL_8814A, BW);
 	odm_write_1byte(dm, REG_NDPA_RATE_8814A, (u8)rate);
 }
-#if 0
-#define PHYDM_MEMORY_MAP_BUF_READ 0x8000
-#define PHYDM_CTRL_INFO_PAGE 0x660
-
-void
-phydm_data_rate_8814a(
-	struct dm_struct			*dm,
-	u8				mac_id,
-	u32				*data,
-	u8				data_len
-)
-{
-	u8	i = 0;
-	u16	x_read_data_addr = 0;
-
-	odm_write_2byte(dm, REG_PKTBUF_DBG_CTRL_8814A, PHYDM_CTRL_INFO_PAGE);
-	x_read_data_addr = PHYDM_MEMORY_MAP_BUF_READ + mac_id * 32; /*@Ctrl Info: 32Bytes for each macid(n)*/
-
-	if (x_read_data_addr < PHYDM_MEMORY_MAP_BUF_READ || x_read_data_addr > 0x8FFF) {
-		PHYDM_DBG(dm, DBG_TXBF,
-			  "x_read_data_addr(0x%x) is not correct!\n",
-			  x_read_data_addr);
-		return;
-	}
-
-	/* Read data */
-	for (i = 0; i < data_len; i++)
-		*(data + i) = odm_read_2byte(dm, x_read_data_addr + i);
-}
-#endif
 
 void hal_txbf_8814a_get_tx_rate(void *dm_void)
 {
@@ -353,132 +323,6 @@ void hal_txbf_8814a_rf_mode(void *dm_void,
 		odm_set_bb_reg(dm, REG_BB_TX_PATH_SEL_2_8814A, MASKDWORD, 0x93e9360);
 	}
 }
-#if 0
-void
-hal_txbf_8814a_download_ndpa(
-	void			*dm_void,
-	u8				idx
-)
-{
-	struct dm_struct	*dm = (struct dm_struct *)dm_void;
-	u8			u1b_tmp = 0, tmp_reg422 = 0;
-	u8			bcn_valid_reg = 0, count = 0, dl_bcn_count = 0;
-	u16			head_page = 0x7FE;
-	boolean			is_send_beacon = false;
-	u16			tx_page_bndy = LAST_ENTRY_OF_TX_PKT_BUFFER_8814A; /*@default reseved 1 page for the IC type which is undefined.*/
-	struct _RT_BEAMFORMING_INFO	*beam_info = &dm->beamforming_info;
-	struct _RT_BEAMFORMEE_ENTRY	*p_beam_entry = beam_info->beamformee_entry + idx;
-	void		*adapter = dm->adapter;
-
-#if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
-	*dm->is_fw_dw_rsvd_page_in_progress = true;
-#endif
-	PHYDM_DBG(dm, DBG_TXBF, "[%s] Start!\n", __func__);
-
-	phydm_get_hal_def_var_handler_interface(dm, HAL_DEF_TX_PAGE_BOUNDARY, (u16 *)&tx_page_bndy);
-
-	/*Set REG_CR bit 8. DMA beacon by SW.*/
-	u1b_tmp = odm_read_1byte(dm, REG_CR_8814A + 1);
-	odm_write_1byte(dm,  REG_CR_8814A + 1, (u1b_tmp | BIT(0)));
-
-
-	/*Set FWHW_TXQ_CTRL 0x422[6]=0 to tell Hw the packet is not a real beacon frame.*/
-	tmp_reg422 = odm_read_1byte(dm, REG_FWHW_TXQ_CTRL_8814A + 2);
-	odm_write_1byte(dm, REG_FWHW_TXQ_CTRL_8814A + 2,  tmp_reg422 & (~BIT(6)));
-
-	if (tmp_reg422 & BIT(6)) {
-		PHYDM_DBG(dm, DBG_TXBF,
-			  "%s: There is an adapter is sending beacon.\n",
-			  __func__);
-		is_send_beacon = true;
-	}
-
-	/*@0x204[11:0]	Beacon Head for TXDMA*/
-	odm_write_2byte(dm, REG_FIFOPAGE_CTRL_2_8814A, head_page);
-
-	do {
-		/*@Clear beacon valid check bit.*/
-		bcn_valid_reg = odm_read_1byte(dm, REG_FIFOPAGE_CTRL_2_8814A + 1);
-		odm_write_1byte(dm, REG_FIFOPAGE_CTRL_2_8814A + 1, (bcn_valid_reg | BIT(7)));
-
-		/*@download NDPA rsvd page.*/
-		if (p_beam_entry->beamform_entry_cap & BEAMFORMER_CAP_VHT_SU)
-			beamforming_send_vht_ndpa_packet(dm, p_beam_entry->mac_addr, p_beam_entry->AID, p_beam_entry->sound_bw, BEACON_QUEUE);
-		else
-			beamforming_send_ht_ndpa_packet(dm, p_beam_entry->mac_addr, p_beam_entry->sound_bw, BEACON_QUEUE);
-
-		/*@check rsvd page download OK.*/
-		bcn_valid_reg = odm_read_1byte(dm, REG_FIFOPAGE_CTRL_2_8814A + 1);
-		count = 0;
-		while (!(bcn_valid_reg & BIT(7)) && count < 20) {
-			count++;
-			ODM_delay_ms(10);
-			bcn_valid_reg = odm_read_1byte(dm, REG_FIFOPAGE_CTRL_2_8814A + 2);
-		}
-		dl_bcn_count++;
-	} while (!(bcn_valid_reg & BIT(7)) && dl_bcn_count < 5);
-
-	if (!(bcn_valid_reg & BIT(7)))
-		PHYDM_DBG(dm, DBG_TXBF, "%s Download RSVD page failed!\n",
-			  __func__);
-
-	/*@0x204[11:0]	Beacon Head for TXDMA*/
-	odm_write_2byte(dm, REG_FIFOPAGE_CTRL_2_8814A, tx_page_bndy);
-
-	/*To make sure that if there exists an adapter which would like to send beacon.*/
-	/*@If exists, the origianl value of 0x422[6] will be 1, we should check this to*/
-	/*prevent from setting 0x422[6] to 0 after download reserved page, or it will cause */
-	/*the beacon cannot be sent by HW.*/
-	/*@2010.06.23. Added by tynli.*/
-	if (is_send_beacon)
-		odm_write_1byte(dm, REG_FWHW_TXQ_CTRL_8814A + 2, tmp_reg422);
-
-	/*@Do not enable HW DMA BCN or it will cause Pcie interface hang by timing issue. 2011.11.24. by tynli.*/
-	/*@Clear CR[8] or beacon packet will not be send to TxBuf anymore.*/
-	u1b_tmp = odm_read_1byte(dm, REG_CR_8814A + 1);
-	odm_write_1byte(dm, REG_CR_8814A + 1, (u1b_tmp & (~BIT(0))));
-
-	p_beam_entry->beamform_entry_state = BEAMFORMING_ENTRY_STATE_PROGRESSED;
-
-#if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
-	*dm->is_fw_dw_rsvd_page_in_progress = false;
-#endif
-}
-
-void
-hal_txbf_8814a_fw_txbf_cmd(
-	void			*dm_void
-)
-{
-	struct dm_struct	*dm = (struct dm_struct *)dm_void;
-	u8	idx, period = 0;
-	u8	PageNum0 = 0xFF, PageNum1 = 0xFF;
-	u8	u1_tx_bf_parm[3] = {0};
-	struct _RT_BEAMFORMING_INFO *beam_info = &dm->beamforming_info;
-
-	for (idx = 0; idx < BEAMFORMEE_ENTRY_NUM; idx++) {
-		if (beam_info->beamformee_entry[idx].is_used && beam_info->beamformee_entry[idx].beamform_entry_state == BEAMFORMING_ENTRY_STATE_PROGRESSED) {
-			if (beam_info->beamformee_entry[idx].is_sound) {
-				PageNum0 = 0xFE;
-				PageNum1 = 0x07;
-				period = (u8)(beam_info->beamformee_entry[idx].sound_period);
-			} else if (PageNum0 == 0xFF) {
-				PageNum0 = 0xFF; /*stop sounding*/
-				PageNum1 = 0x0F;
-			}
-		}
-	}
-
-	u1_tx_bf_parm[0] = PageNum0;
-	u1_tx_bf_parm[1] = PageNum1;
-	u1_tx_bf_parm[2] = period;
-	odm_fill_h2c_cmd(dm, PHYDM_H2C_TXBF, 3, u1_tx_bf_parm);
-
-	PHYDM_DBG(dm, DBG_TXBF,
-		  "[%s] PageNum0 = %d, PageNum1 = %d period = %d\n", __func__,
-		  PageNum0, PageNum1, period);
-}
-#endif
 void hal_txbf_8814a_enter(void *dm_void, u8 bfer_bfee_idx)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -656,18 +500,6 @@ void hal_txbf_8814a_status(void *dm_void, u8 idx)
 
 void hal_txbf_8814a_fw_txbf(void *dm_void, u8 idx)
 {
-#if 0
-	struct dm_struct	*dm = (struct dm_struct *)dm_void;
-	struct _RT_BEAMFORMING_INFO	*beam_info = &dm->beamforming_info;
-	struct _RT_BEAMFORMEE_ENTRY	*p_beam_entry = beam_info->beamformee_entry + idx;
-
-	PHYDM_DBG(dm, DBG_TXBF, "[%s] Start!\n", __func__);
-
-	if (p_beam_entry->beamform_entry_state == BEAMFORMING_ENTRY_STATE_PROGRESSING)
-		hal_txbf_8814a_download_ndpa(dm, idx);
-
-	hal_txbf_8814a_fw_txbf_cmd(dm);
-#endif
 }
 
 #endif /* @(RTL8814A_SUPPORT == 1)*/

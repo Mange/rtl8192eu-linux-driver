@@ -180,14 +180,8 @@ void phydm_bb_hw_dbg_info_n(void *dm_void, u32 *_used, char *output,
 	u8 rf_gain_a = 0, rf_gain_b = 0, rf_gain_c = 0, rf_gain_d = 0;
 	u8 rx_snr_a = 0, rx_snr_b = 0, rx_snr_c = 0, rx_snr_d = 0;
 	s8 rxevm_0 = 0, rxevm_1 = 0;
-	#if 1
 	struct phydm_cfo_rpt cfo;
 	u8 i = 0;
-	#else
-	s32 short_cfo_a = 0, short_cfo_b = 0, long_cfo_a = 0, long_cfo_b = 0;
-	s32 scfo_a = 0, scfo_b = 0, avg_cfo_a = 0, avg_cfo_b = 0;
-	s32 cfo_end_a = 0, cfo_end_b = 0, acq_cfo_a = 0, acq_cfo_b = 0;
-	#endif
 
 	PDM_SNPF(out_len, used, output + used, out_len - used, "\r\n %-35s\n",
 		 "BB Report Info");
@@ -244,7 +238,6 @@ void phydm_bb_hw_dbg_info_n(void *dm_void, u32 *_used, char *output,
 	PDM_SNPF(out_len, used, output + used, out_len - used,
 		 "\r\n %-35s = %d / %d", "RXEVM (1ss/2ss)", rxevm_0, rxevm_1);
 
-#if 1
 	phydm_get_cfo_info(dm, &cfo);
 	for (i = 0; i < dm->num_rf_path; i++) {
 		PDM_SNPF(out_len, used, output + used, out_len - used,
@@ -253,118 +246,6 @@ void phydm_bb_hw_dbg_info_n(void *dm_void, u32 *_used, char *output,
 			 cfo.cfo_rpt_s[i], cfo.cfo_rpt_l[i], cfo.cfo_rpt_sec[i],
 			 cfo.cfo_rpt_acq[i], cfo.cfo_rpt_end[i]);
 	}
-#else
-	/*@CFO Report Info*/
-	odm_set_bb_reg(dm, R_0xd00, BIT(26), 1);
-
-	/*Short CFO*/
-	value32 = odm_get_bb_reg(dm, R_0xdac, MASKDWORD);
-	value32_1 = odm_get_bb_reg(dm, R_0xdb0, MASKDWORD);
-
-	short_cfo_b = (s32)(value32 & 0xfff); /*S(12,11)*/
-	short_cfo_a = (s32)((value32 & 0x0fff0000) >> 16);
-
-	long_cfo_b = (s32)(value32_1 & 0x1fff); /*S(13,12)*/
-	long_cfo_a = (s32)((value32_1 & 0x1fff0000) >> 16);
-
-	/*SFO 2's to dec*/
-	if (short_cfo_a > 2047)
-		short_cfo_a = short_cfo_a - 4096;
-	if (short_cfo_b > 2047)
-		short_cfo_b = short_cfo_b - 4096;
-
-	short_cfo_a = (short_cfo_a * 312500) / 2048;
-	short_cfo_b = (short_cfo_b * 312500) / 2048;
-
-	/*@LFO 2's to dec*/
-
-	if (long_cfo_a > 4095)
-		long_cfo_a = long_cfo_a - 8192;
-
-	if (long_cfo_b > 4095)
-		long_cfo_b = long_cfo_b - 8192;
-
-	long_cfo_a = long_cfo_a * 312500 / 4096;
-	long_cfo_b = long_cfo_b * 312500 / 4096;
-
-	PDM_SNPF(out_len, used, output + used, out_len - used, "\r\n %-35s",
-		 "CFO Report Info");
-	PDM_SNPF(out_len, used, output + used, out_len - used,
-		 "\r\n %-35s = %d / %d", "Short CFO(Hz) <A/B>", short_cfo_a,
-		 short_cfo_b);
-	PDM_SNPF(out_len, used, output + used, out_len - used,
-		 "\r\n %-35s = %d / %d", "Long CFO(Hz) <A/B>", long_cfo_a,
-		 long_cfo_b);
-
-	/*SCFO*/
-	value32 = odm_get_bb_reg(dm, R_0xdb8, MASKDWORD);
-	value32_1 = odm_get_bb_reg(dm, R_0xdb4, MASKDWORD);
-
-	scfo_b = (s32)(value32 & 0x7ff); /*S(11,10)*/
-	scfo_a = (s32)((value32 & 0x07ff0000) >> 16);
-
-	if (scfo_a > 1023)
-		scfo_a = scfo_a - 2048;
-
-	if (scfo_b > 1023)
-		scfo_b = scfo_b - 2048;
-
-	scfo_a = scfo_a * 312500 / 1024;
-	scfo_b = scfo_b * 312500 / 1024;
-
-	avg_cfo_b = (s32)(value32_1 & 0x1fff); /*S(13,12)*/
-	avg_cfo_a = (s32)((value32_1 & 0x1fff0000) >> 16);
-
-	if (avg_cfo_a > 4095)
-		avg_cfo_a = avg_cfo_a - 8192;
-
-	if (avg_cfo_b > 4095)
-		avg_cfo_b = avg_cfo_b - 8192;
-
-	avg_cfo_a = avg_cfo_a * 312500 / 4096;
-	avg_cfo_b = avg_cfo_b * 312500 / 4096;
-
-	PDM_SNPF(out_len, used, output + used, out_len - used,
-		 "\r\n %-35s = %d / %d", "value SCFO(Hz) <A/B>", scfo_a,
-		 scfo_b);
-	PDM_SNPF(out_len, used, output + used, out_len - used,
-		 "\r\n %-35s = %d / %d", "Avg CFO(Hz) <A/B>", avg_cfo_a,
-		 avg_cfo_b);
-
-	value32 = odm_get_bb_reg(dm, R_0xdbc, MASKDWORD);
-	value32_1 = odm_get_bb_reg(dm, R_0xde0, MASKDWORD);
-
-	cfo_end_b = (s32)(value32 & 0x1fff); /*S(13,12)*/
-	cfo_end_a = (s32)((value32 & 0x1fff0000) >> 16);
-
-	if (cfo_end_a > 4095)
-		cfo_end_a = cfo_end_a - 8192;
-
-	if (cfo_end_b > 4095)
-		cfo_end_b = cfo_end_b - 8192;
-
-	cfo_end_a = cfo_end_a * 312500 / 4096;
-	cfo_end_b = cfo_end_b * 312500 / 4096;
-
-	acq_cfo_b = (s32)(value32_1 & 0x1fff); /*S(13,12)*/
-	acq_cfo_a = (s32)((value32_1 & 0x1fff0000) >> 16);
-
-	if (acq_cfo_a > 4095)
-		acq_cfo_a = acq_cfo_a - 8192;
-
-	if (acq_cfo_b > 4095)
-		acq_cfo_b = acq_cfo_b - 8192;
-
-	acq_cfo_a = acq_cfo_a * 312500 / 4096;
-	acq_cfo_b = acq_cfo_b * 312500 / 4096;
-
-	PDM_SNPF(out_len, used, output + used, out_len - used,
-		 "\r\n %-35s = %d / %d", "End CFO(Hz) <A/B>", cfo_end_a,
-		 cfo_end_b);
-	PDM_SNPF(out_len, used, output + used, out_len - used,
-		 "\r\n %-35s = %d / %d", "ACQ CFO(Hz) <A/B>", acq_cfo_a,
-		 acq_cfo_b);
-#endif
 }
 #endif
 
@@ -667,25 +548,11 @@ void phydm_bb_hw_dbg_info_ac(void *dm_void, u32 *_used, char *output,
 	/*@ [VHT SIG B] ====================================================*/
 		value32 = odm_get_bb_reg(dm, R_0xf34, MASKDWORD);
 
-		#if 0
-		v_length = (u16)(value32 & 0x1fffff);
-		vbrsv = (u8)((value32 & 0x600000) >> 21);
-		vb_tail = (u16)((value32 & 0x1f800000) >> 23);
-		vbcrc = (u8)((value32 & 0x80000000) >> 31);
-		#endif
-
 		PDM_SNPF(out_len, used, output + used, out_len - used,
 			 "\r\n %-35s", "VHT-SIG-B");
 		PDM_SNPF(out_len, used, output + used, out_len - used,
 			 "\r\n %-35s = %x",
 			 "Codeword", value32);
-
-		#if 0
-		PDM_SNPF(out_len, used, output + used, out_len - used,
-			 "\r\n %-35s = %x / %x / %x / %x",
-			 "length/Rsv/tail/CRC",
-			 v_length, vbrsv, vb_tail, vbcrc);
-		#endif
 	}
 
 	*_used = used;
@@ -4381,26 +4248,6 @@ void phydm_fw_trace_handler(void *dm_void, u8 *cmd_buf, u8 cmd_len)
 	freg_num = (buf_0 & 0xf);
 	c2h_seq = (buf_0 & 0xf0) >> 4;
 
-	#if 0
-	PHYDM_DBG(dm, DBG_FW_TRACE,
-		  "[FW debug message] freg_num = (( %d )), c2h_seq=(( %d ))\n",
-		  freg_num, c2h_seq);
-
-	strncpy(debug_trace_11byte, &cmd_buf[1], (cmd_len - 1));
-	debug_trace_11byte[cmd_len - 1] = '\0';
-	PHYDM_DBG(dm, DBG_FW_TRACE, "[FW debug message] %s\n",
-		  debug_trace_11byte);
-	PHYDM_DBG(dm, DBG_FW_TRACE, "[FW debug message] cmd_len = (( %d ))\n",
-		  cmd_len);
-	PHYDM_DBG(dm, DBG_FW_TRACE, "[FW debug message] c2h_cmd_start=((%d))\n",
-		  dm->c2h_cmd_start);
-
-	PHYDM_DBG(dm, DBG_FW_TRACE, "pre_seq = (( %d )), current_seq=((%d))\n",
-		  dm->pre_c2h_seq, c2h_seq);
-	PHYDM_DBG(dm, DBG_FW_TRACE, "fw_buff_is_enpty = (( %d ))\n",
-		  dm->fw_buff_is_enpty);
-	#endif
-
 	if (c2h_seq != dm->pre_c2h_seq && dm->fw_buff_is_enpty == false) {
 		dm->fw_debug_trace[dm->c2h_cmd_start] = '\0';
 		PHYDM_DBG(dm, DBG_FW_TRACE, "[FW Dbg Queue Overflow] %s\n",
@@ -4430,9 +4277,7 @@ void phydm_fw_trace_handler(void *dm_void, u8 *cmd_buf, u8 cmd_len)
 
 		PHYDM_DBG(dm, DBG_FW_TRACE, "[FW DBG Msg] %s\n",
 			  dm->fw_debug_trace);
-#if 0
-		/*@dbg_print("[FW DBG Msg] %s\n", dm->fw_debug_trace);*/
-#endif
+
 		dm->c2h_cmd_start = 0;
 		dm->fw_buff_is_enpty = true;
 	}
@@ -4675,11 +4520,6 @@ void phydm_fw_trace_handler_8051(void *dm_void, u8 *buffer, u8 cmd_len)
 {
 #ifdef CONFIG_PHYDM_DEBUG_FUNCTION
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
-#if 0
-	if (cmd_len >= 3)
-		cmd_buf[cmd_len - 1] = '\0';
-	PHYDM_DBG(dm, DBG_FW_TRACE, "[FW DBG Msg] %s\n", &cmd_buf[3]);
-#else
 
 	int i = 0;
 	u8 extend_c2h_sub_id = 0, extend_c2h_dbg_len = 0;
@@ -4725,7 +4565,5 @@ go_backfor_aggre_dbg_pkt:
 			goto go_backfor_aggre_dbg_pkt;
 		}
 	}
-
-#endif
 #endif /*@#ifdef CONFIG_PHYDM_DEBUG_FUNCTION*/
 }

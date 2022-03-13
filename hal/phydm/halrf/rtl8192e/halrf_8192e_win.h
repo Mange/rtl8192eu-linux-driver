@@ -73,22 +73,6 @@ phy_lc_calibrate_8192e(
 	void		*dm_void
 );
 
-/*
- * AP calibrate
- *   */
-#if 0
-void
-phy_ap_calibrate_8192e(
-#if (DM_ODM_SUPPORT_TYPE & ODM_AP)
-	struct dm_struct		*dm,
-#else
-	void	*adapter,
-#endif
-	s8		delta);
-void
-phy_digital_predistortion_8192e(void	*adapter);
-#endif
-
 void
 _phy_save_adda_registers_92e(
 	struct dm_struct		*dm,

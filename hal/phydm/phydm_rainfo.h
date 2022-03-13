@@ -141,7 +141,7 @@ struct _odm_ra_info_ {
 	u8	ra_waiting_counter;
 	u8	ra_pending_counter;
 	u8	ra_drop_after_down;
-#if 1 /* POWER_TRAINING_ACTIVE == 1 */ /* For compile  pass only~! */
+
 	u8	pt_active;	/* on or off */
 	u8	pt_try_state;	/* @0 trying state, 1 for decision state */
 	u8	pt_stage;	/* @0~6 */
@@ -151,7 +151,6 @@ struct _odm_ra_info_ {
 	u8	pt_mode_ss;	/* @decide whitch rate should do PT */
 	u8	ra_stage;	/* @StageRA, decide how many times RA will be done between PT */
 	u8	pt_smooth_factor;
-#endif
 #if (DM_ODM_SUPPORT_TYPE == ODM_AP) &&	((DEV_BUS_TYPE == RT_USB_INTERFACE) || (DEV_BUS_TYPE == RT_SDIO_INTERFACE))
 	u8	rate_down_counter;
 	u8	rate_up_counter;
@@ -176,13 +175,6 @@ struct ra_table {
 	u8	ra_ofst_direc; /*RA_offset_direction*/
 	u8	up_ramask_cnt; /*@force update_ra_mask counter*/
 	u8	up_ramask_cnt_tmp; /*@Just for debug, should be removed latter*/
-#if 0	/*@CONFIG_RA_DYNAMIC_RTY_LIMIT*/
-	u8	per_rate_retrylimit_20M[ODM_NUM_RATE_IDX];
-	u8	per_rate_retrylimit_40M[ODM_NUM_RATE_IDX];
-	u8	retry_descend_num;
-	u8	retrylimit_low;
-	u8	retrylimit_high;
-#endif
 	u8	ldpc_thres; /* @if RSSI > ldpc_th => switch from LPDC to BCC */
 	void (*record_ra_info)(void *dm_void, u8 macid,
 			       struct cmn_sta_info *sta, u64 ra_mask);
@@ -250,13 +242,7 @@ void phydm_update_hal_ra_mask(
 u8 phydm_get_plcp(void *dm_void, u16 macid);
 #endif
 
-void phydm_refresh_rate_adaptive_mask(void *dm_void);
-
 u8 phydm_rssi_lv_dec(void *dm_void, u32 rssi, u8 ratr_state);
-
-void odm_ra_post_action_on_assoc(void *dm);
-
-u8 odm_find_rts_rate(void *dm_void, u8 tx_rate, boolean is_erp_protect);
 
 void phydm_show_sta_info(void *dm_void, char input[][16], u32 *_used,
 			 char *output, u32 *_out_len);

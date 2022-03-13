@@ -139,119 +139,6 @@ static const struct ieee80211_regdomain rtw_regdom_14 = {
 	}
 };
 
-#if 0
-static struct rtw_regulatory *rtw_regd;
-#endif
-
-#if 0 /* not_yet */
-static void _rtw_reg_apply_beaconing_flags(struct wiphy *wiphy,
-		enum nl80211_reg_initiator initiator)
-{
-	enum nl80211_band band;
-	struct ieee80211_supported_band *sband;
-	const struct ieee80211_reg_rule *reg_rule;
-	struct ieee80211_channel *ch;
-	unsigned int i;
-	u32 bandwidth = 0;
-	int r;
-
-	for (band = 0; band < NUM_NL80211_BANDS; band++) {
-
-		if (!wiphy->bands[band])
-			continue;
-
-		sband = wiphy->bands[band];
-
-		for (i = 0; i < sband->n_channels; i++) {
-			ch = &sband->channels[i];
-			if (rtw_is_dfs_ch(ch->hw_value) ||
-			    (ch->flags & IEEE80211_CHAN_RADAR))
-				continue;
-			if (initiator == NL80211_REGDOM_SET_BY_COUNTRY_IE) {
-				r = freq_reg_info(wiphy, ch->center_freq,
-						  bandwidth, &reg_rule);
-				if (r)
-					continue;
-
-				/*
-				 *If 11d had a rule for this channel ensure
-				 *we enable adhoc/beaconing if it allows us to
-				 *use it. Note that we would have disabled it
-				 *by applying our static world regdomain by
-				 *default during init, prior to calling our
-				 *regulatory_hint().
-				 */
-
-				if (!(reg_rule->flags & NL80211_RRF_NO_IBSS))
-					ch->flags &= ~IEEE80211_CHAN_NO_IBSS;
-				if (!
-				    (reg_rule->flags &
-				     NL80211_RRF_PASSIVE_SCAN))
-					ch->flags &=
-						~IEEE80211_CHAN_PASSIVE_SCAN;
-			} else {
-				if (ch->beacon_found)
-					ch->flags &= ~(IEEE80211_CHAN_NO_IBSS |
-						IEEE80211_CHAN_PASSIVE_SCAN);
-			}
-		}
-	}
-}
-
-/* Allows active scan scan on Ch 12 and 13 */
-static void _rtw_reg_apply_active_scan_flags(struct wiphy *wiphy,
-		enum nl80211_reg_initiator
-		initiator)
-{
-	struct ieee80211_supported_band *sband;
-	struct ieee80211_channel *ch;
-	const struct ieee80211_reg_rule *reg_rule;
-	u32 bandwidth = 0;
-	int r;
-
-	if (!wiphy->bands[NL80211_BAND_2GHZ])
-		return;
-	sband = wiphy->bands[NL80211_BAND_2GHZ];
-
-	/*
-	 * If no country IE has been received always enable active scan
-	 * on these channels. This is only done for specific regulatory SKUs
-	 */
-	if (initiator != NL80211_REGDOM_SET_BY_COUNTRY_IE) {
-		ch = &sband->channels[11];	/* CH 12 */
-		if (ch->flags & IEEE80211_CHAN_PASSIVE_SCAN)
-			ch->flags &= ~IEEE80211_CHAN_PASSIVE_SCAN;
-		ch = &sband->channels[12];	/* CH 13 */
-		if (ch->flags & IEEE80211_CHAN_PASSIVE_SCAN)
-			ch->flags &= ~IEEE80211_CHAN_PASSIVE_SCAN;
-		return;
-	}
-
-	/*
-	 * If a country IE has been received check its rule for this
-	 * channel first before enabling active scan. The passive scan
-	 * would have been enforced by the initial processing of our
-	 * custom regulatory domain.
-	 */
-
-	ch = &sband->channels[11];	/* CH 12 */
-	r = freq_reg_info(wiphy, ch->center_freq, bandwidth, &reg_rule);
-	if (!r) {
-		if (!(reg_rule->flags & NL80211_RRF_PASSIVE_SCAN))
-			if (ch->flags & IEEE80211_CHAN_PASSIVE_SCAN)
-				ch->flags &= ~IEEE80211_CHAN_PASSIVE_SCAN;
-	}
-
-	ch = &sband->channels[12];	/* CH 13 */
-	r = freq_reg_info(wiphy, ch->center_freq, bandwidth, &reg_rule);
-	if (!r) {
-		if (!(reg_rule->flags & NL80211_RRF_PASSIVE_SCAN))
-			if (ch->flags & IEEE80211_CHAN_PASSIVE_SCAN)
-				ch->flags &= ~IEEE80211_CHAN_PASSIVE_SCAN;
-	}
-}
-#endif
-
 void rtw_regd_apply_flags(struct wiphy *wiphy)
 {
 	struct dvobj_priv *dvobj = wiphy_to_dvobj(wiphy);
@@ -322,15 +209,8 @@ static const struct ieee80211_regdomain *_rtw_regdomain_select(struct
 		rtw_regulatory
 		*reg)
 {
-#if 0
-	switch (reg->country_code) {
-	case COUNTRY_CODE_USER:
-	default:
-		return &rtw_regdom_rd;
-	}
-#else
+
 	return &rtw_regdom_rd;
-#endif
 }
 
 static void rtw_reg_notifier(struct wiphy *wiphy, struct regulatory_request *request)

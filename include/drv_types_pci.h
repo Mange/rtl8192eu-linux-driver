@@ -15,11 +15,7 @@
 #ifndef __DRV_TYPES_PCI_H__
 #define __DRV_TYPES_PCI_H__
 
-
-#ifdef PLATFORM_LINUX
-	#include <linux/pci.h>
-#endif
-
+#include <linux/pci.h>
 
 #define	INTEL_VENDOR_ID				0x8086
 #define	SIS_VENDOR_ID					0x1039
@@ -117,74 +113,6 @@ typedef struct _PCI_COMMON_CONFIG {
 			u8	MinimumGrant;
 			u8	MaximumLatency;
 		} type0;
-#if 0
-		struct _PCI_HEADER_TYPE_1 {
-			ULONG BaseAddresses[PCI_TYPE1_ADDRESSES];
-			UCHAR PrimaryBusNumber;
-			UCHAR SecondaryBusNumber;
-			UCHAR SubordinateBusNumber;
-			UCHAR SecondaryLatencyTimer;
-			UCHAR IOBase;
-			UCHAR IOLimit;
-			USHORT SecondaryStatus;
-			USHORT MemoryBase;
-			USHORT MemoryLimit;
-			USHORT PrefetchableMemoryBase;
-			USHORT PrefetchableMemoryLimit;
-			ULONG PrefetchableMemoryBaseUpper32;
-			ULONG PrefetchableMemoryLimitUpper32;
-			USHORT IOBaseUpper;
-			USHORT IOLimitUpper;
-			ULONG Reserved2;
-			ULONG ExpansionROMBase;
-			UCHAR InterruptLine;
-			UCHAR InterruptPin;
-			USHORT BridgeControl;
-		} type1;
-
-		struct _PCI_HEADER_TYPE_2 {
-			ULONG BaseAddress;
-			UCHAR CapabilitiesPtr;
-			UCHAR Reserved2;
-			USHORT SecondaryStatus;
-			UCHAR PrimaryBusNumber;
-			UCHAR CardbusBusNumber;
-			UCHAR SubordinateBusNumber;
-			UCHAR CardbusLatencyTimer;
-			ULONG MemoryBase0;
-			ULONG MemoryLimit0;
-			ULONG MemoryBase1;
-			ULONG MemoryLimit1;
-			USHORT IOBase0_LO;
-			USHORT IOBase0_HI;
-			USHORT IOLimit0_LO;
-			USHORT IOLimit0_HI;
-			USHORT IOBase1_LO;
-			USHORT IOBase1_HI;
-			USHORT IOLimit1_LO;
-			USHORT IOLimit1_HI;
-			UCHAR InterruptLine;
-			UCHAR InterruptPin;
-			USHORT BridgeControl;
-			USHORT SubVendorID;
-			USHORT SubSystemID;
-			ULONG LegacyBaseAddress;
-			UCHAR Reserved3[56];
-			ULONG SystemControl;
-			UCHAR MultiMediaControl;
-			UCHAR GeneralStatus;
-			UCHAR Reserved4[2];
-			UCHAR GPIO0Control;
-			UCHAR GPIO1Control;
-			UCHAR GPIO2Control;
-			UCHAR GPIO3Control;
-			ULONG IRQMuxRouting;
-			UCHAR RetryStatus;
-			UCHAR CardControl;
-			UCHAR DeviceControl;
-			UCHAR Diagnostic;
-		} type2;
-#endif
 	} u;
 
 	u8	DeviceSpecific[108];

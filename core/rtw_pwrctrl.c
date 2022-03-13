@@ -1483,11 +1483,6 @@ void cpwm_int_hdl(
 		goto exit;
 
 	pwrpriv = adapter_to_pwrctl(padapter);
-#if 0
-	if (pwrpriv->cpwm_tog == (preportpwrstate->state & PS_TOGGLE)) {
-		goto exit;
-	}
-#endif
 
 	_enter_pwrlock(&pwrpriv->lock);
 
@@ -1616,16 +1611,11 @@ static void rpwmtimeout_workitem_callback(struct work_struct *work)
 #endif
 
 	if (rtw_read8(padapter, 0x100) != 0xEA) {
-#if 1
 		struct reportpwrstate_parm report;
 
 		report.state = PS_STATE_S2;
 		RTW_INFO("\n%s: FW already leave 32K!\n\n", __func__);
 		cpwm_int_hdl(padapter, &report);
-#else
-		RTW_INFO("\n%s: FW already leave 32K!\n\n", __func__);
-		cpwm_event_callback(&pwrpriv->cpwm_event);
-#endif
 		return;
 	}
 
@@ -2335,11 +2325,7 @@ void rtw_resume_in_workqueue(struct pwrctrl_priv *pwrpriv)
 
 	rtw_resume_lock_suspend();
 
-#if 1
 	queue_work(pwrpriv->rtw_workqueue, &pwrpriv->resume_work);
-#else
-	_set_workitem(&pwrpriv->resume_work);
-#endif
 }
 #endif /* CONFIG_RESUME_IN_WORKQUEUE */
 

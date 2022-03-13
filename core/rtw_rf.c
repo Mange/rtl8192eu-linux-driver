@@ -1105,12 +1105,6 @@ chk_lmt_val:
 		ent->lmt_5g[bw][tlrs - 1][ch_idx][ntx_idx] = lmt;
 	#endif
 
-	if (0)
-		RTW_PRINT("%s, %4s, %6s, %7s, %uT, ch%3d = %d\n"
-			, regd_name, band_str(band), ch_width_str(bw), txpwr_lmt_rs_str(tlrs), ntx_idx + 1
-			, band == BAND_ON_2_4G ? ch_idx + 1 : center_ch_5g_all[ch_idx]
-			, lmt);
-
 release_lock:
 	_exit_critical_mutex(&rfctl->txpwr_lmt_mutex, &irqL);
 

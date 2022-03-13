@@ -935,10 +935,6 @@ u8 phydm_new_igi_by_fa(struct dm_struct *dm, u8 igi, u32 fa_cnt, u8 *step_size)
 	boolean dig_go_up_check = true;
 	struct phydm_dig_struct *dig_t = &dm->dm_dig_table;
 
-#if 0
-	/*@dig_go_up_check = phydm_dig_go_up_check(dm);*/
-#endif
-
 	if (fa_cnt > dig_t->fa_th[2] && dig_go_up_check)
 		igi = igi + step_size[0];
 	else if ((fa_cnt > dig_t->fa_th[1]) && dig_go_up_check)
@@ -1681,9 +1677,7 @@ void phydm_tdma_dig_timer_check(void *dm_void)
 #else
 			/*@if interrupt mask info is got.*/
 			/*Reg0xb0 is no longer needed*/
-#if 0
-			/*regb0 = odm_get_bb_reg(dm, R_0xb0, bMaskDWord);*/
-#endif
+
 			PHYDM_DBG(dm, DBG_DIG,
 				  "Check fail, Mask[0]=0x%x, restart timer\n",
 				  *dm->interrupt_mask);
@@ -1999,15 +1993,6 @@ u8 get_new_igi_bound(struct dm_struct *dm, u8 igi, u32 fa_cnt, u8 *rx_gain_max,
 			igi = *rx_gain_min;
 		}
 
-		#if 0
-		#if (DM_ODM_SUPPORT_TYPE & (ODM_WIN | ODM_CE))
-		#if (RTL8812A_SUPPORT)
-		if (dm->support_ic_type == ODM_RTL8812)
-			odm_config_bb_with_header_file(dm,
-						       CONFIG_BB_AGC_TAB_DIFF);
-		#endif
-		#endif
-		#endif
 		PHYDM_DBG(dm, DBG_DIG, "First connect: foce IGI=0x%x\n", igi);
 	} else if (dm->is_linked) {
 		PHYDM_DBG(dm, DBG_DIG, "Adjust IGI @ linked\n");
@@ -2348,14 +2333,6 @@ void phydm_tdma_low_dig(void *dm_void)
 		else
 			dig_t->dm_dig_min = DIG_MIN_DFS;
 
-	} else {
-		#if 0
-		if (dm->support_ic_type &
-		    (ODM_RTL8814A | ODM_RTL8812 | ODM_RTL8821 | ODM_RTL8822B))
-			dig_t->dm_dig_min = 0x1c;
-		else if (dm->support_ic_type & ODM_RTL8197F)
-			dig_t->dm_dig_min = 0x1e; /*@For HW setting*/
-		#endif
 	}
 
 	PHYDM_DBG(dm, DBG_DIG, "Abs{Max, Min}={0x%x, 0x%x}, Max_of_min=0x%x\n",
@@ -2446,9 +2423,6 @@ void phydm_tdma_low_dig(void *dm_void)
 		dig_t->low_ig_value = tdma_l_igi;
 		dig_t->tdma_rx_gain_min[TDMA_DIG_LOW_STATE] = tdma_l_dym_min;
 		dig_t->tdma_rx_gain_max[TDMA_DIG_LOW_STATE] = tdma_l_dym_max;
-#if 0
-		/*odm_write_dig(dm, tdma_l_igi);*/
-#endif
 	} else {
 		odm_write_dig(dm, new_igi);
 	}
@@ -2522,15 +2496,7 @@ void phydm_tdma_high_dig(void *dm_void)
 			dig_t->dig_max_of_min = DIG_MAX_OF_MIN_PERFORMANCE_MODE;
 		}
 
-		#if 0
-		if (dm->support_ic_type &
-		    (ODM_RTL8814A | ODM_RTL8812 | ODM_RTL8821 | ODM_RTL8822B))
-			dig_t->dm_dig_min = 0x1c;
-		else if (dm->support_ic_type & ODM_RTL8197F)
-			dig_t->dm_dig_min = 0x1e; /*@For HW setting*/
-		else
-		#endif
-			dig_t->dm_dig_min = DIG_MIN_PERFORMANCE;
+		dig_t->dm_dig_min = DIG_MIN_PERFORMANCE;
 	}
 	PHYDM_DBG(dm, DBG_DIG, "Abs{Max, Min}={0x%x, 0x%x}, Max_of_min=0x%x\n",
 		  dig_t->dm_dig_max, dig_t->dm_dig_min, dig_t->dig_max_of_min);
@@ -2623,10 +2589,7 @@ void phydm_tdma_high_dig(void *dm_void)
 		dig_t->cur_ig_value_tdma = tdma_h_igi;
 		dig_t->tdma_rx_gain_min[TDMA_DIG_HIGH_STATE] = tdma_h_dym_min;
 		dig_t->tdma_rx_gain_max[TDMA_DIG_HIGH_STATE] = tdma_h_dym_max;
-#if 0
-		/*odm_write_dig(dm, tdma_h_igi);*/
-#endif
-	} else {
+		} else {
 		odm_write_dig(dm, new_igi);
 	}
 

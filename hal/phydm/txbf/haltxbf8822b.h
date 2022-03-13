@@ -43,14 +43,10 @@ void hal_txbf_8822b_status(
 void hal_txbf_8822b_config_gtab(
 	void *dm_void);
 
-void hal_txbf_8822b_fw_txbf(
-	void *dm_void,
-	u8 idx);
 #else
 #define hal_txbf_8822b_enter(dm_void, idx)
 #define hal_txbf_8822b_leave(dm_void, idx)
 #define hal_txbf_8822b_status(dm_void, idx)
-#define hal_txbf_8822b_fw_txbf(dm_void, idx)
 #define hal_txbf_8822b_config_gtab(dm_void)
 
 #endif
@@ -71,7 +67,6 @@ void phydm_8822b_sutxbfer_workaroud(void *dm_void, boolean enable_su_bfer,
 #define hal_txbf_8822b_enter(dm_void, idx)
 #define hal_txbf_8822b_leave(dm_void, idx)
 #define hal_txbf_8822b_status(dm_void, idx)
-#define hal_txbf_8822b_fw_txbf(dm_void, idx)
 #define hal_txbf_8822b_config_gtab(dm_void)
 
 #endif

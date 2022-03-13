@@ -85,240 +85,6 @@ u8 hal_txbf_8822b_get_nrx(
 }
 
 /***************SU & MU BFee Entry********************/
-void hal_txbf_8822b_rf_mode(
-	void *dm_void,
-	struct _RT_BEAMFORMING_INFO *beamforming_info,
-	u8 idx)
-{
-#if 0
-	struct dm_struct	*dm = (struct dm_struct *)dm_void;
-	u8				i, nr_index = 0;
-	boolean				is_self_beamformer = false;
-	boolean				is_self_beamformee = false;
-	struct _RT_BEAMFORMEE_ENTRY	beamformee_entry;
-
-	if (idx < BEAMFORMEE_ENTRY_NUM)
-		beamformee_entry = beamforming_info->beamformee_entry[idx];
-	else
-		return;
-
-	if (dm->rf_type == RF_1T1R)
-		return;
-
-	for (i = RF_PATH_A; i < RF_PATH_B; i++) {
-		odm_set_rf_reg(dm, (enum rf_path)i, rf_welut_jaguar, 0x80000, 0x1);
-		/*RF mode table write enable*/
-	}
-
-	if (beamforming_info->beamformee_su_cnt > 0 || beamforming_info->beamformee_mu_cnt > 0) {
-		for (i = RF_PATH_A; i < RF_PATH_B; i++) {
-			odm_set_rf_reg(dm, (enum rf_path)i, rf_mode_table_addr, 0xfffff, 0x18000);
-			/*Select RX mode*/
-			odm_set_rf_reg(dm, (enum rf_path)i, rf_mode_table_data0, 0xfffff, 0xBE77F);
-			/*Set Table data*/
-			odm_set_rf_reg(dm, (enum rf_path)i, rf_mode_table_data1, 0xfffff, 0x226BF);
-			/*@Enable TXIQGEN in RX mode*/
-		}
-		odm_set_rf_reg(dm, RF_PATH_A, rf_mode_table_data1, 0xfffff, 0xE26BF);
-		/*@Enable TXIQGEN in RX mode*/
-	}
-
-	for (i = RF_PATH_A; i < RF_PATH_B; i++) {
-		odm_set_rf_reg(dm, (enum rf_path)i, rf_welut_jaguar, 0x80000, 0x0);
-		/*RF mode table write disable*/
-	}
-
-	if (beamforming_info->beamformee_su_cnt > 0) {
-		/*@for 8814 19ac(idx 1), 19b4(idx 0), different Tx ant setting*/
-		odm_set_bb_reg(dm, REG_BB_TXBF_ANT_SET_BF1_8822B, BIT(28) | BIT29, 0x2);			/*@enable BB TxBF ant mapping register*/
-
-		if (idx == 0) {
-			/*Nsts = 2	AB*/
-			odm_set_bb_reg(dm, REG_BB_TXBF_ANT_SET_BF0_8822B, 0xffff, 0x0433);
-			odm_set_bb_reg(dm, REG_BB_TX_PATH_SEL_1_8822B, 0xfff00000, 0x043);
-			/*odm_set_bb_reg(dm, REG_BB_TX_PATH_SEL_2, MASKLWORD, 0x430);*/
-
-		} else {/*@IDX =1*/
-			odm_set_bb_reg(dm, REG_BB_TXBF_ANT_SET_BF1_8822B, 0xffff, 0x0433);
-			odm_set_bb_reg(dm, REG_BB_TX_PATH_SEL_1_8822B, 0xfff00000, 0x043);
-			/*odm_set_bb_reg(dm, REG_BB_TX_PATH_SEL_2, MASKLWORD, 0x430;*/
-		}
-	} else {
-		odm_set_bb_reg(dm, REG_BB_TX_PATH_SEL_1_8822B, 0xfff00000, 0x1); /*@1SS by path-A*/
-		odm_set_bb_reg(dm, REG_BB_TX_PATH_SEL_2_8822B, MASKLWORD, 0x430); /*@2SS by path-A,B*/
-	}
-
-	if (beamforming_info->beamformee_mu_cnt > 0) {
-		/*@MU STAs share the common setting*/
-		odm_set_bb_reg(dm, REG_BB_TXBF_ANT_SET_BF1_8822B, BIT(31), 1);
-		odm_set_bb_reg(dm, REG_BB_TXBF_ANT_SET_BF1_8822B, 0xffff, 0x0433);
-		odm_set_bb_reg(dm, REG_BB_TX_PATH_SEL_1_8822B, 0xfff00000, 0x043);
-	}
-#endif
-}
-#if 0
-void
-hal_txbf_8822b_download_ndpa(
-	void			*adapter,
-	u8				idx
-)
-{
-	u8			u1b_tmp = 0, tmp_reg422 = 0;
-	u8			bcn_valid_reg = 0, count = 0, dl_bcn_count = 0;
-	u16			head_page = 0x7FE;
-	boolean			is_send_beacon = false;
-	HAL_DATA_TYPE	*hal_data = GET_HAL_DATA(adapter);
-	u16			tx_page_bndy = LAST_ENTRY_OF_TX_PKT_BUFFER_8814A; /*@default reseved 1 page for the IC type which is undefined.*/
-	struct _RT_BEAMFORMING_INFO	*beam_info = GET_BEAMFORM_INFO(adapter);
-	struct _RT_BEAMFORMEE_ENTRY	*p_beam_entry = beam_info->beamformee_entry + idx;
-
-	hal_data->is_fw_dw_rsvd_page_in_progress = true;
-	phydm_get_hal_def_var_handler_interface(dm, HAL_DEF_TX_PAGE_BOUNDARY, (u16 *)&tx_page_bndy);
-
-	/*Set REG_CR bit 8. DMA beacon by SW.*/
-	u1b_tmp = platform_efio_read_1byte(adapter, REG_CR_8814A + 1);
-	platform_efio_write_1byte(adapter,  REG_CR_8814A + 1, (u1b_tmp | BIT(0)));
-
-
-	/*Set FWHW_TXQ_CTRL 0x422[6]=0 to tell Hw the packet is not a real beacon frame.*/
-	tmp_reg422 = platform_efio_read_1byte(adapter, REG_FWHW_TXQ_CTRL_8814A + 2);
-	platform_efio_write_1byte(adapter, REG_FWHW_TXQ_CTRL_8814A + 2,  tmp_reg422 & (~BIT(6)));
-
-	if (tmp_reg422 & BIT(6)) {
-		is_send_beacon = true;
-	}
-
-	/*@0x204[11:0]	Beacon Head for TXDMA*/
-	platform_efio_write_2byte(adapter, REG_FIFOPAGE_CTRL_2_8814A, head_page);
-
-	do {
-		/*@Clear beacon valid check bit.*/
-		bcn_valid_reg = platform_efio_read_1byte(adapter, REG_FIFOPAGE_CTRL_2_8814A + 1);
-		platform_efio_write_1byte(adapter, REG_FIFOPAGE_CTRL_2_8814A + 1, (bcn_valid_reg | BIT(7)));
-
-		/*@download NDPA rsvd page.*/
-		if (p_beam_entry->beamform_entry_cap & BEAMFORMER_CAP_VHT_SU)
-			beamforming_send_vht_ndpa_packet(dm, p_beam_entry->mac_addr, p_beam_entry->AID, p_beam_entry->sound_bw, BEACON_QUEUE);
-		else
-			beamforming_send_ht_ndpa_packet(dm, p_beam_entry->mac_addr, p_beam_entry->sound_bw, BEACON_QUEUE);
-
-		/*@check rsvd page download OK.*/
-		bcn_valid_reg = platform_efio_read_1byte(adapter, REG_FIFOPAGE_CTRL_2_8814A + 1);
-		count = 0;
-		while (!(bcn_valid_reg & BIT(7)) && count < 20) {
-			count++;
-			delay_us(10);
-			bcn_valid_reg = platform_efio_read_1byte(adapter, REG_FIFOPAGE_CTRL_2_8814A + 2);
-		}
-		dl_bcn_count++;
-	} while (!(bcn_valid_reg & BIT(7)) && dl_bcn_count < 5);
-
-	if (!(bcn_valid_reg & BIT(0)))
-		RT_DISP(FBEAM, FBEAM_ERROR, ("%s Download RSVD page failed!\n", __func__));
-
-	/*@0x204[11:0]	Beacon Head for TXDMA*/
-	platform_efio_write_2byte(adapter, REG_FIFOPAGE_CTRL_2_8814A, tx_page_bndy);
-
-	/*To make sure that if there exists an adapter which would like to send beacon.*/
-	/*@If exists, the origianl value of 0x422[6] will be 1, we should check this to*/
-	/*prevent from setting 0x422[6] to 0 after download reserved page, or it will cause */
-	/*the beacon cannot be sent by HW.*/
-	/*@2010.06.23. Added by tynli.*/
-	if (is_send_beacon)
-		platform_efio_write_1byte(adapter, REG_FWHW_TXQ_CTRL_8814A + 2, tmp_reg422);
-
-	/*@Do not enable HW DMA BCN or it will cause Pcie interface hang by timing issue. 2011.11.24. by tynli.*/
-	/*@Clear CR[8] or beacon packet will not be send to TxBuf anymore.*/
-	u1b_tmp = platform_efio_read_1byte(adapter, REG_CR_8814A + 1);
-	platform_efio_write_1byte(adapter, REG_CR_8814A + 1, (u1b_tmp & (~BIT(0))));
-
-	p_beam_entry->beamform_entry_state = BEAMFORMING_ENTRY_STATE_PROGRESSED;
-
-	hal_data->is_fw_dw_rsvd_page_in_progress = false;
-}
-
-void
-hal_txbf_8822b_fw_txbf_cmd(
-	void	*adapter
-)
-{
-	u8	idx, period = 0;
-	u8	PageNum0 = 0xFF, PageNum1 = 0xFF;
-	u8	u1_tx_bf_parm[3] = {0};
-
-	PMGNT_INFO				mgnt_info = &(adapter->MgntInfo);
-	struct _RT_BEAMFORMING_INFO	*beam_info = GET_BEAMFORM_INFO(adapter);
-
-	for (idx = 0; idx < BEAMFORMEE_ENTRY_NUM; idx++) {
-		if (beam_info->beamformee_entry[idx].is_used && beam_info->beamformee_entry[idx].beamform_entry_state == BEAMFORMING_ENTRY_STATE_PROGRESSED) {
-			if (beam_info->beamformee_entry[idx].is_sound) {
-				PageNum0 = 0xFE;
-				PageNum1 = 0x07;
-				period = (u8)(beam_info->beamformee_entry[idx].sound_period);
-			} else if (PageNum0 == 0xFF) {
-				PageNum0 = 0xFF; /*stop sounding*/
-				PageNum1 = 0x0F;
-			}
-		}
-	}
-
-	u1_tx_bf_parm[0] = PageNum0;
-	u1_tx_bf_parm[1] = PageNum1;
-	u1_tx_bf_parm[2] = period;
-	fill_h2c_cmd(adapter, PHYDM_H2C_TXBF, 3, u1_tx_bf_parm);
-
-	RT_DISP(FBEAM, FBEAM_FUN, ("@%s End, PageNum0 = 0x%x, PageNum1 = 0x%x period = %d", __func__, PageNum0, PageNum1, period));
-}
-#endif
-
-#if 0
-void
-hal_txbf_8822b_init(
-	void			*dm_void
-)
-{
-	struct dm_struct	*dm = (struct dm_struct *)dm_void;
-	u8		u1b_tmp;
-	struct _RT_BEAMFORMING_INFO		*beamforming_info = &dm->beamforming_info;
-	void				*adapter = dm->adapter;
-
-	odm_set_bb_reg(dm, R_0x14c0, BIT(16), 1); /*@Enable P1 aggr new packet according to P0 transfer time*/
-	odm_set_bb_reg(dm, R_0x14c0, BIT(15) | BIT14 | BIT13 | BIT12, 10); /*@MU Retry Limit*/
-	odm_set_bb_reg(dm, R_0x14c0, BIT(7), 0); /*@Disable Tx MU-MIMO until sounding done*/
-	odm_set_bb_reg(dm, R_0x14c0, 0x3F, 0); /* @Clear validity of MU STAs */
-	odm_write_1byte(dm, 0x167c, 0x70); /*@MU-MIMO Option as default value*/
-	odm_write_2byte(dm, 0x1680, 0); /*@MU-MIMO Control as default value*/
-
-	/* Set MU NDPA rate & BW source */
-	/* @0x42C[30] = 1 (0: from Tx desc, 1: from 0x45F) */
-	u1b_tmp = odm_read_1byte(dm, 0x42C);
-	odm_write_1byte(dm, REG_TXBF_CTRL_8822B, (u1b_tmp | BIT(6)));
-	/* @0x45F[7:0] = 0x10 (rate=OFDM_6M, BW20) */
-	odm_write_1byte(dm, REG_NDPA_OPT_CTRL_8822B, 0x10);
-
-	/*Temp Settings*/
-	odm_set_bb_reg(dm, R_0x6dc, 0x3F000000, 4); /*STA2's CSI rate is fixed at 6M*/
-	odm_set_bb_reg(dm, R_0x1c94, MASKDWORD, 0xAFFFAFFF); /*@Grouping bitmap parameters*/
-
-	/* @Init HW variable */
-	beamforming_info->reg_mu_tx_ctrl = odm_read_4byte(dm, 0x14c0);
-
-	if (dm->rf_type == RF_2T2R) { /*@2T2R*/
-		PHYDM_DBG(dm, DBG_TXBF, "%s: rf_type is 2T2R\n", __func__);
-		config_phydm_trx_mode_8822b(dm, (enum bb_path)3, (enum bb_path)3, true);/*Tx2path*/
-	}
-
-#if (OMNIPEEK_SNIFFER_ENABLED == 1)
-	/* @Config HW to receive packet on the user position from registry for sniffer mode. */
-	/* odm_set_bb_reg(dm, R_0xb00, BIT(9), 1);*/ /* For A-cut only. RegB00[9] = 1 (enable PMAC Rx) */
-	odm_set_bb_reg(dm, R_0xb54, BIT(30), 1); /* RegB54[30] = 1 (force user position) */
-	odm_set_bb_reg(dm, R_0xb54, (BIT(29) | BIT28), adapter->MgntInfo.sniff_user_position); /* RegB54[29:28] = user position (0~3) */
-	PHYDM_DBG(dm, DBG_TXBF,
-		  "Set adapter->MgntInfo.sniff_user_position=%#X\n",
-		  adapter->MgntInfo.sniff_user_position);
-#endif
-}
-#endif
 
 void hal_txbf_8822b_enter(
 	void *dm_void,
@@ -393,7 +159,6 @@ void hal_txbf_8822b_enter(
 	if (beamforming_info->beamformee_su_cnt > 0 && bfee_idx < BEAMFORMEE_ENTRY_NUM) {
 		p_beamformee_entry = &beamforming_info->beamformee_entry[bfee_idx];
 		p_beamformee_entry->is_mu_sta = false;
-		hal_txbf_8822b_rf_mode(dm, beamforming_info, bfee_idx);
 
 		if (phydm_acting_determine(dm, phydm_acting_as_ibss))
 			sta_id = p_beamformee_entry->mac_id;
@@ -596,7 +361,6 @@ void hal_txbf_8822b_enter(
 		odm_write_1byte(dm, REG_RXFLTMAP0_8822B + 1, u1b_tmp);
 		/* @End of MAC registers setting */
 
-		hal_txbf_8822b_rf_mode(dm, beamforming_info, bfee_idx);
 #if (SUPPORT_MU_BF == 1)
 		/*Special for plugfest*/
 		mdelay(50); /* wait for 4-way handshake ending*/
@@ -604,26 +368,22 @@ void hal_txbf_8822b_enter(
 #endif
 
 		phydm_beamforming_notify(dm);
-#if 1
-		{
-			u32 ctrl_info_offset, index;
-			/*Set Ctrl Info*/
-			odm_write_2byte(dm, 0x140, 0x660);
-			ctrl_info_offset = 0x8000 + 32 * p_beamformee_entry->mac_id;
-			/*Reset Ctrl Info*/
-			for (index = 0; index < 8; index++)
-				odm_write_4byte(dm, ctrl_info_offset + index * 4, 0);
+		u32 ctrl_info_offset, index;
+		/*Set Ctrl Info*/
+		odm_write_2byte(dm, 0x140, 0x660);
+		ctrl_info_offset = 0x8000 + 32 * p_beamformee_entry->mac_id;
+		/*Reset Ctrl Info*/
+		for (index = 0; index < 8; index++)
+			odm_write_4byte(dm, ctrl_info_offset + index * 4, 0);
 
-			odm_write_4byte(dm, ctrl_info_offset, (p_beamformee_entry->mu_reg_index + 1) << 16);
-			odm_write_1byte(dm, 0x81, 0x80); /*RPTBUF ready*/
+		odm_write_4byte(dm, ctrl_info_offset, (p_beamformee_entry->mu_reg_index + 1) << 16);
+		odm_write_1byte(dm, 0x81, 0x80); /*RPTBUF ready*/
 
-			PHYDM_DBG(dm, DBG_TXBF,
-				  "@%s, mac_id = %d, ctrl_info_offset = 0x%x, mu_reg_index = %x\n",
-				  __func__, p_beamformee_entry->mac_id,
-				  ctrl_info_offset,
-				  p_beamformee_entry->mu_reg_index);
-		}
-#endif
+		PHYDM_DBG(dm, DBG_TXBF,
+				"@%s, mac_id = %d, ctrl_info_offset = 0x%x, mu_reg_index = %x\n",
+				__func__, p_beamformee_entry->mac_id,
+				ctrl_info_offset,
+				p_beamformee_entry->mu_reg_index);
 	}
 }
 
@@ -673,7 +433,6 @@ void hal_txbf_8822b_leave(
 	}
 
 	if (p_beamformee_entry->beamform_entry_cap == BEAMFORMING_CAP_NONE) {
-		hal_txbf_8822b_rf_mode(dm, beamforming_info, idx);
 		if (p_beamformee_entry->is_mu_sta == 0) { /*SU BFee*/
 			if (p_beamformee_entry->su_reg_index == 0) {
 				odm_write_2byte(dm, REG_TXBF_CTRL_8822B, 0x0);
@@ -762,99 +521,97 @@ void hal_txbf_8822b_status(
 	} else {
 		PHYDM_DBG(dm, DBG_TXBF, "@%s, MU Sounding Done\n", __func__);
 		/*@MU sounding done */
-		if (1) { /* @(beamform_entry->beamform_entry_state == BEAMFORMING_ENTRY_STATE_PROGRESSED) { */
-			PHYDM_DBG(dm, DBG_TXBF,
-				  "@%s, BEAMFORMING_ENTRY_STATE_PROGRESSED\n",
-				  __func__);
+		PHYDM_DBG(dm, DBG_TXBF,
+				"@%s, BEAMFORMING_ENTRY_STATE_PROGRESSED\n",
+				__func__);
 
-			value32 = odm_get_bb_reg(dm, R_0x1684, MASKDWORD);
-			is_sounding_success[0] = (value32 & BIT(10)) ? 1 : 0;
-			is_sounding_success[1] = (value32 & BIT(26)) ? 1 : 0;
-			value32 = odm_get_bb_reg(dm, R_0x1688, MASKDWORD);
-			is_sounding_success[2] = (value32 & BIT(10)) ? 1 : 0;
-			is_sounding_success[3] = (value32 & BIT(26)) ? 1 : 0;
-			value32 = odm_get_bb_reg(dm, R_0x168c, MASKDWORD);
-			is_sounding_success[4] = (value32 & BIT(10)) ? 1 : 0;
-			is_sounding_success[5] = (value32 & BIT(26)) ? 1 : 0;
+		value32 = odm_get_bb_reg(dm, R_0x1684, MASKDWORD);
+		is_sounding_success[0] = (value32 & BIT(10)) ? 1 : 0;
+		is_sounding_success[1] = (value32 & BIT(26)) ? 1 : 0;
+		value32 = odm_get_bb_reg(dm, R_0x1688, MASKDWORD);
+		is_sounding_success[2] = (value32 & BIT(10)) ? 1 : 0;
+		is_sounding_success[3] = (value32 & BIT(26)) ? 1 : 0;
+		value32 = odm_get_bb_reg(dm, R_0x168c, MASKDWORD);
+		is_sounding_success[4] = (value32 & BIT(10)) ? 1 : 0;
+		is_sounding_success[5] = (value32 & BIT(26)) ? 1 : 0;
 
-			PHYDM_DBG(dm, DBG_TXBF,
-				  "@%s, is_sounding_success STA1:%d,  STA2:%d, STA3:%d, STA4:%d, STA5:%d, STA6:%d\n",
-				  __func__, is_sounding_success[0],
-				  is_sounding_success[1],
-				  is_sounding_success[2],
-				  is_sounding_success[3],
-				  is_sounding_success[4],
-				  is_sounding_success[5]);
+		PHYDM_DBG(dm, DBG_TXBF,
+				"@%s, is_sounding_success STA1:%d,  STA2:%d, STA3:%d, STA4:%d, STA5:%d, STA6:%d\n",
+				__func__, is_sounding_success[0],
+				is_sounding_success[1],
+				is_sounding_success[2],
+				is_sounding_success[3],
+				is_sounding_success[4],
+				is_sounding_success[5]);
 
-			value32 = odm_get_bb_reg(dm, R_0xf4c, 0xFFFF0000);
-			/* odm_set_bb_reg(dm, R_0x19e0, MASKHWORD, 0xFFFF);Let MAC ignore bitmap */
+		value32 = odm_get_bb_reg(dm, R_0xf4c, 0xFFFF0000);
+		/* odm_set_bb_reg(dm, R_0x19e0, MASKHWORD, 0xFFFF);Let MAC ignore bitmap */
 
-			is_bitmap_ready = (boolean)((value32 & BIT(15)) >> 15);
-			bitmap = (u16)(value32 & 0x3FFF);
+		is_bitmap_ready = (boolean)((value32 & BIT(15)) >> 15);
+		bitmap = (u16)(value32 & 0x3FFF);
 
-			for (idx = 0; idx < 15; idx++) {
-				if (idx < 5) { /*@bit0~4*/
-					id0 = 0;
-					id1 = (u8)(idx + 1);
-				} else if (idx < 9) { /*@bit5~8*/
-					id0 = 1;
-					id1 = (u8)(idx - 3);
-				} else if (idx < 12) { /*@bit9~11*/
-					id0 = 2;
-					id1 = (u8)(idx - 6);
-				} else if (idx < 14) { /*@bit12~13*/
-					id0 = 3;
-					id1 = (u8)(idx - 8);
-				} else { /*@bit14*/
-					id0 = 4;
-					id1 = (u8)(idx - 9);
-				}
-				if (bitmap & BIT(idx)) {
-					/*Pair 1*/
-					gid = (idx << 1) + 1;
-					gid_valid[id0] |= (BIT(gid));
-					gid_valid[id1] |= (BIT(gid));
-					/*Pair 2*/
-					gid += 1;
-					gid_valid[id0] |= (BIT(gid));
-					gid_valid[id1] |= (BIT(gid));
-				} else {
-					/*Pair 1*/
-					gid = (idx << 1) + 1;
-					gid_valid[id0] &= ~(BIT(gid));
-					gid_valid[id1] &= ~(BIT(gid));
-					/*Pair 2*/
-					gid += 1;
-					gid_valid[id0] &= ~(BIT(gid));
-					gid_valid[id1] &= ~(BIT(gid));
-				}
+		for (idx = 0; idx < 15; idx++) {
+			if (idx < 5) { /*@bit0~4*/
+				id0 = 0;
+				id1 = (u8)(idx + 1);
+			} else if (idx < 9) { /*@bit5~8*/
+				id0 = 1;
+				id1 = (u8)(idx - 3);
+			} else if (idx < 12) { /*@bit9~11*/
+				id0 = 2;
+				id1 = (u8)(idx - 6);
+			} else if (idx < 14) { /*@bit12~13*/
+				id0 = 3;
+				id1 = (u8)(idx - 8);
+			} else { /*@bit14*/
+				id0 = 4;
+				id1 = (u8)(idx - 9);
 			}
-
-			for (i = 0; i < BEAMFORMEE_ENTRY_NUM; i++) {
-				beamform_entry = &beamforming_info->beamformee_entry[i];
-				if (beamform_entry->is_mu_sta && beamform_entry->mu_reg_index < 6) {
-					value32 = gid_valid[beamform_entry->mu_reg_index];
-					for (idx = 0; idx < 4; idx++) {
-						beamform_entry->gid_valid[idx] = (u8)(value32 & 0xFF);
-						value32 = (value32 >> 8);
-					}
-				}
+			if (bitmap & BIT(idx)) {
+				/*Pair 1*/
+				gid = (idx << 1) + 1;
+				gid_valid[id0] |= (BIT(gid));
+				gid_valid[id1] |= (BIT(gid));
+				/*Pair 2*/
+				gid += 1;
+				gid_valid[id0] |= (BIT(gid));
+				gid_valid[id1] |= (BIT(gid));
+			} else {
+				/*Pair 1*/
+				gid = (idx << 1) + 1;
+				gid_valid[id0] &= ~(BIT(gid));
+				gid_valid[id1] &= ~(BIT(gid));
+				/*Pair 2*/
+				gid += 1;
+				gid_valid[id0] &= ~(BIT(gid));
+				gid_valid[id1] &= ~(BIT(gid));
 			}
-
-			for (idx = 0; idx < 6; idx++) {
-				beamforming_info->reg_mu_tx_ctrl &= ~(BIT(8) | BIT(9) | BIT(10));
-				beamforming_info->reg_mu_tx_ctrl |= ((idx << 8) & (BIT(8) | BIT(9) | BIT(10)));
-				odm_write_4byte(dm, 0x14c0, beamforming_info->reg_mu_tx_ctrl);
-				odm_set_mac_reg(dm, R_0x14c4, MASKDWORD, gid_valid[idx]); /*set MU STA gid valid table*/
-			}
-
-			/*@Enable TxMU PPDU*/
-			if (beamforming_info->dbg_disable_mu_tx == false)
-				beamforming_info->reg_mu_tx_ctrl |= BIT(7);
-			else
-				beamforming_info->reg_mu_tx_ctrl &= ~BIT(7);
-			odm_write_4byte(dm, 0x14c0, beamforming_info->reg_mu_tx_ctrl);
 		}
+
+		for (i = 0; i < BEAMFORMEE_ENTRY_NUM; i++) {
+			beamform_entry = &beamforming_info->beamformee_entry[i];
+			if (beamform_entry->is_mu_sta && beamform_entry->mu_reg_index < 6) {
+				value32 = gid_valid[beamform_entry->mu_reg_index];
+				for (idx = 0; idx < 4; idx++) {
+					beamform_entry->gid_valid[idx] = (u8)(value32 & 0xFF);
+					value32 = (value32 >> 8);
+				}
+			}
+		}
+
+		for (idx = 0; idx < 6; idx++) {
+			beamforming_info->reg_mu_tx_ctrl &= ~(BIT(8) | BIT(9) | BIT(10));
+			beamforming_info->reg_mu_tx_ctrl |= ((idx << 8) & (BIT(8) | BIT(9) | BIT(10)));
+			odm_write_4byte(dm, 0x14c0, beamforming_info->reg_mu_tx_ctrl);
+			odm_set_mac_reg(dm, R_0x14c4, MASKDWORD, gid_valid[idx]); /*set MU STA gid valid table*/
+		}
+
+		/*@Enable TxMU PPDU*/
+		if (beamforming_info->dbg_disable_mu_tx == false)
+			beamforming_info->reg_mu_tx_ctrl |= BIT(7);
+		else
+			beamforming_info->reg_mu_tx_ctrl &= ~BIT(7);
+		odm_write_4byte(dm, 0x14c0, beamforming_info->reg_mu_tx_ctrl);
 	}
 }
 
@@ -923,85 +680,6 @@ void hal_txbf_8822b_config_gtab(
 	beamforming_info->reg_mu_tx_ctrl &= 0xFFFFFFC0;
 	beamforming_info->reg_mu_tx_ctrl |= 0x3; /* STA0, STA1*/
 	odm_write_4byte(dm, 0x14c0, beamforming_info->reg_mu_tx_ctrl);
-}
-
-#if 0
-/*This function translate the bitmap to GTAB*/
-void
-haltxbf8822b_gtab_translation(
-	struct dm_struct			*dm
-)
-{
-	u8 idx, gid;
-	u8 id1, id0;
-	u32 gid_valid[6] = {0};
-	u32 user_position_lsb[6] = {0};
-	u32 user_position_msb[6] = {0};
-
-	for (idx = 0; idx < 15; idx++) {
-		if (idx < 5) {/*@bit0~4*/
-			id0 = 0;
-			id1 = (u8)(idx + 1);
-		} else if (idx < 9) { /*@bit5~8*/
-			id0 = 1;
-			id1 = (u8)(idx - 3);
-		} else if (idx < 12) { /*@bit9~11*/
-			id0 = 2;
-			id1 = (u8)(idx - 6);
-		} else if (idx < 14) { /*@bit12~13*/
-			id0 = 3;
-			id1 = (u8)(idx - 8);
-		} else { /*@bit14*/
-			id0 = 4;
-			id1 = (u8)(idx - 9);
-		}
-
-		/*Pair 1*/
-		gid = (idx << 1) + 1;
-		gid_valid[id0] |= (1 << gid);
-		gid_valid[id1] |= (1 << gid);
-		if (gid < 16) {
-			/*user_position_lsb[id0] |= (0 << (gid << 1));*/
-			user_position_lsb[id1] |= (1 << (gid << 1));
-		} else {
-			/*user_position_msb[id0] |= (0 << ((gid - 16) << 1));*/
-			user_position_msb[id1] |= (1 << ((gid - 16) << 1));
-		}
-
-		/*Pair 2*/
-		gid += 1;
-		gid_valid[id0] |= (1 << gid);
-		gid_valid[id1] |= (1 << gid);
-		if (gid < 16) {
-			user_position_lsb[id0] |= (1 << (gid << 1));
-			/*user_position_lsb[id1] |= (0 << (gid << 1));*/
-		} else {
-			user_position_msb[id0] |= (1 << ((gid - 16) << 1));
-			/*user_position_msb[id1] |= (0 << ((gid - 16) << 1));*/
-		}
-	}
-
-
-	for (idx = 0; idx < 6; idx++) {
-		/*@dbg_print("gid_valid[%d] = 0x%x\n", idx, gid_valid[idx]);
-		dbg_print("user_position[%d] = 0x%x   %x\n", idx, user_position_msb[idx], user_position_lsb[idx]);*/
-	}
-}
-#endif
-
-void hal_txbf_8822b_fw_txbf(
-	void *dm_void,
-	u8 idx)
-{
-#if 0
-	struct _RT_BEAMFORMING_INFO	*beam_info = GET_BEAMFORM_INFO(adapter);
-	struct _RT_BEAMFORMEE_ENTRY	*p_beam_entry = beam_info->beamformee_entry + idx;
-
-	if (p_beam_entry->beamform_entry_state == BEAMFORMING_ENTRY_STATE_PROGRESSING)
-		hal_txbf_8822b_download_ndpa(adapter, idx);
-
-	hal_txbf_8822b_fw_txbf_cmd(adapter);
-#endif
 }
 
 #endif

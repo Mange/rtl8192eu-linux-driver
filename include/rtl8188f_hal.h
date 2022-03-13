@@ -207,10 +207,6 @@ void Hal_EfuseParseXtal_8188F(PADAPTER pAdapter, u8 *hwinfo, u8 AutoLoadFail);
 void Hal_EfuseParseThermalMeter_8188F(PADAPTER padapter, u8 *hwinfo, u8 AutoLoadFail);
 void Hal_EfuseParseKFreeData_8188F(PADAPTER pAdapter, u8 *hwinfo, BOOLEAN AutoLoadFail);
 
-#if 0 /* Do not need for rtl8188f */
-VOID Hal_EfuseParseVoltage_8188F(PADAPTER pAdapter, u8 *hwinfo, BOOLEAN	AutoLoadFail);
-#endif
-
 void rtl8188f_set_pll_ref_clk_sel(_adapter *adapter, u8 sel);
 
 void rtl8188f_set_hal_ops(struct hal_ops *pHalFunc);

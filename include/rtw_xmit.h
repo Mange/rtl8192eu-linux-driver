@@ -346,53 +346,6 @@ struct	hw_xmit	{
 	int	accnt;
 };
 
-#if 0
-struct pkt_attrib {
-	u8	type;
-	u8	subtype;
-	u8	bswenc;
-	u8	dhcp_pkt;
-	u16	ether_type;
-	int	pktlen;		/* the original 802.3 pkt raw_data len (not include ether_hdr data) */
-	int	pkt_hdrlen;	/* the original 802.3 pkt header len */
-	int	hdrlen;		/* the WLAN Header Len */
-	int	nr_frags;
-	int	last_txcmdsz;
-	int	encrypt;	/* when 0 indicate no encrypt. when non-zero, indicate the encrypt algorith */
-	u8	iv[8];
-	int	iv_len;
-	u8	icv[8];
-	int	icv_len;
-	int	priority;
-	int	ack_policy;
-	int	mac_id;
-	int	vcs_mode;	/* virtual carrier sense method */
-
-	u8	dst[ETH_ALEN];
-	u8	src[ETH_ALEN];
-	u8	ta[ETH_ALEN];
-	u8	ra[ETH_ALEN];
-
-	u8	key_idx;
-
-	u8	qos_en;
-	u8	ht_en;
-	u8	raid;/* rate adpative id */
-	u8	bwmode;
-	u8	ch_offset;/* PRIME_CHNL_OFFSET */
-	u8	sgi;/* short GI */
-	u8	ampdu_en;/* tx ampdu enable */
-	u8	mdata;/* more data bit */
-	u8	eosp;
-
-	u8	triggered;/* for ap mode handling Power Saving sta */
-
-	u32	qsel;
-	u16	seqnum;
-
-	struct sta_info *psta;
-};
-#else
 /* reduce size */
 struct pkt_attrib {
 	u8	type;
@@ -494,7 +447,6 @@ struct pkt_attrib {
 #endif
 
 };
-#endif
 
 #ifdef CONFIG_RTW_MESH
 #define XATTRIB_GET_MCTRL_LEN(xattrib) ((xattrib)->meshctrl_len)
@@ -537,9 +489,7 @@ struct  submit_ctx {
 	systime submit_time; /* */
 	u32 timeout_ms; /* <0: not synchronous, 0: wait forever, >0: up to ms waiting */
 	int status; /* status for operation */
-#ifdef PLATFORM_LINUX
 	struct completion done;
-#endif
 };
 
 enum {
@@ -776,9 +726,7 @@ struct	xmit_priv	{
 	_sema	tx_retevt;/* all tx return event; */
 	u8		txirp_cnt;
 
-#ifdef PLATFORM_LINUX
 	struct tasklet_struct xmit_tasklet;
-#endif
 	/* per AC pending irp */
 	int beq_cnt;
 	int bkq_cnt;
@@ -792,16 +740,12 @@ struct	xmit_priv	{
 	struct rtw_tx_ring	tx_ring[PCI_MAX_TX_QUEUE_COUNT];
 	int	txringcount[PCI_MAX_TX_QUEUE_COUNT];
 	u8 	beaconDMAing;		/* flag of indicating beacon is transmiting to HW by DMA */
-#ifdef PLATFORM_LINUX
 	struct tasklet_struct xmit_tasklet;
-#endif
 #endif
 
 #if defined(CONFIG_SDIO_HCI) || defined(CONFIG_GSPI_HCI)
 #ifdef CONFIG_SDIO_TX_TASKLET
-#ifdef PLATFORM_LINUX
 	struct tasklet_struct xmit_tasklet;
-#endif /* PLATFORM_LINUX */
 #else
 	_thread_hdl_	SdioXmitThread;
 	_sema		SdioXmitSema;

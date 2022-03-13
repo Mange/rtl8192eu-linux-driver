@@ -106,13 +106,6 @@ typedef	struct tag_HAL_VERSION {
  * ----------------------------------------------------------------------------
  * HAL_VERSION VersionID */
 
-/* HAL_IC_TYPE_E */
-#if 0
-	#define IS_81XXC(version)				(((GET_CVID_IC_TYPE(version) == CHIP_8192C) || (GET_CVID_IC_TYPE(version) == CHIP_8188C)) ? TRUE : FALSE)
-	#define IS_8723_SERIES(version)			((GET_CVID_IC_TYPE(version) == CHIP_8723A) ? TRUE : FALSE)
-	#define IS_92D(version)					((GET_CVID_IC_TYPE(version) == CHIP_8192D) ? TRUE : FALSE)
-#endif
-
 #define IS_8188E(version)					((GET_CVID_IC_TYPE(version) == CHIP_8188E) ? TRUE : FALSE)
 #define IS_8188F(version)					((GET_CVID_IC_TYPE(version) == CHIP_8188F) ? TRUE : FALSE)
 #define IS_8188GTV(version)					((GET_CVID_IC_TYPE(version) == CHIP_8188GTV) ? TRUE : FALSE)
@@ -157,29 +150,6 @@ typedef	struct tag_HAL_VERSION {
 #define IS_3T4R(version)					((GET_CVID_RF_TYPE(version) == RF_TYPE_3T4R) ? TRUE : FALSE)
 #define IS_4T4R(version)					((GET_CVID_RF_TYPE(version) == RF_TYPE_4T4R) ? TRUE : FALSE)
 
-
-
-/* ----------------------------------------------------------------------------
- * Chip version Macro. --
- * ---------------------------------------------------------------------------- */
-#if 0
-	#define IS_81XXC_TEST_CHIP(version)		((IS_81XXC(version) && (!IS_NORMAL_CHIP(version))) ? TRUE : FALSE)
-
-	#define IS_92C_SERIAL(version)					((IS_81XXC(version) && IS_2T2R(version)) ? TRUE : FALSE)
-	#define IS_81xxC_VENDOR_UMC_A_CUT(version)	(IS_81XXC(version) ? (IS_CHIP_VENDOR_UMC(version) ? (IS_A_CUT(version) ? TRUE : FALSE) : FALSE) : FALSE)
-	#define IS_81xxC_VENDOR_UMC_B_CUT(version)	(IS_81XXC(version) ? (IS_CHIP_VENDOR_UMC(version) ? (IS_B_CUT(version) ? TRUE : FALSE) : FALSE) : FALSE)
-	#define IS_81xxC_VENDOR_UMC_C_CUT(version)	(IS_81XXC(version) ? (IS_CHIP_VENDOR_UMC(version) ? (IS_C_CUT(version) ? TRUE : FALSE) : FALSE) : FALSE)
-
-	#define IS_NORMAL_CHIP92D(version)		((IS_92D(version)) ? ((GET_CVID_CHIP_TYPE(version) == NORMAL_CHIP) ? TRUE : FALSE) : FALSE)
-
-	#define IS_92D_SINGLEPHY(version)		((IS_92D(version)) ? (IS_2T2R(version) ? TRUE : FALSE) : FALSE)
-	#define IS_92D_C_CUT(version)			((IS_92D(version)) ? (IS_C_CUT(version) ? TRUE : FALSE) : FALSE)
-	#define IS_92D_D_CUT(version)			((IS_92D(version)) ? (IS_D_CUT(version) ? TRUE : FALSE) : FALSE)
-	#define IS_92D_E_CUT(version)			((IS_92D(version)) ? (IS_E_CUT(version) ? TRUE : FALSE) : FALSE)
-
-	#define IS_8723A_A_CUT(version)				((IS_8723_SERIES(version)) ? (IS_A_CUT(version) ? TRUE : FALSE) : FALSE)
-	#define IS_8723A_B_CUT(version)				((IS_8723_SERIES(version)) ? (IS_B_CUT(version) ? TRUE : FALSE) : FALSE)
-#endif
 #define IS_VENDOR_8188E_I_CUT_SERIES(_Adapter)		((IS_8188E(GET_HAL_DATA(_Adapter)->version_id)) ? ((GET_CVID_CUT_VERSION(GET_HAL_DATA(_Adapter)->version_id) >= I_CUT_VERSION) ? TRUE : FALSE) : FALSE)
 #define IS_VENDOR_8812A_TEST_CHIP(_Adapter)		((IS_8812_SERIES(GET_HAL_DATA(_Adapter)->version_id)) ? ((IS_NORMAL_CHIP(GET_HAL_DATA(_Adapter)->version_id)) ? FALSE : TRUE) : FALSE)
 #define IS_VENDOR_8812A_MP_CHIP(_Adapter)		((IS_8812_SERIES(GET_HAL_DATA(_Adapter)->version_id)) ? ((IS_NORMAL_CHIP(GET_HAL_DATA(_Adapter)->version_id)) ? TRUE : FALSE) : FALSE)

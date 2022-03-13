@@ -23,11 +23,9 @@ s32	rtl8192eu_init_xmit_priv(_adapter *padapter)
 	struct xmit_priv	*pxmitpriv = &padapter->xmitpriv;
 	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(padapter);
 
-#ifdef PLATFORM_LINUX
 	tasklet_init(&pxmitpriv->xmit_tasklet,
 		     (void(*)(unsigned long))rtl8192eu_xmit_tasklet,
 		     (unsigned long)padapter);
-#endif
 	rtl8192e_init_xmit_priv(padapter);
 
 	return _SUCCESS;
@@ -890,9 +888,7 @@ s32	rtl8192eu_hal_xmitframe_enqueue(_adapter *padapter, struct xmit_frame *pxmit
 
 		pxmitpriv->tx_drop++;
 	} else {
-#ifdef PLATFORM_LINUX
 		tasklet_hi_schedule(&pxmitpriv->xmit_tasklet);
-#endif
 	}
 
 	return err;
@@ -903,128 +899,11 @@ s32	rtl8192eu_hal_xmitframe_enqueue(_adapter *padapter, struct xmit_frame *pxmit
 
 static void rtl8192eu_hostap_mgnt_xmit_cb(struct urb *urb)
 {
-#ifdef PLATFORM_LINUX
 	struct sk_buff *skb = (struct sk_buff *)urb->context;
 
 	/* RTW_INFO("%s\n", __FUNCTION__); */
 
 	rtw_skb_free(skb);
-#endif
 }
 
-s32 rtl8192eu_hostap_mgnt_xmit_entry(_adapter *padapter, _pkt *pkt)
-{
-#if 0
-	/* #ifdef PLATFORM_LINUX */
-	u16 fc;
-	int rc, len, pipe;
-	bool bmcst, tid, qsel;
-	struct sk_buff *skb, *pxmit_skb;
-	struct urb *urb;
-	unsigned char *pxmitbuf;
-	struct tx_desc *ptxdesc;
-	struct ieee80211_hdr *tx_hdr;
-	struct hostapd_priv *phostapdpriv = padapter->phostapdpriv;
-	struct net_device *pnetdev = padapter->pnetdev;
-	HAL_DATA_TYPE *pHalData = GET_HAL_DATA(padapter);
-	struct dvobj_priv *pdvobj = adapter_to_dvobj(padapter);
-
-
-	/* RTW_INFO("%s\n", __FUNCTION__); */
-
-	skb = pkt;
-
-	len = skb->len;
-	tx_hdr = (struct ieee80211_hdr *)(skb->data);
-	fc = le16_to_cpu(tx_hdr->frame_control);
-	bmcst = is_multicast_ether_addr(tx_hdr->addr1);
-
-	if ((fc &  IEEE80211_FCTL_FTYPE) != IEEE80211_FTYPE_MGMT)
-		goto _exit;
-
-	pxmit_skb = rtw_skb_alloc(len + TXDESC_SIZE);
-
-	if (!pxmit_skb)
-		goto _exit;
-
-	pxmitbuf = pxmit_skb->data;
-
-	urb = usb_alloc_urb(0, GFP_ATOMIC);
-	if (!urb)
-		goto _exit;
-
-	/* ----- fill tx desc -----	 */
-	ptxdesc = (struct tx_desc *)pxmitbuf;
-	memset(ptxdesc, 0, sizeof(*ptxdesc));
-
-	/* offset 0	 */
-	ptxdesc->txdw0 |= cpu_to_le32(len & 0x0000ffff);
-	ptxdesc->txdw0 |= cpu_to_le32(((TXDESC_SIZE + OFFSET_SZ) << OFFSET_SHT) & 0x00ff0000); /* default = 32 bytes for TX Desc */
-	ptxdesc->txdw0 |= cpu_to_le32(OWN | FSG | LSG);
-
-	if (bmcst)
-		ptxdesc->txdw0 |= cpu_to_le32(BIT(24));
-
-	/* offset 4	 */
-	ptxdesc->txdw1 |= cpu_to_le32(0x00);/* MAC_ID */
-
-	ptxdesc->txdw1 |= cpu_to_le32((0x12 << QSEL_SHT) & 0x00001f00);
-
-	ptxdesc->txdw1 |= cpu_to_le32((0x06 << 16) & 0x000f0000); /* b mode */
-
-	/* offset 8			 */
-
-	/* offset 12		 */
-	ptxdesc->txdw3 |= cpu_to_le32((le16_to_cpu(tx_hdr->seq_ctl) << 16) & 0xffff0000);
-
-	/* offset 16		 */
-	ptxdesc->txdw4 |= cpu_to_le32(BIT(8));/* driver uses rate */
-
-	/* offset 20 */
-
-
-	/* HW append seq */
-	ptxdesc->txdw4 |= cpu_to_le32(BIT(7)); /* Hw set sequence number */
-	ptxdesc->txdw3 |= cpu_to_le32((8 << 28)); /* set bit3 to 1. Suugested by TimChen. 2009.12.29. */
-
-
-	rtl8192e_cal_txdesc_chksum(ptxdesc);
-	/* ----- end of fill tx desc ----- */
-
-	/*  */
-	skb_put(pxmit_skb, len + TXDESC_SIZE);
-	pxmitbuf = pxmitbuf + TXDESC_SIZE;
-	_rtw_memcpy(pxmitbuf, skb->data, len);
-
-	/* RTW_INFO("mgnt_xmit, len=%x\n", pxmit_skb->len); */
-
-
-	/* ----- prepare urb for submit ----- */
-
-	/* translate DMA FIFO addr to pipehandle */
-	/* pipe = ffaddr2pipehdl(pdvobj, MGT_QUEUE_INX); */
-	pipe = usb_sndbulkpipe(pdvobj->pusbdev, pHalData->Queue2EPNum[(u8)MGT_QUEUE_INX] & 0x0f);
-
-	usb_fill_bulk_urb(urb, pdvobj->pusbdev, pipe,
-		pxmit_skb->data, pxmit_skb->len, rtl8192eu_hostap_mgnt_xmit_cb, pxmit_skb);
-
-	urb->transfer_flags |= URB_ZERO_PACKET;
-	usb_anchor_urb(urb, &phostapdpriv->anchored);
-	rc = usb_submit_urb(urb, GFP_ATOMIC);
-	if (rc < 0) {
-		usb_unanchor_urb(urb);
-		kfree_skb(skb);
-	}
-	usb_free_urb(urb);
-
-
-_exit:
-
-	rtw_skb_free(skb);
-
-#endif
-
-	return 0;
-
-}
 #endif

@@ -348,9 +348,6 @@ void phydm_ra_dynamic_retry_count(void *dm_void)
 	if (!(dm->support_ability & ODM_BB_DYNAMIC_ARFR))
 		return;
 
-#if 0
-	/*PHYDM_DBG(dm, DBG_RA, "dm->pre_b_noisy = %d\n", dm->pre_b_noisy );*/
-#endif
 	if (dm->pre_b_noisy != dm->noisy_decision) {
 		if (dm->noisy_decision) {
 			PHYDM_DBG(dm, DBG_DYN_ARFR, "Noisy Env. RA fallback\n");
@@ -474,22 +471,6 @@ void phydm_c2h_ra_report_handler(void *dm_void, u8 *cmd_buf, u8 cmd_len)
 
 #endif
 
-#if 0
-	/*trigger dynamic rate ID*/
-	if (dm->support_ic_type & (ODM_RTL8812 | ODM_RTL8192E))
-		phydm_update_rate_id(dm, rate, macid);
-#endif
-}
-
-void odm_ra_post_action_on_assoc(void *dm_void)
-{
-#if 0
-	struct dm_struct	*dm = (struct dm_struct *)dm_void;
-
-	dm->h2c_rarpt_connect = 1;
-	phydm_rssi_monitor_check(dm);
-	dm->h2c_rarpt_connect = 0;
-#endif
 }
 
 void phydm_modify_RA_PCR_threshold(void *dm_void, u8 ra_ofst_direc,
@@ -546,9 +527,6 @@ void phydm_update_hal_ra_mask(
 	u32 ratr_bitmap = *ratr_bitmap_lsb_in;
 	u32 ratr_bitmap_msb = *ratr_bitmap_msb_in;
 
-#if 0
-	/*PHYDM_DBG(dm, DBG_RA_MASK, "phydm_rf_type = (( %x )), rf_type = (( %x ))\n", phydm_rf_type, rf_type);*/
-#endif
 	PHYDM_DBG(dm, DBG_RA_MASK,
 		  "Platfoem original RA Mask = (( 0x %x | %x ))\n",
 		  ratr_bitmap_msb, ratr_bitmap);
@@ -648,10 +626,6 @@ void phydm_update_hal_ra_mask(
 		  "wireless_mode= (( 0x%x )), rf_type = (( 0x%x )), BW = (( 0x%x )), MimoPs_en = (( %d )), tx_rate_level= (( 0x%x ))\n",
 		  wireless_mode, rf_type, bw, mimo_ps_enable, tx_rate_level);
 
-#if 0
-	/*PHYDM_DBG(dm, DBG_RA_MASK, "111 Phydm modified RA Mask = (( 0x %x | %x ))\n", ratr_bitmap_msb, ratr_bitmap);*/
-#endif
-
 	*ratr_bitmap_lsb_in = ratr_bitmap;
 	*ratr_bitmap_msb_in = ratr_bitmap_msb;
 	PHYDM_DBG(dm, DBG_RA_MASK,
@@ -681,14 +655,6 @@ void phydm_rate_adaptive_mask_init(void *dm_void)
 	ra_t->ldpc_thres = 35;
 	ra_t->up_ramask_cnt = 0;
 	ra_t->up_ramask_cnt_tmp = 0;
-}
-
-void phydm_refresh_rate_adaptive_mask(void *dm_void)
-{
-/*@Will be removed*/
-	struct dm_struct *dm = (struct dm_struct *)dm_void;
-
-	phydm_ra_mask_watchdog(dm);
 }
 
 void phydm_show_sta_info(void *dm_void, char input[][16], u32 *_used,
@@ -1707,130 +1673,7 @@ void phydm_ra_info_init(void *dm_void)
 		odm_set_bb_reg(dm, R_0x4cc, MASKBYTE3, (ret_value - 1));
 	}
 #endif
-
-	#if 0 /*@CONFIG_RA_DYNAMIC_RTY_LIMIT*/
-	phydm_ra_dynamic_retry_limit_init(dm);
-	#endif
-
-	#if 0 /*@CONFIG_RA_DYNAMIC_RATE_ID*/
-	phydm_ra_dynamic_rate_id_init(dm);
-	#endif
-
 	phydm_rate_adaptive_mask_init(dm);
-}
-
-u8 odm_find_rts_rate(void *dm_void, u8 tx_rate, boolean is_erp_protect)
-{
-	struct dm_struct *dm = (struct dm_struct *)dm_void;
-	u8 rts_ini_rate = ODM_RATE6M;
-
-	if (is_erp_protect) { /* use CCK rate as RTS*/
-		rts_ini_rate = ODM_RATE1M;
-	} else {
-		switch (tx_rate) {
-		case ODM_RATEVHTSS4MCS9:
-		case ODM_RATEVHTSS4MCS8:
-		case ODM_RATEVHTSS4MCS7:
-		case ODM_RATEVHTSS4MCS6:
-		case ODM_RATEVHTSS4MCS5:
-		case ODM_RATEVHTSS4MCS4:
-		case ODM_RATEVHTSS4MCS3:
-		case ODM_RATEVHTSS3MCS9:
-		case ODM_RATEVHTSS3MCS8:
-		case ODM_RATEVHTSS3MCS7:
-		case ODM_RATEVHTSS3MCS6:
-		case ODM_RATEVHTSS3MCS5:
-		case ODM_RATEVHTSS3MCS4:
-		case ODM_RATEVHTSS3MCS3:
-		case ODM_RATEVHTSS2MCS9:
-		case ODM_RATEVHTSS2MCS8:
-		case ODM_RATEVHTSS2MCS7:
-		case ODM_RATEVHTSS2MCS6:
-		case ODM_RATEVHTSS2MCS5:
-		case ODM_RATEVHTSS2MCS4:
-		case ODM_RATEVHTSS2MCS3:
-		case ODM_RATEVHTSS1MCS9:
-		case ODM_RATEVHTSS1MCS8:
-		case ODM_RATEVHTSS1MCS7:
-		case ODM_RATEVHTSS1MCS6:
-		case ODM_RATEVHTSS1MCS5:
-		case ODM_RATEVHTSS1MCS4:
-		case ODM_RATEVHTSS1MCS3:
-		case ODM_RATEMCS31:
-		case ODM_RATEMCS30:
-		case ODM_RATEMCS29:
-		case ODM_RATEMCS28:
-		case ODM_RATEMCS27:
-		case ODM_RATEMCS23:
-		case ODM_RATEMCS22:
-		case ODM_RATEMCS21:
-		case ODM_RATEMCS20:
-		case ODM_RATEMCS19:
-		case ODM_RATEMCS15:
-		case ODM_RATEMCS14:
-		case ODM_RATEMCS13:
-		case ODM_RATEMCS12:
-		case ODM_RATEMCS11:
-		case ODM_RATEMCS7:
-		case ODM_RATEMCS6:
-		case ODM_RATEMCS5:
-		case ODM_RATEMCS4:
-		case ODM_RATEMCS3:
-		case ODM_RATE54M:
-		case ODM_RATE48M:
-		case ODM_RATE36M:
-		case ODM_RATE24M:
-			rts_ini_rate = ODM_RATE24M;
-			break;
-		case ODM_RATEVHTSS4MCS2:
-		case ODM_RATEVHTSS4MCS1:
-		case ODM_RATEVHTSS3MCS2:
-		case ODM_RATEVHTSS3MCS1:
-		case ODM_RATEVHTSS2MCS2:
-		case ODM_RATEVHTSS2MCS1:
-		case ODM_RATEVHTSS1MCS2:
-		case ODM_RATEVHTSS1MCS1:
-		case ODM_RATEMCS26:
-		case ODM_RATEMCS25:
-		case ODM_RATEMCS18:
-		case ODM_RATEMCS17:
-		case ODM_RATEMCS10:
-		case ODM_RATEMCS9:
-		case ODM_RATEMCS2:
-		case ODM_RATEMCS1:
-		case ODM_RATE18M:
-		case ODM_RATE12M:
-			rts_ini_rate = ODM_RATE12M;
-			break;
-		case ODM_RATEVHTSS4MCS0:
-		case ODM_RATEVHTSS3MCS0:
-		case ODM_RATEVHTSS2MCS0:
-		case ODM_RATEVHTSS1MCS0:
-		case ODM_RATEMCS24:
-		case ODM_RATEMCS16:
-		case ODM_RATEMCS8:
-		case ODM_RATEMCS0:
-		case ODM_RATE9M:
-		case ODM_RATE6M:
-			rts_ini_rate = ODM_RATE6M;
-			break;
-		case ODM_RATE11M:
-		case ODM_RATE5_5M:
-		case ODM_RATE2M:
-		case ODM_RATE1M:
-			rts_ini_rate = ODM_RATE1M;
-			break;
-		default:
-			rts_ini_rate = ODM_RATE6M;
-			break;
-		}
-	}
-
-	if (*dm->band_type == ODM_BAND_5G) {
-		if (rts_ini_rate < ODM_RATE6M)
-			rts_ini_rate = ODM_RATE6M;
-	}
-	return rts_ini_rate;
 }
 
 #if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
@@ -1868,218 +1711,6 @@ void odm_refresh_basic_rate_mask(
 	}
 
 	stage = cur_stage;
-}
-
-#endif
-
-#if 0 /*@CONFIG_RA_DYNAMIC_RTY_LIMIT*/
-
-void phydm_retry_limit_table_bound(
-	void *dm_void,
-	u8 *retry_limit,
-	u8 offset)
-{
-	struct dm_struct *dm = (struct dm_struct *)dm_void;
-	struct ra_table *ra_tab = &dm->dm_ra_table;
-
-	if (*retry_limit > offset) {
-		*retry_limit -= offset;
-
-		if (*retry_limit < ra_tab->retrylimit_low)
-			*retry_limit = ra_tab->retrylimit_low;
-		else if (*retry_limit > ra_tab->retrylimit_high)
-			*retry_limit = ra_tab->retrylimit_high;
-	} else
-		*retry_limit = ra_tab->retrylimit_low;
-}
-
-void phydm_reset_retry_limit_table(
-	void *dm_void)
-{
-	struct dm_struct *dm = (struct dm_struct *)dm_void;
-	struct ra_table *ra_t = &dm->dm_ra_table;
-	u8 i;
-
-	u8 per_rate_retrylimit_table_20M[ODM_RATEMCS15 + 1] = {
-		1, 1, 2, 4, /*@CCK*/
-		2, 2, 4, 6, 8, 12, 16, 18, /*OFDM*/
-		2, 4, 6, 8, 12, 18, 20, 22, /*@20M HT-1SS*/
-		2, 4, 6, 8, 12, 18, 20, 22 /*@20M HT-2SS*/
-	};
-	u8 per_rate_retrylimit_table_40M[ODM_RATEMCS15 + 1] = {
-		1, 1, 2, 4, /*@CCK*/
-		2, 2, 4, 6, 8, 12, 16, 18, /*OFDM*/
-		4, 8, 12, 16, 24, 32, 32, 32, /*@40M HT-1SS*/
-		4, 8, 12, 16, 24, 32, 32, 32 /*@40M HT-2SS*/
-	};
-
-	memcpy(&ra_t->per_rate_retrylimit_20M[0],
-	       &per_rate_retrylimit_table_20M[0], ODM_NUM_RATE_IDX);
-	memcpy(&ra_t->per_rate_retrylimit_40M[0],
-	       &per_rate_retrylimit_table_40M[0], ODM_NUM_RATE_IDX);
-
-	for (i = 0; i < ODM_NUM_RATE_IDX; i++) {
-		phydm_retry_limit_table_bound(dm,
-					      &ra_t->per_rate_retrylimit_20M[i],
-					      0);
-		phydm_retry_limit_table_bound(dm,
-					      &ra_t->per_rate_retrylimit_40M[i],
-					      0);
-	}
-}
-
-void phydm_ra_dynamic_retry_limit_init(
-	void *dm_void)
-{
-	struct dm_struct *dm = (struct dm_struct *)dm_void;
-	struct ra_table *ra_tab = &dm->dm_ra_table;
-
-	ra_tab->retry_descend_num = RA_RETRY_DESCEND_NUM;
-	ra_tab->retrylimit_low = RA_RETRY_LIMIT_LOW;
-	ra_tab->retrylimit_high = RA_RETRY_LIMIT_HIGH;
-
-	phydm_reset_retry_limit_table(dm);
-}
-
-void phydm_ra_dynamic_retry_limit(
-	void *dm_void)
-{
-	struct dm_struct *dm = (struct dm_struct *)dm_void;
-	struct ra_table *ra_tab = &dm->dm_ra_table;
-	u8 i, retry_offset;
-	u32 ma_rx_tp;
-
-	if (dm->pre_number_active_client == dm->number_active_client) {
-		PHYDM_DBG(dm, DBG_RA,
-			  "pre_number_active_client ==  number_active_client\n");
-		return;
-
-	} else {
-		if (dm->number_active_client == 1) {
-			phydm_reset_retry_limit_table(dm);
-			PHYDM_DBG(dm, DBG_RA,
-				  "one client only->reset to default value\n");
-		} else {
-			retry_offset = dm->number_active_client * ra_tab->retry_descend_num;
-
-			for (i = 0; i < ODM_NUM_RATE_IDX; i++) {
-				phydm_retry_limit_table_bound(dm,
-							      &ra_tab->per_rate_retrylimit_20M[i],
-							      retry_offset);
-				phydm_retry_limit_table_bound(dm,
-							      &ra_tab->per_rate_retrylimit_40M[i],
-							      retry_offset);
-			}
-		}
-	}
-}
-#endif
-
-#if 0 /*@CONFIG_RA_DYNAMIC_RATE_ID*/
-void phydm_ra_dynamic_rate_id_on_assoc(
-	void *dm_void,
-	u8 wireless_mode,
-	u8 init_rate_id)
-{
-	struct dm_struct *dm = (struct dm_struct *)dm_void;
-
-	PHYDM_DBG(dm, DBG_RA,
-		  "[ON ASSOC] rf_mode = ((0x%x)), wireless_mode = ((0x%x)), init_rate_id = ((0x%x))\n",
-		  dm->rf_type, wireless_mode, init_rate_id);
-
-	if (dm->rf_type == RF_2T2R || dm->rf_type == RF_2T3R || dm->rf_type == RF_2T4R) {
-		if ((dm->support_ic_type & (ODM_RTL8812 | ODM_RTL8192E)) &&
-		    (wireless_mode & (ODM_WM_N24G | ODM_WM_N5G))) {
-			PHYDM_DBG(dm, DBG_RA,
-				  "[ON ASSOC] set N-2SS ARFR5 table\n");
-			odm_set_mac_reg(dm, R_0x4a4, MASKDWORD, 0xfc1ffff); /*N-2SS, ARFR5, rate_id = 0xe*/
-			odm_set_mac_reg(dm, R_0x4a8, MASKDWORD, 0x0); /*N-2SS, ARFR5, rate_id = 0xe*/
-		} else if ((dm->support_ic_type & (ODM_RTL8812)) &&
-			   (wireless_mode & (ODM_WM_AC_5G | ODM_WM_AC_24G | ODM_WM_AC_ONLY))) {
-			PHYDM_DBG(dm, DBG_RA,
-				  "[ON ASSOC] set AC-2SS ARFR0 table\n");
-			odm_set_mac_reg(dm, R_0x444, MASKDWORD, 0x0fff); /*@AC-2SS, ARFR0, rate_id = 0x9*/
-			odm_set_mac_reg(dm, R_0x448, MASKDWORD, 0xff01f000); /*@AC-2SS, ARFR0, rate_id = 0x9*/
-		}
-	}
-}
-
-void phydm_ra_dynamic_rate_id_init(
-	void *dm_void)
-{
-	struct dm_struct *dm = (struct dm_struct *)dm_void;
-
-	if (dm->support_ic_type & (ODM_RTL8812 | ODM_RTL8192E)) {
-		odm_set_mac_reg(dm, R_0x4a4, MASKDWORD, 0xfc1ffff); /*N-2SS, ARFR5, rate_id = 0xe*/
-		odm_set_mac_reg(dm, R_0x4a8, MASKDWORD, 0x0); /*N-2SS, ARFR5, rate_id = 0xe*/
-
-		odm_set_mac_reg(dm, R_0x444, MASKDWORD, 0x0fff); /*@AC-2SS, ARFR0, rate_id = 0x9*/
-		odm_set_mac_reg(dm, R_0x448, MASKDWORD, 0xff01f000); /*@AC-2SS, ARFR0, rate_id = 0x9*/
-	}
-}
-
-void phydm_update_rate_id(
-	void *dm_void,
-	u8 rate,
-	u8 platform_macid)
-{
-#if 0
-
-	struct dm_struct	*dm = (struct dm_struct *)dm_void;
-	struct ra_table		*ra_tab = &dm->dm_ra_table;
-	u8		current_tx_ss;
-	u8		rate_idx = rate & 0x7f; /*remove bit7 SGI*/
-	enum wireless_set wireless_set;
-	u8		phydm_macid;
-	struct cmn_sta_info	*sta;
-
-#if 0
-	if (rate_idx >= ODM_RATEVHTSS2MCS0) {
-		PHYDM_DBG(dm, DBG_RA, "rate[%d]: (( VHT2SS-MCS%d ))\n",
-			  platform_macid, (rate_idx - ODM_RATEVHTSS2MCS0));
-		/*@dummy for SD4 check patch*/
-	} else if (rate_idx >= ODM_RATEVHTSS1MCS0) {
-		PHYDM_DBG(dm, DBG_RA, "rate[%d]: (( VHT1SS-MCS%d ))\n",
-			  platform_macid, (rate_idx - ODM_RATEVHTSS1MCS0));
-		/*@dummy for SD4 check patch*/
-	} else if (rate_idx >= ODM_RATEMCS0) {
-		PHYDM_DBG(dm, DBG_RA, "rate[%d]: (( HT-MCS%d ))\n",
-			  platform_macid, (rate_idx - ODM_RATEMCS0));
-		/*@dummy for SD4 check patch*/
-	} else {
-		PHYDM_DBG(dm, DBG_RA, "rate[%d]: (( HT-MCS%d ))\n",
-			  platform_macid, rate_idx);
-		/*@dummy for SD4 check patch*/
-	}
-#endif
-
-	phydm_macid = dm->phydm_macid_table[platform_macid];
-	sta = dm->phydm_sta_info[phydm_macid];
-
-	if (is_sta_active(sta)) {
-		wireless_set = sta->support_wireless_set;
-
-		if (dm->rf_type == RF_2T2R || dm->rf_type == RF_2T3R || dm->rf_type == RF_2T4R) {
-			if (wireless_set & WIRELESS_HT) { /*N mode*/
-				if (rate_idx >= ODM_RATEMCS8 && rate_idx <= ODM_RATEMCS15) { /*@2SS mode*/
-
-					sta->ra_info.rate_id  = ARFR_5_RATE_ID;
-					PHYDM_DBG(dm, DBG_RA, "ARFR_5\n");
-				}
-			} else if (wireless_set & WIRELESS_VHT) {/*@AC mode*/
-				if (rate_idx >= ODM_RATEVHTSS2MCS0 && rate_idx <= ODM_RATEVHTSS2MCS9) {/*@2SS mode*/
-
-					sta->ra_info.rate_id  = ARFR_0_RATE_ID;
-					PHYDM_DBG(dm, DBG_RA, "ARFR_0\n");
-				}
-			} else
-				sta->ra_info.rate_id  = ARFR_0_RATE_ID;
-
-			PHYDM_DBG(dm, DBG_RA, "UPdate_RateID[%d]: (( 0x%x ))\n",
-				  platform_macid, sta->ra_info.rate_id);
-		}
-	}
-#endif
 }
 
 #endif

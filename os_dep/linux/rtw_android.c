@@ -584,10 +584,6 @@ static int rtw_android_set_aek(struct net_device *ndev, char *command, int total
 
 	RTW_PRINT(FUNC_NDEV_FMT" addr="MAC_FMT"\n"
 		, FUNC_NDEV_ARG(ndev), MAC_ARG(addr));
-	if (0)
-		RTW_PRINT(FUNC_NDEV_FMT" aek="KEY_FMT KEY_FMT"\n"
-			, FUNC_NDEV_ARG(ndev), KEY_ARG(aek), KEY_ARG(aek + 16));
-
 	if (rtw_mesh_plink_set_aek(adapter, addr, aek) != _SUCCESS)
 		err = -ENOENT;
 
@@ -767,16 +763,6 @@ int rtw_android_priv_cmd(struct net_device *net, struct ifreq *ifr, int cmd)
 		/* TBD: BTCOEXSCAN-STOP */
 		break;
 	case ANDROID_WIFI_CMD_BTCOEXMODE:
-#if 0
-		uint mode = *(command + strlen(CMD_BTCOEXMODE) + 1) - '0';
-		if (mode == 1)
-			net_os_set_packet_filter(net, 0); /* DHCP starts */
-		else
-			net_os_set_packet_filter(net, 1); /* DHCP ends */
-#ifdef WL_CFG80211
-		bytes_written = wl_cfg80211_set_btcoex_dhcp(net, command);
-#endif
-#endif
 		break;
 
 	case ANDROID_WIFI_CMD_SETSUSPENDMODE:

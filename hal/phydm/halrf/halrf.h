@@ -461,7 +461,6 @@ struct _hal_rf_ {
 void halrf_iqk_info_dump(void *dm_void, u32 *_used, char *output,
 			 u32 *_out_len);
 
-void halrf_iqk_hwtx_check(void *dm_void, boolean is_check);
 #endif
 
 u8 halrf_match_iqk_version(void *dm_void);

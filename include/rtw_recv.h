@@ -94,24 +94,6 @@ struct	stainfo_rxcache	{
 	u16	tid_rxseq[16];
 	u8 iv[16][8];
 	u8 last_tid;
-#if 0
-	unsigned short	tid0_rxseq;
-	unsigned short	tid1_rxseq;
-	unsigned short	tid2_rxseq;
-	unsigned short	tid3_rxseq;
-	unsigned short	tid4_rxseq;
-	unsigned short	tid5_rxseq;
-	unsigned short	tid6_rxseq;
-	unsigned short	tid7_rxseq;
-	unsigned short	tid8_rxseq;
-	unsigned short	tid9_rxseq;
-	unsigned short	tid10_rxseq;
-	unsigned short	tid11_rxseq;
-	unsigned short	tid12_rxseq;
-	unsigned short	tid13_rxseq;
-	unsigned short	tid14_rxseq;
-	unsigned short	tid15_rxseq;
-#endif
 };
 
 
@@ -365,9 +347,7 @@ struct recv_priv {
 	atomic_t	rx_pending_cnt;
 
 #ifdef CONFIG_USB_INTERRUPT_IN_PIPE
-#ifdef PLATFORM_LINUX
 	PURB	int_in_urb;
-#endif
 
 	u8	*int_in_buf;
 #endif /* CONFIG_USB_INTERRUPT_IN_PIPE */
@@ -508,9 +488,7 @@ u32 alloc_sz;
 
 #endif
 
-#if defined(PLATFORM_LINUX)
 	_pkt *pskb;
-#endif
 };
 
 

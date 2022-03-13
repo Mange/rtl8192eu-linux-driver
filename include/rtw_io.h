@@ -18,9 +18,7 @@
 
 #define NUM_IOREQ		8
 
-#ifdef PLATFORM_LINUX
-	#define MAX_PROT_SZ	(64-16)
-#endif
+#define MAX_PROT_SZ	(64-16)
 
 #define _IOREADY			0
 #define _IO_WAIT_COMPLETE   1
@@ -141,23 +139,6 @@ struct io_req {
 
 struct	intf_hdl {
 
-#if 0
-	u32	intf_option;
-	u32	bus_status;
-	u32	do_flush;
-	u8	*adapter;
-	u8	*intf_dev;
-	struct intf_priv	*pintfpriv;
-	u8	cnt;
-	void (*intf_hdl_init)(u8 *priv);
-	void (*intf_hdl_unload)(u8 *priv);
-	void (*intf_hdl_open)(u8 *priv);
-	void (*intf_hdl_close)(u8 *priv);
-	struct	_io_ops	io_ops;
-	/* u8 intf_status;//moved to struct intf_priv */
-	u16 len;
-	u16 done_len;
-#endif
 	_adapter *padapter;
 	struct dvobj_priv *pintf_dev;/*	pointer to &(padapter->dvobjpriv); */
 
@@ -349,7 +330,6 @@ extern int rtw_write32(_adapter *adapter, u32 addr, u32 val);
 extern int rtw_writeN(_adapter *adapter, u32 addr, u32 length, u8 *pdata);
 
 #ifdef CONFIG_SDIO_HCI
-u8 _rtw_sd_f0_read8(_adapter *adapter, u32 addr);
 #ifdef CONFIG_SDIO_INDIRECT_ACCESS
 u8 _rtw_sd_iread8(_adapter *adapter, u32 addr);
 u16 _rtw_sd_iread16(_adapter *adapter, u32 addr);
@@ -378,7 +358,6 @@ bool match_rf_read_sniff_ranges(_adapter *adapter, u8 path, u32 addr, u32 mask);
 bool match_rf_write_sniff_ranges(_adapter *adapter, u8 path, u32 addr, u32 mask);
 
 #ifdef CONFIG_SDIO_HCI
-u8 dbg_rtw_sd_f0_read8(_adapter *adapter, u32 addr, const char *caller, const int line);
 #ifdef CONFIG_SDIO_INDIRECT_ACCESS
 u8 dbg_rtw_sd_iread8(_adapter *adapter, u32 addr, const char *caller, const int line);
 u16 dbg_rtw_sd_iread16(_adapter *adapter, u32 addr, const char *caller, const int line);
@@ -403,7 +382,6 @@ int dbg_rtw_sd_iwrite32(_adapter *adapter, u32 addr, u32 val, const char *caller
 #define rtw_write_port_cancel(adapter) _rtw_write_port_cancel(adapter)
 
 #ifdef CONFIG_SDIO_HCI
-#define rtw_sd_f0_read8(adapter, addr) dbg_rtw_sd_f0_read8((adapter), (addr), __func__, __LINE__)
 #ifdef CONFIG_SDIO_INDIRECT_ACCESS
 #define rtw_sd_iread8(adapter, addr) dbg_rtw_sd_iread8((adapter), (addr), __func__, __LINE__)
 #define rtw_sd_iread16(adapter, addr) dbg_rtw_sd_iread16((adapter), (addr), __func__, __LINE__)
@@ -430,7 +408,6 @@ int dbg_rtw_sd_iwrite32(_adapter *adapter, u32 addr, u32 val, const char *caller
 #define rtw_write_port_cancel(adapter) _rtw_write_port_cancel((adapter))
 
 #ifdef CONFIG_SDIO_HCI
-#define rtw_sd_f0_read8(adapter, addr) _rtw_sd_f0_read8((adapter), (addr))
 #ifdef CONFIG_SDIO_INDIRECT_ACCESS
 #define rtw_sd_iread8(adapter, addr) _rtw_sd_iread8((adapter), (addr))
 #define rtw_sd_iread16(adapter, addr) _rtw_sd_iread16((adapter), (addr))

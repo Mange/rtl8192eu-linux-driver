@@ -31,35 +31,34 @@
 	#define _FALSE	FALSE
 #endif
 
-#ifdef PLATFORM_LINUX
-	#include <linux/version.h>
-	#include <linux/types.h>
-	#include <linux/module.h>
-	#include <linux/kernel.h>
-	#include <linux/init.h>
-	#include <linux/utsname.h>
-	#define IN
-	#define OUT
-	#define VOID void
-	#define NDIS_OID uint
-	#define NDIS_STATUS uint
+#include <linux/version.h>
+#include <linux/types.h>
+#include <linux/module.h>
+#include <linux/kernel.h>
+#include <linux/init.h>
+#include <linux/utsname.h>
+#define IN
+#define OUT
+#define VOID void
+#define NDIS_OID uint
+#define NDIS_STATUS uint
 
-	typedef	signed int sint;
+typedef	signed int sint;
 
-	#ifndef RHEL_RELEASE_CODE
-        #define RHEL_RELEASE_VERSION(a,b) (((a) << 8) + (b))
-        #define RHEL_RELEASE_CODE 0
-	#endif
+#ifndef RHEL_RELEASE_CODE
+	#define RHEL_RELEASE_VERSION(a,b) (((a) << 8) + (b))
+	#define RHEL_RELEASE_CODE 0
+#endif
 
-	#ifndef	PVOID
-		typedef void *PVOID;
-		/* #define PVOID	(void *) */
-	#endif
+#ifndef	PVOID
+	typedef void *PVOID;
+	/* #define PVOID	(void *) */
+#endif
 
-	#define UCHAR u8
-	#define USHORT u16
-	#define UINT u32
-	#define ULONG u32
+#define UCHAR u8
+#define USHORT u16
+#define UINT u32
+#define ULONG u32
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 19))
 typedef _Bool bool;
@@ -106,7 +105,6 @@ enum {
 #define ULONG u32
 #define PULONG u32*
 
-#endif
 
 
 #define MEM_ALIGNMENT_OFFSET	(sizeof (SIZE_T))

@@ -2725,49 +2725,31 @@ static void rtw_mpath_tx_queue_flush(_adapter *adapter)
 	}
 }
 
-#ifdef PLATFORM_LINUX /* 3.10 ~ 4.13 checked */
 #if defined(CONFIG_SLUB)
 #include <linux/slub_def.h>
 #elif defined(CONFIG_SLAB)
 #include <linux/slab_def.h>
 #endif
 typedef struct kmem_cache rtw_mcache;
-#endif
 
 rtw_mcache *rtw_mcache_create(const char *name, size_t size)
 {
-#ifdef PLATFORM_LINUX /* 3.10 ~ 4.13 checked */
 	return kmem_cache_create(name, size, 0, 0, NULL);
-#else
-	#error "TBD\n";
-#endif
 }
 
 void rtw_mcache_destroy(rtw_mcache *s)
 {
-#ifdef PLATFORM_LINUX /* 3.10 ~ 4.13 checked */
 	kmem_cache_destroy(s);
-#else
-	#error "TBD\n";
-#endif
 }
 
 void *_rtw_mcache_alloc(rtw_mcache *cachep)
 {
-#ifdef PLATFORM_LINUX /* 3.10 ~ 4.13 checked */
 	return kmem_cache_alloc(cachep, GFP_ATOMIC);
-#else
-	#error "TBD\n";
-#endif
 }
 
 void _rtw_mcache_free(rtw_mcache *cachep, void *objp)
 {
-#ifdef PLATFORM_LINUX /* 3.10 ~ 4.13 checked */
 	kmem_cache_free(cachep, objp);
-#else
-	#error "TBD\n";
-#endif
 }
 
 #ifdef DBG_MEM_ALLOC
@@ -3769,14 +3751,6 @@ int rtw_mesh_rx_msdu_act_check(union recv_frame *rframe
 	u8 b2u_num = 0;
 #endif
 
-	/* fwd info lifetime update */
-	#if 0
-	if (!is_mda_self)
-		mDA(A3) fwinfo.lifetime
-	mSA(A4) fwinfo.lifetime
-	Precursor-to-mDA(A2) fwinfo.lifetime
-	#endif
-
 	/* update/create pxoxy info for SA, mSA */
 	if ((mctrl->flags & MESH_FLAGS_AE)
 		&& sa != msa && _rtw_memcmp(sa, msa, ETH_ALEN) == _FALSE
@@ -3853,10 +3827,6 @@ int rtw_mesh_rx_msdu_act_check(union recv_frame *rframe
 
 		} else {
 			/* mDA is known in fwd info */
-			#if 0
-			if	(TA is not in precursors)
-				goto exit;
-			#endif
 			goto fwd_chk;
 		}
 
@@ -3948,14 +3918,6 @@ int rtw_mesh_rx_msdu_act_check(union recv_frame *rframe
 				, FUNC_ADPT_ARG(adapter), MAC_ARG(da));
 			#endif
 			/* DA is unknown */
-			#if 0 /* TODO: flags with AE bit */
-			rtw_mesh_path_error_tx(adapter
-				, adapter->mesh_cfg.element_ttl
-				, mda, adapter->mesh_info.last_sn_update
-				, WLAN_REASON_MESH_PATH_NOPROXY
-				, msa
-			);
-			#endif
 		}
 
 		/*

@@ -51,15 +51,13 @@ int platform_wifi_power_on(void)
 #ifdef ANDROID_2X
 	mdelay(200);
 #else /* !ANDROID_2X */
-	if (1) {
-		int i = 0;
+	int i = 0;
 
-		for (i = 0; i <= 50; i++) {
-			msleep(10);
-			if (sdhci_device_attached())
-				break;
-			printk("%s delay times:%d\n", __func__, i);
-		}
+	for (i = 0; i <= 50; i++) {
+		msleep(10);
+		if (sdhci_device_attached())
+			break;
+		printk("%s delay times:%d\n", __func__, i);
 	}
 #endif /* !ANDROID_2X */
 

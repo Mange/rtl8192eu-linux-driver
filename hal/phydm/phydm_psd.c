@@ -334,10 +334,6 @@ void phydm_psd_para_setting(void *dm_void, u8 sw_avg_time, u8 hw_avg_time,
 		odm_set_bb_reg(dm, 0x808, BIT(23) | BIT(22), fft_smp_point_idx);
 		odm_set_bb_reg(dm, 0x804, BIT(5) | BIT(4), ant_sel);
 		odm_set_bb_reg(dm, 0x80C, BIT(23), psd_input);
-
-#if 0
-	} else {	/*ODM_IC_11N_SERIES*/
-#endif
 	}
 	/*@bw = (*dm->band_width); //ODM_BW20M */
 	/*@channel = *(dm->channel);*/
@@ -377,9 +373,6 @@ void phydm_psd_init(void *dm_void)
 	dm_psd_table->psd_pwr_common_offset = 0;
 
 	phydm_psd_para_setting(dm, 1, 2, 3, 128, 0, 0, 7, 0);
-#if 0
-	/*phydm_psd(dm, 0x3c, 0, 127);*/ /* target at -50dBm */
-#endif
 }
 
 void phydm_psd_debug(void *dm_void, char input[][16], u32 *_used,

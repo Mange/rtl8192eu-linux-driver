@@ -190,9 +190,6 @@ odm_single_dual_antenna_detection(
 
 	/* @change to Antenna B */
 	if (dm->support_ic_type & ODM_RTL8723B) {
-#if 0
-		/* odm_set_bb_reg(dm, REG_DPDT_CONTROL, 0x3, 0x2); */
-#endif
 		odm_set_bb_reg(dm, REG_S0_S1_PATH_SWITCH, 0xfff, 0x280);
 		odm_set_bb_reg(dm, REG_AGC_TABLE_SELECT, BIT(31), 0x1);
 	}
@@ -470,16 +467,10 @@ odm_sw_ant_div_check_before_link(
 						PHYDM_PRINT_ADDR(dm, DBG_ANT_DIV, "SSID:", p_tmp_bss_desc->bdSsIdBuf);
 						PHYDM_PRINT_ADDR(dm, DBG_ANT_DIV, "BSSID:", p_tmp_bss_desc->bdSsIdBuf);
 
-#if 0
-						/* PHYDM_DBG(dm,DBG_ANT_DIV, "tmp_power_diff: (( %d)),max_power_diff: (( %d)),min_power_diff: (( %d))\n", tmp_power_diff,max_power_diff,min_power_diff); */
-#endif
 						if (tmp_power_diff > max_power_diff)
 							max_power_diff = tmp_power_diff;
 						if (tmp_power_diff < min_power_diff)
 							min_power_diff = tmp_power_diff;
-#if 0
-						/* PHYDM_DBG(dm,DBG_ANT_DIV, "max_power_diff: (( %d)),min_power_diff: (( %d))\n",max_power_diff,min_power_diff); */
-#endif
 
 						PlatformMoveMemory(p_test_bss_desc, p_tmp_bss_desc, sizeof(RT_WLAN_BSS));
 					} else if (p_test_bss_desc->RecvSignalPower > p_tmp_bss_desc->RecvSignalPower) { /* Pow(Ant1) < Pow(Ant2) */
@@ -618,17 +609,11 @@ odm_sw_ant_div_check_before_link(
 					if (dm->dm_swat_table.ANTB_ON == true) {
 						dm->dm_swat_table.ANTA_ON = true;
 						dm->dm_swat_table.ANTB_ON = false;
-#if 0
-						/* @bt_set_bt_coex_ant_num(adapter, BT_COEX_ANT_TYPE_DETECTED, 1); */
-#endif
 					}
 					PHYDM_DBG(dm, DBG_ANT_DIV, "%s: Single antenna\n", __func__);
 					dm->dm_swat_table.single_ant_counter++;
 				}
 			}
-#if 0
-			/* PHYDM_DBG(dm,DBG_ANT_DIV, "is_result=(( %d ))\n",dm->dm_swat_table.rssi_ant_dect_result); */
-#endif
 			PHYDM_DBG(dm, DBG_ANT_DIV,
 				  "dual_ant_counter = (( %d )), single_ant_counter = (( %d )) , retry_counter = (( %d )) , aux_fail_detec_counter = (( %d ))\n\n\n",
 				  dm->dm_swat_table.dual_ant_counter,
@@ -829,11 +814,6 @@ void odm_single_dual_antenna_detection_psd(
 		}
 		PHYDM_DBG(dm, DBG_ANT_DIV,
 			  "odm_sw_ant_div_check_before_link(): Dual antenna\n");
-
-#if 0
-		/* set bt coexDM from 1ant coexDM to 2ant coexDM */
-		/* @bt_set_bt_coex_ant_num(adapter, BT_COEX_ANT_TYPE_DETECTED, 2); */
-#endif
 
 		/* @Init antenna diversity */
 		dm->support_ability |= ODM_BB_ANT_DIV;

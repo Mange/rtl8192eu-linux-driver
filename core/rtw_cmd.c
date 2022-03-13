@@ -413,9 +413,6 @@ int rtw_cmd_filter(struct cmd_priv *pcmdpriv, struct cmd_obj *cmd_obj)
 		if (DBG_CMD_EXECUTE)
 			RTW_INFO(ADPT_FMT" drop "CMD_FMT" hw_init_completed:%u, cmdthd_running:%u\n", ADPT_ARG(cmd_obj->padapter)
 				, CMD_ARG(cmd_obj), rtw_get_hw_init_completed(cmd_obj->padapter), atomic_read(&pcmdpriv->cmdthd_running));
-		if (0)
-			rtw_warn_on(1);
-
 		return _FAIL;
 	}
 	return _SUCCESS;
@@ -646,8 +643,6 @@ post_process:
 
 		_enter_critical_mutex(&(pcmd->padapter->cmdpriv.sctx_mutex), NULL);
 		if (pcmd->sctx) {
-			if (0)
-				RTW_PRINT(FUNC_ADPT_FMT" pcmd->sctx\n", FUNC_ADPT_ARG(pcmd->padapter));
 			if (pcmd->res == H2C_SUCCESS)
 				rtw_sctx_done(&pcmd->sctx);
 			else
@@ -658,8 +653,6 @@ post_process:
 		cmd_process_time = rtw_get_passing_time_ms(cmd_start_time);
 		if (cmd_process_time > 1000) {
 			RTW_INFO(ADPT_FMT" "CMD_FMT" process_time=%d\n", ADPT_ARG(pcmd->padapter), CMD_ARG(pcmd), cmd_process_time);
-			if (0)
-				rtw_warn_on(1);
 		}
 
 		/* call callback function for post-processed */
@@ -694,9 +687,6 @@ post_process:
 		if (pcmd == NULL)
 			break;
 
-		if (0)
-			RTW_INFO("%s: leaving... drop "CMD_FMT"\n", __func__, CMD_ARG(pcmd));
-
 		if (pcmd->cmdcode == GEN_CMD_CODE(_Set_Drv_Extra)) {
 			extra_parm = (struct drvextra_cmd_parm *)pcmd->parmbuf;
 			if (extra_parm->pbuf && extra_parm->size > 0)
@@ -709,8 +699,6 @@ post_process:
 
 		_enter_critical_mutex(&(pcmd->padapter->cmdpriv.sctx_mutex), NULL);
 		if (pcmd->sctx) {
-			if (0)
-				RTW_PRINT(FUNC_ADPT_FMT" pcmd->sctx\n", FUNC_ADPT_ARG(pcmd->padapter));
 			rtw_sctx_done_err(&pcmd->sctx, RTW_SCTX_DONE_CMD_DROP);
 		}
 		_exit_critical_mutex(&(pcmd->padapter->cmdpriv.sctx_mutex), NULL);
@@ -1369,15 +1357,7 @@ u8 rtw_joinbss_cmd(_adapter  *padapter, struct wlan_network *pnetwork)
 		res = _FAIL;
 		goto exit;
 	}
-#if 0
-	/*  for IEs is pointer */
-	t_len = sizeof(ULONG) + sizeof(NDIS_802_11_MAC_ADDRESS) + 2 +
-		sizeof(NDIS_802_11_SSID) + sizeof(ULONG) +
-		sizeof(NDIS_802_11_RSSI) + sizeof(NDIS_802_11_NETWORK_TYPE) +
-		sizeof(NDIS_802_11_CONFIGURATION) +
-		sizeof(NDIS_802_11_NETWORK_INFRASTRUCTURE) +
-		sizeof(NDIS_802_11_RATES_EX) + sizeof(WLAN_PHY_INFO) + sizeof(ULONG) + MAX_IE_SZ;
-#endif
+
 	/* for IEs is fix buf size */
 	t_len = sizeof(WLAN_BSSID_EX);
 
@@ -1505,15 +1485,6 @@ u8 rtw_joinbss_cmd(_adapter  *padapter, struct wlan_network *pnetwork)
 
 #ifdef CONFIG_RTW_80211R
 	rtw_ft_validate_akm_type(padapter, pnetwork);
-#endif
-
-#if 0
-	psecuritypriv->supplicant_ie[0] = (u8)psecnetwork->IELength;
-
-	if (psecnetwork->IELength < (256 - 1))
-		memcpy(&psecuritypriv->supplicant_ie[1], &psecnetwork->IEs[0], psecnetwork->IELength);
-	else
-		memcpy(&psecuritypriv->supplicant_ie[1], &psecnetwork->IEs[0], (256 - 1));
 #endif
 
 	pcmd->cmdsz = sizeof(WLAN_BSSID_EX);
@@ -2614,19 +2585,17 @@ u8 _ssmps_chk_by_tp(_adapter *adapter, u8 from_timer)
 			enter_smps = _FALSE;
 	}
 
-	if (1) {
-		RTW_INFO(FUNC_ADPT_FMT" tx_tp:%d [%d], rx_tp:%d [%d] , SSMPS enter :%s\n",
-			FUNC_ADPT_ARG(adapter),
-			tx_tp_mbits, pmlmeext->ssmps_tx_tp_th,
-			rx_tp_mbits, pmlmeext->ssmps_rx_tp_th,
-			(enter_smps == _TRUE) ? "True" : "False");
-		#ifdef DBG_STATIC_SMPS
-		RTW_INFO(FUNC_ADPT_FMT" test:%d test_en:%d\n",
-			FUNC_ADPT_ARG(adapter),
-			pmlmeext->ssmps_test,
-			pmlmeext->ssmps_test_en);
-		#endif
-	}
+	RTW_INFO(FUNC_ADPT_FMT" tx_tp:%d [%d], rx_tp:%d [%d] , SSMPS enter :%s\n",
+		FUNC_ADPT_ARG(adapter),
+		tx_tp_mbits, pmlmeext->ssmps_tx_tp_th,
+		rx_tp_mbits, pmlmeext->ssmps_rx_tp_th,
+		(enter_smps == _TRUE) ? "True" : "False");
+	#ifdef DBG_STATIC_SMPS
+	RTW_INFO(FUNC_ADPT_FMT" test:%d test_en:%d\n",
+		FUNC_ADPT_ARG(adapter),
+		pmlmeext->ssmps_test,
+		pmlmeext->ssmps_test_en);
+	#endif
 
 	if (enter_smps) {
 		if (!from_timer && psta->cmn.sm_ps != SM_PS_STATIC)
@@ -2802,13 +2771,11 @@ void rtw_ctrl_tx_ss_by_tp(_adapter *adapter, u8 from_timer)
 			tx_1ss = _TRUE;
 	}
 
-	if (1) {
-		RTW_INFO(FUNC_ADPT_FMT" tx_tp:%d [%d] tx_1ss(%d):%s\n",
-			FUNC_ADPT_ARG(adapter),
-			tx_tp_mbits, pmlmeext->txss_tp_th,
-			pmlmeext->txss_tp_chk_cnt,
-			(tx_1ss == _TRUE) ? "True" : "False");
-	}
+	RTW_INFO(FUNC_ADPT_FMT" tx_tp:%d [%d] tx_1ss(%d):%s\n",
+		FUNC_ADPT_ARG(adapter),
+		tx_tp_mbits, pmlmeext->txss_tp_th,
+		pmlmeext->txss_tp_chk_cnt,
+		(tx_1ss == _TRUE) ? "True" : "False");
 
 	if (pmlmeext->txss_1ss != tx_1ss) {
 		if (from_timer)
@@ -2855,8 +2822,6 @@ static u8 _bcn_cnt_expected(struct sta_info *psta)
 
 	if ((pmlmeinfo->bcn_interval !=0) && (dtim != 0))
 		bcn_cnt = 2000 / pmlmeinfo->bcn_interval / dtim * 4 / 5; /*2s*/
-	if (0)
-		RTW_INFO("%s bcn_cnt:%d\n", bcn_cnt);
 
 	if (bcn_cnt == 0) {
 		RTW_ERR(FUNC_ADPT_FMT" bcn_cnt == 0\n", FUNC_ADPT_ARG(adapter));
@@ -2887,15 +2852,9 @@ u8 _lps_chk_by_tp(_adapter *adapter, u8 from_timer)
 	psta->sta_stats.acc_tx_bytes = psta->sta_stats.tx_bytes;
 	psta->sta_stats.acc_rx_bytes = psta->sta_stats.rx_bytes;
 
-#if 1
 	tx_tp_mbits = psta->sta_stats.tx_tp_kbits >> 10;
 	rx_tp_mbits = psta->sta_stats.rx_tp_kbits >> 10;
 	bi_tp_mbits = tx_tp_mbits + rx_tp_mbits;
-#else
-	tx_tp_mbits = psta->sta_stats.smooth_tx_tp_kbits >> 10;
-	rx_tp_mbits = psta->sta_stats.smooth_rx_tp_kbits >> 10;
-	bi_tp_mbits = tx_tp_mbits + rx_tp_mbits;
-#endif
 
 	if ((bi_tp_mbits >= pwrpriv->lps_bi_tp_th) ||
 		(tx_tp_mbits >= pwrpriv->lps_tx_tp_th) ||
@@ -2920,26 +2879,24 @@ u8 _lps_chk_by_tp(_adapter *adapter, u8 from_timer)
 			enter_ps = _TRUE;
 	}
 
-	if (1) {
-		RTW_INFO(FUNC_ADPT_FMT" tx_tp:%d [%d], rx_tp:%d [%d], bi_tp:%d [%d], enter_ps(%d):%s\n",
-			FUNC_ADPT_ARG(adapter),
-			tx_tp_mbits, pwrpriv->lps_tx_tp_th,
-			rx_tp_mbits, pwrpriv->lps_rx_tp_th,
-			bi_tp_mbits, pwrpriv->lps_bi_tp_th,
-			pwrpriv->lps_chk_cnt,
-			(enter_ps == _TRUE) ? "True" : "False");
-		RTW_INFO(FUNC_ADPT_FMT" tx_pkt_cnt :%d [%d], rx_pkt_cnt :%d [%d]\n",
-			FUNC_ADPT_ARG(adapter),
-			pmlmepriv->LinkDetectInfo.NumTxOkInPeriod,
-			pwrpriv->lps_tx_pkts,
-			pmlmepriv->LinkDetectInfo.NumRxUnicastOkInPeriod,
-			pwrpriv->lps_rx_pkts);
-		if (!adapter->bsta_tp_dump)
-			RTW_INFO(FUNC_ADPT_FMT" bcn_cnt:%d (per-%d second)\n",
-			FUNC_ADPT_ARG(adapter),
-			rx_bcn_cnt,
-			2);
-	}
+	RTW_INFO(FUNC_ADPT_FMT" tx_tp:%d [%d], rx_tp:%d [%d], bi_tp:%d [%d], enter_ps(%d):%s\n",
+		FUNC_ADPT_ARG(adapter),
+		tx_tp_mbits, pwrpriv->lps_tx_tp_th,
+		rx_tp_mbits, pwrpriv->lps_rx_tp_th,
+		bi_tp_mbits, pwrpriv->lps_bi_tp_th,
+		pwrpriv->lps_chk_cnt,
+		(enter_ps == _TRUE) ? "True" : "False");
+	RTW_INFO(FUNC_ADPT_FMT" tx_pkt_cnt :%d [%d], rx_pkt_cnt :%d [%d]\n",
+		FUNC_ADPT_ARG(adapter),
+		pmlmepriv->LinkDetectInfo.NumTxOkInPeriod,
+		pwrpriv->lps_tx_pkts,
+		pmlmepriv->LinkDetectInfo.NumRxUnicastOkInPeriod,
+		pwrpriv->lps_rx_pkts);
+	if (!adapter->bsta_tp_dump)
+		RTW_INFO(FUNC_ADPT_FMT" bcn_cnt:%d (per-%d second)\n",
+		FUNC_ADPT_ARG(adapter),
+		rx_bcn_cnt,
+		2);
 
 	if (enter_ps) {
 		if (!from_timer)
@@ -5247,10 +5204,6 @@ void session_tracker_chk_for_sta(_adapter *adapter, struct sta_info *sta)
 			continue;
 
 		#ifdef CONFIG_WFD
-		if (0)
-			RTW_INFO(FUNC_ADPT_FMT" local:%u, remote:%u, rtsp:%u, %u, %u\n", FUNC_ADPT_ARG(adapter)
-				, ntohs(st->local_port), ntohs(st->remote_port), adapter->wfd_info.rtsp_ctrlport, adapter->wfd_info.tdls_rtsp_ctrlport
-				, adapter->wfd_info.peer_rtsp_ctrlport);
 		if (ntohs(st->local_port) == adapter->wfd_info.rtsp_ctrlport)
 			op_wfd_mode |= MIRACAST_SINK;
 		if (ntohs(st->local_port) == adapter->wfd_info.tdls_rtsp_ctrlport)
@@ -5755,11 +5708,6 @@ void rtw_create_ibss_post_hdl(_adapter *padapter, int status)
 
 		/* copy pdev_network information to pmlmepriv->cur_network */
 		memcpy(&mlme_cur_network->network, pdev_network, (get_WLAN_BSSID_EX_sz(pdev_network)));
-
-#if 0
-		/* reset DSConfig */
-		mlme_cur_network->network.Configuration.DSConfig = (u32)rtw_ch2freq(pdev_network->Configuration.DSConfig);
-#endif
 
 		_clr_fwstate_(pmlmepriv, _FW_UNDER_LINKING);
 		_exit_critical_bh(&(pmlmepriv->scanned_queue.lock), &irqL);

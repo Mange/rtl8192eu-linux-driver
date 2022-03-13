@@ -331,20 +331,6 @@ static void issue_p2p_provision_resp(struct wifidirect_info *pwdinfo, u8 *raddr,
 	RTW_PUT_BE32(wpsie, WPSOUI);
 	wpsielen += 4;
 
-#if 0
-	/*	WPS version */
-	/*	Type: */
-	*(u16 *)(wpsie + wpsielen) = cpu_to_be16(WPS_ATTR_VER1);
-	wpsielen += 2;
-
-	/*	Length: */
-	*(u16 *)(wpsie + wpsielen) = cpu_to_be16(0x0001);
-	wpsielen += 2;
-
-	/*	Value: */
-	wpsie[wpsielen++] = WPS_VERSION_1;	/*	Version 1.0 */
-#endif
-
 	/*	Config Method */
 	/*	Type: */
 	/* *(u16*) ( wpsie + wpsielen ) = cpu_to_be16( WPS_ATTR_CONF_METHOD ); */
@@ -3439,23 +3425,14 @@ static int cancel_ro_ch_handler(_adapter *padapter, u8 *buf)
 #endif
 
 	if (rtw_mi_get_ch_setting_union(padapter, &ch, &bw, &offset) != 0) {
-		if (0)
-			RTW_INFO(FUNC_ADPT_FMT" back to linked/linking union - ch:%u, bw:%u, offset:%u\n",
-				 FUNC_ADPT_ARG(padapter), ch, bw, offset);
 	} else if (adapter_wdev_data(padapter)->p2p_enabled && pwdinfo->listen_channel) {
 		ch = pwdinfo->listen_channel;
 		bw = CHANNEL_WIDTH_20;
 		offset = HAL_PRIME_CHNL_OFFSET_DONT_CARE;
-		if (0)
-			RTW_INFO(FUNC_ADPT_FMT" back to listen ch - ch:%u, bw:%u, offset:%u\n",
-				 FUNC_ADPT_ARG(padapter), ch, bw, offset);
 	} else {
 		ch = pcfg80211_wdinfo->restore_channel;
 		bw = CHANNEL_WIDTH_20;
 		offset = HAL_PRIME_CHNL_OFFSET_DONT_CARE;
-		if (0)
-			RTW_INFO(FUNC_ADPT_FMT" back to restore ch - ch:%u, bw:%u, offset:%u\n",
-				 FUNC_ADPT_ARG(padapter), ch, bw, offset);
 	}
 
 	set_channel_bwmode(padapter, ch, offset, bw);
@@ -3496,39 +3473,6 @@ static void ro_ch_timer_process(void *FunctionContext)
 
 	p2p_cancel_roch_cmd(adapter, 0, NULL, 0);
 }
-
-#if 0
-static void rtw_change_p2pie_op_ch(_adapter *padapter, const u8 *frame_body, u32 len, u8 ch)
-{
-	u8 *ies, *p2p_ie;
-	u32 ies_len, p2p_ielen;
-
-#ifdef CONFIG_MCC_MODE
-	if (MCC_EN(padapter))
-		return;
-#endif /* CONFIG_MCC_MODE */
-
-	ies = (u8 *)(frame_body + _PUBLIC_ACTION_IE_OFFSET_);
-	ies_len = len - _PUBLIC_ACTION_IE_OFFSET_;
-
-	p2p_ie = rtw_get_p2p_ie(ies, ies_len, NULL, &p2p_ielen);
-
-	while (p2p_ie) {
-		u32	attr_contentlen = 0;
-		u8 *pattr = NULL;
-
-		/* Check P2P_ATTR_OPERATING_CH */
-		attr_contentlen = 0;
-		pattr = NULL;
-		pattr = rtw_get_p2p_attr_content(p2p_ie, p2p_ielen, P2P_ATTR_OPERATING_CH, NULL, (uint *)&attr_contentlen);
-		if (pattr != NULL)
-			*(pattr + 4) = ch;
-
-		/* Get the next P2P IE */
-		p2p_ie = rtw_get_p2p_ie(p2p_ie + p2p_ielen, ies_len - (p2p_ie - ies + p2p_ielen), NULL, &p2p_ielen);
-	}
-}
-#endif
 
 #if defined(CONFIG_CONCURRENT_MODE) && defined(CONFIG_CFG80211_ONECHANNEL_UNDER_CONCURRENT)
 static void rtw_change_p2pie_ch_list(_adapter *padapter, const u8 *frame_body, u32 len, u8 ch)
@@ -5303,21 +5247,7 @@ void dbg_rtw_p2p_set_pre_state(struct wifidirect_info *wdinfo, enum P2P_STATE st
 			);
 	}
 }
-#if 0
-void dbg_rtw_p2p_restore_state(struct wifidirect_info *wdinfo, const char *caller, int line)
-{
-	if (wdinfo->pre_p2p_state != -1) {
-		RTW_INFO("[CONFIG_DBG_P2P]%s:%d restore from %s to %s\n", caller, line
-			, p2p_state_str[wdinfo->p2p_state], p2p_state_str[wdinfo->pre_p2p_state]
-			);
-		_rtw_p2p_restore_state(wdinfo);
-	} else {
-		RTW_INFO("[CONFIG_DBG_P2P]%s:%d restore no pre state, cur state %s\n", caller, line
-			 , p2p_state_str[wdinfo->p2p_state]
-			);
-	}
-}
-#endif
+
 void dbg_rtw_p2p_set_role(struct wifidirect_info *wdinfo, enum P2P_ROLE role, const char *caller, int line)
 {
 	if (wdinfo->role != role) {

@@ -310,18 +310,7 @@ void phydm_set_sig_jgr3(void *dm_void, struct phydm_pmac_info *tx_info)
 	tmp = BYTE_2_DWORD(0, tx_info->lsig[2], tx_info->lsig[1],
 			   tx_info->lsig[0]);
 	odm_set_bb_reg(dm, R_0x908, 0xffffff, tmp);
-#if 0
-	/* @0x924[7:0] = Data init octet */
-	tmp = tx_info->packet_pattern;
-	odm_set_bb_reg(dm, R_0x924, 0xff, tmp);
 
-	if (tx_info->packet_pattern == RANDOM_BY_PN32)
-		tmp = 0x3;
-	else
-		tmp = 0x0;
-
-	odm_set_bb_reg(dm, R_0x914, 0x60000000, tmp);
-#endif
 	if (pmac_tx->is_ht_rate) {
 	/* @HT SIG */
 		tmp = BYTE_2_DWORD(0, tx_info->ht_sig[2], tx_info->ht_sig[1],

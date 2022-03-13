@@ -1997,28 +1997,6 @@ u32	rtw_aes_decrypt(_adapter *padapter, u8 *precvframe)
 				prwskey = &stainfo->dot118021x_UncstKey.skey[0];
 
 			length = ((union recv_frame *)precvframe)->u.hdr.len - prxattrib->hdrlen - prxattrib->iv_len;
-#if 0
-			/*  add for CONFIG_IEEE80211W, debug */
-			if (0)
-				printk("@@@@@@@@@@@@@@@@@@ length=%d, prxattrib->hdrlen=%d, prxattrib->pkt_len=%d\n"
-				       , length, prxattrib->hdrlen, prxattrib->pkt_len);
-			if (0) {
-				int no;
-				/* test print PSK */
-				printk("PSK key below:\n");
-				for (no = 0; no < 16; no++)
-					printk(" %02x ", prwskey[no]);
-				printk("\n");
-			}
-			if (0) {
-				int no;
-				/* test print PSK */
-				printk("frame:\n");
-				for (no = 0; no < prxattrib->pkt_len; no++)
-					printk(" %02x ", pframe[no]);
-				printk("\n");
-			}
-#endif
 
 			res = aes_decipher(prwskey, prxattrib->hdrlen, pframe, length);
 
@@ -2094,27 +2072,6 @@ u32	rtw_BIP_verify(_adapter *padapter, u8 *whdr_pos, sint flen
 
 	if (omac1_aes_128(key, BIP_AAD, ori_len, mic))
 		goto BIP_exit;
-
-#if 0
-	/* management packet content */
-	{
-		int pp;
-		RTW_INFO("pkt: ");
-		for (pp = 0; pp < flen; pp++)
-			printk(" %02x ", whdr_pos[pp]);
-		RTW_INFO("\n");
-		/* BIP AAD + management frame body + MME(MIC is zero) */
-		RTW_INFO("AAD+PKT: ");
-		for (pp = 0; pp < ori_len; pp++)
-			RTW_INFO(" %02x ", BIP_AAD[pp]);
-		RTW_INFO("\n");
-		/* show the MIC result */
-		RTW_INFO("mic: ");
-		for (pp = 0; pp < 16; pp++)
-			RTW_INFO(" %02x ", mic[pp]);
-		RTW_INFO("\n");
-	}
-#endif
 
 	/* MIC field should be last 8 bytes of packet (packet without FCS) */
 	if (_rtw_memcmp(mic, whdr_pos + flen - 8, 8)) {
@@ -2974,11 +2931,8 @@ int aes_128_ctr_encrypt(const u8 *key, const u8 *nonce,
 	os_memcpy(counter, nonce, AES_BLOCK_SIZE);
 
 	while (left > 0) {
-		#if 0
-		aes_encrypt(ctx, counter, buf);
-		#else
+
 		aes_128_encrypt(ctx, counter, buf);
-		#endif
 
 		len = (left < AES_BLOCK_SIZE) ? left : AES_BLOCK_SIZE;
 		for (j = 0; j < len; j++)

@@ -279,9 +279,6 @@ void phydm_trx_antenna_setting_init(void *dm_void, u8 num_rf_path)
 	u8 path_bitmap = 1;
 
 	path_bitmap = (u8)phydm_gen_bitmask(num_rf_path);
-#if 0
-	/*PHYDM_DBG(dm, ODM_COMP_INIT, "path_bitmap=0x%x\n", path_bitmap);*/
-#endif
 
 	dm->tx_ant_status = path_bitmap;
 	dm->rx_ant_status = path_bitmap;
