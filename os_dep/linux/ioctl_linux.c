@@ -11742,11 +11742,7 @@ thread_return lbk_thread(thread_context context)
 
 	ploopback->bstop = _TRUE;
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 17, 0)
 	thread_exit(NULL);
-#else
-	kthread_thread_exit(NULL);
-#endif
 	return 0;
 }
 
