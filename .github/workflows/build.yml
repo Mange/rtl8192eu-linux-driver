@@ -37,7 +37,7 @@ jobs:
       shell: bash {0}
       run: |
         echo ::set-output name=skip_build::False
-        dpkg --compare-versions "${{matrix.kernel_version}}" "ge" "5.17"
+        dpkg --compare-versions "${{matrix.kernel_version}}" "ge" "5.15"
         if [ $? -eq "0" ] && [ ${{matrix.gcc_version}} -lt 11 ];
         then
           echo "GCC version not compatible"
