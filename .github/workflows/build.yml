@@ -29,8 +29,8 @@ jobs:
       fail-fast: false
       matrix: 
         kernel_version: ${{fromJson(needs.commontasks.outputs.matrix)}}
-        gcc_version: [9, 10, 11]
-        #kernel_version: [5.15-rc3,5.14.10]
+        gcc_version: [9, 10, 12]
+        # kernel_version: [6.1-rc1]
     steps:
     - name: Check Versions
       id: check_version
@@ -38,7 +38,7 @@ jobs:
       run: |
         echo ::set-output name=skip_build::False
         dpkg --compare-versions "${{matrix.kernel_version}}" "ge" "5.15"
-        if [ $? -eq "0" ] && [ ${{matrix.gcc_version}} -lt 11 ];
+        if [ $? -eq "0" ] && [ ${{matrix.gcc_version}} -lt 12 ];
         then
           echo "GCC version not compatible"
           echo ::set-output name=skip_build::True
