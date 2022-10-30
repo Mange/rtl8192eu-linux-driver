@@ -45,12 +45,6 @@
 	#include <osdep_service_linux.h>
 #endif
 
-/* #include <rtw_byteorder.h> */
-
-#ifndef BIT
-	#define BIT(x)	(1 << (x))
-#endif
-
 #define CHECK_BIT(a, b) (!!((a) & (b)))
 
 #define BIT0	0x00000001
