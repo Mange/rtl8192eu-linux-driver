@@ -102,7 +102,7 @@ static void update_BCNTIM(_adapter *padapter)
 		u8 *p, *dst_ie, *premainder_ie = NULL, *pbackup_remainder_ie = NULL;
 		uint offset, tmp_len, tim_ielen, tim_ie_offset, remainder_ielen;
 
-		p = rtw_get_ie(pie + _FIXED_IE_LENGTH_, WLAN_EID_DS_PARAMS, &tim_ielen, pnetwork_mlmeext->IELength - _FIXED_IE_LENGTH_);
+		p = rtw_get_ie(pie + _FIXED_IE_LENGTH_, WLAN_EID_TIM, &tim_ielen, pnetwork_mlmeext->IELength - _FIXED_IE_LENGTH_);
 		if (p != NULL && tim_ielen > 0) {
 			tim_ielen += 2;
 
@@ -599,7 +599,7 @@ void	expire_timeout_chk(_adapter *padapter)
 
 					/* to update bcn with tim_bitmap for this station */
 					rtw_tim_map_set(padapter, pstapriv->tim_bitmap, psta->cmn.aid);
-					update_beacon(padapter, WLAN_EID_DS_PARAMS, NULL, _TRUE);
+					update_beacon(padapter, WLAN_EID_TIM, NULL, _TRUE);
 
 					if (!pmlmeext->active_keep_alive_check)
 						continue;
@@ -1817,7 +1817,7 @@ update_beacon:
 		}
 		#endif
 
-		update_beacon(pdvobj->padapters[i], WLAN_EID_DS_PARAMS, NULL, _FALSE);
+		update_beacon(pdvobj->padapters[i], WLAN_EID_TIM, NULL, _FALSE);
 	}
 
 	if (mlme_act != MLME_OPCH_SWITCH
@@ -2875,7 +2875,7 @@ u8 rtw_ap_bmc_frames_hdl(_adapter *padapter)
 	if ((rtw_tim_map_is_set(padapter, pstapriv->tim_bitmap, 0)) && (psta_bmc->sleepq_len > 0)) {
 		int tx_counts = 0;
 
-		_update_beacon(padapter, WLAN_EID_DS_PARAMS, NULL, _FALSE, "update TIM with TIB=1");
+		_update_beacon(padapter, WLAN_EID_TIM, NULL, _FALSE, "update TIM with TIB=1");
 
 		RTW_INFO("sleepq_len of bmc_sta = %d\n", psta_bmc->sleepq_len);
 
@@ -2925,7 +2925,7 @@ u8 rtw_ap_bmc_frames_hdl(_adapter *padapter)
 
 			if (update_tim == _TRUE) {
 				RTW_INFO("clear TIB\n");
-				_update_beacon(padapter, WLAN_EID_DS_PARAMS, NULL, _TRUE, "bmc sleepq and HIQ empty");
+				_update_beacon(padapter, WLAN_EID_TIM, NULL, _TRUE, "bmc sleepq and HIQ empty");
 			}
 		}
 	}
@@ -3261,7 +3261,7 @@ void _update_beacon(_adapter *padapter, u8 ie_id, u8 *oui, u8 tx, const char *ta
 	_enter_critical_bh(&pmlmepriv->bcn_update_lock, &irqL);
 
 	switch (ie_id) {
-	case WLAN_EID_DS_PARAMS:
+	case WLAN_EID_TIM:
 		update_BCNTIM(padapter);
 		break;
 
@@ -3738,7 +3738,7 @@ u8 bss_cap_update_on_sta_leave(_adapter *padapter, struct sta_info *psta)
 	if (rtw_tim_map_is_set(padapter, pstapriv->tim_bitmap, psta->cmn.aid)) {
 		rtw_tim_map_clear(padapter, pstapriv->tim_bitmap, psta->cmn.aid);
 		beacon_updated = _TRUE;
-		update_beacon(padapter, WLAN_EID_DS_PARAMS, NULL, _FALSE);
+		update_beacon(padapter, WLAN_EID_TIM, NULL, _FALSE);
 	}
 
 	if (psta->no_short_preamble_set) {
@@ -5101,7 +5101,7 @@ void tx_beacon_handlder(struct dvobj_priv *pdvobj)
 		if (!check_fwstate(&padapter->mlmepriv, WIFI_OP_CH_SWITCHING)
 			&& !IS_CH_WAITING(adapter_to_rfctl(padapter))
 		) {
-			/*update_beacon(padapter, WLAN_EID_DS_PARAMS, NULL, _FALSE);*/
+			/*update_beacon(padapter, WLAN_EID_TIM, NULL, _FALSE);*/
 			/*issue_beacon(padapter, 0);*/
 			send_beacon(padapter);
 		}

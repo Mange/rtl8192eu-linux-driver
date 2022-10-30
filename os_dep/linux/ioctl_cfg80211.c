@@ -8211,7 +8211,7 @@ u8 *rtw_cfg80211_construct_mesh_beacon_ies(struct wiphy *wiphy, _adapter *adapte
 	*c = WLAN_EID_TIM;
 	*(c + 1) = 4;
 	c += 6;
-	//c = rtw_set_ie(c, WLAN_EID_DS_PARAMS, 4, NULL, NULL);
+	//c = rtw_set_ie(c, WLAN_EID_TIM, 4, NULL, NULL);
 
 	/* Extended Supported Rates */
 	if (n_bitrates > 8)

@@ -1550,8 +1550,7 @@ exit:
 
 }
 
-sint validate_recv_ctrl_frame(_adapter *padapter, union recv_frame *precv_frame);
-sint validate_recv_ctrl_frame(_adapter *padapter, union recv_frame *precv_frame)
+void validate_recv_ctrl_frame(_adapter *padapter, union recv_frame *precv_frame)
 {
 	struct rx_pkt_attrib *pattrib = &precv_frame->u.hdr.attrib;
 	struct sta_priv *pstapriv = &padapter->stapriv;
@@ -1562,15 +1561,15 @@ sint validate_recv_ctrl_frame(_adapter *padapter, union recv_frame *precv_frame)
 	/* RTW_INFO("+validate_recv_ctrl_frame\n"); */
 
 	if (GetFrameType(pframe) != IEEE80211_FTYPE_CTL)
-		return _FAIL;
+		return;
 
 	/* receive the frames that ra(a1) is my address */
 	if (!_rtw_memcmp(GetAddr1Ptr(pframe), adapter_mac_addr(padapter), ETH_ALEN))
-		return _FAIL;
+		return;
 
 	psta = rtw_get_stainfo(pstapriv, get_addr2_ptr(pframe));
 	if (psta == NULL)
-		return _FAIL;
+		return;
 
 	/* for rx pkt statistics */
 	psta->sta_stats.last_rx_time = jiffies;
@@ -1584,7 +1583,7 @@ sint validate_recv_ctrl_frame(_adapter *padapter, union recv_frame *precv_frame)
 
 		aid = GetAid(pframe);
 		if (psta->cmn.aid != aid)
-			return _FAIL;
+			return;
 
 		switch (pattrib->priority) {
 		case 1:
@@ -1607,7 +1606,7 @@ sint validate_recv_ctrl_frame(_adapter *padapter, union recv_frame *precv_frame)
 		}
 
 		if (wmmps_ac)
-			return _FAIL;
+			return;
 
 		if (psta->state & WIFI_STA_ALIVE_CHK_STATE) {
 			RTW_INFO("%s alive check-rx ps-poll\n", __func__);
@@ -1662,7 +1661,7 @@ sint validate_recv_ctrl_frame(_adapter *padapter, union recv_frame *precv_frame)
 
 					/* upate BCN for TIM IE */
 					/* update_BCNTIM(padapter);		 */
-					update_beacon(padapter, WLAN_EID_DS_PARAMS, NULL, _TRUE);
+					update_beacon(padapter, WLAN_EID_TIM, NULL, _TRUE);
 				}
 
 				/* _exit_critical_bh(&psta->sleep_q.lock, &irqL); */
@@ -1688,7 +1687,7 @@ sint validate_recv_ctrl_frame(_adapter *padapter, union recv_frame *precv_frame)
 
 					/* upate BCN for TIM IE */
 					/* update_BCNTIM(padapter); */
-					update_beacon(padapter, WLAN_EID_DS_PARAMS, NULL, _TRUE);
+					update_beacon(padapter, WLAN_EID_TIM, NULL, _TRUE);
 				}
 			}
 		}
@@ -1700,9 +1699,6 @@ sint validate_recv_ctrl_frame(_adapter *padapter, union recv_frame *precv_frame)
 	} else if (get_frame_sub_type(pframe) == IEEE80211_STYPE_BACK_REQ) {
 		rtw_process_bar_frame(padapter, precv_frame);
 	}
-
-	return _FAIL;
-
 }
 
 #if defined(CONFIG_IEEE80211W) || defined(CONFIG_RTW_MESH)
@@ -2307,10 +2303,8 @@ sint validate_recv_frame(_adapter *adapter, union recv_frame *precv_frame)
 		break;
 	case IEEE80211_FTYPE_CTL: /* ctrl */
 		DBG_COUNTER(adapter->rx_logs.core_rx_pre_ctrl);
-		retval = validate_recv_ctrl_frame(adapter, precv_frame);
-		if (retval == _FAIL) {
-			DBG_COUNTER(adapter->rx_logs.core_rx_pre_ctrl_err);
-		}
+		validate_recv_ctrl_frame(adapter, precv_frame);
+		DBG_COUNTER(adapter->rx_logs.core_rx_pre_ctrl_err);
 		retval = _FAIL; /* only data frame return _SUCCESS */
 		break;
 	case IEEE80211_FTYPE_DATA: /* data */
