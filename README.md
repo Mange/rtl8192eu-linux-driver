@@ -37,22 +37,22 @@ from source when the kernel is upgraded (for example using your package manager)
     * for normal Linux systems
 
     ```shell
-    $ sudo apt-get install git linux-headers-generic build-essential dkms;
+    sudo apt-get install git linux-headers-generic build-essential dkms
     ```
 
     * for Raspberry Pi
 
     ```shell
-    $ sudo apt-get install git raspberrypi-kernel-headers build-essential dkms;
+    sudo apt-get install git raspberrypi-kernel-headers build-essential dkms
     ```
 
 2. Clone this repository and change your directory to cloned path.
 
     ```shell
-    $ git clone https://github.com/Mange/rtl8192eu-linux-driver;
+    git clone https://github.com/Mange/rtl8192eu-linux-driver
     ```
     ```shell
-    $ cd rtl8192eu-linux-driver;
+    cd rtl8192eu-linux-driver
     ```
 
 3. The Makefile is preconfigured to handle most x86/PC versions. However, if you are compiling for something other than an intel x86 architecture, you need to first select the platform.
@@ -79,48 +79,48 @@ from source when the kernel is upgraded (for example using your package manager)
 that it can used to rebuild the module on kernel upgrades.
 
     ```shell
-    $ sudo dkms add .;
+    sudo dkms add .
     ```
 
 5. Build and install the driver.
 
     ```shell
-    $ sudo dkms install rtl8192eu/1.0;
+    sudo dkms install rtl8192eu/1.0
     ```
 
 6. Distributions based on Debian & Ubuntu have RTL8XXXU driver present & running in kernelspace. To use our RTL8192EU driver, we need to blacklist RTL8XXXU.
 
     ```shell
-    $ echo "blacklist rtl8xxxu" | sudo tee /etc/modprobe.d/rtl8xxxu.conf;
+    echo "blacklist rtl8xxxu" | sudo tee /etc/modprobe.d/rtl8xxxu.conf
     ```
 
 7. Force RTL8192EU Driver to be active from boot.
     ```shell
-    $ echo -e "8192eu\n\nloop" | sudo tee /etc/modules;
+    echo -e "8192eu\n\nloop" | sudo tee /etc/modules
     ```
 
 8. Newer versions of Ubuntu has weird plugging/replugging issue (Check #94). This includes weird idling issues, To fix this:
 
     ```shell
-    $ echo "options 8192eu rtw_power_mgnt=0 rtw_enusbss=0" | sudo tee /etc/modprobe.d/8192eu.conf;
+    echo "options 8192eu rtw_power_mgnt=0 rtw_enusbss=0" | sudo tee /etc/modprobe.d/8192eu.conf
     ```
 
 9. Update changes to Grub & initramfs
 
     ```shell
-    $ sudo update-grub; sudo update-initramfs -u;
+    sudo update-grub; sudo update-initramfs -u
     ```
 
 10. Reboot system to load new changes from newly generated initramfs.
 
     ```shell
-    $ systemctl reboot -i;
+    systemctl reboot -i
     ```
 
 11. Check that your kernel has loaded the right module:
  
     ```shell
-    $ sudo lshw -c network;
+    sudo lshw -c network
     ```
    
 You should see the line ```driver=8192eu```
@@ -170,7 +170,7 @@ by editing the file `hal/rl8192e/rtl8192e_phycfg.c` and changing the lines below
 // Useful if you want to keep power usage low while still boosting/decreasing transmit power.
 // Can take a negative value as well to reduce power.
 // Zero disables it. Default: 2, for a tiny boost.
-int transmit_power_boost = 2;
+int transmit_power_boost = 2
 // (ADVANCED) To know what transmit powers this device decides to use dynamically, see:
 // https://github.com/lwfinger/rtl8192ee/blob/42ad92dcc71cb15a62f8c39e50debe3a28566b5f/hal/phydm/rtl8192e/halhwimg8192e_rf.c#L1310
 
@@ -178,7 +178,7 @@ int transmit_power_boost = 2;
 // Transmit Power Override
 // This value completely overrides the driver's calculations and uses only one value for all transmissions.
 // Zero disables it. Default: 0
-int transmit_power_override = 0;
+int transmit_power_override = 0
 
 
 /* Manual Transmit Power Control */
