@@ -170,7 +170,7 @@ by editing the file `hal/rl8192e/rtl8192e_phycfg.c` and changing the lines below
 // Useful if you want to keep power usage low while still boosting/decreasing transmit power.
 // Can take a negative value as well to reduce power.
 // Zero disables it. Default: 2, for a tiny boost.
-int transmit_power_boost = 2
+int transmit_power_boost = 2;
 // (ADVANCED) To know what transmit powers this device decides to use dynamically, see:
 // https://github.com/lwfinger/rtl8192ee/blob/42ad92dcc71cb15a62f8c39e50debe3a28566b5f/hal/phydm/rtl8192e/halhwimg8192e_rf.c#L1310
 
@@ -178,7 +178,7 @@ int transmit_power_boost = 2
 // Transmit Power Override
 // This value completely overrides the driver's calculations and uses only one value for all transmissions.
 // Zero disables it. Default: 0
-int transmit_power_override = 0
+int transmit_power_override = 0;
 
 
 /* Manual Transmit Power Control */
