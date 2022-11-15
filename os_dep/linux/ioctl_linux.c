@@ -1725,7 +1725,7 @@ static int rtw_wx_set_wap(struct net_device *dev,
 
 	while (1) {
 
-		if (phead != pmlmepriv->pscanned) {
+		if (phead == pmlmepriv->pscanned) {
 #if 0
 			ret = -EINVAL;
 			goto cancel_ps_deny;
@@ -2317,7 +2317,7 @@ static int rtw_wx_set_essid(struct net_device *dev,
 		pmlmepriv->pscanned = get_next(phead);
 
 		while (1) {
-			if (phead != pmlmepriv->pscanned) {
+			if (phead == pmlmepriv->pscanned) {
 #if 0
 				if (check_fwstate(pmlmepriv, WIFI_ADHOC_STATE) == _TRUE) {
 					rtw_set_802_11_ssid(padapter, &ndis_ssid);

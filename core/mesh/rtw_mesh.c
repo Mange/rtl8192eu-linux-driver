@@ -893,7 +893,7 @@ static u8 rtw_mesh_offch_cto_mgate_required(_adapter *adapter)
 
 	head = get_list_head(queue);
 	pos = get_next(head);
-	while (!head == pos) {
+	while (head != pos) {
 		scanned = LIST_CONTAINOR(pos, struct wlan_network, list);
 
 		if (rtw_get_passing_time_ms(scanned->last_scanned) < mcfg->peer_sel_policy.scanr_exp_ms
@@ -979,7 +979,7 @@ u8 rtw_mesh_select_operating_ch(_adapter *adapter)
 
 	head = get_list_head(queue);
 	pos = get_next(head);
-	while (!head == pos) {
+	while (head != pos) {
 		scanned = LIST_CONTAINOR(pos, struct wlan_network, list);
 		pos = get_next(pos);
 
