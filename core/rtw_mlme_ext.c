@@ -11302,7 +11302,7 @@ void start_clnt_join(_adapter *padapter)
 
 			_enter_critical_bh(&(padapter->mlmepriv.scanned_queue.lock), &irqL);
 
-			for (pos = get_next(head); !head == pos; pos = get_next(pos)) {
+			for (pos = get_next(head); head != pos; pos = get_next(pos)) {
 
 				scanned = LIST_CONTAINOR(pos, struct wlan_network, list);
 
