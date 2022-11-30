@@ -2958,8 +2958,7 @@ static int cfg80211_rtw_scan(struct wiphy *wiphy
 #endif
 #ifdef CONFIG_P2P
 	if (pwdinfo->driver_interface == DRIVER_CFG80211) {
-		if (ssids->ssid != NULL
-			&& _rtw_memcmp(ssids->ssid, "DIRECT-", 7)
+		if (_rtw_memcmp(ssids->ssid, "DIRECT-", 7)
 			&& rtw_get_p2p_ie((u8 *)request->ie, request->ie_len, NULL, NULL)
 		) {
 			if (rtw_p2p_chk_state(pwdinfo, P2P_STATE_NONE))
@@ -9814,10 +9813,8 @@ void rtw_cfg80211_external_auth_status(struct wiphy *wiphy, struct net_device *d
 		psta->state |= WIFI_FW_AUTH_SUCCESS;
 		psta->expire_to = padapter->stapriv.assoc_to;
 
-		if (params->pmkid != NULL) {
-			/* RTW_INFO_DUMP("PMKID:", params->pmkid, PMKID_LEN); */
-			_rtw_set_pmksa(dev, params->bssid, params->pmkid);
-		}
+		/* RTW_INFO_DUMP("PMKID:", params->pmkid, PMKID_LEN); */
+		_rtw_set_pmksa(dev, params->bssid, params->pmkid);
 
 		_enter_critical_bh(&psta->lock, &irqL);
 		if ((psta->auth_len != 0) && (psta->pauth_frame != NULL)) {
