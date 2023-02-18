@@ -45,6 +45,8 @@ from source when the kernel is upgraded (for example using your package manager)
     ```shell
     sudo apt-get install git raspberrypi-kernel-headers build-essential dkms
     ```
+    
+    Make sure you're installing same headers version as your current running kernel. If you just installed Raspbian it ships with an older kernel version than you'll get headers for after installing `raspberrypi-kernel-headers`. You must either run `sudo apt-get upgrade` or install exact same `raspberrypi-kernel-headers-XXX` version as your kernel is before executing `dkms install`. If you have version mismatch you'll get "Your kernel headers for kernel XXX cannot be found at YYY" error.
 
 2. Clone this repository and change your directory to cloned path.
 
