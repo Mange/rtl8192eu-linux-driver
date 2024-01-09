@@ -5117,6 +5117,7 @@ static int cfg80211_rtw_change_beacon(struct wiphy *wiphy, struct net_device *nd
 
 	return ret;
 }
+#endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,19, 2))
 static int cfg80211_rtw_stop_ap(struct wiphy *wiphy, struct net_device *ndev, unsigned int link_id)
