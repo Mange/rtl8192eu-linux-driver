@@ -2772,7 +2772,7 @@ static int rtw_cfg80211_set_probe_req_wpsp2pie(_adapter *padapter, char *buf, in
 			memcpy(pmlmepriv->p2p_probe_req_ie, p2p_ie, p2p_ielen);
 			pmlmepriv->p2p_probe_req_ie_len = p2p_ielen;
 
-			if (rtw_get_p2p_attr_content(p2p_ie, p2p_ielen, P2P_ATTR_LISTEN_CH, (u8 *)listen_ch_attr, (uint *) &attr_contentlen)
+			if (rtw_get_p2p_attr_content(p2p_ie, p2p_ielen, IEEE80211_P2P_ATTR_LISTEN_CHANNEL, (u8 *)listen_ch_attr, (uint *) &attr_contentlen)
 				&& attr_contentlen == 5) {
 				if (wdinfo->listen_channel !=  listen_ch_attr[4]) {
 					RTW_INFO(FUNC_ADPT_FMT" listen channel - country:%c%c%c, class:%u, ch:%u\n",
@@ -6391,8 +6391,8 @@ void rtw_cfg80211_issue_p2p_provision_request(_adapter *padapter, const u8 *buf,
 
 	if (rtw_get_p2p_ie(frame_body + _PUBLIC_ACTION_IE_OFFSET_, frame_body_len - _PUBLIC_ACTION_IE_OFFSET_, p2p_ie, &p2p_ielen)) {
 
-		rtw_get_p2p_attr_content(p2p_ie, p2p_ielen, P2P_ATTR_DEVICE_INFO, devinfo_content, &devinfo_contentlen);
-		rtw_get_p2p_attr_content(p2p_ie, p2p_ielen, P2P_ATTR_CAPABILITY, (u8 *)&capability, &capability_len);
+		rtw_get_p2p_attr_content(p2p_ie, p2p_ielen, IEEE80211_P2P_ATTR_DEVICE_INFO, devinfo_content, &devinfo_contentlen);
+		rtw_get_p2p_attr_content(p2p_ie, p2p_ielen, IEEE80211_P2P_ATTR_CAPABILITY, (u8 *)&capability, &capability_len);
 
 	}
 
@@ -6453,7 +6453,7 @@ void rtw_cfg80211_issue_p2p_provision_request(_adapter *padapter, const u8 *buf,
 
 	/*	P2P Capability ATTR */
 	/*	Type:	 */
-	p2p_ie[p2pielen++] = P2P_ATTR_CAPABILITY;
+	p2p_ie[p2pielen++] = IEEE80211_P2P_ATTR_CAPABILITY;
 
 	/*	Length: */
 	*(u16*) ( p2p_ie + p2pielen ) = cpu_to_le16( 0x0002 );
@@ -6468,7 +6468,7 @@ void rtw_cfg80211_issue_p2p_provision_request(_adapter *padapter, const u8 *buf,
 
 	/*	Device Info ATTR */
 	/*	Type: */
-	p2p_ie[p2pielen++] = P2P_ATTR_DEVICE_INFO;
+	p2p_ie[p2pielen++] = IEEE80211_P2P_ATTR_DEVICE_INFO;
 
 	/*	Length: */
 	/*	21->P2P Device Address (6bytes) + Config Methods (2bytes) + Primary Device Type (8bytes)  */
@@ -9079,7 +9079,7 @@ static int rtw_cfg80211_set_probe_resp_wpsp2pie(struct net_device *net, char *bu
 			#endif
 
 			/* Check P2P Capability ATTR */
-			if (rtw_get_p2p_attr_content(p2p_ie, p2p_ielen, P2P_ATTR_CAPABILITY, (u8 *)&cap_attr, (uint *) &attr_contentlen)) {
+			if (rtw_get_p2p_attr_content(p2p_ie, p2p_ielen, IEEE80211_P2P_ATTR_CAPABILITY, (u8 *)&cap_attr, (uint *) &attr_contentlen)) {
 				u8 grp_cap = 0;
 				/* RTW_INFO( "[%s] Got P2P Capability Attr!!\n", __FUNCTION__ ); */
 				cap_attr = le16_to_cpu(cap_attr);

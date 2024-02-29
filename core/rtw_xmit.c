@@ -4159,17 +4159,17 @@ int rtw_br_client_tx(_adapter *padapter, struct sk_buff **pskb)
 			/* if SA == br_mac && skb== IP  => copy SIP to br_ip ?? why */
 			if (!memcmp(skb->data + MACADDRLEN, padapter->br_mac, MACADDRLEN) &&
 			    (*((unsigned short *)(skb->data + MACADDRLEN * 2)) == __constant_htons(ETH_P_IP)))
-				memcpy(padapter->br_ip, skb->data + WLAN_ETHHDR_LEN + 12, 4);
+				memcpy(padapter->br_ip, skb->data + ETH_HLEN + 12, 4);
 
 			if (*((unsigned short *)(skb->data + MACADDRLEN * 2)) == __constant_htons(ETH_P_IP)) {
 				if (memcmp(padapter->scdb_mac, skb->data + MACADDRLEN, MACADDRLEN)) {
 					void *scdb_findEntry(_adapter *priv, unsigned char *macAddr, unsigned char *ipAddr);
 
 					padapter->scdb_entry = (struct nat25_network_db_entry *)scdb_findEntry(padapter,
-						skb->data + MACADDRLEN, skb->data + WLAN_ETHHDR_LEN + 12);
+						skb->data + MACADDRLEN, skb->data + ETH_HLEN + 12);
 					if (padapter->scdb_entry != NULL) {
 						memcpy(padapter->scdb_mac, skb->data + MACADDRLEN, MACADDRLEN);
-						memcpy(padapter->scdb_ip, skb->data + WLAN_ETHHDR_LEN + 12, 4);
+						memcpy(padapter->scdb_ip, skb->data + ETH_HLEN + 12, 4);
 						padapter->scdb_entry->ageing_timer = jiffies;
 						do_nat25 = 0;
 					}

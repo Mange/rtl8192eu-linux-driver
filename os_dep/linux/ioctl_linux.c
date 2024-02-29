@@ -4386,12 +4386,12 @@ static int rtw_p2p_get_go_device_address(struct net_device *dev,
 					/*	The P2P Device Info attribute is included in the probe response frame. */
 
 					memset(attr_content, 0x00, 100);
-					if (rtw_get_p2p_attr_content(p2pie, p2pielen, P2P_ATTR_DEVICE_ID, attr_content, &attr_contentlen)) {
+					if (rtw_get_p2p_attr_content(p2pie, p2pielen, IEEE80211_P2P_ATTR_DEVICE_ID, attr_content, &attr_contentlen)) {
 						/*	Handle the P2P Device ID attribute of Beacon first */
 						blnMatch = 1;
 						break;
 
-					} else if (rtw_get_p2p_attr_content(p2pie, p2pielen, P2P_ATTR_DEVICE_INFO, attr_content, &attr_contentlen)) {
+					} else if (rtw_get_p2p_attr_content(p2pie, p2pielen, IEEE80211_P2P_ATTR_DEVICE_INFO, attr_content, &attr_contentlen)) {
 						/*	Handle the P2P Device Info attribute of probe response */
 						blnMatch = 1;
 						break;
@@ -4613,7 +4613,7 @@ static int rtw_p2p_get_invitation_procedure(struct net_device *dev,
 			if (p2pie) {
 				while (p2pie) {
 					/* memset( attr_content, 0x00, 2); */
-					if (rtw_get_p2p_attr_content(p2pie, p2pielen, P2P_ATTR_CAPABILITY, attr_content, &attr_contentlen)) {
+					if (rtw_get_p2p_attr_content(p2pie, p2pielen, IEEE80211_P2P_ATTR_CAPABILITY, attr_content, &attr_contentlen)) {
 						/*	Handle the P2P capability attribute */
 						blnMatch = 1;
 						break;
@@ -4857,13 +4857,13 @@ static int rtw_p2p_invite_req(struct net_device *dev,
 			/*	The P2P Device ID attribute is included in the Beacon frame. */
 			/*	The P2P Device Info attribute is included in the probe response frame. */
 
-			if (rtw_get_p2p_attr_content(p2pie, p2pielen, P2P_ATTR_DEVICE_ID, attr_content, &attr_contentlen)) {
+			if (rtw_get_p2p_attr_content(p2pie, p2pielen, IEEE80211_P2P_ATTR_DEVICE_ID, attr_content, &attr_contentlen)) {
 				/*	Handle the P2P Device ID attribute of Beacon first */
 				if (_rtw_memcmp(attr_content, pinvite_req_info->peer_macaddr, ETH_ALEN)) {
 					uintPeerChannel = pnetwork->network.Configuration.DSConfig;
 					break;
 				}
-			} else if (rtw_get_p2p_attr_content(p2pie, p2pielen, P2P_ATTR_DEVICE_INFO, attr_content, &attr_contentlen)) {
+			} else if (rtw_get_p2p_attr_content(p2pie, p2pielen, IEEE80211_P2P_ATTR_DEVICE_INFO, attr_content, &attr_contentlen)) {
 				/*	Handle the P2P Device Info attribute of probe response */
 				if (_rtw_memcmp(attr_content, pinvite_req_info->peer_macaddr, ETH_ALEN)) {
 					uintPeerChannel = pnetwork->network.Configuration.DSConfig;
@@ -5114,16 +5114,16 @@ static int rtw_p2p_set_pc(struct net_device *dev,
 			/*	The P2P Device ID attribute is included in the Beacon frame. */
 			/*	The P2P Device Info attribute is included in the probe response frame. */
 			printk("[%s] Got P2P IE\n", __FUNCTION__);
-			if (rtw_get_p2p_attr_content(p2pie, p2pielen, P2P_ATTR_DEVICE_ID, attr_content, &attr_contentlen)) {
+			if (rtw_get_p2p_attr_content(p2pie, p2pielen, IEEE80211_P2P_ATTR_DEVICE_ID, attr_content, &attr_contentlen)) {
 				/*	Handle the P2P Device ID attribute of Beacon first */
-				printk("[%s] P2P_ATTR_DEVICE_ID\n", __FUNCTION__);
+				printk("[%s] IEEE80211_P2P_ATTR_DEVICE_ID\n", __FUNCTION__);
 				if (_rtw_memcmp(attr_content, peerMAC, ETH_ALEN)) {
 					uintPeerChannel = pnetwork->network.Configuration.DSConfig;
 					break;
 				}
-			} else if (rtw_get_p2p_attr_content(p2pie, p2pielen, P2P_ATTR_DEVICE_INFO, attr_content, &attr_contentlen)) {
+			} else if (rtw_get_p2p_attr_content(p2pie, p2pielen, IEEE80211_P2P_ATTR_DEVICE_INFO, attr_content, &attr_contentlen)) {
 				/*	Handle the P2P Device Info attribute of probe response */
-				printk("[%s] P2P_ATTR_DEVICE_INFO\n", __FUNCTION__);
+				printk("[%s] IEEE80211_P2P_ATTR_DEVICE_INFO\n", __FUNCTION__);
 				if (_rtw_memcmp(attr_content, peerMAC, ETH_ALEN)) {
 					uintPeerChannel = pnetwork->network.Configuration.DSConfig;
 					break;
@@ -5366,13 +5366,13 @@ static int rtw_p2p_prov_disc(struct net_device *dev,
 				/*	The P2P Device ID attribute is included in the Beacon frame. */
 				/*	The P2P Device Info attribute is included in the probe response frame. */
 
-				if (rtw_get_p2p_attr_content(p2pie, p2pielen, P2P_ATTR_DEVICE_ID, attr_content, &attr_contentlen)) {
+				if (rtw_get_p2p_attr_content(p2pie, p2pielen, IEEE80211_P2P_ATTR_DEVICE_ID, attr_content, &attr_contentlen)) {
 					/*	Handle the P2P Device ID attribute of Beacon first */
 					if (_rtw_memcmp(attr_content, peerMAC, ETH_ALEN)) {
 						uintPeerChannel = pnetwork->network.Configuration.DSConfig;
 						break;
 					}
-				} else if (rtw_get_p2p_attr_content(p2pie, p2pielen, P2P_ATTR_DEVICE_INFO, attr_content, &attr_contentlen)) {
+				} else if (rtw_get_p2p_attr_content(p2pie, p2pielen, IEEE80211_P2P_ATTR_DEVICE_INFO, attr_content, &attr_contentlen)) {
 					/*	Handle the P2P Device Info attribute of probe response */
 					if (_rtw_memcmp(attr_content, peerMAC, ETH_ALEN)) {
 						uintPeerChannel = pnetwork->network.Configuration.DSConfig;

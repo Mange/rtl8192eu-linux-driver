@@ -3858,7 +3858,7 @@ void issue_p2p_GO_request(_adapter *padapter, u8 *raddr)
 
 	/*	P2P Capability */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_CAPABILITY;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_CAPABILITY;
 
 	/*	Length: */
 	*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0002);
@@ -3877,7 +3877,7 @@ void issue_p2p_GO_request(_adapter *padapter, u8 *raddr)
 
 	/*	Group Owner Intent */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_GO_INTENT;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_GO_INTENT;
 
 	/*	Length: */
 	*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0001);
@@ -3889,7 +3889,7 @@ void issue_p2p_GO_request(_adapter *padapter, u8 *raddr)
 
 	/*	Configuration Timeout */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_CONF_TIMEOUT;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_GO_CONFIG_TIMEOUT;
 
 	/*	Length: */
 	*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0002);
@@ -3902,7 +3902,7 @@ void issue_p2p_GO_request(_adapter *padapter, u8 *raddr)
 
 	/*	Listen Channel */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_LISTEN_CH;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_LISTEN_CHANNEL;
 
 	/*	Length: */
 	*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0005);
@@ -3926,7 +3926,7 @@ void issue_p2p_GO_request(_adapter *padapter, u8 *raddr)
 
 	/*	Extended Listen Timing ATTR */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_EX_LISTEN_TIMING;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_EXT_LISTEN_TIMING;
 
 	/*	Length: */
 	*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0004);
@@ -3944,7 +3944,7 @@ void issue_p2p_GO_request(_adapter *padapter, u8 *raddr)
 
 	/*	Intended P2P Interface Address */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_INTENDED_IF_ADDR;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_INTENDED_IFACE_ADDR;
 
 	/*	Length: */
 	*(u16 *)(p2pie + p2pielen) = cpu_to_le16(ETH_ALEN);
@@ -3957,7 +3957,7 @@ void issue_p2p_GO_request(_adapter *padapter, u8 *raddr)
 
 	/*	Channel List */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_CH_LIST;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_CHANNEL_LIST;
 
 	/* Length: */
 	/* Country String(3) */
@@ -4029,7 +4029,7 @@ void issue_p2p_GO_request(_adapter *padapter, u8 *raddr)
 
 	/*	Device Info */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_DEVICE_INFO;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_DEVICE_INFO;
 
 	/*	Length: */
 	/*	21->P2P Device Address (6bytes) + Config Methods (2bytes) + Primary Device Type (8bytes)  */
@@ -4081,7 +4081,7 @@ void issue_p2p_GO_request(_adapter *padapter, u8 *raddr)
 
 	/*	Operating Channel */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_OPERATING_CH;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_OPER_CHANNEL;
 
 	/*	Length: */
 	*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0005);
@@ -4277,7 +4277,7 @@ void issue_p2p_GO_response(_adapter *padapter, u8 *raddr, u8 *frame_body, uint l
 
 	/*	P2P Status */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_STATUS;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_STATUS;
 
 	/*	Length: */
 	*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0001);
@@ -4288,7 +4288,7 @@ void issue_p2p_GO_response(_adapter *padapter, u8 *raddr, u8 *frame_body, uint l
 
 	/*	P2P Capability */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_CAPABILITY;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_CAPABILITY;
 
 	/*	Length: */
 	*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0002);
@@ -4315,7 +4315,7 @@ void issue_p2p_GO_response(_adapter *padapter, u8 *raddr, u8 *frame_body, uint l
 
 	/*	Group Owner Intent */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_GO_INTENT;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_GO_INTENT;
 
 	/*	Length: */
 	*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0001);
@@ -4333,7 +4333,7 @@ void issue_p2p_GO_response(_adapter *padapter, u8 *raddr, u8 *frame_body, uint l
 
 	/*	Configuration Timeout */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_CONF_TIMEOUT;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_GO_CONFIG_TIMEOUT;
 
 	/*	Length: */
 	*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0002);
@@ -4345,7 +4345,7 @@ void issue_p2p_GO_response(_adapter *padapter, u8 *raddr, u8 *frame_body, uint l
 
 	/*	Operating Channel */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_OPERATING_CH;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_OPER_CHANNEL;
 
 	/*	Length: */
 	*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0005);
@@ -4377,7 +4377,7 @@ void issue_p2p_GO_response(_adapter *padapter, u8 *raddr, u8 *frame_body, uint l
 
 	/*	Intended P2P Interface Address	 */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_INTENDED_IF_ADDR;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_INTENDED_IFACE_ADDR;
 
 	/*	Length: */
 	*(u16 *)(p2pie + p2pielen) = cpu_to_le16(ETH_ALEN);
@@ -4389,7 +4389,7 @@ void issue_p2p_GO_response(_adapter *padapter, u8 *raddr, u8 *frame_body, uint l
 
 	/*	Channel List */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_CH_LIST;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_CHANNEL_LIST;
 
 	/* Country String(3) */
 	/* + ( Operating Class (1) + Number of Channels(1) ) * Operation Classes (?) */
@@ -4460,7 +4460,7 @@ void issue_p2p_GO_response(_adapter *padapter, u8 *raddr, u8 *frame_body, uint l
 
 	/*	Device Info */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_DEVICE_INFO;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_DEVICE_INFO;
 
 	/*	Length: */
 	/*	21->P2P Device Address (6bytes) + Config Methods (2bytes) + Primary Device Type (8bytes)  */
@@ -4512,7 +4512,7 @@ void issue_p2p_GO_response(_adapter *padapter, u8 *raddr, u8 *frame_body, uint l
 	if (rtw_p2p_chk_role(pwdinfo, P2P_ROLE_GO)) {
 		/*	Group ID Attribute */
 		/*	Type: */
-		p2pie[p2pielen++] = P2P_ATTR_GROUP_ID;
+		p2pie[p2pielen++] = IEEE80211_P2P_ATTR_GROUP_ID;
 
 		/*	Length: */
 		*(u16 *)(p2pie + p2pielen) = cpu_to_le16(ETH_ALEN + pwdinfo->nego_ssidlen);
@@ -4622,7 +4622,7 @@ void issue_p2p_GO_confirm(_adapter *padapter, u8 *raddr, u8 result)
 
 	/*	P2P Status */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_STATUS;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_STATUS;
 
 	/*	Length: */
 	*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0001);
@@ -4633,7 +4633,7 @@ void issue_p2p_GO_confirm(_adapter *padapter, u8 *raddr, u8 result)
 
 	/*	P2P Capability */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_CAPABILITY;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_CAPABILITY;
 
 	/*	Length: */
 	*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0002);
@@ -4652,7 +4652,7 @@ void issue_p2p_GO_confirm(_adapter *padapter, u8 *raddr, u8 result)
 
 	/*	Operating Channel */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_OPERATING_CH;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_OPER_CHANNEL;
 
 	/*	Length: */
 	*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0005);
@@ -4700,7 +4700,7 @@ void issue_p2p_GO_confirm(_adapter *padapter, u8 *raddr, u8 result)
 
 	/*	Channel List */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_CH_LIST;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_CHANNEL_LIST;
 
 	*(u16 *)(p2pie + p2pielen) = 6;
 	p2pielen += 2;
@@ -4747,7 +4747,7 @@ void issue_p2p_GO_confirm(_adapter *padapter, u8 *raddr, u8 result)
 	if (rtw_p2p_chk_role(pwdinfo, P2P_ROLE_GO)) {
 		/*	Group ID Attribute */
 		/*	Type: */
-		p2pie[p2pielen++] = P2P_ATTR_GROUP_ID;
+		p2pie[p2pielen++] = IEEE80211_P2P_ATTR_GROUP_ID;
 
 		/*	Length: */
 		*(u16 *)(p2pie + p2pielen) = cpu_to_le16(ETH_ALEN + pwdinfo->nego_ssidlen);
@@ -4858,7 +4858,7 @@ void issue_p2p_invitation_request(_adapter *padapter, u8 *raddr)
 
 	/*	Configuration Timeout */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_CONF_TIMEOUT;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_GO_CONFIG_TIMEOUT;
 
 	/*	Length: */
 	*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0002);
@@ -4870,7 +4870,7 @@ void issue_p2p_invitation_request(_adapter *padapter, u8 *raddr)
 
 	/*	Invitation Flags */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_INVITATION_FLAGS;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_INVITE_FLAGS;
 
 	/*	Length: */
 	*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0001);
@@ -4882,7 +4882,7 @@ void issue_p2p_invitation_request(_adapter *padapter, u8 *raddr)
 
 	/*	Operating Channel */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_OPERATING_CH;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_OPER_CHANNEL;
 
 	/*	Length: */
 	*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0005);
@@ -4911,7 +4911,7 @@ void issue_p2p_invitation_request(_adapter *padapter, u8 *raddr)
 	if (_rtw_memcmp(adapter_mac_addr(padapter), pwdinfo->invitereq_info.go_bssid, ETH_ALEN)) {
 		/*	P2P Group BSSID */
 		/*	Type: */
-		p2pie[p2pielen++] = P2P_ATTR_GROUP_BSSID;
+		p2pie[p2pielen++] = IEEE80211_P2P_ATTR_GROUP_BSSID;
 
 		/*	Length: */
 		*(u16 *)(p2pie + p2pielen) = cpu_to_le16(ETH_ALEN);
@@ -4925,7 +4925,7 @@ void issue_p2p_invitation_request(_adapter *padapter, u8 *raddr)
 
 	/*	Channel List */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_CH_LIST;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_CHANNEL_LIST;
 
 
 	/*	Length: */
@@ -4996,7 +4996,7 @@ void issue_p2p_invitation_request(_adapter *padapter, u8 *raddr)
 
 	/*	P2P Group ID */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_GROUP_ID;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_GROUP_ID;
 
 	/*	Length: */
 	*(u16 *)(p2pie + p2pielen) = cpu_to_le16(6 + pwdinfo->invitereq_info.ssidlen);
@@ -5014,7 +5014,7 @@ void issue_p2p_invitation_request(_adapter *padapter, u8 *raddr)
 
 	/*	Device Info */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_DEVICE_INFO;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_DEVICE_INFO;
 
 	/*	Length: */
 	/*	21->P2P Device Address (6bytes) + Config Methods (2bytes) + Primary Device Type (8bytes)  */
@@ -5153,7 +5153,7 @@ void issue_p2p_invitation_response(_adapter *padapter, u8 *raddr, u8 dialogToken
 
 	/*	P2P Status */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_STATUS;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_STATUS;
 
 	/*	Length: */
 	*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0001);
@@ -5170,7 +5170,7 @@ void issue_p2p_invitation_response(_adapter *padapter, u8 *raddr, u8 dialogToken
 
 	/*	Configuration Timeout */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_CONF_TIMEOUT;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_GO_CONFIG_TIMEOUT;
 
 	/*	Length: */
 	*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0002);
@@ -5189,7 +5189,7 @@ void issue_p2p_invitation_response(_adapter *padapter, u8 *raddr, u8 dialogToken
 
 			/*	Operating Channel */
 			/*	Type: */
-			p2pie[p2pielen++] = P2P_ATTR_OPERATING_CH;
+			p2pie[p2pielen++] = IEEE80211_P2P_ATTR_OPER_CHANNEL;
 
 			/*	Length: */
 			*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0005);
@@ -5213,7 +5213,7 @@ void issue_p2p_invitation_response(_adapter *padapter, u8 *raddr, u8 dialogToken
 
 			/*	P2P Group BSSID */
 			/*	Type: */
-			p2pie[p2pielen++] = P2P_ATTR_GROUP_BSSID;
+			p2pie[p2pielen++] = IEEE80211_P2P_ATTR_GROUP_BSSID;
 
 			/*	Length: */
 			*(u16 *)(p2pie + p2pielen) = cpu_to_le16(ETH_ALEN);
@@ -5228,7 +5228,7 @@ void issue_p2p_invitation_response(_adapter *padapter, u8 *raddr, u8 dialogToken
 
 		/*	Channel List */
 		/*	Type: */
-		p2pie[p2pielen++] = P2P_ATTR_CH_LIST;
+		p2pie[p2pielen++] = IEEE80211_P2P_ATTR_CHANNEL_LIST;
 
 		/*	Length: */
 		/* Country String(3) */
@@ -5987,7 +5987,7 @@ int _issue_probereq_p2p(_adapter *padapter, u8 *da, int wait_ack)
 
 		/*	P2P Capability */
 		/*	Type: */
-		p2pie[p2pielen++] = P2P_ATTR_CAPABILITY;
+		p2pie[p2pielen++] = IEEE80211_P2P_ATTR_CAPABILITY;
 
 		/*	Length: */
 		*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0002);
@@ -6005,7 +6005,7 @@ int _issue_probereq_p2p(_adapter *padapter, u8 *da, int wait_ack)
 
 		/*	Listen Channel */
 		/*	Type: */
-		p2pie[p2pielen++] = P2P_ATTR_LISTEN_CH;
+		p2pie[p2pielen++] = IEEE80211_P2P_ATTR_LISTEN_CHANNEL;
 
 		/*	Length: */
 		*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0005);
@@ -6029,7 +6029,7 @@ int _issue_probereq_p2p(_adapter *padapter, u8 *da, int wait_ack)
 
 		/*	Extended Listen Timing */
 		/*	Type: */
-		p2pie[p2pielen++] = P2P_ATTR_EX_LISTEN_TIMING;
+		p2pie[p2pielen++] = IEEE80211_P2P_ATTR_EXT_LISTEN_TIMING;
 
 		/*	Length: */
 		*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0004);
@@ -6047,7 +6047,7 @@ int _issue_probereq_p2p(_adapter *padapter, u8 *da, int wait_ack)
 		if (rtw_p2p_chk_role(pwdinfo, P2P_ROLE_GO)) {
 			/*	Operating Channel (if this WiFi is working as the group owner now) */
 			/*	Type: */
-			p2pie[p2pielen++] = P2P_ATTR_OPERATING_CH;
+			p2pie[p2pielen++] = IEEE80211_P2P_ATTR_OPER_CHANNEL;
 
 			/*	Length: */
 			*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0005);
@@ -6334,10 +6334,10 @@ unsigned int on_action_public_p2p(union recv_frame *precv_frame)
 
 				merged_p2p_ielen = rtw_p2p_merge_ies(frame_body + _PUBLIC_ACTION_IE_OFFSET_, len - _PUBLIC_ACTION_IE_OFFSET_, merged_p2pie);
 
-				rtw_get_p2p_attr_content(merged_p2pie, merged_p2p_ielen, P2P_ATTR_INVITATION_FLAGS, &invitation_flag, &attr_contentlen);
+				rtw_get_p2p_attr_content(merged_p2pie, merged_p2p_ielen, IEEE80211_P2P_ATTR_INVITE_FLAGS, &invitation_flag, &attr_contentlen);
 				if (attr_contentlen) {
 
-					rtw_get_p2p_attr_content(merged_p2pie, merged_p2p_ielen, P2P_ATTR_GROUP_BSSID, pwdinfo->p2p_peer_interface_addr, &attr_contentlen);
+					rtw_get_p2p_attr_content(merged_p2pie, merged_p2p_ielen, IEEE80211_P2P_ATTR_GROUP_BSSID, pwdinfo->p2p_peer_interface_addr, &attr_contentlen);
 					/*	Commented by Albert 20120510 */
 					/*	Copy to the pwdinfo->p2p_peer_interface_addr. */
 					/*	So that the WFD UI ( or Sigma ) can get the peer interface address by using the following command. */
@@ -6355,7 +6355,7 @@ unsigned int on_action_public_p2p(union recv_frame *precv_frame)
 						/*	Re-invoke the persistent group. */
 
 						memset(&group_id, 0x00, sizeof(struct group_id_info));
-						rtw_get_p2p_attr_content(merged_p2pie, merged_p2p_ielen, P2P_ATTR_GROUP_ID, (u8 *) &group_id, &attr_contentlen);
+						rtw_get_p2p_attr_content(merged_p2pie, merged_p2p_ielen, IEEE80211_P2P_ATTR_GROUP_ID, (u8 *) &group_id, &attr_contentlen);
 						if (attr_contentlen) {
 							if (_rtw_memcmp(group_id.go_device_addr, adapter_mac_addr(padapter), ETH_ALEN)) {
 								/*	The p2p device sending this p2p invitation request wants this Wi-Fi device to be the persistent GO. */
@@ -6366,7 +6366,7 @@ unsigned int on_action_public_p2p(union recv_frame *precv_frame)
 								/*	The p2p device sending this p2p invitation request wants to be the persistent GO. */
 								if (is_matched_in_profilelist(pwdinfo->p2p_peer_interface_addr, &pwdinfo->profileinfo[0])) {
 									u8 operatingch_info[5] = { 0x00 };
-									if (rtw_get_p2p_attr_content(merged_p2pie, merged_p2p_ielen, P2P_ATTR_OPERATING_CH, operatingch_info,
+									if (rtw_get_p2p_attr_content(merged_p2pie, merged_p2p_ielen, IEEE80211_P2P_ATTR_OPER_CHANNEL, operatingch_info,
 										&attr_contentlen)) {
 										if (rtw_chset_search_ch(adapter_to_chset(padapter), (u32)operatingch_info[4]) >= 0) {
 											/*	The operating channel is acceptable for this device. */
@@ -6414,7 +6414,7 @@ unsigned int on_action_public_p2p(union recv_frame *precv_frame)
 						/*	Received the invitation to join a P2P group. */
 
 						memset(&group_id, 0x00, sizeof(struct group_id_info));
-						rtw_get_p2p_attr_content(merged_p2pie, merged_p2p_ielen, P2P_ATTR_GROUP_ID, (u8 *) &group_id, &attr_contentlen);
+						rtw_get_p2p_attr_content(merged_p2pie, merged_p2p_ielen, IEEE80211_P2P_ATTR_GROUP_ID, (u8 *) &group_id, &attr_contentlen);
 						if (attr_contentlen) {
 							if (_rtw_memcmp(group_id.go_device_addr, adapter_mac_addr(padapter), ETH_ALEN)) {
 								/*	In this case, the GO can't be myself. */
@@ -6465,7 +6465,7 @@ unsigned int on_action_public_p2p(union recv_frame *precv_frame)
 			_cancel_timer_ex(&pwdinfo->restore_p2p_state_timer);
 			p2p_ie = rtw_get_p2p_ie(frame_body + _PUBLIC_ACTION_IE_OFFSET_, len - _PUBLIC_ACTION_IE_OFFSET_, NULL, &p2p_ielen);
 			if (p2p_ie) {
-				rtw_get_p2p_attr_content(p2p_ie, p2p_ielen, P2P_ATTR_STATUS, &attr_content, &attr_contentlen);
+				rtw_get_p2p_attr_content(p2p_ie, p2p_ielen, IEEE80211_P2P_ATTR_STATUS, &attr_content, &attr_contentlen);
 
 				if (attr_contentlen == 1) {
 					RTW_INFO("[%s] Status = %d\n", __FUNCTION__, attr_content);
@@ -9279,7 +9279,7 @@ void _issue_assocreq(_adapter *padapter, u8 is_reassoc)
 
 			/*	P2P Capability */
 			/*	Type: */
-			p2pie[p2pielen++] = P2P_ATTR_CAPABILITY;
+			p2pie[p2pielen++] = IEEE80211_P2P_ATTR_CAPABILITY;
 
 			/*	Length: */
 			*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0002);
@@ -9297,7 +9297,7 @@ void _issue_assocreq(_adapter *padapter, u8 is_reassoc)
 
 			/*	Extended Listen Timing */
 			/*	Type: */
-			p2pie[p2pielen++] = P2P_ATTR_EX_LISTEN_TIMING;
+			p2pie[p2pielen++] = IEEE80211_P2P_ATTR_EXT_LISTEN_TIMING;
 
 			/*	Length: */
 			*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0004);
@@ -9314,7 +9314,7 @@ void _issue_assocreq(_adapter *padapter, u8 is_reassoc)
 
 			/*	Device Info */
 			/*	Type: */
-			p2pie[p2pielen++] = P2P_ATTR_DEVICE_INFO;
+			p2pie[p2pielen++] = IEEE80211_P2P_ATTR_DEVICE_INFO;
 
 			/*	Length: */
 			/*	21->P2P Device Address (6bytes) + Config Methods (2bytes) + Primary Device Type (8bytes)  */
@@ -9368,7 +9368,7 @@ void _issue_assocreq(_adapter *padapter, u8 is_reassoc)
 
 			/*	P2P Interface */
 			/*	Type: */
-			p2pie[p2pielen++] = P2P_ATTR_INTERFACE;
+			p2pie[p2pielen++] = IEEE80211_P2P_ATTR_INTERFACE;
 
 			/*	Length: */
 			*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x000D);
@@ -11039,7 +11039,7 @@ u8 collect_bss_info(_adapter *padapter, union recv_frame *precv_frame, WLAN_BSSI
 			u32	attr_contentlen = 0;
 			u8 listen_ch[5] = { 0x00 };
 
-			rtw_get_p2p_attr_content(p2p_ie, p2p_ielen, P2P_ATTR_LISTEN_CH, listen_ch, &attr_contentlen);
+			rtw_get_p2p_attr_content(p2p_ie, p2p_ielen, IEEE80211_P2P_ATTR_LISTEN_CHANNEL, listen_ch, &attr_contentlen);
 			bssid->Configuration.DSConfig = listen_ch[4];
 		} else {
 			/* use current channel */
