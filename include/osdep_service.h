@@ -315,7 +315,7 @@ static __inline void thread_enter(char *name)
 	allow_signal(SIGTERM);
 #endif
 }
-void thread_exit(_completion *comp);
+__noreturn void thread_exit(_completion *comp);
 void _rtw_init_completion(_completion *comp);
 void _rtw_wait_for_comp_timeout(_completion *comp);
 void _rtw_wait_for_comp(_completion *comp);

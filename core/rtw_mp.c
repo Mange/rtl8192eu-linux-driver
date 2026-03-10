@@ -1356,7 +1356,6 @@ exit:
 	pmptx->stop = 1;
 
 	thread_exit(NULL);
-	return 0;
 }
 
 void fill_txdesc_for_mp(PADAPTER padapter, u8 *ptxdesc)

@@ -11743,7 +11743,6 @@ thread_return lbk_thread(thread_context context)
 	ploopback->bstop = _TRUE;
 
 	thread_exit(NULL);
-	return 0;
 }
 
 static void loopbackTest(PADAPTER padapter, u32 cnt, u32 size, u8 *pmsg)

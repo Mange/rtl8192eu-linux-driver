@@ -872,7 +872,7 @@ u32 _rtw_down_sema(_sema *sema)
 
 }
 
-inline void thread_exit(_completion *comp)
+__noreturn inline void thread_exit(_completion *comp)
 {
 #if LINUX_VERSION_CODE < KERNEL_VERSION(5, 17, 0)
 	complete_and_exit(comp, 0);
