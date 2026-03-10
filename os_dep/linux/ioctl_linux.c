@@ -14,12 +14,17 @@
  *****************************************************************************/
 #define _IOCTL_LINUX_C_
 
+#include <net/mac80211.h>
 #include <drv_types.h>
 #include <rtw_mp.h>
 #include <rtw_mp_ioctl.h>
 #include "../../hal/phydm/phydm_precomp.h"
 #ifdef RTW_HALMAC
 #include "../../hal/hal_halmac.h"
+#endif
+
+#ifdef __KERNEL__
+extern int mac_pton(const char *s, u8 *addr);
 #endif
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 27))
