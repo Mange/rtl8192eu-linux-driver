@@ -412,7 +412,7 @@ bool rtw_chplan_is_empty(u8 id)
 	return _FALSE;
 }
 
-bool rtw_regsty_is_excl_chs(struct registry_priv *regsty, u8 ch)
+static bool rtw_regsty_is_excl_chs(struct registry_priv *regsty, u8 ch)
 {
 	int i;
 

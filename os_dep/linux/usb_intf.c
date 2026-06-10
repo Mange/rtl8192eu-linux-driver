@@ -855,7 +855,7 @@ static void process_spec_devid(const struct usb_device_id *pdid)
 }
 
 #ifdef SUPPORT_HW_RFOFF_DETECTED
-int rtw_hw_suspend(_adapter *padapter)
+static int rtw_hw_suspend(_adapter *padapter)
 {
 	struct pwrctrl_priv *pwrpriv;
 	struct usb_interface *pusb_intf;
@@ -927,7 +927,7 @@ error_exit:
 
 }
 
-int rtw_hw_resume(_adapter *padapter)
+static int rtw_hw_resume(_adapter *padapter)
 {
 	struct pwrctrl_priv *pwrpriv = adapter_to_pwrctl(padapter);
 	struct usb_interface *pusb_intf = adapter_to_dvobj(padapter)->pusbintf;
@@ -1003,7 +1003,7 @@ exit:
 	return ret;
 }
 
-int rtw_resume_process(_adapter *padapter)
+static int rtw_resume_process(_adapter *padapter)
 {
 	int ret;
 #if defined(CONFIG_BT_COEXIST) && defined(CONFIG_AUTOSUSPEND)
@@ -1260,7 +1260,7 @@ extern void rtd2885_wlan_netlink_sendMsg(char *action_string, char *name);
 
 _adapter  *rtw_sw_export = NULL;
 
-_adapter *rtw_usb_primary_adapter_init(struct dvobj_priv *dvobj,
+static _adapter *rtw_usb_primary_adapter_init(struct dvobj_priv *dvobj,
 	struct usb_interface *pusb_intf)
 {
 	_adapter *padapter = NULL;

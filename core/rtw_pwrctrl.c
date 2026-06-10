@@ -194,7 +194,7 @@ int ips_leave(_adapter *padapter)
 	int rtw_hw_resume(_adapter *padapter);
 #endif
 
-bool rtw_pwr_unassociated_idle(_adapter *adapter)
+static bool rtw_pwr_unassociated_idle(_adapter *adapter)
 {
 	u8 i;
 	_adapter *iface;
@@ -399,7 +399,7 @@ exit:
 	return;
 }
 
-void pwr_state_check_handler(void *ctx)
+static void pwr_state_check_handler(void *ctx)
 {
 	_adapter *padapter = (_adapter *)ctx;
 	rtw_ps_cmd(padapter);
@@ -689,7 +689,7 @@ u8 rtw_set_rpwm(PADAPTER padapter, u8 pslv)
 	return rpwm;
 }
 
-u8 PS_RDY_CHECK(_adapter *padapter)
+static u8 PS_RDY_CHECK(_adapter *padapter)
 {
 	struct pwrctrl_priv	*pwrpriv = adapter_to_pwrctl(padapter);
 	struct mlme_priv	*pmlmepriv = &(padapter->mlmepriv);

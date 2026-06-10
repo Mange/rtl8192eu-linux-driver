@@ -65,5 +65,10 @@ struct br_ext_info {
 };
 
 void nat25_db_cleanup(_adapter *priv);
+void nat25_db_expire(_adapter *priv);
+int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method);
+int nat25_handle_frame(_adapter *priv, struct sk_buff *skb);
+void dhcp_flag_bcast(_adapter *priv, struct sk_buff *skb);
+void *scdb_findEntry(_adapter *priv, unsigned char *macAddr, unsigned char *ipAddr);
 
 #endif /* _RTW_BR_EXT_H_ */

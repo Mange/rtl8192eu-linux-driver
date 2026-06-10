@@ -51,7 +51,7 @@ boolean phydm_is_cck_rate(void *dm_void, u8 rate)
 	return ((rate & 0x7f) <= ODM_RATE11M) ? true : false;
 }
 
-u8 phydm_rate_2_rate_digit(void *dm_void, u8 rate)
+static u8 phydm_rate_2_rate_digit(void *dm_void, u8 rate)
 {
 	u8 legacy_table[12] = {1, 2, 5, 11, 6, 9, 12, 18, 24, 36, 48, 54};
 	u8 rate_idx = rate & 0x7f; /*remove bit7 SGI*/
@@ -149,7 +149,7 @@ void phydm_h2C_debug(void *dm_void, char input[][16], u32 *_used,
 	*_out_len = out_len;
 }
 
-void phydm_fw_fix_rate(void *dm_void, u8 en, u8 macid, u8 bw, u8 rate)
+static void phydm_fw_fix_rate(void *dm_void, u8 en, u8 macid, u8 bw, u8 rate)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u32 reg_u32_tmp;
@@ -658,7 +658,7 @@ void phydm_update_hal_ra_mask(
 
 #endif
 
-void phydm_rate_adaptive_mask_init(void *dm_void)
+static void phydm_rate_adaptive_mask_init(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ra_table *ra_t = &dm->dm_ra_table;
@@ -809,7 +809,7 @@ void phydm_show_sta_info(void *dm_void, char input[][16], u32 *_used,
 	*_out_len = out_len;
 }
 
-u8 phydm_get_tx_stream_num(void *dm_void, enum rf_type type)
+static u8 phydm_get_tx_stream_num(void *dm_void, enum rf_type type)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u8 tx_num = 1;
@@ -828,7 +828,7 @@ u8 phydm_get_tx_stream_num(void *dm_void, enum rf_type type)
 	return tx_num;
 }
 
-u64 phydm_get_bb_mod_ra_mask(void *dm_void, u8 sta_idx)
+static u64 phydm_get_bb_mod_ra_mask(void *dm_void, u8 sta_idx)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct cmn_sta_info *sta = dm->phydm_sta_info[sta_idx];
@@ -1002,7 +1002,7 @@ u8 phydm_get_rate_from_rssi_lv(void *dm_void, u8 sta_idx)
 	return rate_idx;
 }
 
-u8 phydm_get_rate_id(void *dm_void, u8 sta_idx)
+static u8 phydm_get_rate_id(void *dm_void, u8 sta_idx)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct cmn_sta_info *sta = dm->phydm_sta_info[sta_idx];
@@ -1106,7 +1106,7 @@ u8 phydm_get_rate_id(void *dm_void, u8 sta_idx)
 	return rate_id_idx;
 }
 
-void phydm_ra_h2c(void *dm_void, u8 sta_idx, u8 dis_ra, u8 dis_pt,
+static void phydm_ra_h2c(void *dm_void, u8 sta_idx, u8 dis_ra, u8 dis_pt,
 		  u8 no_update_bw, u8 init_ra_lv, u64 ra_mask)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -1376,7 +1376,7 @@ u8 phydm_vht_en_mapping(void *dm_void, u32 wireless_mode)
 	return vht_en_out;
 }
 
-u8 phydm_rftype2rateid_2g_n20(void *dm_void, u8 rf_type)
+static u8 phydm_rftype2rateid_2g_n20(void *dm_void, u8 rf_type)
 {
 	u8 rate_id_idx = 0;
 
@@ -1391,7 +1391,7 @@ u8 phydm_rftype2rateid_2g_n20(void *dm_void, u8 rf_type)
 	return rate_id_idx;
 }
 
-u8 phydm_rftype2rateid_2g_n40(void *dm_void, u8 rf_type)
+static u8 phydm_rftype2rateid_2g_n40(void *dm_void, u8 rf_type)
 {
 	u8 rate_id_idx = 0;
 
@@ -1406,7 +1406,7 @@ u8 phydm_rftype2rateid_2g_n40(void *dm_void, u8 rf_type)
 	return rate_id_idx;
 }
 
-u8 phydm_rftype2rateid_5g_n(void *dm_void, u8 rf_type)
+static u8 phydm_rftype2rateid_5g_n(void *dm_void, u8 rf_type)
 {
 	u8 rate_id_idx = 0;
 
@@ -1421,7 +1421,7 @@ u8 phydm_rftype2rateid_5g_n(void *dm_void, u8 rf_type)
 	return rate_id_idx;
 }
 
-u8 phydm_rftype2rateid_ac80(void *dm_void, u8 rf_type)
+static u8 phydm_rftype2rateid_ac80(void *dm_void, u8 rf_type)
 {
 	u8 rate_id_idx = 0;
 
@@ -1436,7 +1436,7 @@ u8 phydm_rftype2rateid_ac80(void *dm_void, u8 rf_type)
 	return rate_id_idx;
 }
 
-u8 phydm_rftype2rateid_ac40(void *dm_void, u8 rf_type)
+static u8 phydm_rftype2rateid_ac40(void *dm_void, u8 rf_type)
 {
 	u8 rate_id_idx = 0;
 
@@ -1563,7 +1563,7 @@ u8 phydm_rate_order_compute(void *dm_void, u8 rate_idx)
 }
 
 #if (DM_ODM_SUPPORT_TYPE == ODM_CE)
-u8 phydm_rate2ss(void *dm_void, u8 rate_idx)
+static u8 phydm_rate2ss(void *dm_void, u8 rate_idx)
 {
 	u8 ret = 0xff;
 	u8 i, j;
@@ -1588,7 +1588,7 @@ u8 phydm_rate2ss(void *dm_void, u8 rate_idx)
 	return ret;
 }
 
-u8 phydm_rate2plcp(void *dm_void, u8 rate_idx)
+static u8 phydm_rate2plcp(void *dm_void, u8 rate_idx)
 {
 	u8 rate2ss = 0;
 	u8 ltftime = 0;
@@ -1632,7 +1632,7 @@ u8 phydm_get_plcp(void *dm_void, u16 macid)
 }
 #endif
 
-void phydm_ra_common_info_update(void *dm_void)
+static void phydm_ra_common_info_update(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ra_table *ra_tab = &dm->dm_ra_table;

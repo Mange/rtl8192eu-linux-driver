@@ -783,4 +783,7 @@ u8 adapter_allow_bmc_data_rx(_adapter *adapter);
 s32 pre_recv_entry(union recv_frame *precvframe, u8 *pphy_status);
 void count_rx_stats(_adapter *padapter, union recv_frame *prframe, struct sta_info *sta);
 
+
+sint recv_decache(union recv_frame *precv_frame);
+sint validate_recv_mgnt_frame(PADAPTER padapter, union recv_frame *precv_frame);
 #endif

@@ -143,7 +143,7 @@ exit:
 	return ret;
 }
 
-u8 rtl8192e_h2c_msg_hdl(_adapter *padapter, unsigned char *pbuf)
+static u8 rtl8192e_h2c_msg_hdl(_adapter *padapter, unsigned char *pbuf)
 {
 	u8 ElementID, CmdLen;
 	u8 *pCmdBuffer;
@@ -300,7 +300,7 @@ GetTxBufferRsvdPageNum8192E(_adapter *padapter, bool wowlan)
 
 	return RsvdPageNum;
 }
-void rtl8192e_download_rsvd_page(PADAPTER padapter, u8 mstatus)
+static void rtl8192e_download_rsvd_page(PADAPTER padapter, u8 mstatus)
 {
 	HAL_DATA_TYPE	*pHalData = GET_HAL_DATA(padapter);
 	struct mlme_ext_priv	*pmlmeext = &(padapter->mlmeextpriv);
@@ -417,7 +417,7 @@ void rtl8192e_set_FwJoinBssReport_cmd(PADAPTER padapter, u8 mstatus)
 }
 
 #ifdef CONFIG_P2P_PS
-void rtl8192e_set_p2p_ctw_period_cmd(_adapter *padapter, u8 ctwindow)
+static void rtl8192e_set_p2p_ctw_period_cmd(_adapter *padapter, u8 ctwindow)
 {
 	struct P2P_PS_CTWPeriod_t p2p_ps_ctw;
 
@@ -786,7 +786,7 @@ hw_rate_to_m_rate(
 
 #endif
 
-void dump_txrpt_ccx_92e(IN	u8 *CmdBuf)
+static void dump_txrpt_ccx_92e(IN	u8 *CmdBuf)
 {
 	u8 MacID, Unicast, LifeTimeOver, RetryOver, DataRetryCount, QueueTimeUs, FinalDataRateIndex;
 

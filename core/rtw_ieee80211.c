@@ -668,7 +668,7 @@ int rtw_get_wpa2_cipher_suite(u8 *s)
 	return 0;
 }
 
-u32 rtw_get_akm_suite_bitmap(u8 *s)
+static u32 rtw_get_akm_suite_bitmap(u8 *s)
 {
 	if (_rtw_memcmp(s, WLAN_AKM_8021X, RSN_SELECTOR_LEN) == _TRUE)
 		return WLAN_AKM_TYPE_8021X;
@@ -1640,7 +1640,7 @@ void dump_ht_cap_ie_content(void *sel, const u8 *buf, u32 buf_len)
 		      , HT_SUP_MCS_SET_ARG(HT_CAP_ELE_SUP_MCS_SET(buf)));
 }
 
-void dump_ht_cap_ie(void *sel, const u8 *ie, u32 ie_len)
+static void dump_ht_cap_ie(void *sel, const u8 *ie, u32 ie_len)
 {
 	const u8 *ht_cap_ie;
 	sint ht_cap_ielen;
@@ -1659,7 +1659,7 @@ const char *const _ht_sc_offset_str[] = {
 	"SCB",
 };
 
-void dump_ht_op_ie_content(void *sel, const u8 *buf, u32 buf_len)
+static void dump_ht_op_ie_content(void *sel, const u8 *buf, u32 buf_len)
 {
 	if (buf_len != HT_OP_IE_LEN) {
 		RTW_PRINT_SEL(sel, "Invalid HT operation IE len:%d != %d\n", buf_len, HT_OP_IE_LEN);
@@ -1673,7 +1673,7 @@ void dump_ht_op_ie_content(void *sel, const u8 *buf, u32 buf_len)
 	);
 }
 
-void dump_ht_op_ie(void *sel, const u8 *ie, u32 ie_len)
+static void dump_ht_op_ie(void *sel, const u8 *ie, u32 ie_len)
 {
 	const u8 *ht_op_ie;
 	sint ht_op_ielen;

@@ -1550,7 +1550,7 @@ int rtw_change_ifname(_adapter *padapter, const char *ifname)
 {
 	struct dvobj_priv *dvobj;
 	struct net_device *pnetdev;
-	struct net_device *cur_pnetdev;
+	static struct net_device *cur_pnetdev;
 	struct rereg_nd_name_data *rereg_priv;
 	int ret;
 	u8 rtnl_lock_needed;

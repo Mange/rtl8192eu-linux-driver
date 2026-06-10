@@ -37,7 +37,7 @@ void	rtl8192eu_free_xmit_priv(_adapter *padapter)
 {
 }
 
-u8 urb_zero_packet_chk(_adapter *padapter, int sz)
+static u8 urb_zero_packet_chk(_adapter *padapter, int sz)
 {
 	u8 blnSetTxDescOffset;
 	HAL_DATA_TYPE	*pHalData	= GET_HAL_DATA(padapter);

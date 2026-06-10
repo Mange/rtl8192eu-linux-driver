@@ -259,7 +259,7 @@ void rtw_hal_power_off(_adapter *padapter)
 }
 
 
-void rtw_hal_init_opmode(_adapter *padapter)
+static void rtw_hal_init_opmode(_adapter *padapter)
 {
 	NDIS_802_11_NETWORK_INFRASTRUCTURE networkType = Ndis802_11InfrastructureMax;
 	struct  mlme_priv *pmlmepriv = &(padapter->mlmepriv);
@@ -632,7 +632,7 @@ void	rtw_hal_free_recv_priv(_adapter *padapter)
 	padapter->hal_func.free_recv_priv(padapter);
 }
 
-void rtw_sta_ra_registed(_adapter *padapter, struct sta_info *psta)
+static void rtw_sta_ra_registed(_adapter *padapter, struct sta_info *psta)
 {
 	struct mlme_priv *pmlmepriv = &(padapter->mlmepriv);
 	HAL_DATA_TYPE *hal_data = GET_HAL_DATA(padapter);

@@ -64,7 +64,7 @@ void rtw_odm_init_ic_type(_adapter *adapter)
 	odm_cmn_info_init(odm, ODM_CMNINFO_IC_TYPE, ic_type);
 }
 
-void rtw_odm_adaptivity_ver_msg(void *sel, _adapter *adapter)
+static void rtw_odm_adaptivity_ver_msg(void *sel, _adapter *adapter)
 {
 	RTW_PRINT_SEL(sel, "ADAPTIVITY_VERSION "ADAPTIVITY_VERSION"\n");
 }
@@ -72,7 +72,7 @@ void rtw_odm_adaptivity_ver_msg(void *sel, _adapter *adapter)
 #define RTW_ADAPTIVITY_EN_DISABLE 0
 #define RTW_ADAPTIVITY_EN_ENABLE 1
 
-void rtw_odm_adaptivity_en_msg(void *sel, _adapter *adapter)
+static void rtw_odm_adaptivity_en_msg(void *sel, _adapter *adapter)
 {
 	struct registry_priv *regsty = &adapter->registrypriv;
 
@@ -89,7 +89,7 @@ void rtw_odm_adaptivity_en_msg(void *sel, _adapter *adapter)
 #define RTW_ADAPTIVITY_MODE_NORMAL 0
 #define RTW_ADAPTIVITY_MODE_CARRIER_SENSE 1
 
-void rtw_odm_adaptivity_mode_msg(void *sel, _adapter *adapter)
+static void rtw_odm_adaptivity_mode_msg(void *sel, _adapter *adapter)
 {
 	struct registry_priv *regsty = &adapter->registrypriv;
 

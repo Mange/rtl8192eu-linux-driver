@@ -883,7 +883,7 @@ void rtw_mi_buddy_xmit_tasklet_schedule(_adapter *padapter)
 }
 #endif
 
-u8 _rtw_mi_busy_traffic_check(_adapter *padapter, void *data)
+static u8 _rtw_mi_busy_traffic_check(_adapter *padapter, void *data)
 {
 	u32 passtime;
 	struct mlme_priv *pmlmepriv = &padapter->mlmepriv;
@@ -1342,7 +1342,7 @@ _adapter *rtw_get_iface_by_hwport(_adapter *padapter, u8 hw_port)
 /*#define CONFIG_SKB_ALLOCATED*/
 #define DBG_SKB_PROCESS
 #ifdef DBG_SKB_PROCESS
-void rtw_dbg_skb_process(_adapter *padapter, union recv_frame *precvframe, union recv_frame *pcloneframe)
+static void rtw_dbg_skb_process(_adapter *padapter, union recv_frame *precvframe, union recv_frame *pcloneframe)
 {
 	_pkt *pkt_copy, *pkt_org;
 

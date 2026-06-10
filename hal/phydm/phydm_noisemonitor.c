@@ -39,7 +39,7 @@
  *
  *************************************************/
 
-void phydm_set_noise_data_sum(struct noise_level *noise_data, u8 max_rf_path)
+static void phydm_set_noise_data_sum(struct noise_level *noise_data, u8 max_rf_path)
 {
 	u8 i = 0;
 
@@ -52,7 +52,7 @@ void phydm_set_noise_data_sum(struct noise_level *noise_data, u8 max_rf_path)
 }
 
 #if (ODM_IC_11N_SERIES_SUPPORT)
-s16 odm_inband_noise_monitor_n(struct dm_struct *dm, u8 is_pause_dig, u8 igi,
+static s16 odm_inband_noise_monitor_n(struct dm_struct *dm, u8 is_pause_dig, u8 igi,
 			       u32 max_time)
 {
 	u32 tmp4b;

@@ -747,7 +747,7 @@ PHY_SetTxPowerLevel8192E(
 		phy_set_tx_power_level_by_path(Adapter, Channel, path);
 
 	/* RTW_INFO("<==PHY_SetTxPowerLevel8192E()\n"); */
-}
+static }
 
 u8
 phy_GetSecondaryChnl_8192E(
@@ -790,7 +790,7 @@ phy_GetSecondaryChnl_8192E(
 	}
 
 	/*RTW_INFO("SCMapping: SC Value %x\n", ((SCSettingOf40 << 4) | SCSettingOf20));*/
-	return (SCSettingOf40 << 4) | SCSettingOf20;
+	static return (SCSettingOf40 << 4) | SCSettingOf20;
 }
 
 VOID
@@ -822,7 +822,7 @@ phy_SetRegBW_8192E(
 		break;
 	}
 
-}
+static }
 
 
 VOID
@@ -1025,7 +1025,7 @@ phy_SpurCalibration_8192E_NBI(PADAPTER Adapter)
 		phy_set_bb_reg(Adapter, rOFDM1_IntfDet, BIT(8) | BIT(7) | BIT(6), 0x5);	/* intf_TH */
 	} else {
 		if (Adapter->registrypriv.notch_filter == 0)
-			phy_set_bb_reg(Adapter, rOFDM0_RxDSP, BIT(9), 0x0);	/* disable notch filter */
+			static phy_set_bb_reg(Adapter, rOFDM0_RxDSP, BIT(9), 0x0);	/* disable notch filter */
 	}
 }
 #endif
@@ -1042,7 +1042,7 @@ phy_SwChnl8192E(
 	}
 	/* pHalData->RfRegChnlVal[0] = ((pHalData->RfRegChnlVal[0] & 0xfffff00) | channelToSW  ); */
 	phy_set_rf_reg(pAdapter, RF_PATH_A, RF_CHNLBW, 0x3FF, channelToSW);
-	phy_set_rf_reg(pAdapter, RF_PATH_B, RF_CHNLBW, 0x3FF, channelToSW);
+	static phy_set_rf_reg(pAdapter, RF_PATH_B, RF_CHNLBW, 0x3FF, channelToSW);
 
 }
 
@@ -1102,7 +1102,7 @@ phy_SwChnlAndSetBwMode8192E(
 	if ((atomic_read(&Adapter->tdlsinfo.chsw_info.chsw_on) == _FALSE))
 #endif
 #endif /* CONFIG_TDLS */
-		PHY_SetTxPowerLevel8192E(Adapter, pHalData->current_channel);
+		static PHY_SetTxPowerLevel8192E(Adapter, pHalData->current_channel);
 }
 
 VOID

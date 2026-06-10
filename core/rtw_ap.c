@@ -934,7 +934,7 @@ _exit:
 }
 #endif
 
-void rtw_init_bmc_sta_tx_rate(_adapter *padapter, struct sta_info *psta)
+static void rtw_init_bmc_sta_tx_rate(_adapter *padapter, struct sta_info *psta)
 {
 #ifdef CONFIG_BMC_TX_LOW_RATE
 	struct mlme_ext_priv *pmlmeext = &(padapter->mlmeextpriv);
@@ -2849,7 +2849,7 @@ int rtw_ap_set_wep_key(_adapter *padapter, u8 *key, u8 keylen, int keyid, u8 set
 	return rtw_ap_set_key(padapter, key, alg, keyid, set_tx);
 }
 
-u8 rtw_ap_bmc_frames_hdl(_adapter *padapter)
+static u8 rtw_ap_bmc_frames_hdl(_adapter *padapter)
 {
 #define HIQ_XMIT_COUNTS (6)
 	_irqL irqL;
@@ -4170,7 +4170,7 @@ void start_ap_mode(_adapter *padapter)
 
 }
 
-void rtw_ap_bcmc_sta_flush(_adapter *padapter)
+static void rtw_ap_bcmc_sta_flush(_adapter *padapter)
 {
 #ifdef CONFIG_CONCURRENT_MODE
 	int cam_id = -1;

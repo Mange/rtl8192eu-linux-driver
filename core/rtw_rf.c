@@ -578,7 +578,7 @@ const char *const _regd_str[] = {
 };
 
 #if CONFIG_TXPWR_LIMIT
-void _dump_regd_exc_list(void *sel, struct rf_ctl_t *rfctl)
+static void _dump_regd_exc_list(void *sel, struct rf_ctl_t *rfctl)
 {
 	struct regd_exc_ent *ent;
 	_list *cur, *head;
@@ -1208,7 +1208,7 @@ int rtw_ch_to_bb_gain_sel(int ch)
 	return sel;
 }
 
-s8 rtw_rf_get_kfree_tx_gain_offset(_adapter *padapter, u8 path, u8 ch)
+static s8 rtw_rf_get_kfree_tx_gain_offset(_adapter *padapter, u8 path, u8 ch)
 {
 	s8 kfree_offset = 0;
 

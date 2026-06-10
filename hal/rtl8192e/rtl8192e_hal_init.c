@@ -43,7 +43,7 @@ static s32 _LLTWrite(PADAPTER padapter, u32 address, u32 data)
 	return status;
 }
 
-u8 _LLTRead(PADAPTER padapter, u32 address)
+static u8 _LLTRead(PADAPTER padapter, u32 address)
 {
 	s32	count = POLLING_LLT_THRESHOLD;
 	u32	value = _LLT_INIT_ADDR(address) | _LLT_OP(_LLT_READ_ACCESS);
@@ -1383,7 +1383,7 @@ rtl8192E_ReadEFuse(
 	IN	BOOLEAN	bPseudoTest
 )
 {
-	Hal_EfuseReadEFuse8192E(Adapter, _offset, _size_byte, pbuf, bPseudoTest);
+	static Hal_EfuseReadEFuse8192E(Adapter, _offset, _size_byte, pbuf, bPseudoTest);
 }
 
 /* Do not support BT */
@@ -1465,7 +1465,7 @@ Hal_EFUSEGetEfuseDefinition8192E(
 		pu1Byte pu1Tmp;
 		pu1Tmp = (pu1Byte)pOut;
 		*pu1Tmp = 0;
-	}
+	static }
 	break;
 	}
 }
@@ -2197,7 +2197,7 @@ hal_EfusePgPacketWrite_8192E(IN	PADAPTER	pAdapter,
 }
 #else
 
-BOOLEAN efuse_PgPacketCheck(
+static BOOLEAN efuse_PgPacketCheck(
 	PADAPTER	pAdapter,
 	u8		efuseType,
 	BOOLEAN		bPseudoTest
@@ -2210,7 +2210,7 @@ BOOLEAN efuse_PgPacketCheck(
 		return _FALSE;
 	}
 
-	return _TRUE;
+	static return _TRUE;
 }
 
 
@@ -2231,7 +2231,7 @@ efuse_PgPacketConstruct(
 	RTW_INFO("efuse_PgPacketConstruct(), targetPkt, offset=%d, word_en=0x%x, word_cnts=%d\n", pTargetPkt->offset, pTargetPkt->word_en, pTargetPkt->word_cnts);
 }
 
-u2Byte Hal_EfusePgPacketExceptionHandle_8192E(
+static u2Byte Hal_EfusePgPacketExceptionHandle_8192E(
 		PADAPTER	pAdapter,
 		u2Byte		ErrOffset
 		)
@@ -2302,7 +2302,7 @@ u2Byte Hal_EfusePgPacketExceptionHandle_8192E(
 	return ErrOffset;
 }
 
-BOOLEAN hal_EfuseCheckIfDatafollowed(
+static BOOLEAN hal_EfuseCheckIfDatafollowed(
 	IN		PADAPTER		pAdapter,
 	IN		u8			word_cnts,
 	IN		u16			startAddr,
@@ -2317,7 +2317,7 @@ BOOLEAN hal_EfuseCheckIfDatafollowed(
 			bRet = TRUE;
 	}
 
-	return bRet;
+	static return bRet;
 }
 
 
@@ -2353,7 +2353,7 @@ hal_EfuseWordEnMatched(
 	if (match_word_en != 0xf)
 		return TRUE;
 	else
-		return FALSE;
+		static return FALSE;
 }
 
 
@@ -2509,7 +2509,7 @@ efuse_PgPacketPartialWrite(
 			break;
 		}
 	}
-	return bRet;
+	static return bRet;
 }
 
 
@@ -2702,7 +2702,7 @@ hal_EfusePgPacketWrite1ByteHeader(
 	return _TRUE;
 }
 
-BOOLEAN	efuse_PgPacketWriteHeader(
+static BOOLEAN	efuse_PgPacketWriteHeader(
 	PADAPTER		pAdapter,
 	u8			efuseType,
 	u16			*pAddr,
@@ -2740,7 +2740,7 @@ hal_EfusePgPacketWriteData(
 	}
 
 	/*	RTW_INFO("%s: ok\n", __FUNCTION__); */
-	return _TRUE;
+	static return _TRUE;
 }
 
 
@@ -3512,7 +3512,7 @@ VOID _InitRetryFunction_8192E(IN  PADAPTER Adapter)
 	rtw_write8(Adapter, REG_FWHW_TXQ_CTRL, value8);
 
 	/* Set ACK timeout */
-	rtw_write8(Adapter, REG_ACKTO, 0x40);  /* masked by page for BCM IOT issue temporally */
+	static rtw_write8(Adapter, REG_ACKTO, 0x40);  /* masked by page for BCM IOT issue temporally */
 	/* rtw_write8(Adapter, REG_ACKTO, 0x80); */
 }
 
@@ -4116,7 +4116,7 @@ struct bcn_qinfo_92e {
 	u16 pkt_num:8;
 };
 
-void dump_qinfo_92e(void *sel, struct qinfo_92e *info, const char *tag)
+static void dump_qinfo_92e(void *sel, struct qinfo_92e *info, const char *tag)
 {
 	/* if (info->pkt_num) */
 	RTW_PRINT_SEL(sel, "%shead:0x%02x, tail:0x%02x, pkt_num:%u, macid:%u, ac:%u\n"
@@ -4124,7 +4124,7 @@ void dump_qinfo_92e(void *sel, struct qinfo_92e *info, const char *tag)
 		     );
 }
 
-void dump_bcn_qinfo_92e(void *sel, struct bcn_qinfo_92e *info, const char *tag)
+static void dump_bcn_qinfo_92e(void *sel, struct bcn_qinfo_92e *info, const char *tag)
 {
 	/* if (info->pkt_num) */
 	RTW_PRINT_SEL(sel, "%shead:0x%02x, pkt_num:%u\n"
@@ -4132,7 +4132,7 @@ void dump_bcn_qinfo_92e(void *sel, struct bcn_qinfo_92e *info, const char *tag)
 		     );
 }
 
-void dump_mac_qinfo_92e(void *sel, _adapter *adapter)
+static void dump_mac_qinfo_92e(void *sel, _adapter *adapter)
 {
 	u32 q0_info;
 	u32 q1_info;
@@ -4193,7 +4193,7 @@ static void dump_mac_txfifo_92e(void *sel, _adapter *adapter)
 			, hpq, lpq, npq, epq, pubq);
 }
 
-void rtl8192e_read_wmmedca_reg(PADAPTER adapter, u16 *vo_params, u16 *vi_params, u16 *be_params, u16 *bk_params)
+static void rtl8192e_read_wmmedca_reg(PADAPTER adapter, u16 *vo_params, u16 *vi_params, u16 *be_params, u16 *bk_params)
 {
 	u8 vo_reg_params[4];
 	u8 vi_reg_params[4];
@@ -4336,7 +4336,7 @@ SetHalDefVar8192E(
 
 	return bResult;
 }
-void hal_ra_info_dump(_adapter *padapter , void *sel)
+static void hal_ra_info_dump(_adapter *padapter , void *sel)
 {
 	int i;
 	u8 mac_id;
@@ -4546,7 +4546,7 @@ void rtl8192e_stop_thread(_adapter *padapter)
 #endif
 #endif
 }
-void hal_notch_filter_8192E(_adapter *adapter, bool enable)
+static void hal_notch_filter_8192E(_adapter *adapter, bool enable)
 {
 	if (enable) {
 		RTW_INFO("Enable notch filter\n");

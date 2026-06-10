@@ -32,7 +32,7 @@
 
 #ifdef PHYDM_SUPPORT_RSSI_MONITOR
 
-void phydm_rssi_monitor_h2c(void *dm_void, u8 macid)
+static void phydm_rssi_monitor_h2c(void *dm_void, u8 macid)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ra_table *ra_t = &dm->dm_ra_table;
@@ -95,7 +95,7 @@ void phydm_rssi_monitor_h2c(void *dm_void, u8 macid)
 	}
 }
 
-void phydm_calculate_rssi_min_max(void *dm_void)
+static void phydm_calculate_rssi_min_max(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct cmn_sta_info *sta;
