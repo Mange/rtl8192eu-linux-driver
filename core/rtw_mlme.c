@@ -1138,7 +1138,7 @@ void rtw_add_network(_adapter *adapter, WLAN_BSSID_EX *pnetwork)
 
 #if defined(CONFIG_P2P) && defined(CONFIG_P2P_REMOVE_GROUP_INFO)
 	if (adapter->registrypriv.wifi_spec == 0)
-		rtw_bss_ex_del_p2p_attr(pnetwork, P2P_ATTR_GROUP_INFO);
+		rtw_bss_ex_del_p2p_attr(pnetwork, IEEE80211_P2P_ATTR_GROUP_INFO);
 #endif
 
 	if (!hal_chk_wl_func(adapter, WL_FUNC_MIRACAST))

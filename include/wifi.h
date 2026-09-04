@@ -15,34 +15,14 @@
 #ifndef _WIFI_H_
 #define _WIFI_H_
 
-
-#ifndef BIT
-#define BIT(x)	(1 << (x))
-#endif
-
-
-#define WLAN_ETHHDR_LEN		14
-#define WLAN_ETHADDR_LEN	6
 #define WLAN_IEEE_OUI_LEN	3
-#define WLAN_ADDR_LEN		6
-#define WLAN_CRC_LEN		4
-#define WLAN_BSSID_LEN		6
-#define WLAN_BSS_TS_LEN		8
 #define WLAN_HDR_A3_LEN		24
-#define WLAN_HDR_A4_LEN		30
 #define WLAN_HDR_A3_QOS_LEN	26
 #define WLAN_HDR_A4_QOS_LEN	32
 #define WLAN_SSID_MAXLEN	32
-#define WLAN_DATA_MAXLEN	2312
 
-#define WLAN_A3_PN_OFFSET	24
-#define WLAN_A4_PN_OFFSET	30
-
-#define WLAN_MIN_ETHFRM_LEN	60
-#define WLAN_MAX_ETHFRM_LEN	1514
-#define WLAN_ETHHDR_LEN		14
 #define WLAN_WMM_LEN		24
-#define VENDOR_NAME_LEN		20
+#define VENDOR_NAME_LEN 20
 
 #ifdef CONFIG_APPEND_VENDOR_IE_ENABLE
 #define WLAN_MAX_VENDOR_IE_LEN 255
@@ -61,11 +41,6 @@
 #endif
 #endif
 
-#define P80211CAPTURE_VERSION	0x80211001
-
-/* This value is tested by WiFi 11n Test Plan 5.2.3.
- * This test verifies the WLAN NIC can update the NAV through sending the CTS with large duration. */
-#define	WiFiNavUpperUs				30000	/* 30 ms */
 
 #ifdef GREEN_HILL
 #pragma pack(1)
@@ -293,26 +268,11 @@ static inline int IsFrameTypeData(unsigned char *pframe)
 /*-----------------------------------------------------------------------------
 			Below is for the security related definition
 ------------------------------------------------------------------------------*/
-#define _RESERVED_FRAME_TYPE_	0
-#define _SKB_FRAME_TYPE_		2
-#define _PRE_ALLOCMEM_			1
-#define _PRE_ALLOCHDR_			3
-#define _PRE_ALLOCLLCHDR_		4
-#define _PRE_ALLOCICVHDR_		5
-#define _PRE_ALLOCMICHDR_		6
-
-#define _SIFSTIME_				((priv->pmib->dot11BssType.net_work_type&WIRELESS_11A) ? 16 : 10)
-#define _ACKCTSLNG_				14	/* 14 bytes long, including crclng */
-#define _CRCLNG_				4
-
 #define _ASOCREQ_IE_OFFSET_		4	/* excluding wlan_hdr */
-#define	_ASOCRSP_IE_OFFSET_		6
 #define _REASOCREQ_IE_OFFSET_	10
-#define _REASOCRSP_IE_OFFSET_	6
 #define _PROBEREQ_IE_OFFSET_	0
 #define	_PROBERSP_IE_OFFSET_	12
 #define _AUTH_IE_OFFSET_		6
-#define _DEAUTH_IE_OFFSET_		0
 #define _BEACON_IE_OFFSET_		12
 #define _PUBLIC_ACTION_IE_OFFSET_	8
 
@@ -331,13 +291,6 @@ static inline int IsFrameTypeData(unsigned char *pframe)
 #define _ASOC_ID_				2
 #define _STATUS_CODE_			2
 #define _TIMESTAMP_				8
-
-#define AUTH_ODD_TO				0
-#define AUTH_EVEN_TO			1
-
-#define WLAN_ETHCONV_ENCAP		1
-#define WLAN_ETHCONV_RFC1042	2
-#define WLAN_ETHCONV_8021h		3
 
 #define cap_ESS BIT(0)
 #define cap_IBSS BIT(1)
@@ -496,12 +449,6 @@ struct ADDBA_request {
 /*	Value of WPS attribute "WPS_ATTR_DEVICE_NAME */
 #define WPS_MAX_DEVICE_NAME_LEN		32
 
-/*	Value of WPS Request Type Attribute */
-#define WPS_REQ_TYPE_ENROLLEE_INFO_ONLY			0x00
-#define WPS_REQ_TYPE_ENROLLEE_OPEN_8021X		0x01
-#define WPS_REQ_TYPE_REGISTRAR					0x02
-#define WPS_REQ_TYPE_WLAN_MANAGER_REGISTRAR	0x03
-
 /*	Value of WPS Response Type Attribute */
 #define WPS_RESPONSE_TYPE_INFO_ONLY	0x00
 #define WPS_RESPONSE_TYPE_8021X		0x01
@@ -516,19 +463,9 @@ struct ADDBA_request {
 #define WPS_VERSION_1					0x10
 
 /*	Value of WPS Configuration Method Attribute */
-#define WPS_CONFIG_METHOD_FLASH		0x0001
-#define WPS_CONFIG_METHOD_ETHERNET	0x0002
-#define WPS_CONFIG_METHOD_LABEL		0x0004
 #define WPS_CONFIG_METHOD_DISPLAY	0x0008
-#define WPS_CONFIG_METHOD_E_NFC		0x0010
-#define WPS_CONFIG_METHOD_I_NFC		0x0020
-#define WPS_CONFIG_METHOD_NFC		0x0040
 #define WPS_CONFIG_METHOD_PBC		0x0080
 #define WPS_CONFIG_METHOD_KEYPAD	0x0100
-#define WPS_CONFIG_METHOD_VPBC		0x0280
-#define WPS_CONFIG_METHOD_PPBC		0x0480
-#define WPS_CONFIG_METHOD_VDISPLAY	0x2008
-#define WPS_CONFIG_METHOD_PDISPLAY	0x4008
 
 /*	Value of Category ID of WPS Primary Device Type Attribute */
 #define WPS_PDT_CID_DISPLAYS			0x0007
@@ -547,41 +484,11 @@ struct ADDBA_request {
 #define WPS_DPID_PBC					0x0004
 #define WPS_DPID_REGISTRAR_SPEC		0x0005
 
-/*	Value of WPS RF Bands Attribute */
-#define WPS_RF_BANDS_2_4_GHZ		0x01
-#define WPS_RF_BANDS_5_GHZ		0x02
 
-/*	Value of WPS Association State Attribute */
-#define WPS_ASSOC_STATE_NOT_ASSOCIATED			0x00
-#define WPS_ASSOC_STATE_CONNECTION_SUCCESS		0x01
-#define WPS_ASSOC_STATE_CONFIGURATION_FAILURE	0x02
-#define WPS_ASSOC_STATE_ASSOCIATION_FAILURE		0x03
-#define WPS_ASSOC_STATE_IP_FAILURE				0x04
 
 /*	=====================P2P Section===================== */
 /*	For P2P */
 #define	P2POUI							0x506F9A09
-
-/*	P2P Attribute ID */
-#define	P2P_ATTR_STATUS					0x00
-#define	P2P_ATTR_MINOR_REASON_CODE		0x01
-#define	P2P_ATTR_CAPABILITY				0x02
-#define	P2P_ATTR_DEVICE_ID				0x03
-#define	P2P_ATTR_GO_INTENT				0x04
-#define	P2P_ATTR_CONF_TIMEOUT			0x05
-#define	P2P_ATTR_LISTEN_CH				0x06
-#define	P2P_ATTR_GROUP_BSSID				0x07
-#define	P2P_ATTR_EX_LISTEN_TIMING		0x08
-#define	P2P_ATTR_INTENDED_IF_ADDR		0x09
-#define	P2P_ATTR_MANAGEABILITY			0x0A
-#define	P2P_ATTR_CH_LIST					0x0B
-#define	P2P_ATTR_NOA						0x0C
-#define	P2P_ATTR_DEVICE_INFO				0x0D
-#define	P2P_ATTR_GROUP_INFO				0x0E
-#define	P2P_ATTR_GROUP_ID					0x0F
-#define	P2P_ATTR_INTERFACE				0x10
-#define	P2P_ATTR_OPERATING_CH			0x11
-#define	P2P_ATTR_INVITATION_FLAGS		0x12
 
 /*	Value of Status Attribute */
 #define	P2P_STATUS_SUCCESS						0x00

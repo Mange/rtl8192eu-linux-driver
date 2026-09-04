@@ -6676,7 +6676,7 @@ static void rtw_hal_construct_P2PNegoRsp(_adapter *padapter, u8 *pframe, u32 *pL
 
 	/*	P2P Status */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_STATUS;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_STATUS;
 
 	/*	Length: */
 	*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0001);
@@ -6687,7 +6687,7 @@ static void rtw_hal_construct_P2PNegoRsp(_adapter *padapter, u8 *pframe, u32 *pL
 
 	/*	P2P Capability */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_CAPABILITY;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_CAPABILITY;
 
 	/*	Length: */
 	*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0002);
@@ -6714,7 +6714,7 @@ static void rtw_hal_construct_P2PNegoRsp(_adapter *padapter, u8 *pframe, u32 *pL
 
 	/*	Group Owner Intent */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_GO_INTENT;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_GO_INTENT;
 
 	/*	Length: */
 	*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0001);
@@ -6732,7 +6732,7 @@ static void rtw_hal_construct_P2PNegoRsp(_adapter *padapter, u8 *pframe, u32 *pL
 
 	/*	Configuration Timeout */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_CONF_TIMEOUT;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_GO_CONFIG_TIMEOUT;
 
 	/*	Length: */
 	*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0002);
@@ -6744,7 +6744,7 @@ static void rtw_hal_construct_P2PNegoRsp(_adapter *padapter, u8 *pframe, u32 *pL
 
 	/*	Operating Channel */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_OPERATING_CH;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_OPER_CHANNEL;
 
 	/*	Length: */
 	*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0005);
@@ -6776,7 +6776,7 @@ static void rtw_hal_construct_P2PNegoRsp(_adapter *padapter, u8 *pframe, u32 *pL
 
 	/*	Intended P2P Interface Address	 */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_INTENDED_IF_ADDR;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_INTENDED_IFACE_ADDR;
 
 	/*	Length: */
 	*(u16 *)(p2pie + p2pielen) = cpu_to_le16(ETH_ALEN);
@@ -6788,7 +6788,7 @@ static void rtw_hal_construct_P2PNegoRsp(_adapter *padapter, u8 *pframe, u32 *pL
 
 	/*	Channel List */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_CH_LIST;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_CHANNEL_LIST;
 
 	/* Country String(3) */
 	/* + ( Operating Class (1) + Number of Channels(1) ) * Operation Classes (?) */
@@ -6860,7 +6860,7 @@ static void rtw_hal_construct_P2PNegoRsp(_adapter *padapter, u8 *pframe, u32 *pL
 
 	/*	Device Info */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_DEVICE_INFO;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_DEVICE_INFO;
 
 	/*	Length: */
 	/*	21->P2P Device Address (6bytes) + Config Methods (2bytes) + Primary Device Type (8bytes)  */
@@ -6912,7 +6912,7 @@ static void rtw_hal_construct_P2PNegoRsp(_adapter *padapter, u8 *pframe, u32 *pL
 	if (rtw_p2p_chk_role(pwdinfo, P2P_ROLE_GO)) {
 		/*	Group ID Attribute */
 		/*	Type: */
-		p2pie[p2pielen++] = P2P_ATTR_GROUP_ID;
+		p2pie[p2pielen++] = IEEE80211_P2P_ATTR_GROUP_ID;
 
 		/*	Length: */
 		*(u16 *)(p2pie + p2pielen) = cpu_to_le16(ETH_ALEN + pwdinfo->nego_ssidlen);
@@ -7028,7 +7028,7 @@ static void rtw_hal_construct_P2PInviteRsp(_adapter *padapter, u8 *pframe, u32 *
 
 	/*	P2P Status */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_STATUS;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_STATUS;
 
 	/*	Length: */
 	*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0001);
@@ -7039,7 +7039,7 @@ static void rtw_hal_construct_P2PInviteRsp(_adapter *padapter, u8 *pframe, u32 *
 
 	/*	Configuration Timeout */
 	/*	Type: */
-	p2pie[p2pielen++] = P2P_ATTR_CONF_TIMEOUT;
+	p2pie[p2pielen++] = IEEE80211_P2P_ATTR_GO_CONFIG_TIMEOUT;
 
 	/*	Length: */
 	*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0002);
@@ -7062,7 +7062,7 @@ static void rtw_hal_construct_P2PInviteRsp(_adapter *padapter, u8 *pframe, u32 *
 
 			/*	Operating Channel */
 			/*	Type: */
-			p2pie[p2pielen++] = P2P_ATTR_OPERATING_CH;
+			p2pie[p2pielen++] = IEEE80211_P2P_ATTR_OPER_CHANNEL;
 
 			/*	Length: */
 			*(u16 *)(p2pie + p2pielen) = cpu_to_le16(0x0005);
@@ -7086,7 +7086,7 @@ static void rtw_hal_construct_P2PInviteRsp(_adapter *padapter, u8 *pframe, u32 *
 
 			/*	P2P Group BSSID */
 			/*	Type: */
-			p2pie[p2pielen++] = P2P_ATTR_GROUP_BSSID;
+			p2pie[p2pielen++] = IEEE80211_P2P_ATTR_GROUP_BSSID;
 
 			/*	Length: */
 			*(u16 *)(p2pie + p2pielen) = cpu_to_le16(ETH_ALEN);
@@ -7101,7 +7101,7 @@ static void rtw_hal_construct_P2PInviteRsp(_adapter *padapter, u8 *pframe, u32 *
 
 		/*	Channel List */
 		/*	Type: */
-		p2pie[p2pielen++] = P2P_ATTR_CH_LIST;
+		p2pie[p2pielen++] = IEEE80211_P2P_ATTR_CHANNEL_LIST;
 
 		/*	Length: */
 		/* Country String(3) */

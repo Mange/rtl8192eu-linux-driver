@@ -94,7 +94,7 @@ static void rtw_hal_mcc_build_p2p_noa_attr(PADAPTER padapter, u8 *ie, u32 *ie_le
 	p2p_noa_attr_len = p2p_noa_attr_len + 4;
 
 	/* attrute ID(1 byte) */
-	p2p_noa_attr_ie[p2p_noa_attr_len] = P2P_ATTR_NOA;
+	p2p_noa_attr_ie[p2p_noa_attr_len] = IEEE80211_P2P_ATTR_ABSENCE_NOTICE;
 	p2p_noa_attr_len = p2p_noa_attr_len + 1;
 	
 	/* attrute length(2 bytes) length = noa_desc_num*13 + 2 */
