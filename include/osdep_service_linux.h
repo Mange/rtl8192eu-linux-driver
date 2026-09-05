@@ -54,6 +54,29 @@
 #include <linux/list.h>
 #include <linux/vmalloc.h>
 
+/*
+ * Linux 7.2 removed strncpy() from the kernel API: it is no longer declared in
+ * <linux/string.h> and the symbol is gone, as part of the long-running move to
+ * strscpy(). This driver still relies on strncpy() semantics - a bounded copy
+ * that NUL-pads the remainder of the destination - so provide a private
+ * implementation on kernels that no longer ship one. strscpy() is not a drop-in
+ * replacement here: it does not pad, and it truncates at count - 1.
+ */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(7, 2, 0))
+static inline char *rtw_strncpy(char *dst, const char *src, size_t count)
+{
+	size_t i;
+
+	for (i = 0; i < count && src[i] != '\0'; i++)
+		dst[i] = src[i];
+	for (; i < count; i++)
+		dst[i] = '\0';
+
+	return dst;
+}
+#define strncpy(d, s, n) rtw_strncpy((d), (s), (n))
+#endif
+
 #if (LINUX_VERSION_CODE <= KERNEL_VERSION(2, 5, 41))
 	#include <linux/tqueue.h>
 #endif
